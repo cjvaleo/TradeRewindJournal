@@ -3936,15 +3936,18 @@ function getETMinutes(){
   return et.getHours()*60+et.getMinutes();
 }
 
-function getFuturesSession(){
-  const t=getETMinutes();
-  // Asia wraps midnight: active 20:00-24:00 and 0:00-0:00 (midnight boundary)
-  if(t>=20*60||t<0)        return SESSIONS[0]; // Asia (8PM-midnight)
-  if(t<5*60&&t>=2*60)      return SESSIONS[1]; // London
-  if(t>=9*60+30&&t<11*60)  return SESSIONS[2]; // NY AM
-  if(t>=12*60&&t<13*60)    return SESSIONS[3]; // NY Lunch
-  if(t>=13*60+30&&t<16*60) return SESSIONS[4]; // NY PM
-  return null; // no active session
+ffunction getFuturesSession(){
+  var now=new Date();var etOff=isDST(now)?-4:-5;var etMs=now.getTime()+(now.getTimezoneOffset()+etOff*60)*60000;var et=new Date(etMs);
+  var day=et.getDay(),h=et.getHours(),t=h*60+et.getMinutes();
+  if(day===6)return null;
+  if(day===5&&t>=17*60)return null;
+  if(day===0&&t<18*60)return null;
+  if(t>=20*60||t<0)return SESSIONS[0];
+  if(t<5*60&&t>=2*60)return SESSIONS[1];
+  if(t>=9*60+30&&t<11*60)return SESSIONS[2];
+  if(t>=12*60&&t<13*60)return SESSIONS[3];
+  if(t>=13*60+30&&t<16*60)return SESSIONS[4];
+  return null;
 }
 
 function getNextSession(){
