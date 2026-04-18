@@ -2856,7 +2856,7 @@ function openCommFeed(gid){
   updateLeaveDeleteBtn();
   var inv=document.getElementById('feed-invite-section');if(inv)inv.style.display=g.members.length>=4?'none':'';
   renderCommSidebar();
-  setActiveGroup(_activeCommId);
+  document.querySelectorAll('#comm-sidebar-list .grp-card').forEach(function(c){c.classList.toggle('grp-active',c.getAttribute('data-gid')===_activeCommId);});
   // Async: sync own trades to DB then load all members' posts
   syncAndLoadCommFeed(g);
   subscribeToCommFeed(g);
