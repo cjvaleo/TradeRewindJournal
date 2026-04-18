@@ -2875,6 +2875,7 @@ function setCheckin(status) {
   saveCheckins();
   renderCheckinStrip();
   renderCheckinPanel();
+  if(_sb&&currentUser&&_comm){_sb.from('community_posts').upsert({id:'checkin_'+currentUser.id+'_'+today,user_id:currentUser.id,community_id:_comm.id,content:JSON.stringify({checkin:status}),username:(acct&&acct.username)||'You'}).then(function(){});}
   toast(status === 'trading' ? '✅ You\'re trading today!' : '💤 Sitting out today');
 }
 
