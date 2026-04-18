@@ -2852,7 +2852,7 @@ function openCommFeed(gid){
   var metaEl=document.getElementById('feed-grp-meta');if(metaEl)metaEl.textContent=g.members.length+' members';
   var editBtn=document.getElementById('feed-edit-btn');if(editBtn)editBtn.style.display=(currentUser&&g.owner_id===currentUser.id)?'':'none';
   renderFeedPosts(g);renderFeedLeaderboard(g);renderFeedMembers(g);renderSentInvites();renderMemberCalendars(g);renderCommunityWidgets(g);
-  renderGroupStats(g);renderDailyChallenge();renderGroupActivity(g);
+  renderGroupStats(g);try{renderDailyChallenge();}catch(e){}renderGroupActivity(g);
   updateLeaveDeleteBtn();
   var inv=document.getElementById('feed-invite-section');if(inv)inv.style.display=g.members.length>=4?'none':'';
   renderCommSidebar();
