@@ -375,6 +375,8 @@ body::before,.bg-grid,.bg-horizon,.bg-horizon2{display:none}
 .ptitle{font-size:20px}
 .stats4{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
 .sc{padding:10px 12px!important}
+.sc-val{font-size:16px!important}
+.sc-lbl{font-size:9px!important}
 .crd-b{padding:10px 12px}
 .comm-grid{grid-template-columns:1fr!important}
 #pg-community.on{flex-direction:column!important;height:auto!important;overflow:visible!important}
@@ -386,14 +388,19 @@ div[style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr!import
 div[style*="grid-template-columns:repeat(3"]{grid-template-columns:1fr!important}
 div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-account>div[style*="grid-template-columns"]{grid-template-columns:1fr!important}
-#mobile-nav{display:flex!important#big-cal{grid-template-columns:repeat(7,1fr)!important}
+#pg-dashboard .ph{position:relative;flex-wrap:wrap}
+#pg-dashboard .ph>div:first-child{width:100%}
+#pg-dashboard .ph>div:last-child{position:static;width:100%;margin-top:4px}
+#pg-dashboard div[style*="gap:28px"]{grid-template-columns:1fr!important;gap:12px!important}
+#pg-dashboard div[style*="gap:8px"][style*="grid-template"]{grid-template-columns:1fr 1fr!important}
+#big-cal{grid-template-columns:repeat(7,1fr)!important}
 #big-cal .wk-num{display:none!important}
 #big-cal .cc{min-height:60px!important}
 #pg-calendar div[style*="grid-template-columns:28px"]{grid-template-columns:repeat(7,1fr)!important}
 #pg-calendar div[style*="grid-template-columns:28px"]>div:first-child{display:none!important}
 #pg-calendar div[style*="grid-template-columns:1fr 300px"]{grid-template-columns:1fr!important}
 #pg-calendar div[style*="repeat(5,1fr)"]{grid-template-columns:repeat(2,1fr)!important}
-#pg-calendar .cc .sc-val{font-size:12px!important}}
+#mobile-nav{display:flex!important}
 }
 #mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:56px;background:rgba(6,0,20,.98);border-top:1px solid rgba(255,45,155,.3);z-index:99998;align-items:center;justify-content:space-around;backdrop-filter:blur(10px)}
 #mobile-nav .mn{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:6px 8px;color:rgba(255,255,255,.5);font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:1px;flex:1;text-align:center}
