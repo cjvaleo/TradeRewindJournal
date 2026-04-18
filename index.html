@@ -2901,7 +2901,7 @@ function renderCheckinPanel(g) {
   var members = group ? group.members : [{id:'me',username:'You',isMe:true}];
   var html = members.map(function(m) {
     var key = m.isMe ? 'me' : m.id;
-    var status = todayData[key];
+    var status = todayData[key] || (_remoteCheckins && _remoteCheckins[m.id]);
     var col = status === 'trading' ? 'var(--grn)' : status === 'out' ? 'rgba(255,255,255,.3)' : 'rgba(255,255,255,.2)';
     var icon = status === 'trading' ? '✅' : status === 'out' ? '💤' : '⬜';
     var label = status === 'trading' ? 'Trading' : status === 'out' ? 'Sitting out' : 'No check-in';
