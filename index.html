@@ -3937,7 +3937,7 @@ function getETMinutes(){
 }
 
 function getFuturesSession(){
-  const t=getETMinutes();
+  var now2=new Date(),etOff2=isDST(now2)?-4:-5,etMs2=now2.getTime()+(now2.getTimezoneOffset()+etOff2*60)*60000,et2=new Date(etMs2),day2=et2.getDay();if(day2===6||(day2===5&&et2.getHours()>=17)||(day2===0&&et2.getHours()<18))return null;const t=getETMinutes();
   // Asia wraps midnight: active 20:00-24:00 and 0:00-0:00 (midnight boundary)
   if(t>=20*60||t<0)        return SESSIONS[0]; // Asia (8PM-midnight)
   if(t<5*60&&t>=2*60)      return SESSIONS[1]; // London
