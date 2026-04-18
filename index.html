@@ -2897,8 +2897,7 @@ function renderCheckinPanel(g) {
   var today = new Date().toISOString().slice(0, 10);
   var todayData = _checkins[today] || {};
   // Build member list — always show "me" + simulate others from group
-  var group = _comm && _comm.length ? _comm.find(function(x){return x.id===_activeGroup;}) : null;
-  var members = group ? group.members : [{id:'me',username:'You',isMe:true}];
+var members = (_comm && _comm.members) ? _comm.members : [{id:'me',username:'You',isMe:true}];
   var html = members.map(function(m) {
     var key = m.isMe ? 'me' : m.id;
     var status = todayData[key] || (_remoteCheckins && _remoteCheckins[m.id]);
