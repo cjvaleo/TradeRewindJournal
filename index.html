@@ -3548,7 +3548,7 @@ function buildMiniCal(tData){
 function openMemberCal(memberId,username){
   if(!_comm)return;
   var m=_comm.members.find(function(x){return x.id===memberId;});
-  _memberCalData=m&&m.isMe?trades:[];
+  var mT=getMemberTradesLookup();_memberCalData=m&&m.isMe?trades:(mT[memberId]||[]);
   _memberCalName=username;
   _memberCalY=new Date().getFullYear();_memberCalM=new Date().getMonth();
   var title=document.getElementById('member-cal-title');if(title)title.textContent=username.toUpperCase()+"'S CALENDAR";
