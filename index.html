@@ -3122,9 +3122,10 @@ function renderFeedPosts(g){
   });
 
   // Add remote members' posts
-  _remotePosts.forEach(function(row){
+ _remotePosts.forEach(function(row){
     var rt={};try{rt=JSON.parse(row.content||'{}');}catch(e){}
-    combined.push({isMe:false,trade:rt,pnl:row.pnl_today||0,date:rt.date||row.created_at||'',username:row.username||'Trader',initials:row.initials||'??',row:row});
+    var rp={isMe:false,trade:rt,pnl:row.pnl_today||0,date:rt.date||row.created_at||'',username:row.username||'Trader',initials:row.initials||'??',row:row};
+    if(feedFilterDate([{date:rp.date}]).length) combined.push(rp);
   });
 
   // Sort all together by date descending
@@ -3228,7 +3229,7 @@ function feedFilterDate(trades) {
   var monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   return trades.filter(function(t) {
     if (!t.date) return _feedFilter === 'all';
-    var d = new Date(t.date);
+    var d = new Date(t.date + 'T00:00:00');
     if (_feedFilter === 'today') return d >= today;
     if (_feedFilter === 'week')  return d >= weekStart;
     if (_feedFilter === 'month') return d >= monthStart;
