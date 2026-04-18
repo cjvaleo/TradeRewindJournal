@@ -2953,13 +2953,13 @@ function renderTOTW(g) {
     }
   }
 
-  if (!_totw) {
+  if (false) {
     el.innerHTML = '<div style="text-align:center;padding:16px 0"><div style="font-size:26px;margin-bottom:8px">🏆</div><div style="font-family:\'Orbitron\',monospace;font-size:15px;color:rgba(255,255,255,.78)">' + (isLeader ? 'Pin a trade to highlight it for the group' : 'No trade pinned yet') + '</div></div>';
     return;
   }
 
-  var t = trades.find(function(x){ return x.id === _totw.tradeId; });
-  if (!t) { el.innerHTML = '<div style="font-family:Orbitron,monospace;font-size:15px;color:rgba(255,255,255,.78)">Pinned trade not found</div>'; return; }
+  var _allW=getAllMemberTrades();var _wkS=new Date();_wkS.setDate(_wkS.getDate()-_wkS.getDay());_wkS.setHours(0,0,0,0);_allW=_allW.filter(function(x){return x.date&&new Date(x.date+'T00:00:00')>=_wkS;});_allW.sort(function(a,b){return(b.pnl||0)-(a.pnl||0);});var t=_allW[0];
+  if (!t) { el.innerHTML = '<div style="font-family:Orbitron,monospace;font-size:15px;color:rgba(255,255,255,.78)">No trades this week yet</div>'; return; }
 
   var pnl = t.pnl || 0;
   var pnlCol = pnl > 0 ? 'var(--grn)' : pnl < 0 ? 'var(--red)' : 'rgba(255,255,255,.4)';
