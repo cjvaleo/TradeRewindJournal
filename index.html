@@ -3947,7 +3947,8 @@ function getFuturesSession(){
   return null; // no active session
 }
 
-var now3=new Date(),etOff3=isDST(now3)?-4:-5,etMs3=now3.getTime()+(now3.getTimezoneOffset()+etOff3*60)*60000,et3=new Date(etMs3),day3=et3.getDay();if(day3===6||(day3===5&&et3.getHours()>=17)||(day3===0&&et3.getHours()<18))return{s:{name:'CLOSED',detail:'Markets closed',color:'rgba(255,255,255,.3)',border:'rgba(255,255,255,.15)'},minsLeft:0};const t=getETMinutes();
+function getNextSession(){
+  var now3=new Date(),etOff3=isDST(now3)?-4:-5,etMs3=now3.getTime()+(now3.getTimezoneOffset()+etOff3*60)*60000,et3=new Date(etMs3),day3=et3.getDay();if(day3===6||(day3===5&&et3.getHours()>=17)||(day3===0&&et3.getHours()<18))return null;
   const t=getETMinutes();
   // Find next session start (accounting for Asia wrapping midnight)
   const candidates=[
