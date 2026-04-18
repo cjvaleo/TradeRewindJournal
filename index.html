@@ -2954,7 +2954,7 @@ function renderTOTW(g) {
   }
 
   if (!_totw) {
-    el.innerHTML = '<div style="text-align:center;padding:16px 0"><div style="font-size:26px;margin-bottom:8px">🏆</div><div style="font-family:\'Orbitron\',monospace;font-size:15px;color:rgba(255,255,255,.78)">' + (isLeader ? 'Pin a trade to highlight it for the group' : 'No trade pinned yet') + '</div></div>';
+    el.innerHTML = '<div style="text-align:center;padding:16px 0"><div style="font-size:26px;margin-bottom:8px">🏆</div><div style="font-family:\'Orbitron\',monospace;font-size:15px;color:rgba(255,255,255,.78)">' + ((function(){try{var a=getAllMemberTrades(),w=new Date();w.setDate(w.getDate()-w.getDay());w.setHours(0,0,0,0);a=a.filter(function(t){return t.date&&new Date(t.date)>=w});a.sort(function(x,y){return(y.pnl||0)-(x.pnl||0)});var b=a[0];if(b)return'<span style="color:var(--cyan)">'+(b.sym||'')+'</span> <span style="color:'+(b.pnl>0?'var(--grn)':'var(--red)')+'">'+(b.pnl>=0?'+':'-')+'$'+Math.abs(b.pnl||0).toFixed(0)+'</span><br><span style="font-size:11px;color:rgba(255,255,255,.5)">'+(b.date||'')+' · Best trade this week</span>';return'No trades this week'}catch(e){return'No trades this week'}})()) + '</div></div>';
     return;
   }
 
