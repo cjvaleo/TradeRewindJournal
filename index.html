@@ -5088,14 +5088,18 @@ function exportJournalTxt(){
 }
 
 
-function deleteTrade(id){
+async function deleteTrade(id){
   if(!confirm('Delete this trade? This cannot be undone.')) return;
-  deleteTradeFromSupa(id);
-  trades=trades.filter(t=>t.id!==id);
-  save();renderAll();setTimeout(drawMiniChart,100);
+  if(currentUser && _sb){
+    var r = await _sb.from('trades').delete().eq('id', String(id)).eq('user_id', currentUser.id);
+    if(r.error){ toast('Delete failed: ' + r.error.message); return; }
+  }
+  trades = trades.filter(t => t.id !== id);
+  try{localStorage.setItem(journalKey(activeJournal), JSON.stringify(trades));}catch(e){}
+  renderAll();
+  setTimeout(drawMiniChart,100);
   toast('Trade deleted');
 }
-
 function renderHistory(){
   const fm=document.getElementById('h-mkt').value,fd=document.getElementById('h-dir').value,fr=document.getElementById('h-res').value;
   let ft=trades.filter(t=>{if(fm&&t.market!==fm)return false;if(fd&&t.type!==fd)return false;if(fr==='win'&&t.pnl<=0)return false;if(fr==='loss'&&t.pnl>=0)return false;return true;});
@@ -6437,11 +6441,17 @@ function recalcEdit(id){
   if(el)el.innerHTML=`<div style="text-align:center;flex:1"><div style="font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.9);margin-bottom:3px">P&L</div><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:${t.pnl>=0?'var(--grn)':'var(--red)'}">${t.pnl>=0?'+':''}$${t.pnl.toFixed(2)}</div></div><div style="text-align:center;flex:1"><div style="font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.9);margin-bottom:3px">R:R</div><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--cyan)">${t.rr?'1:'+t.rr.toFixed(1):'—'}</div></div>`;
 }
 
-function deleteTradeFromModal(id,ds){
-  deleteTradeFromSupa(id);
-  trades=trades.filter(t=>t.id!==id);save();renderAll();setTimeout(drawMiniChart,100);
-  const remaining=trades.filter(t=>t.date===ds);
-  renderEditModal(remaining,ds);
+async function deleteTradeFromModal(id, ds){
+  if(currentUser && _sb){
+    var r = await _sb.from('trades').delete().eq('id', String(id)).eq('user_id', currentUser.id);
+    if(r.error){ toast('Delete failed: ' + r.error.message); return; }
+  }
+  trades = trades.filter(t => t.id !== id);
+  try{localStorage.setItem(journalKey(activeJournal), JSON.stringify(trades));}catch(e){}
+  renderAll();
+  setTimeout(drawMiniChart, 100);
+  const remaining = trades.filter(t => t.date === ds);
+  renderEditModal(remaining, ds);
 }
 
 function closeEditModal(){document.getElementById('edit-modal').style.display='none';}
