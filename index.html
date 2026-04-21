@@ -2551,14 +2551,25 @@ function save(){
     }, 800);
   }
 }
-function switchJournal(j){
+async function switchJournal(j){
+  // Save current journal state before switching
+  if(activeJournal && trades.length){
+    try{localStorage.setItem(journalKey(activeJournal), JSON.stringify(trades));}catch(e){}
+  }
   activeJournal=j;
   trades=[];jEntries=[];
   var badge=document.getElementById('journal-badge');
   if(badge){badge.textContent=j==='paper'?'PAPER':'LIVE';badge.style.background=j==='paper'?'rgba(0,180,255,.15)':'rgba(255,45,155,.15)';badge.style.borderColor=j==='paper'?'rgba(0,180,255,.3)':'rgba(255,45,155,.3)';badge.style.color=j==='paper'?'var(--cyan)':'var(--pink)';}
   var sel=document.getElementById('journal-select');
   if(sel)sel.style.textShadow=j==='paper'?'0 0 8px var(--cyan)':'0 0 8px var(--pink)';
+  // Load new journal from localStorage first (instant)
+  try{var local=localStorage.getItem(journalKey(j));if(local)trades=JSON.parse(local)||[];}catch(e){}
   renderAll();
+  setTimeout(drawMiniChart,100);
+  // Then sync from Supabase as source of truth
+  if(currentUser && _sb){
+    try{ await loadTradesFromDB(currentUser); renderAll(); setTimeout(drawMiniChart,100); }catch(e){console.warn('Journal switch load:',e);}
+  }
   toast(j==='paper'?'📄 Switched to Paper Trading':'💰 Switched to Funded Account');
 }
 function renderAll(){renderDashboard();renderHistory();renderCalPage();renderAnalytics();updateQuickFillBtn();}
@@ -8212,28 +8223,28 @@ async function saveProfileToDB() {
 
 /* ── SUPABASE DB: TRADES ── */
 async function loadTradesFromDB(user) {
-  var r = await _sb.from('trades').select('*').eq('user_id', user.id).order('created_at', {ascending: false});
+  var r = await _sb.from('trades').select('*').eq('user_id', user.id).eq('journal', activeJournal).order('created_at', {ascending: false});
   if (r.error) throw new Error(r.error.message);
   if (r.data && r.data.length) {
-    // Load from Supabase
     trades = r.data.map(function(row) {
       try { return JSON.parse(row.trade_data); } catch(e) { return null; }
     }).filter(Boolean);
+    try{localStorage.setItem(journalKey(activeJournal), JSON.stringify(trades));}catch(e){}
   } else {
-    // Supabase empty — fall back to localStorage and migrate data up to Supabase
     try {
       var local = localStorage.getItem(journalKey(activeJournal));
       if (local) {
         var localTrades = JSON.parse(local);
         if (Array.isArray(localTrades) && localTrades.length) {
           trades = localTrades;
-          // Migrate to Supabase so next refresh loads from DB
-          setTimeout(function(){
-            trades.forEach(function(t){ saveTradeToSupa(t); });
-          }, 1000);
+          setTimeout(function(){ trades.forEach(function(t){ saveTradeToSupa(t); }); }, 1000);
+        } else {
+          trades = [];
         }
+      } else {
+        trades = [];
       }
-    } catch(e) {}
+    } catch(e) { trades = []; }
   }
 }
 
@@ -8241,17 +8252,13 @@ async function saveTradeToSupa(trade) {
   if (!currentUser || !_sb) return;
   try {
     await _sb.from('trades').upsert({
-      id: String(trade.id), user_id: currentUser.id,
-      trade_data: JSON.stringify(trade), updated_at: new Date().toISOString()
+      id: String(trade.id),
+      user_id: currentUser.id,
+      trade_data: JSON.stringify(trade),
+      journal: activeJournal,
+      updated_at: new Date().toISOString()
     });
   } catch(e) { console.warn('saveTradeToSupa:', e.message); }
-}
-
-async function deleteTradeFromSupa(tradeId) {
-  if (!currentUser || !_sb) return;
-  try {
-    await _sb.from('trades').delete().eq('id', String(tradeId)).eq('user_id', currentUser.id);
-  } catch(e) { console.warn('deleteTradeFromSupa:', e.message); }
 }
 
 /* ── SUPABASE DB: JOURNAL ── */
