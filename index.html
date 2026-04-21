@@ -2760,15 +2760,15 @@ function renderCommInvites() {
   el.innerHTML = invites.map(function(inv) {
     var accepted = inv.accepted, declined = inv.declined;
     return '<div style="background:rgba(0,0,0,.3);border:1px solid rgba(255,45,155,.2);border-radius:8px;padding:12px;margin-bottom:8px">'
-      + '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;letter-spacing:1px;color:#fff;margin-bottom:2px">' + (inv.groupName || 'Unknown Group') + '</div>'
-      + '<div style="font-family:\'Orbitron\',monospace;font-size:14px;color:rgba(255,255,255,.88);margin-bottom:10px">Invited by ' + (inv.from || 'Leader') + '</div>'
+      + '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;letter-spacing:1px;color:#fff;margin-bottom:2px">' + safeText(inv.groupName || 'Unknown Group') + '</div>'
+      + '<div style="font-family:\'Orbitron\',monospace;font-size:14px;color:rgba(255,255,255,.88);margin-bottom:10px">Invited by ' + safeText(inv.from || 'Leader') + '</div>'
       + (accepted
           ? '<div style="font-family:\'Orbitron\',monospace;font-size:15px;color:var(--grn)">✓ Joined</div>'
           : declined
           ? '<div style="font-family:\'Orbitron\',monospace;font-size:15px;color:rgba(255,255,255,.78)">Declined</div>'
           : '<div style="display:flex;gap:6px">'
-              + '<button onclick="acceptCommInvite(\'' + inv.id + '\')" style="flex:1;padding:7px;border-radius:5px;border:1px solid rgba(0,255,136,.35);background:rgba(0,255,136,.1);color:var(--grn);font-family:\'Bebas Neue\',sans-serif;font-size:14px;cursor:pointer;letter-spacing:1px">Accept</button>'
-              + '<button onclick="declineCommInvite(\'' + inv.id + '\')" style="flex:1;padding:7px;border-radius:5px;border:1px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.88);font-family:\'Bebas Neue\',sans-serif;font-size:14px;cursor:pointer;letter-spacing:1px">Decline</button>'
+              + '<button onclick="acceptCommInvite(\'' + safeText(inv.id) + '\')" style="flex:1;padding:7px;border-radius:5px;border:1px solid rgba(0,255,136,.35);background:rgba(0,255,136,.1);color:var(--grn);font-family:\'Bebas Neue\',sans-serif;font-size:14px;cursor:pointer;letter-spacing:1px">Accept</button>'
+              + '<button onclick="declineCommInvite(\'' + safeText(inv.id) + '\')" style="flex:1;padding:7px;border-radius:5px;border:1px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.88);font-family:\'Bebas Neue\',sans-serif;font-size:14px;cursor:pointer;letter-spacing:1px">Decline</button>'
             + '</div>'
         )
       + '</div>';
@@ -2871,10 +2871,12 @@ function renderCommSidebar(){
     var isActive=_activeCommId===g.id;
     var myPnl=trades.reduce(function(a,t){return a+(t.pnl||0);},0);
     var pnlCol=myPnl>0?'var(--grn)':myPnl<0?'var(--red)':'rgba(255,255,255,.4)';
-    return '<div data-gid="'+g.id+'" onclick="setActiveGroup(\'' + g.id + '\')" class="grp-card" style="display:block;box-sizing:border-box;width:100%;cursor:pointer;padding:10px 12px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);">'
+    var safeName=safeText(g.name||'');
+    var safeInitials=safeText((g.name||'').slice(0,2).toUpperCase());
+    return '<div data-gid="'+safeText(g.id)+'" onclick="setActiveGroup(\'' + safeText(g.id) + '\')" class="grp-card" style="display:block;box-sizing:border-box;width:100%;cursor:pointer;padding:10px 12px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);">'
       +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
-        +(function(){var s=getAvatarStyle(g.color||'pink');return '<div style="width:28px;height:28px;border-radius:6px;background:'+s.bg+';border:1px solid '+s.border+';display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:15px;color:'+s.text+';flex-shrink:0">'+g.name.slice(0,2).toUpperCase()+'</div>';}())
-        +'<div class="grp-label" style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;letter-spacing:1px;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+g.name+'</div>'
+        +(function(){var s=getAvatarStyle(g.color||'pink');return '<div style="width:28px;height:28px;border-radius:6px;background:'+s.bg+';border:1px solid '+s.border+';display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:15px;color:'+s.text+';flex-shrink:0">'+safeInitials+'</div>';}())
+        +'<div class="grp-label" style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;letter-spacing:1px;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+safeName+'</div>'
       +'</div>'
       +'<div style="display:flex;justify-content:space-between">'
         +'<div style="font-family:Orbitron,monospace;font-size:14px;color:rgba(255,255,255,.82)">'+g.members.length+'/4 members</div>'
@@ -2960,8 +2962,8 @@ var members = (_comm && _comm.members) ? _comm.members : [{id:'me',username:'You
     var label = status === 'trading' ? 'Trading' : status === 'out' ? 'Sitting out' : 'No check-in';
     var initials = (m.username || 'ME').slice(0, 2).toUpperCase();
     return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)">'
-      + (function(){var s=memberAvatarStyle(m);return '<div style="width:28px;height:28px;border-radius:50%;background:'+s.bg+';border:1px solid '+s.border+';display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:'+s.text+';flex-shrink:0">'+initials+'</div>';})()
-      + '<div style="flex:1;font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:#fff">' + (m.isMe ? 'You' : m.username) + '</div>'
+      + (function(){var s=memberAvatarStyle(m);return '<div style="width:28px;height:28px;border-radius:50%;background:'+s.bg+';border:1px solid '+s.border+';display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:'+s.text+';flex-shrink:0">'+safeText(initials)+'</div>';})()
+      + '<div style="flex:1;font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:#fff">' + (m.isMe ? 'You' : safeText(m.username)) + '</div>'
       + '<div style="display:flex;align-items:center;gap:4px"><span style="font-size:15px">' + icon + '</span><span style="font-family:\'Orbitron\',monospace;font-size:14px;color:' + col + '">' + label + '</span></div>'
       + '</div>';
   }).join('');
@@ -3007,7 +3009,7 @@ function renderTOTW(g) {
   }
 
   if (!_totw) {
-    el.innerHTML = '<div style="text-align:center;padding:16px 0"><div style="font-size:26px;margin-bottom:8px">🏆</div><div style="font-family:\'Orbitron\',monospace;font-size:15px;color:rgba(255,255,255,.78)">' + ((function(){try{var a=getAllMemberTrades(),w=new Date();w.setDate(w.getDate()-w.getDay());w.setHours(0,0,0,0);a=a.filter(function(t){return t.date&&new Date(t.date)>=w});a.sort(function(x,y){return(y.pnl||0)-(x.pnl||0)});var b=a[0];if(b)return'<span style="color:var(--cyan)">'+(b.sym||'')+'</span> <span style="color:'+(b.pnl>0?'var(--grn)':'var(--red)')+'">'+(b.pnl>=0?'+':'-')+'$'+Math.abs(b.pnl||0).toFixed(0)+'</span><br><span style="font-size:11px;color:rgba(255,255,255,.5)">'+(b.date||'')+' · Best trade this week</span>';return'No trades this week'}catch(e){return'No trades this week'}})()) + '</div></div>';
+    el.innerHTML = '<div style="text-align:center;padding:16px 0"><div style="font-size:26px;margin-bottom:8px">🏆</div><div style="font-family:\'Orbitron\',monospace;font-size:15px;color:rgba(255,255,255,.78)">' + ((function(){try{var a=getAllMemberTrades(),w=new Date();w.setDate(w.getDate()-w.getDay());w.setHours(0,0,0,0);a=a.filter(function(t){return t.date&&new Date(t.date)>=w});a.sort(function(x,y){return(y.pnl||0)-(x.pnl||0)});var b=a[0];if(b)return'<span style="color:var(--cyan)">'+safeText(b.sym||'')+'</span> <span style="color:'+(b.pnl>0?'var(--grn)':'var(--red)')+'">'+(b.pnl>=0?'+':'-')+'$'+Math.abs(b.pnl||0).toFixed(0)+'</span><br><span style="font-size:11px;color:rgba(255,255,255,.5)">'+safeText(b.date||'')+' · Best trade this week</span>';return'No trades this week'}catch(e){return'No trades this week'}})()) + '</div></div>';
     return;
   }
 
@@ -3020,20 +3022,23 @@ function renderTOTW(g) {
   // Trade header
   html += '<div style="padding:10px 12px;display:flex;align-items:center;justify-content:space-between">';
   html += '<div style="display:flex;align-items:center;gap:10px">';
-  html += '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:26px;letter-spacing:2px;color:var(--cyan)">' + (t.sym || '—') + '</div>';
-  html += '<span style="padding:2px 8px;border-radius:4px;font-family:\'Bebas Neue\',sans-serif;font-size:14px;background:' + (t.type==='long'?'rgba(0,255,136,.15)':'rgba(255,34,85,.15)') + ';color:' + (t.type==='long'?'var(--grn)':'var(--red)') + '">' + (t.type||'').toUpperCase() + '</span>';
+  html += '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:26px;letter-spacing:2px;color:var(--cyan)">' + safeText(t.sym || '—') + '</div>';
+  html += '<span style="padding:2px 8px;border-radius:4px;font-family:\'Bebas Neue\',sans-serif;font-size:14px;background:' + (t.type==='long'?'rgba(0,255,136,.15)':'rgba(255,34,85,.15)') + ';color:' + (t.type==='long'?'var(--grn)':'var(--red)') + '">' + safeText(String(t.type||'').toUpperCase()) + '</span>';
   html += '</div>';
   html += '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:28px;color:' + pnlCol + ';text-shadow:0 0 12px ' + pnlCol + '">' + (pnl >= 0 ? '+' : '-') + '$' + Math.abs(pnl).toFixed(2) + '</div>';
   html += '</div>';
   // Screenshot if available
   if (t.images && t.images.length) {
-    html += '<img src="' + t.images[0] + '" style="width:100%;max-height:180px;object-fit:contain;background:#000;display:block;border-top:1px solid rgba(255,200,0,.1);cursor:pointer" onclick="openImgLightbox(this.src)">';
+    var safePinImg = safeURL(t.images[0]);
+    if (safePinImg) {
+      html += '<img src="' + safePinImg + '" style="width:100%;max-height:180px;object-fit:contain;background:#000;display:block;border-top:1px solid rgba(255,200,0,.1);cursor:pointer" onclick="openImgLightbox(this.src)">';
+    }
   }
   // Details
   html += '<div style="padding:8px 12px;border-top:1px solid rgba(255,255,255,.05)">';
-  html += '<div style="font-family:\'Orbitron\',monospace;font-size:14px;color:rgba(255,255,255,.88)">Entry ' + (t.entry||'—') + ' → Exit ' + (t.exit||'—') + ' · ' + (t.qty||1) + ' ct · ' + (t.date||'') + '</div>';
-  if (t.notes) html += '<div style="font-family:\'Chakra Petch\',sans-serif;font-size:14px;color:rgba(255,255,255,.7);margin-top:5px;line-height:1.5">' + t.notes + '</div>';
-  html += '<div style="margin-top:6px;font-family:\'Orbitron\',monospace;font-size:14px;color:rgba(255,200,0,.6)">📌 Pinned by ' + (_totw.pinnedBy||'Leader') + '</div>';
+  html += '<div style="font-family:\'Orbitron\',monospace;font-size:14px;color:rgba(255,255,255,.88)">Entry ' + safeText(t.entry||'—') + ' → Exit ' + safeText(t.exit||'—') + ' · ' + safeText(String(t.qty||1)) + ' ct · ' + safeText(t.date||'') + '</div>';
+  if (t.notes) html += '<div style="font-family:\'Chakra Petch\',sans-serif;font-size:14px;color:rgba(255,255,255,.7);margin-top:5px;line-height:1.5">' + commEsc(t.notes) + '</div>';
+  html += '<div style="margin-top:6px;font-family:\'Orbitron\',monospace;font-size:14px;color:rgba(255,200,0,.6)">📌 Pinned by ' + safeText(_totw.pinnedBy||'Leader') + '</div>';
   html += '</div></div>';
   el.innerHTML = html;
 }
@@ -3047,10 +3052,11 @@ function openPinTrade() {
     var pnl = t.pnl||0;
     var col = pnl>0?'var(--grn)':pnl<0?'var(--red)':'rgba(255,255,255,.4)';
     var hasImg = t.images && t.images.length;
-    return '<div onclick="pinTradeOfWeek('+t.id+');document.getElementById(\'pin-trade-modal\').style.display=\'none\'" style="display:flex;align-items:center;gap:10px;padding:9px 12px;margin-bottom:6px;background:rgba(0,0,0,.3);border-radius:8px;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:.15s" onmouseover="this.style.borderColor=\'rgba(255,200,0,.3)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,.08)\'">'
-      + '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:16px;letter-spacing:1px;color:var(--cyan);flex-shrink:0">' + (t.sym||'—') + '</div>'
-      + '<div style="flex:1;min-width:0"><div style="font-family:\'Orbitron\',monospace;font-size:14px;color:rgba(255,255,255,.88)">' + (t.date||'') + ' · ' + (t.type||'').toUpperCase() + '</div>'
-        + (t.notes?'<div style="font-family:\'Chakra Petch\',sans-serif;font-size:14px;color:rgba(255,255,255,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+t.notes+'</div>':'')
+    var safeTid = safeText(t.id);
+    return '<div data-tid="'+safeTid+'" onclick="pinTradeOfWeek(this.dataset.tid);document.getElementById(\'pin-trade-modal\').style.display=\'none\'" style="display:flex;align-items:center;gap:10px;padding:9px 12px;margin-bottom:6px;background:rgba(0,0,0,.3);border-radius:8px;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:.15s" onmouseover="this.style.borderColor=\'rgba(255,200,0,.3)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,.08)\'">'
+      + '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:16px;letter-spacing:1px;color:var(--cyan);flex-shrink:0">' + safeText(t.sym||'—') + '</div>'
+      + '<div style="flex:1;min-width:0"><div style="font-family:\'Orbitron\',monospace;font-size:14px;color:rgba(255,255,255,.88)">' + safeText(t.date||'') + ' · ' + safeText(String(t.type||'').toUpperCase()) + '</div>'
+        + (t.notes?'<div style="font-family:\'Chakra Petch\',sans-serif;font-size:14px;color:rgba(255,255,255,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+safeText(t.notes)+'</div>':'')
       + '</div>'
       + (hasImg?'<span style="font-size:15px" title="Has screenshot">📸</span>':'')
       + '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:'+col+'">'+(pnl>=0?'+':'-')+'$'+Math.abs(pnl).toFixed(0)+'</div>'
@@ -3195,7 +3201,8 @@ function renderFeedPosts(g){
     var pnl=p.pnl;
     var pnlCol=pnl>0?'var(--grn)':pnl<0?'var(--red)':'rgba(255,255,255,.4)';
     var hasImg=t.images&&t.images[0];
-    var imgHtml=hasImg?'<img src="'+t.images[0]+'" onclick="openImgLightbox(this.src)" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-bottom:8px;cursor:pointer;display:block;">':'';
+    var safeImgURL=hasImg?safeURL(t.images[0]):'';
+    var imgHtml=safeImgURL?'<img src="'+safeImgURL+'" onclick="openImgLightbox(this.src)" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-bottom:8px;cursor:pointer;display:block;">':'';
     var symSize=hasImg?'24px':'34px';
     var pnlSize=hasImg?'28px':'42px';
     var metaSize=hasImg?'11px':'15px';
@@ -3220,31 +3227,31 @@ function renderFeedPosts(g){
 
     return '<div class="crd" style="margin-bottom:12px"><div class="crd-b">'
       +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'
-        +'<div style="width:42px;height:42px;border-radius:50%;background:'+avatarBg+';border:1px solid '+avatarBorder+';display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:15px;color:'+nameColor+';flex-shrink:0">'+p.initials+'</div>'
+        +'<div style="width:42px;height:42px;border-radius:50%;background:'+avatarBg+';border:1px solid '+avatarBorder+';display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:15px;color:'+nameColor+';flex-shrink:0">'+safeText(p.initials)+'</div>'
         +'<div>'
-          +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;letter-spacing:1px;color:'+nameColor+'">'+p.username+(p.isMe?' <span style="font-family:Orbitron,monospace;font-size:6px;background:rgba(255,45,155,.15);border:1px solid rgba(255,45,155,.3);padding:1px 5px;border-radius:3px">YOU</span>':'')+'</div>'
-          +'<div style="font-family:Orbitron,monospace;font-size:13px;color:rgba(255,255,255,.7)">'+(t.date||'')+(t.session?' · '+t.session:'')+(t.market?' · '+t.market:'')+'</div>'
+          +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;letter-spacing:1px;color:'+nameColor+'">'+safeText(p.username)+(p.isMe?' <span style="font-family:Orbitron,monospace;font-size:6px;background:rgba(255,45,155,.15);border:1px solid rgba(255,45,155,.3);padding:1px 5px;border-radius:3px">YOU</span>':'')+'</div>'
+          +'<div style="font-family:Orbitron,monospace;font-size:13px;color:rgba(255,255,255,.7)">'+safeText(t.date||'')+(t.session?' · '+safeText(t.session):'')+(t.market?' · '+safeText(t.market):'')+'</div>'
         +'</div>'
       +'</div>'
       +imgHtml
       +'<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.3);border-radius:8px;padding:'+(hasImg?'8px 10px':'12px 14px')+';margin-bottom:10px">'
         +'<div style="display:flex;align-items:center;gap:10px">'
-          +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:'+symSize+';letter-spacing:2px;color:var(--cyan)">'+(t.sym||'—')+'</div>'
-          +(t.type?'<span style="padding:2px 8px;border-radius:4px;font-family:\'Bebas Neue\',sans-serif;font-size:13px;background:'+(t.type==='long'?'rgba(0,255,136,.15)':'rgba(255,34,85,.15)')+';color:'+(t.type==='long'?'var(--grn)':'var(--red)')+'">'+t.type.toUpperCase()+'</span>':'')
-          +'<div style="font-family:Orbitron,monospace;font-size:'+metaSize+';color:rgba(255,255,255,.5)">'+(t.entry?'Entry: '+t.entry+' · Exit: '+t.exit:'')+(t.qty?'<br>'+t.qty+' ct · '+(t.date||''):'')+'</div>'
+          +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:'+symSize+';letter-spacing:2px;color:var(--cyan)">'+safeText(t.sym||'—')+'</div>'
+          +(t.type?'<span style="padding:2px 8px;border-radius:4px;font-family:\'Bebas Neue\',sans-serif;font-size:13px;background:'+(t.type==='long'?'rgba(0,255,136,.15)':'rgba(255,34,85,.15)')+';color:'+(t.type==='long'?'var(--grn)':'var(--red)')+'">'+safeText(String(t.type).toUpperCase())+'</span>':'')
+          +'<div style="font-family:Orbitron,monospace;font-size:'+metaSize+';color:rgba(255,255,255,.5)">'+(t.entry?'Entry: '+safeText(t.entry)+' · Exit: '+safeText(t.exit):'')+(t.qty?'<br>'+safeText(t.qty)+' ct · '+safeText(t.date||''):'')+'</div>'
         +'</div>'
         +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:'+pnlSize+';letter-spacing:1px;color:'+pnlCol+';text-shadow:0 0 18px '+pnlCol+'">'+(pnl>=0?'+':'-')+'$'+Math.abs(pnl).toFixed(2)+'</div>'
       +'</div>'
-      +(t.notes?'<div style="font-family:\'Chakra Petch\',sans-serif;font-size:13px;color:rgba(255,255,255,.7);margin-bottom:10px;line-height:1.5">'+t.notes+'</div>':'')
+      +(t.notes?'<div style="font-family:\'Chakra Petch\',sans-serif;font-size:13px;color:rgba(255,255,255,.7);margin-bottom:10px;line-height:1.5">'+commEsc(t.notes)+'</div>':'')
       +'<div style="display:flex;gap:8px;align-items:center">'
-        +'<button onclick="feedLike(this)" data-id="'+postId+'" style="padding:5px 14px;border-radius:5px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:rgba(255,255,255,.7);font-family:\'Orbitron\',monospace;font-size:12px;cursor:pointer;transition:.15s" onmouseover="this.style.borderColor=\'rgba(0,255,136,.4)\';this.style.color=\'var(--grn)\'" onmouseout="if(!this.dataset.liked){this.style.borderColor=\'rgba(255,255,255,.12)\';this.style.color=\'rgba(255,255,255,.7)\'}"><span id="like-count-'+postId+'">👍 '+likes+'</span></button>'
-        +'<button onclick="feedReply(\''+postId+'\',this)" style="padding:5px 14px;border-radius:5px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:rgba(255,255,255,.7);font-family:\'Orbitron\',monospace;font-size:12px;cursor:pointer;transition:.15s" onmouseover="this.style.borderColor=\'rgba(0,180,255,.4)\';this.style.color=\'var(--cyan)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,.12)\';this.style.color=\'rgba(255,255,255,.7)\'">💬 Reply</button>'
+        +'<button onclick="feedLike(this)" data-id="'+safeText(postId)+'" style="padding:5px 14px;border-radius:5px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:rgba(255,255,255,.7);font-family:\'Orbitron\',monospace;font-size:12px;cursor:pointer;transition:.15s" onmouseover="this.style.borderColor=\'rgba(0,255,136,.4)\';this.style.color=\'var(--grn)\'" onmouseout="if(!this.dataset.liked){this.style.borderColor=\'rgba(255,255,255,.12)\';this.style.color=\'rgba(255,255,255,.7)\'}"><span id="like-count-'+safeText(postId)+'">👍 '+likes+'</span></button>'
+        +'<button onclick="feedReply(\''+safeText(postId)+'\',this)" style="padding:5px 14px;border-radius:5px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:rgba(255,255,255,.7);font-family:\'Orbitron\',monospace;font-size:12px;cursor:pointer;transition:.15s" onmouseover="this.style.borderColor=\'rgba(0,180,255,.4)\';this.style.color=\'var(--cyan)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,.12)\';this.style.color=\'rgba(255,255,255,.7)\'">💬 Reply</button>'
       +'</div>'
-      +'<div id="reply-box-'+postId+'" style="display:none;margin-top:10px">'
-        +'<div id="replies-'+postId+'" style="margin-bottom:8px"></div>'
+      +'<div id="reply-box-'+safeText(postId)+'" style="display:none;margin-top:10px">'
+        +'<div id="replies-'+safeText(postId)+'" style="margin-bottom:8px"></div>'
         +'<div style="display:flex;gap:8px">'
-          +'<input type="text" id="reply-input-'+postId+'" placeholder="Write a reply..." style="flex:1;background:rgba(0,0,0,.4);border:1px solid rgba(0,180,255,.25);border-radius:6px;padding:8px 12px;color:#fff;font-family:\'Chakra Petch\',sans-serif;font-size:13px;outline:none"/>'
-          +'<button onclick="feedSubmitReply(\''+postId+'\')" style="padding:8px 14px;border-radius:6px;border:1px solid rgba(0,180,255,.4);background:rgba(0,180,255,.1);color:var(--cyan);font-family:\'Bebas Neue\',sans-serif;font-size:14px;cursor:pointer">Send</button>'
+          +'<input type="text" id="reply-input-'+safeText(postId)+'" placeholder="Write a reply..." style="flex:1;background:rgba(0,0,0,.4);border:1px solid rgba(0,180,255,.25);border-radius:6px;padding:8px 12px;color:#fff;font-family:\'Chakra Petch\',sans-serif;font-size:13px;outline:none"/>'
+          +'<button onclick="feedSubmitReply(\''+safeText(postId)+'\')" style="padding:8px 14px;border-radius:6px;border:1px solid rgba(0,180,255,.4);background:rgba(0,180,255,.1);color:var(--cyan);font-family:\'Bebas Neue\',sans-serif;font-size:14px;cursor:pointer">Send</button>'
         +'</div>'
       +'</div>'
     +'</div></div>';
@@ -3290,6 +3297,20 @@ function feedFilterDate(trades) {
   });
 }
 function commEsc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+/* XSS-safe escape — use for ANY user-controlled value going into innerHTML,
+   whether in text context OR attribute context (handles quotes too).
+   Rule of thumb: if the value comes from a user (yours or someone else's),
+   wrap it in safeText() before concatenating into an HTML string. */
+function safeText(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+/* For URLs that go into src/href attributes — blocks javascript: and other
+   dangerous schemes. Allows http, https, and data:image/* (for inline images). */
+function safeURL(u){
+  var s=String(u==null?'':u).trim();
+  if(!s)return'';
+  if(/^https?:\/\//i.test(s))return s.replace(/"/g,'%22').replace(/'/g,'%27');
+  if(/^data:image\/(png|jpe?g|gif|webp|svg\+xml);/i.test(s))return s.replace(/"/g,'%22').replace(/'/g,'%27');
+  return''; /* block javascript:, vbscript:, file:, etc. */
+}
 
 try { _feedLikes   = JSON.parse(localStorage.getItem('tr1_feed_likes')   || '{}'); } catch(e) {}
 try { _feedReplies = JSON.parse(localStorage.getItem('tr1_feed_replies') || '{}'); } catch(e) {}
@@ -3387,8 +3408,8 @@ function renderDailyChallenge() {
   el.innerHTML = rules.map(function(r) {
     return '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
       + '<div style="width:5px;height:5px;border-radius:50%;background:var(--pink);flex-shrink:0;margin-top:5px"></div>'
-      + '<div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;letter-spacing:.5px;color:#fff;margin-bottom:2px">' + r.r + '</div>'
-      + (r.d ? '<div style="font-family:\'Chakra Petch\',sans-serif;font-size:14px;color:rgba(255,255,255,.9);line-height:1.4">' + r.d + '</div>' : '')
+      + '<div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;letter-spacing:.5px;color:#fff;margin-bottom:2px">' + safeText(r.r) + '</div>'
+      + (r.d ? '<div style="font-family:\'Chakra Petch\',sans-serif;font-size:14px;color:rgba(255,255,255,.9);line-height:1.4">' + safeText(r.d) + '</div>' : '')
       + '</div></div>';
   }).join('') || '<div style="font-family:Orbitron,monospace;font-size:15px;color:rgba(255,255,255,.78);padding:8px 0">Click EDIT to add your rules</div>';
 }
@@ -3404,10 +3425,10 @@ function renderRulesEditorList() {
     return '<div style="background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;margin-bottom:6px">'
       + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
         + '<span style="font-family:Orbitron,monospace;font-size:15px;color:rgba(255,255,255,.78);flex-shrink:0">' + (i+1) + '</span>'
-        + '<input type="text" value="' + r.r.replace(/"/g,'&quot;') + '" oninput="_editRules[' + i + '].r=this.value" placeholder="Rule title" style="flex:1;background:rgba(0,0,0,.4);border:1px solid rgba(255,45,155,.3);border-radius:5px;padding:6px 10px;color:#fff;font-family:\'Bebas Neue\',sans-serif;font-size:14px;outline:none"/>'
+        + '<input type="text" value="' + safeText(r.r) + '" oninput="_editRules[' + i + '].r=this.value" placeholder="Rule title" style="flex:1;background:rgba(0,0,0,.4);border:1px solid rgba(255,45,155,.3);border-radius:5px;padding:6px 10px;color:#fff;font-family:\'Bebas Neue\',sans-serif;font-size:14px;outline:none"/>'
         + '<button onclick="_editRules.splice(' + i + ',1);renderRulesEditorList()" style="background:none;border:none;color:rgba(255,255,255,.78);cursor:pointer;font-size:14px;padding:2px 6px">✕</button>'
       + '</div>'
-      + '<input type="text" value="' + r.d.replace(/"/g,'&quot;') + '" oninput="_editRules[' + i + '].d=this.value" placeholder="Description (optional)" style="width:100%;box-sizing:border-box;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.07);border-radius:5px;padding:5px 10px;color:rgba(255,255,255,.6);font-family:\'Chakra Petch\',sans-serif;font-size:14px;outline:none"/>'
+      + '<input type="text" value="' + safeText(r.d) + '" oninput="_editRules[' + i + '].d=this.value" placeholder="Description (optional)" style="width:100%;box-sizing:border-box;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.07);border-radius:5px;padding:5px 10px;color:rgba(255,255,255,.6);font-family:\'Chakra Petch\',sans-serif;font-size:14px;outline:none"/>'
       + '</div>';
   }).join('');
 }
@@ -3539,10 +3560,12 @@ function renderFeedLeaderboard(g){
     var valCol=_lbFilter==='wr'?(r.wr>=50?'var(--grn)':'var(--red)'):_lbFilter==='aplus'?'var(--cyan)':(r.pnl>0?'var(--grn)':r.pnl<0?'var(--red)':'rgba(255,255,255,.4)');
     var rc=i===0?'var(--yellow)':i===1?'rgba(200,200,200,.7)':i===2?'#cd7f32':'rgba(255,255,255,.3)';
     var s=getAvatarStyle(r.color||'pink');
+    var safeUname=safeText(r.username||'');
+    var safeUInit=safeText((r.username||'').slice(0,2).toUpperCase());
     return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
       +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;color:'+rc+';width:18px;flex-shrink:0">'+(i+1)+'</div>'
-      +'<div style="width:26px;height:26px;border-radius:50%;background:'+s.bg+';display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:12px;color:'+s.text+';flex-shrink:0">'+r.username.slice(0,2).toUpperCase()+'</div>'
-      +'<div style="flex:1"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px">'+r.username+(r.isMe?' <span style="opacity:.4">(you)</span>':'')+'</div>'
+      +'<div style="width:26px;height:26px;border-radius:50%;background:'+s.bg+';display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:12px;color:'+s.text+';flex-shrink:0">'+safeUInit+'</div>'
+      +'<div style="flex:1"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px">'+safeUname+(r.isMe?' <span style="opacity:.4">(you)</span>':'')+'</div>'
         +'<div style="font-family:Orbitron,monospace;font-size:11px;color:rgba(255,255,255,.5)">'+r.wr+'% WR</div>'
       +'</div>'
       +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:16px;color:'+valCol+'">'+valStr+'</div>'
@@ -3560,15 +3583,18 @@ function renderMemberCalendars(g){
   el.innerHTML='<div style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;letter-spacing:2px;color:var(--cyan);margin:4px 0 8px">Member Calendars</div>'
     +(g.members||[]).map(function(m){
       var tData=m.isMe?trades:(mT[m.id]||[]);
-      var initials=m.username.slice(0,2).toUpperCase();
+      var initials=(m.username||'').slice(0,2).toUpperCase();
       var pnl=tData.reduce(function(a,t){return a+(t.pnl||0);},0);
       var col=pnl>0?'var(--grn)':pnl<0?'var(--red)':'rgba(255,255,255,.4)';
       var today=new Date().toISOString().slice(0,10);
       var todayN=tData.filter(function(t){return t.date===today;}).length;
       var s=memberAvatarStyle(m);
-      return '<div onclick="openMemberCal(\''+m.id+'\',\''+m.username+'\')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:6px;background:rgba(0,0,0,.25);border-radius:8px;border:1px solid rgba(255,255,255,.08);cursor:pointer" onmouseover="this.style.borderColor=\'rgba(0,180,255,.3)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,.08)\'">'
-        +'<div style="width:32px;height:32px;border-radius:50%;background:'+s.bg+';border:1px solid '+s.border+';display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:'+s.text+';flex-shrink:0">'+initials+'</div>'
-        +'<div style="flex:1;min-width:0"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:#fff">'+m.username+(m.isMe?' <span style="opacity:.4">(you)</span>':'')+'</div>'
+      var safeMid=safeText(m.id||'');
+      var safeUname=safeText(m.username||'');
+      var safeInit=safeText(initials);
+      return '<div data-mid="'+safeMid+'" data-uname="'+safeUname+'" onclick="openMemberCal(this.dataset.mid,this.dataset.uname)" style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:6px;background:rgba(0,0,0,.25);border-radius:8px;border:1px solid rgba(255,255,255,.08);cursor:pointer" onmouseover="this.style.borderColor=\'rgba(0,180,255,.3)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,.08)\'">'
+        +'<div style="width:32px;height:32px;border-radius:50%;background:'+s.bg+';border:1px solid '+s.border+';display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:'+s.text+';flex-shrink:0">'+safeInit+'</div>'
+        +'<div style="flex:1;min-width:0"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:#fff">'+safeUname+(m.isMe?' <span style="opacity:.4">(you)</span>':'')+'</div>'
           +'<div style="font-family:\'Orbitron\',monospace;font-size:11px;color:rgba(255,255,255,.5)">'+tData.length+' trade'+(tData.length!==1?'s':'')+' logged'+(todayN?' · '+todayN+' today':'')+'</div>'
         +'</div>'
         +'<div style="text-align:right"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:'+col+'">'+(pnl>=0?'+':'-')+'$'+Math.abs(pnl).toFixed(0)+'</div>'
@@ -3647,13 +3673,15 @@ function renderFeedMembers(g){
     var col=pnl>0?'var(--grn)':pnl<0?'var(--red)':'rgba(255,255,255,.4)';
     var isLead=m.isOwner||(currentUser&&m.id===g.owner_id);
     var s=memberAvatarStyle(m);
+    var safeUname=safeText(m.username||'');
+    var safeInit=safeText((m.username||'').slice(0,2).toUpperCase());
     return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)">'
-      +'<div style="width:28px;height:28px;border-radius:50%;background:'+s.bg+';display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:'+s.text+';flex-shrink:0">'+m.username.slice(0,2).toUpperCase()+'</div>'
-      +'<div style="flex:1"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:15px">'+m.username+(m.isMe?' <span style="opacity:.4">(you)</span>':'')+'</div>'
+      +'<div style="width:28px;height:28px;border-radius:50%;background:'+s.bg+';display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:'+s.text+';flex-shrink:0">'+safeInit+'</div>'
+      +'<div style="flex:1"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:15px">'+safeUname+(m.isMe?' <span style="opacity:.4">(you)</span>':'')+'</div>'
         +(isLead?'<div style="font-family:Orbitron,monospace;font-size:6px;color:#ffc800">LEADER</div>':'')
       +'</div>'
       +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:'+col+'">'+(pnl>=0?'+':'-')+'$'+Math.abs(pnl).toFixed(0)+'</div>'
-      +(!m.isMe&&owner?'<button onclick="removeMember(\''+m.id+'\')" style="background:none;border:none;color:rgba(255,255,255,.65);cursor:pointer;font-size:14px;padding:2px">✕</button>':'')
+      +(!m.isMe&&owner?'<button onclick="removeMember(\''+safeText(m.id)+'\')" style="background:none;border:none;color:rgba(255,255,255,.65);cursor:pointer;font-size:14px;padding:2px">✕</button>':'')
       +'</div>';
   }).join('');
 }
@@ -3761,9 +3789,12 @@ function searchTrader(){
     window._sb.from('profiles').select('id,username').ilike('username','%'+q+'%').limit(5).then(function(r){
       if(r.data&&r.data.length){
         res.innerHTML=r.data.map(function(u){
-          return '<div onclick="selectTrader(\''+u.id+'\',\''+u.username+'\')" style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(0,0,0,.3);border-radius:6px;border:1px solid var(--bord);cursor:pointer;margin-bottom:4px">'
-            +'<div style="width:28px;height:28px;border-radius:50%;background:rgba(0,180,255,.15);display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:15px;color:var(--cyan)">'+u.username.slice(0,2).toUpperCase()+'</div>'
-            +'<span style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;letter-spacing:1px">@'+u.username+'</span>'
+          var safeId=safeText(u.id||'');
+          var safeUname=safeText(u.username||'');
+          var safeUInit=safeText((u.username||'').slice(0,2).toUpperCase());
+          return '<div data-id="'+safeId+'" data-uname="'+safeUname+'" onclick="selectTrader(this.dataset.id,this.dataset.uname)" style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(0,0,0,.3);border-radius:6px;border:1px solid var(--bord);cursor:pointer;margin-bottom:4px">'
+            +'<div style="width:28px;height:28px;border-radius:50%;background:rgba(0,180,255,.15);display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:15px;color:var(--cyan)">'+safeUInit+'</div>'
+            +'<span style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;letter-spacing:1px">@'+safeUname+'</span>'
             +'</div>';
         }).join('');
       } else {
@@ -3821,11 +3852,13 @@ function renderSentInvites(){
   if(!_sentInvites.length){el.innerHTML='<div style="font-family:Orbitron,monospace;font-size:15px;color:rgba(255,255,255,.78);padding:8px 0">No invites sent yet</div>';return;}
   el.innerHTML=_sentInvites.slice(0,8).map(function(inv){
     var sc=inv.status==='accepted'?'var(--grn)':inv.status==='declined'?'var(--red)':'var(--yellow)';
+    var safeUname=safeText(inv.username||'');
+    var safeUInit=safeText((inv.username||'').slice(0,2).toUpperCase());
     return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
-      +'<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:rgba(255,255,255,.6)">'+inv.username.slice(0,2).toUpperCase()+'</div>'
-      +'<div style="flex:1"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;letter-spacing:1px">@'+inv.username+'</div>'
-      +'<div style="font-family:\'Orbitron\',monospace;font-size:14px;color:rgba(255,255,255,.88)">'+inv.group+'</div></div>'
-      +'<div style="font-family:\'Orbitron\',monospace;font-size:14px;color:'+sc+';text-transform:uppercase">'+inv.status+'</div>'
+      +'<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:rgba(255,255,255,.6)">'+safeUInit+'</div>'
+      +'<div style="flex:1"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;letter-spacing:1px">@'+safeUname+'</div>'
+      +'<div style="font-family:\'Orbitron\',monospace;font-size:14px;color:rgba(255,255,255,.88)">'+safeText(inv.group||'')+'</div></div>'
+      +'<div style="font-family:\'Orbitron\',monospace;font-size:14px;color:'+sc+';text-transform:uppercase">'+safeText(inv.status||'')+'</div>'
       +'</div>';
   }).join('');
 }
@@ -3840,10 +3873,12 @@ function renderGroupLb(){
   rows.sort(function(a,b){return b.pnl-a.pnl;});
   el.innerHTML=rows.map(function(r,i){
     var col=r.pnl>0?'var(--grn)':r.pnl<0?'var(--red)':'rgba(255,255,255,.4)';
+    var safeUname=safeText(r.username||'');
+    var safeUInit=safeText((r.username||'').slice(0,2).toUpperCase());
     return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
       +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:'+(i===0?'var(--yellow)':'rgba(255,255,255,.4)')+';width:18px">'+( i+1)+'</div>'
-      +'<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,45,155,.12);display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:var(--pink)">'+r.username.slice(0,2).toUpperCase()+'</div>'
-      +'<div style="flex:1"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px">'+r.username+(r.isMe?' (you)':'')+'</div>'
+      +'<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,45,155,.12);display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:var(--pink)">'+safeUInit+'</div>'
+      +'<div style="flex:1"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px">'+safeUname+(r.isMe?' (you)':'')+'</div>'
       +'<div style="font-family:\'Orbitron\',monospace;font-size:14px;color:rgba(255,255,255,.88)">'+r.wr+'% WR</div></div>'
       +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;color:'+col+'">'+(r.pnl>=0?'+':'-')+'$'+Math.abs(r.pnl).toFixed(0)+'</div>'
       +'</div>';
@@ -3868,7 +3903,7 @@ function renderNotifications(){
   if(!el)return;
   if(!_notifications.length){el.innerHTML='<div style="font-family:Orbitron,monospace;font-size:15px;color:rgba(255,255,255,.78);padding:8px 0">No notifications</div>';return;}
   el.innerHTML=_notifications.slice(0,10).map(function(n){
-    return '<div style="padding:8px 10px;background:rgba(255,255,255,.04);border-radius:6px;margin-bottom:6px;border-left:2px solid '+(n.read?'rgba(255,255,255,.1)':'var(--pink)')+'"><div style="font-family:\'Chakra Petch\',sans-serif;font-size:14px;color:#fff">'+n.msg+'</div><div style="font-family:Orbitron,monospace;font-size:14px;color:rgba(255,255,255,.88);margin-top:3px">'+n.time+'</div></div>';
+    return '<div style="padding:8px 10px;background:rgba(255,255,255,.04);border-radius:6px;margin-bottom:6px;border-left:2px solid '+(n.read?'rgba(255,255,255,.1)':'var(--pink)')+'"><div style="font-family:\'Chakra Petch\',sans-serif;font-size:14px;color:#fff">'+safeText(n.msg)+'</div><div style="font-family:Orbitron,monospace;font-size:14px;color:rgba(255,255,255,.88);margin-top:3px">'+safeText(n.time)+'</div></div>';
   }).join('');
 }
 
@@ -6843,6 +6878,12 @@ async function doSignupStep2() {
   var name  = document.getElementById('signup-name').value.trim();
   var uname = document.getElementById('signup-username').value.trim().replace('@','');
   if (!name) { setAuthMsg('Please enter your display name.', true); return; }
+  if (name.length > 40) { setAuthMsg('Display name must be 40 characters or less.', true); return; }
+  if (!uname) { setAuthMsg('Please pick a username.', true); return; }
+  if (!/^[a-zA-Z0-9_]{3,20}$/.test(uname)) {
+    setAuthMsg('Username must be 3–20 characters, letters/numbers/underscore only.', true);
+    return;
+  }
   setBtnLoading('signup-btn2', true, 'Create Account');
   try {
     // Save to localStorage so it survives email confirmation redirect
