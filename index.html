@@ -603,13 +603,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   </div>
 </div>
 
-<script>
- makeStars(); });
-  } else {
-    initDVD(); makeStars();
-  }
-})();
-</script>
+
 <div class="bg-grid" style="pointer-events:none"><div class="bg-grid-inner" style="pointer-events:none"></div></div>
 <div class="bg-horizon" style="pointer-events:none"></div>
 <div class="bg-horizon2" style="pointer-events:none"></div>
@@ -2520,7 +2514,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
 <script>
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-let trades=[],lgType='long',dashPeriod='today',calYear,calMonth,dashCalY,dashCalM,selDay=null;
+let trades=[],jEntries=[],csvParsedTrades=[],lgType='long',dashPeriod='today',calYear,calMonth,dashCalY,dashCalM,selDay=null;
 const now=new Date();calYear=dashCalY=now.getFullYear();calMonth=dashCalM=now.getMonth();
 const NEWS=[
   {src:'Reuters',headline:'Federal Reserve signals rate cuts as inflation continues to cool',time:'2h ago',tag:'bull'},
