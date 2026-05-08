@@ -3099,6 +3099,134 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   text-align:center;max-width:340px;line-height:1.55;
   letter-spacing:0;text-shadow:none;
 }
+
+/* ── BROKER SYNC REDESIGN ─────────────────────────────── */
+
+#pg-sync.page.on{
+  display:block!important;
+  padding:32px 40px 48px;
+  background:var(--n-bg);
+  position:relative;z-index:1;
+  min-height:calc(100vh - 64px);overflow:hidden;
+}
+#pg-sync.on > .ph{display:none}
+
+/* Blurred peek under the lock */
+#pg-sync .peek{filter:blur(5px);pointer-events:none;user-select:none;opacity:0.45}
+#pg-sync .peek-head{margin-bottom:24px;border:none;padding:0}
+#pg-sync .peek-head .h-title{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:38px;line-height:1;letter-spacing:-0.01em;color:var(--n-text);
+  text-shadow:none;
+}
+#pg-sync .peek-head .h-sub{
+  margin-top:8px;font-family:var(--n-font-mono);font-size:10.5px;
+  letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);
+}
+#pg-sync .peek-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;
+}
+#pg-sync .peek-card{
+  background:var(--n-surface)!important;border:1px solid var(--n-border)!important;
+  border-radius:10px!important;padding:18px!important;
+  min-height:120px;display:flex;flex-direction:column;justify-content:space-between;
+  box-shadow:none!important;
+}
+#pg-sync .peek-card .name{
+  font-family:var(--n-font-display);font-style:italic;font-size:22px;
+  color:var(--n-text);letter-spacing:-0.01em;text-shadow:none;
+}
+#pg-sync .peek-card .meta{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--n-text-3);margin-top:3px;
+}
+#pg-sync .peek-card .status-row{
+  display:flex;align-items:center;justify-content:space-between;margin-top:auto;
+}
+#pg-sync .peek-card .conn-dot{display:flex;align-items:center;gap:7px}
+#pg-sync .peek-card .conn-dot .dot{
+  width:6px;height:6px;border-radius:50%;background:var(--n-text-4);
+  box-shadow:none;
+}
+#pg-sync .peek-card .conn-dot .lbl{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+#pg-sync .peek-card .conn-btn{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.15em;
+  text-transform:uppercase;padding:6px 12px;border:1px solid var(--n-border-2);
+  border-radius:5px;background:transparent;color:var(--n-text-2);
+  cursor:default;text-shadow:none;
+}
+
+/* Lock overlay */
+#pg-sync .lock-overlay{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:18px;padding:40px;
+  background:radial-gradient(circle at center,rgba(10,10,10,0.4) 0%,rgba(10,10,10,0.85) 100%);
+}
+#pg-sync .lock-icon-wrap{
+  width:64px;height:64px;border-radius:50%;
+  background:var(--n-surface);border:1px solid var(--n-border-2);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 6px rgba(255,255,255,0.02),0 0 40px rgba(110,168,255,0.10);
+  position:relative;
+}
+#pg-sync .lock-icon-wrap::before{
+  content:'';position:absolute;inset:-2px;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent 0deg 270deg,
+    var(--n-accent-cool) 290deg 305deg,transparent 320deg 360deg);
+  opacity:0.4;z-index:-1;animation:lockSpin 8s linear infinite;
+}
+#pg-sync .lock-icon-wrap svg{
+  width:24px;height:24px;stroke:var(--n-text-2);stroke-width:1.5;fill:none;
+}
+#pg-sync .lock-title{
+  font-family:var(--n-font-display);font-style:italic;font-size:42px;
+  line-height:1;letter-spacing:-0.01em;color:var(--n-text);text-shadow:none;
+}
+#pg-sync .lock-status{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 12px;border:1px solid rgba(110,168,255,0.25);
+  background:rgba(110,168,255,0.08);border-radius:20px;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--n-accent-cool);text-shadow:none;
+}
+#pg-sync .lock-status .pulse{
+  width:5px;height:5px;border-radius:50%;background:var(--n-accent-cool);
+  box-shadow:0 0 6px var(--n-accent-cool);
+  animation:lockPulse 2s ease-in-out infinite;
+}
+#pg-sync .lock-desc{
+  font-family:var(--n-font-sans);font-size:14px;color:var(--n-text-2);
+  text-align:center;max-width:380px;line-height:1.6;font-weight:400;
+  letter-spacing:0;text-shadow:none;
+}
+#pg-sync .lock-desc strong{color:var(--n-text);font-weight:500}
+#pg-sync .lock-cta{
+  margin-top:8px;padding:11px 20px;border-radius:7px;
+  border:1px solid var(--n-border-2);background:var(--n-surface);
+  font-family:var(--n-font-sans);font-size:13px;font-weight:500;
+  color:var(--n-text-2);cursor:pointer;transition:.12s;
+  display:inline-flex;align-items:center;gap:8px;
+  letter-spacing:0;text-shadow:none;text-transform:none;
+}
+#pg-sync .lock-cta:hover{
+  border-color:var(--n-text-3);color:var(--n-text);background:var(--n-surface-2);
+}
+#pg-sync .lock-cta svg{
+  width:13px;height:13px;stroke:currentColor;stroke-width:1.5;fill:none;
+}
+#pg-sync .lock-supported{
+  margin-top:14px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;
+  max-width:480px;
+}
+#pg-sync .lock-pill{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.15em;
+  text-transform:uppercase;padding:5px 10px;border-radius:4px;
+  background:var(--n-surface);border:1px solid var(--n-border);
+  color:var(--n-text-3);
+}
 </style>
 </head>
 <body>
@@ -4338,33 +4466,108 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   </div>
 </div>
 <!-- BROKER SYNC -->
-<div id="pg-sync" class="page" style="position:relative;min-height:80vh;overflow:hidden">
+<div id="pg-sync" class="page">
 
-  <!-- Blurred content underneath -->
-  <div style="filter:blur(4px);pointer-events:none;user-select:none;opacity:.6">
-    <div class="ph">
-      <div><div class="ptitle">Broker Sync</div><div class="ptitle-sub">Log in to your prop firm — trades auto-journal the second they fill</div></div>
+  <!-- BLURRED PEEK -->
+  <div class="peek">
+    <div class="peek-head">
+      <div class="h-title">Broker Sync</div>
+      <div class="h-sub">Auto-journal trades the second they fill</div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px">
-      <div class="crd"><div class="crd-h"><div class="crd-title">Apex Trader</div></div><div class="crd-b" style="height:60px"></div></div>
-      <div class="crd"><div class="crd-h"><div class="crd-title">Tradovate</div></div><div class="crd-b" style="height:60px"></div></div>
-      <div class="crd"><div class="crd-h"><div class="crd-title">TopstepX</div></div><div class="crd-b" style="height:60px"></div></div>
-      <div class="crd"><div class="crd-h"><div class="crd-title">Rithmic</div></div><div class="crd-b" style="height:60px"></div></div>
-      <div class="crd"><div class="crd-h"><div class="crd-title">Tradeify</div></div><div class="crd-b" style="height:60px"></div></div>
-      <div class="crd"><div class="crd-h"><div class="crd-title">My Funded Futures</div></div><div class="crd-b" style="height:60px"></div></div>
+    <div class="peek-grid">
+      <div class="peek-card">
+        <div>
+          <div class="name">Apex Trader</div>
+          <div class="meta">Prop &middot; futures</div>
+        </div>
+        <div class="status-row">
+          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
+          <button class="conn-btn">Connect</button>
+        </div>
+      </div>
+      <div class="peek-card">
+        <div>
+          <div class="name">Tradovate</div>
+          <div class="meta">Direct &middot; futures</div>
+        </div>
+        <div class="status-row">
+          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
+          <button class="conn-btn">Connect</button>
+        </div>
+      </div>
+      <div class="peek-card">
+        <div>
+          <div class="name">TopstepX</div>
+          <div class="meta">Prop &middot; futures</div>
+        </div>
+        <div class="status-row">
+          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
+          <button class="conn-btn">Connect</button>
+        </div>
+      </div>
+      <div class="peek-card">
+        <div>
+          <div class="name">Rithmic</div>
+          <div class="meta">Direct &middot; futures</div>
+        </div>
+        <div class="status-row">
+          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
+          <button class="conn-btn">Connect</button>
+        </div>
+      </div>
+      <div class="peek-card">
+        <div>
+          <div class="name">Tradeify</div>
+          <div class="meta">Prop &middot; futures</div>
+        </div>
+        <div class="status-row">
+          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
+          <button class="conn-btn">Connect</button>
+        </div>
+      </div>
+      <div class="peek-card">
+        <div>
+          <div class="name">My Funded Futures</div>
+          <div class="meta">Prop &middot; futures</div>
+        </div>
+        <div class="status-row">
+          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
+          <button class="conn-btn">Connect</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Lock overlay -->
-  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px">
-    <div style="font-size:52px;filter:drop-shadow(0 0 20px rgba(0,180,255,.5))">🔒</div>
-    <div style="font-family:'Black Ops One',sans-serif;font-size:32px;letter-spacing:4px;color:#fff;text-shadow:0 0 20px var(--blue),0 0 40px rgba(0,180,255,.4)">BROKER SYNC</div>
-    <div style="font-family:'Orbitron',monospace;font-size:14px;letter-spacing:3px;color:var(--cyan);text-shadow:0 0 10px var(--cyan)">COMING SOON</div>
-    <div style="font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.9);font-weight:600;text-align:center;max-width:340px;line-height:1.8;margin-top:4px">
-      Auto-journaling from Tradovate and TopstepX<br>— in development
+  <!-- LOCK OVERLAY -->
+  <div class="lock-overlay">
+    <div class="lock-icon-wrap">
+      <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
     </div>
-    <div onclick="goTo('log');setTimeout(()=>setMode('ai',document.querySelectorAll('.mode-tab')[1]),100)" style="margin-top:8px;padding:8px 20px;border-radius:6px;border:1px solid rgba(0,180,255,.3);background:rgba(0,180,255,.08);font-family:'Orbitron',monospace;font-size:15px;color:var(--blue);letter-spacing:1px;cursor:pointer">
-      Use CSV Import in the meantime →
+
+    <div class="lock-title">Broker Sync</div>
+
+    <div class="lock-status">
+      <span class="pulse"></span>
+      In development
+    </div>
+
+    <div class="lock-desc">
+      Auto-journaling from <strong>Tradovate</strong>, <strong>TopstepX</strong>, <strong>Rithmic</strong> and major prop firms &mdash; coming soon. Trades will sync the second they fill, no manual entry needed.
+    </div>
+
+    <button class="lock-cta" onclick="goTo('log');setTimeout(function(){setMode('ai',document.querySelectorAll('.mode-tab')[1]);},100);">
+      Use CSV Import in the meantime
+      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+
+    <div class="lock-supported">
+      <span class="lock-pill">Apex</span>
+      <span class="lock-pill">Tradovate</span>
+      <span class="lock-pill">TopstepX</span>
+      <span class="lock-pill">Rithmic</span>
+      <span class="lock-pill">Tradeify</span>
+      <span class="lock-pill">My Funded Futures</span>
+      <span class="lock-pill">+ more</span>
     </div>
   </div>
 

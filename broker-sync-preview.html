@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Rewind — Broker Sync Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --n-bg:#0a0a0a; --n-surface:#121212; --n-surface-2:#181818; --n-surface-3:#1f1f1f;
+  --n-border:rgba(255,255,255,0.06); --n-border-2:rgba(255,255,255,0.10); --n-border-3:rgba(255,255,255,0.15);
+  --n-text:#f5f5f5; --n-text-2:#a1a1a1; --n-text-3:#6b6b6b; --n-text-4:#4a4a4a;
+  --n-chrome:linear-gradient(135deg,#e8e8e8 0%,#b8b8b8 50%,#8a8a8a 100%);
+  --n-accent-cool:#6ea8ff; --n-profit:#5fb389; --n-loss:#c95f5f;
+  --n-font-sans:'Geist',-apple-system,sans-serif;
+  --n-font-mono:'Geist Mono',monospace;
+  --n-font-display:'Instrument Serif',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--n-bg);color:var(--n-text);font-family:var(--n-font-sans);min-height:100vh}
+body{display:flex;padding-top:38px}
+
+.preview-banner{background:linear-gradient(135deg,#1a1a1a 0%,#0a0a0a 100%);border-bottom:1px solid var(--n-border);padding:10px 24px;display:flex;align-items:center;gap:12px;font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.15em;color:var(--n-text-3);text-transform:uppercase;position:fixed;top:0;left:0;right:0;z-index:100}
+.preview-banner .dot{width:6px;height:6px;border-radius:50%;background:var(--n-accent-cool);box-shadow:0 0 8px rgba(110,168,255,0.6)}
+
+.sb{width:230px;flex-shrink:0;background:var(--n-bg);border-right:1px solid var(--n-border);display:flex;flex-direction:column;height:calc(100vh - 38px);position:sticky;top:38px}
+.sb-logo{padding:22px 20px 18px;border-bottom:1px solid var(--n-border)}
+.sb-logo-text{font-family:var(--n-font-display);font-style:italic;font-size:30px;letter-spacing:-0.01em;color:var(--n-text);line-height:1}
+.sb-nav{padding:14px 0;flex:1}
+.sb-sec{padding:18px 20px 6px;font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;color:var(--n-text-4);text-transform:uppercase}
+.sb-sec:first-child{padding-top:4px}
+.ni{font-family:var(--n-font-sans);font-size:13px;font-weight:500;color:var(--n-text-2);padding:8px 20px;display:flex;align-items:center;gap:11px;border-left:2px solid transparent;cursor:pointer;transition:.12s;text-decoration:none}
+.ni:hover{color:var(--n-text);background:var(--n-surface)}
+.ni.on{color:var(--n-text);background:var(--n-surface-2);border-left-color:var(--n-text)}
+.ni svg{width:14px;height:14px;stroke-width:1.5;opacity:0.85}
+.sb-foot{padding:12px;border-top:1px solid var(--n-border)}
+.sb-prof{background:var(--n-surface);border:1px solid var(--n-border);border-radius:6px;padding:9px 11px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:.12s}
+.sb-prof:hover{border-color:var(--n-border-2);background:var(--n-surface-2)}
+.sb-prof .av{width:28px;height:28px;border-radius:50%;background:var(--n-chrome);border:1px solid var(--n-border-2);display:flex;align-items:center;justify-content:center;font-family:var(--n-font-mono);font-size:11px;color:var(--n-bg);font-weight:500}
+.sb-prof .info{flex:1;min-width:0}
+.sb-prof .nm{font-size:13px;font-weight:500;color:var(--n-text)}
+.sb-prof .un{font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-3);margin-top:2px}
+.sb-prof .arr{color:var(--n-text-4)}
+
+.main{flex:1;min-width:0;padding:32px 40px 48px;position:relative;min-height:calc(100vh - 38px)}
+
+/* BLURRED PEEK CONTENT */
+.peek{
+  filter:blur(5px);pointer-events:none;user-select:none;opacity:0.45;
+}
+.peek-head{margin-bottom:24px}
+.peek-head .h-title{font-family:var(--n-font-display);font-style:italic;font-size:38px;line-height:1;letter-spacing:-0.01em;color:var(--n-text)}
+.peek-head .h-sub{margin-top:8px;font-family:var(--n-font-mono);font-size:10.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3)}
+
+.peek-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.peek-card{background:var(--n-surface);border:1px solid var(--n-border);border-radius:10px;padding:18px;min-height:120px;display:flex;flex-direction:column;justify-content:space-between}
+.peek-card .name{font-family:var(--n-font-display);font-style:italic;font-size:22px;color:var(--n-text);letter-spacing:-0.01em}
+.peek-card .meta{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--n-text-3);margin-top:3px}
+.peek-card .status-row{display:flex;align-items:center;justify-content:space-between;margin-top:auto}
+.peek-card .conn-dot{display:flex;align-items:center;gap:7px}
+.peek-card .conn-dot .dot{width:6px;height:6px;border-radius:50%;background:var(--n-text-4)}
+.peek-card .conn-dot .lbl{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--n-text-3)}
+.peek-card .conn-btn{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.15em;text-transform:uppercase;padding:6px 12px;border:1px solid var(--n-border-2);border-radius:5px;background:transparent;color:var(--n-text-2)}
+
+/* LOCK OVERLAY */
+.lock-overlay{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:18px;padding:40px;
+  background:radial-gradient(circle at center,rgba(10,10,10,0.4) 0%,rgba(10,10,10,0.85) 100%);
+}
+.lock-icon-wrap{
+  width:64px;height:64px;border-radius:50%;
+  background:var(--n-surface);border:1px solid var(--n-border-2);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 6px rgba(255,255,255,0.02),
+             0 0 40px rgba(110,168,255,0.10);
+  position:relative;
+}
+.lock-icon-wrap::before{
+  content:'';position:absolute;inset:-2px;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent 0deg 270deg,var(--n-accent-cool) 290deg 305deg,transparent 320deg 360deg);
+  opacity:0.4;z-index:-1;
+  animation:lockSpin 8s linear infinite;
+}
+@keyframes lockSpin{to{transform:rotate(360deg)}}
+.lock-icon-wrap svg{width:24px;height:24px;stroke:var(--n-text-2);stroke-width:1.5;fill:none}
+
+.lock-title{
+  font-family:var(--n-font-display);font-style:italic;font-size:42px;
+  line-height:1;letter-spacing:-0.01em;color:var(--n-text);
+}
+.lock-status{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 12px;border:1px solid rgba(110,168,255,0.25);
+  background:rgba(110,168,255,0.08);border-radius:20px;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--n-accent-cool);
+}
+.lock-status .pulse{
+  width:5px;height:5px;border-radius:50%;background:var(--n-accent-cool);
+  box-shadow:0 0 6px var(--n-accent-cool);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.lock-desc{
+  font-family:var(--n-font-sans);font-size:14px;color:var(--n-text-2);
+  text-align:center;max-width:380px;line-height:1.6;font-weight:400;
+}
+.lock-desc strong{color:var(--n-text);font-weight:500}
+.lock-cta{
+  margin-top:8px;padding:11px 20px;border-radius:7px;
+  border:1px solid var(--n-border-2);background:var(--n-surface);
+  font-family:var(--n-font-sans);font-size:13px;font-weight:500;
+  color:var(--n-text-2);cursor:pointer;transition:.12s;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.lock-cta:hover{border-color:var(--n-text-3);color:var(--n-text);background:var(--n-surface-2)}
+.lock-cta svg{width:13px;height:13px;stroke:currentColor;stroke-width:1.5;fill:none}
+
+.lock-supported{
+  margin-top:14px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;
+  max-width:480px;
+}
+.lock-pill{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.15em;
+  text-transform:uppercase;padding:5px 10px;border-radius:4px;
+  background:var(--n-surface);border:1px solid var(--n-border);
+  color:var(--n-text-3);
+}
+</style>
+</head>
+<body>
+
+<div class="preview-banner">
+  <span class="dot"></span>
+  <span>BROKER SYNC PAGE PREVIEW &middot; LOCKED STATE</span>
+</div>
+
+<aside class="sb">
+  <div class="sb-logo"><div class="sb-logo-text">Rewind</div></div>
+  <div class="sb-nav">
+    <div class="sb-sec">Main</div>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Log Trade</a>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>History</a>
+    <div class="sb-sec">Insights</div>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 17 9 11 13 15 21 7"/></svg>Equity Curve</a>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="6" y1="20" x2="6" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg>Analytics</a>
+    <div class="sb-sec">Connect</div>
+    <a class="ni on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 1 1-6.2-8.5"/><polyline points="21 4 21 12 13 12"/></svg>Broker Sync</a>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Community</a>
+  </div>
+  <div class="sb-foot">
+    <div class="sb-prof">
+      <div class="av">CV</div>
+      <div class="info"><div class="nm">valeo</div><div class="un">@christianvaleo</div></div>
+      <div class="arr">›</div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- BLURRED PEEK -->
+  <div class="peek">
+    <div class="peek-head">
+      <div class="h-title">Broker Sync</div>
+      <div class="h-sub">Auto-journal trades the second they fill</div>
+    </div>
+    <div class="peek-grid">
+      <div class="peek-card">
+        <div>
+          <div class="name">Apex Trader</div>
+          <div class="meta">Prop &middot; futures</div>
+        </div>
+        <div class="status-row">
+          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
+          <button class="conn-btn">Connect</button>
+        </div>
+      </div>
+      <div class="peek-card">
+        <div>
+          <div class="name">Tradovate</div>
+          <div class="meta">Direct &middot; futures</div>
+        </div>
+        <div class="status-row">
+          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
+          <button class="conn-btn">Connect</button>
+        </div>
+      </div>
+      <div class="peek-card">
+        <div>
+          <div class="name">TopstepX</div>
+          <div class="meta">Prop &middot; futures</div>
+        </div>
+        <div class="status-row">
+          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
+          <button class="conn-btn">Connect</button>
+        </div>
+      </div>
+      <div class="peek-card">
+        <div>
+          <div class="name">Rithmic</div>
+          <div class="meta">Direct &middot; futures</div>
+        </div>
+        <div class="status-row">
+          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
+          <button class="conn-btn">Connect</button>
+        </div>
+      </div>
+      <div class="peek-card">
+        <div>
+          <div class="name">Tradeify</div>
+          <div class="meta">Prop &middot; futures</div>
+        </div>
+        <div class="status-row">
+          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
+          <button class="conn-btn">Connect</button>
+        </div>
+      </div>
+      <div class="peek-card">
+        <div>
+          <div class="name">My Funded Futures</div>
+          <div class="meta">Prop &middot; futures</div>
+        </div>
+        <div class="status-row">
+          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
+          <button class="conn-btn">Connect</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOCK OVERLAY -->
+  <div class="lock-overlay">
+    <div class="lock-icon-wrap">
+      <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+    </div>
+
+    <div class="lock-title">Broker Sync</div>
+
+    <div class="lock-status">
+      <span class="pulse"></span>
+      In development
+    </div>
+
+    <div class="lock-desc">
+      Auto-journaling from <strong>Tradovate</strong>, <strong>TopstepX</strong>, <strong>Rithmic</strong> and major prop firms — coming soon. Trades will sync the second they fill, no manual entry needed.
+    </div>
+
+    <button class="lock-cta">
+      Use CSV Import in the meantime
+      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+
+    <div class="lock-supported">
+      <span class="lock-pill">Apex</span>
+      <span class="lock-pill">Tradovate</span>
+      <span class="lock-pill">TopstepX</span>
+      <span class="lock-pill">Rithmic</span>
+      <span class="lock-pill">Tradeify</span>
+      <span class="lock-pill">My Funded Futures</span>
+      <span class="lock-pill">+ more</span>
+    </div>
+  </div>
+
+</main>
+
+</body>
+</html>
