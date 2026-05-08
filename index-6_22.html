@@ -13937,14 +13937,28 @@ async function saveProfileToDB() {
   var upd = await _sb.from('profiles').update(payload).eq('id', currentUser.id).select();
   console.log('[avatar save] update result:', { rows: upd.data, error: upd.error });
 
-  // Schema not migrated yet → strip new columns and retry.
-  if (upd.error && /column .* does not exist/i.test(upd.error.message||'')) {
+  // Schema not migrated yet → strip new columns and retry. Catches both
+  // "column .. does not exist" (fresh schema) and PostgREST's
+  // "Could not find the 'X' column of 'profiles' in the schema cache"
+  // (migration ran but cache is still warming — usually clears in ~60s).
+  var schemaMiss = upd.error && (
+    /column .* does not exist/i.test(upd.error.message||'') ||
+    /could not find the .* column .* in the schema cache/i.test(upd.error.message||'')
+  );
+  if (schemaMiss) {
     var legacy = Object.assign({}, payload);
     delete legacy.avatar_finish; delete legacy.avatar_initials; delete legacy.avatar_image_url;
     var upd2 = await _sb.from('profiles').update(legacy).eq('id', currentUser.id).select();
-    console.warn('[avatar save] avatar columns not migrated — saved legacy fields only. Run supabase-avatar-migration.sql', { rows: upd2.data, error: upd2.error });
+    console.warn(
+      '[avatar save] avatar columns missing or cache cold — saved legacy fields only.\n' +
+      'Fix: run supabase-avatar-migration.sql (it ends with `notify pgrst, \'reload schema\';`),\n' +
+      'or wait ~60s for PostgREST auto-reload, or click Project Settings → API → Restart database.',
+      { rows: upd2.data, error: upd2.error, original: upd.error }
+    );
     if (upd2.error) throw upd2.error;
-    return upd2.data;
+    var err = new Error('Avatar columns not visible to API yet — run the migration or wait 60s for cache reload');
+    err.code = 'SCHEMA_CACHE'; err.original = upd.error;
+    throw err;
   }
   if (upd.error) {
     console.error('[avatar save] update failed:', {

@@ -3,6 +3,20 @@
 --
 -- Note: leaves the existing `trade-images` bucket untouched. Adds two new
 -- buckets (`avatars`, `group-avatars`) alongside it.
+--
+-- IMPORTANT — PostgREST schema cache:
+-- After ALTER TABLE, the API caches the old schema. The NOTIFY at the END
+-- of this file forces a reload. If you skip it or run only a partial
+-- migration, expect "Could not find the 'X' column ... in the schema cache"
+-- for up to ~60 seconds (auto-reload), or until you click
+-- Project Settings → API → Restart database.
+
+-- Pre-flight verify (uncomment to run alone):
+--   SELECT column_name, data_type, column_default
+--     FROM information_schema.columns
+--     WHERE table_name='profiles' AND column_name LIKE 'avatar%';
+--   -- 0 rows = columns missing, run the ALTER below
+--   -- 3 rows = columns already present, only need NOTIFY at the end
 
 -- ─────────────────────────────────────────────────────────────────
 -- 1. Profiles — personal avatar fields
@@ -217,3 +231,19 @@ create policy "group_avatars_owner_delete"
         and owner_id = auth.uid()
     )
   );
+
+-- ─────────────────────────────────────────────────────────────────
+-- 6. Force PostgREST to reload its schema cache so the new columns
+-- are visible to the API immediately. Without this, saves return
+-- "Could not find the 'avatar_finish' column of 'profiles' in the
+-- schema cache" until the cache auto-reloads (~60s).
+-- ─────────────────────────────────────────────────────────────────
+notify pgrst, 'reload schema';
+
+-- Final verify (paste these into the SQL editor after the migration):
+--   SELECT column_name FROM information_schema.columns
+--     WHERE table_name='profiles' AND column_name LIKE 'avatar%';
+--   -- expect: avatar_finish, avatar_initials, avatar_image_url
+--   SELECT policyname, cmd FROM pg_policies WHERE tablename='profiles';
+--   -- expect: users_read_own_profile, users_update_own_profile,
+--   --         users_insert_own_profile
