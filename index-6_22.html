@@ -7576,6 +7576,12 @@ function renderFeedPosts(g){
       avatar_finish: myFinish, avatar_image_url: myImgUrl
     });
   });
+  // Diagnostic — verify edited screenshots are flowing through to the feed.
+  // Remove after the propagation bug is fully validated as fixed.
+  if(typeof window!=='undefined' && window._debugFeed){
+    console.log('[feed] own posts trade.images:',
+      trades.map(function(t){return {id:t.id, date:t.date, images:t.images};}));
+  }
 
   _remotePosts.forEach(function(row){
     var rt={};try{rt=JSON.parse(row.content||'{}');}catch(e){}
@@ -9293,7 +9299,17 @@ function saveCalEdit(){
   setTimeout(function(){
     try{localStorage.setItem(journalKey(activeJournal),JSON.stringify(trades));}catch(e){}
     try{save();}catch(e){}
+    // Flush the trade row to Supabase IMMEDIATELY (skip the 800ms debounce
+    // that `save()` schedules). Without this, navigating to Community
+    // before the debounce fires would render against stale DB rows for
+    // any other tab/device. For the current session, renderFeedPosts
+    // reads the in-memory `trades` array so own edits propagate either way.
+    try{ if(typeof saveTradeToSupa==='function') saveTradeToSupa(t); }catch(e){}
     renderAll();
+    // Force community feed re-render so the edited screenshot/P&L shows
+    // up next time the user opens Community without waiting for goTo to
+    // re-trigger renderCommunity. Safe no-op if community isn't loaded.
+    try{ if(typeof _comm!=='undefined' && _comm && typeof renderFeedPosts==='function') renderFeedPosts(_comm); }catch(e){}
     var dayTrades=trades.filter(function(x){return x.date===savedDate;});
     try{if(typeof openDayReview==='function') openDayReview(savedDate,dayTrades);}catch(e){}
   }, 50);
