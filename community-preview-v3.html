@@ -1,0 +1,650 @@
+<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<title>Rewind — Community Preview v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --n-bg:#0a0a0a;
+  --n-surface:#121212;
+  --n-surface-2:#181818;
+  --n-surface-3:#1f1f1f;
+  --n-border:rgba(255,255,255,0.06);
+  --n-border-2:rgba(255,255,255,0.10);
+  --n-border-3:rgba(255,255,255,0.15);
+  --n-text:#f5f5f5;
+  --n-text-2:#a1a1a1;
+  --n-text-3:#6b6b6b;
+  --n-text-4:#4a4a4a;
+  --n-chrome:linear-gradient(135deg,#e8e8e8 0%,#a0a0a0 50%,#e8e8e8 100%);
+  --n-accent-cool:#6ea8ff;
+  --n-profit:#5fb389;
+  --n-loss:#c95f5f;
+  --n-font-sans:'Geist',system-ui,sans-serif;
+  --n-font-mono:'Geist Mono',ui-monospace,monospace;
+  --n-font-display:'Instrument Serif',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--n-bg);color:var(--n-text);font-family:var(--n-font-sans);min-height:100vh}
+body{display:flex;padding-top:38px;isolation:isolate}
+
+/* ============ AMBIENT PAGE GLOW ============ */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse 900px 600px at 88% 12%, rgba(110,168,255,0.022), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 12% 88%, rgba(95,179,137,0.012), transparent 60%),
+    radial-gradient(ellipse 500px 400px at 50% 50%, rgba(255,255,255,0.005), transparent 70%);
+  pointer-events:none;
+  z-index:-1;
+  animation:ambient-drift 22s ease-in-out infinite alternate;
+}
+@keyframes ambient-drift{
+  0%{transform:translate(0,0) scale(1)}
+  100%{transform:translate(-2%,-1%) scale(1.05)}
+}
+
+.preview-banner{background:linear-gradient(135deg,#1a1a1a 0%,#0a0a0a 100%);border-bottom:1px solid var(--n-border);padding:10px 24px;display:flex;align-items:center;gap:12px;font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.15em;color:var(--n-text-3);text-transform:uppercase;position:fixed;top:0;left:0;right:0;z-index:100}
+.preview-banner .dot{width:6px;height:6px;border-radius:50%;background:var(--n-accent-cool);box-shadow:0 0 8px rgba(110,168,255,0.6);animation:dot-pulse 2.4s ease-in-out infinite}
+@keyframes dot-pulse{
+  0%,100%{opacity:1;box-shadow:0 0 8px rgba(110,168,255,0.6)}
+  50%{opacity:.6;box-shadow:0 0 14px rgba(110,168,255,0.4)}
+}
+
+.sb{width:220px;border-right:1px solid var(--n-border);background:var(--n-bg);padding:20px 12px;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:38px;align-self:flex-start;height:calc(100vh - 38px)}
+.sb-brand{font-family:var(--n-font-display);font-style:italic;font-size:22px;color:var(--n-text);padding:6px 12px 22px;letter-spacing:-0.01em}
+.sb-section{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-4);padding:14px 12px 8px}
+.ni{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:var(--n-text-2);font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;border-left:2px solid transparent;transition:background .15s, color .15s, border-left-color .15s, padding-left .2s ease-out}
+.ni:hover{background:var(--n-surface);color:var(--n-text);padding-left:14px}
+.ni.on{background:var(--n-surface-2);color:var(--n-text);border-left-color:var(--n-text)}
+.ni svg{width:15px;height:15px;stroke-width:1.5;opacity:.85;transition:opacity .15s}
+.ni:hover svg{opacity:1}
+.sb-spacer{flex:1}
+.sb-profile{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--n-border);border-radius:8px;cursor:pointer;transition:border-color .2s, background .15s, transform .25s}
+.sb-profile:hover{border-color:var(--n-border-2);background:var(--n-surface);transform:translateY(-1px)}
+.sb-avatar{width:28px;height:28px;border-radius:50%;background:var(--n-chrome);display:flex;align-items:center;justify-content:center;font-family:var(--n-font-mono);font-size:10px;font-weight:600;color:#1a1a1a;box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),inset 0 -1px 0 rgba(0,0,0,0.2);position:relative;overflow:hidden}
+.sb-pname{font-size:12px;font-weight:500;color:var(--n-text)}
+.sb-phandle{font-family:var(--n-font-mono);font-size:9.5px;color:var(--n-text-3);letter-spacing:0.05em}
+
+/* ============ CHROME SHIMMER SWEEP ============ */
+.sb-avatar, .gicon.c1, .composer-av, .av-chrome, .post-av.chrome{
+  position:relative;
+  overflow:hidden;
+}
+.sb-avatar::after, .gicon.c1::after, .composer-av::after, .av-chrome::after, .post-av.chrome::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.55) 50%, transparent 65%);
+  background-size:280% 100%;
+  background-position:280% 0;
+  animation:chrome-sweep 5.5s ease-in-out infinite;
+  pointer-events:none;
+  border-radius:inherit;
+}
+@keyframes chrome-sweep{
+  0%, 28%{background-position:280% 0}
+  72%, 100%{background-position:-80% 0}
+}
+
+.right-col{flex:1;display:flex;flex-direction:column;min-width:0}
+.scene{display:flex;min-width:0}
+
+.csb{width:260px;border-right:1px solid var(--n-border);padding:24px 16px;display:flex;flex-direction:column;flex-shrink:0;background:var(--n-bg)}
+.csb-head{font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--n-text-3);padding:0 8px 14px}
+.csb-tabs{display:flex;gap:2px;background:var(--n-surface);border:1px solid var(--n-border);border-radius:8px;padding:3px;margin-bottom:16px}
+.csb-tab{flex:1;padding:7px 10px;text-align:center;font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--n-text-3);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s}
+.csb-tab.on{background:var(--n-surface-3);color:var(--n-text)}
+.csb-tab:hover:not(.on){color:var(--n-text-2)}
+.csb-badge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 5px;border-radius:8px;background:var(--n-accent-cool);color:#0a0a0a;font-size:9px;font-weight:600;font-family:var(--n-font-sans);letter-spacing:0;box-shadow:0 0 8px rgba(110,168,255,0.3)}
+
+.csb-list{display:flex;flex-direction:column;gap:2px}
+.gitem{display:flex;align-items:center;gap:10px;padding:10px;border-radius:7px;cursor:pointer;border:1px solid transparent;transition:background .15s, border-color .15s}
+.gitem:hover{background:var(--n-surface)}
+.gitem.on{background:var(--n-surface-2);border-color:var(--n-border-2)}
+.gicon{width:32px;height:32px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--n-font-mono);font-size:10.5px;font-weight:600;transition:transform .35s cubic-bezier(0.34, 1.56, 0.64, 1);transform-style:preserve-3d}
+.gitem:hover .gicon{transform:perspective(140px) rotateY(-14deg) rotateX(4deg) scale(1.06)}
+.gitem.on .gicon{transform:perspective(140px) rotateY(-6deg)}
+.gicon.c1{background:var(--n-chrome);color:#1a1a1a;box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),inset 0 -1px 0 rgba(0,0,0,0.2)}
+.gicon.c2{background:radial-gradient(circle at 30% 30%,#7a9eff,#3b5eb8);color:#fff}
+.gicon.c3{background:radial-gradient(circle at 30% 30%,#d4956b,#8a5a3a);color:#fff}
+.gicon.c4{background:radial-gradient(circle at 30% 30%,#9b7dd4,#5a3a8a);color:#fff}
+.gmeta{flex:1;min-width:0}
+.gname{font-size:12.5px;font-weight:500;color:var(--n-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gname-row{display:flex;align-items:center;gap:6px}
+.gsub{font-family:var(--n-font-mono);font-size:9.5px;color:var(--n-text-3);margin-top:2px;letter-spacing:0.04em}
+.gunread{width:6px;height:6px;border-radius:50%;background:var(--n-accent-cool);flex-shrink:0;box-shadow:0 0 6px rgba(110,168,255,0.5);animation:dot-pulse 2.4s ease-in-out infinite}
+
+.csb-create{margin-top:12px;padding:10px;border:1px dashed var(--n-border-2);border-radius:7px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--n-text-3);cursor:pointer;transition:.2s}
+.csb-create:hover{border-color:var(--n-border-3);color:var(--n-text-2);background:var(--n-surface)}
+
+.notif-list{display:flex;flex-direction:column}
+.notif{display:flex;gap:10px;padding:13px 8px;border-bottom:1px solid var(--n-border);cursor:pointer;transition:.15s;align-items:flex-start}
+.notif:hover{background:var(--n-surface)}
+.notif-av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--n-font-mono);font-size:10px;font-weight:600;color:#fff}
+.notif-body{flex:1;min-width:0}
+.notif-text{font-size:12px;color:var(--n-text-2);line-height:1.45}
+.notif-text b{color:var(--n-text);font-weight:500}
+.notif-time{font-family:var(--n-font-mono);font-size:9.5px;color:var(--n-text-4);margin-top:5px;letter-spacing:0.04em}
+.notif-dot{width:6px;height:6px;border-radius:50%;background:var(--n-accent-cool);flex-shrink:0;align-self:center;box-shadow:0 0 6px rgba(110,168,255,0.5)}
+.notif-invite-actions{display:flex;gap:6px;margin-top:9px}
+.notif-btn{padding:5px 11px;border-radius:5px;font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;border:1px solid var(--n-border-2);background:transparent;color:var(--n-text-2);transition:.15s}
+.notif-btn:hover{color:var(--n-text);border-color:var(--n-border-3);transform:translateY(-1px)}
+.notif-btn.primary{background:var(--n-text);color:#0a0a0a;border-color:var(--n-text)}
+.notif-btn.primary:hover{background:#fff}
+.notif-mark{padding:8px 0;text-align:right;font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--n-text-3);cursor:pointer;transition:.15s}
+.notif-mark:hover{color:var(--n-text-2)}
+
+.feed-wrap{flex:1;display:flex;min-width:0}
+.feed{flex:1;min-width:0;padding:32px 36px;border-right:1px solid var(--n-border)}
+
+.fhead{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:6px}
+.ftitle{font-family:var(--n-font-display);font-style:italic;font-size:38px;color:var(--n-text);line-height:1.1;letter-spacing:-0.01em}
+.fsub{font-family:var(--n-font-mono);font-size:10.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);margin-top:8px}
+.fhead-actions{display:flex;gap:8px;flex-shrink:0;margin-top:6px}
+.iconbtn{width:32px;height:32px;border-radius:7px;border:1px solid var(--n-border);background:var(--n-surface);display:flex;align-items:center;justify-content:center;color:var(--n-text-2);cursor:pointer;transition:.2s}
+.iconbtn:hover{border-color:var(--n-border-2);background:var(--n-surface-2);color:var(--n-text);transform:translateY(-1px)}
+.iconbtn svg{width:14px;height:14px;stroke-width:1.5}
+
+.fbar{display:flex;align-items:center;gap:32px;padding:18px 0;border-top:1px solid var(--n-border);border-bottom:1px solid var(--n-border);margin-top:24px;margin-bottom:20px}
+.fstat{display:flex;flex-direction:column;gap:4px}
+.fstat-label{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-4)}
+.fstat-val{font-family:var(--n-font-display);font-style:italic;font-size:22px;color:var(--n-text);line-height:1}
+.fstat-val.profit{color:var(--n-profit)}
+.fstat-val.cool{color:var(--n-accent-cool)}
+.cents{font-size:0.65em;opacity:0.7}
+.unit{font-size:0.55em;opacity:0.6;font-family:var(--n-font-mono);font-style:normal;margin-left:1px}
+
+/* ============ FILTER CHIPS ============ */
+.filters{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.fchip{padding:6px 13px;border-radius:14px;border:1px solid var(--n-border);background:transparent;color:var(--n-text-3);font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.13em;text-transform:uppercase;cursor:pointer;transition:color .2s, border-color .2s, background .25s, box-shadow .25s, transform .15s}
+.fchip:hover{color:var(--n-text-2);border-color:var(--n-border-2);transform:translateY(-1px)}
+.fchip.on{background:var(--n-surface-2);color:var(--n-text);border-color:var(--n-border-2);box-shadow:0 0 0 1px var(--n-border-2), inset 0 0 14px rgba(255,255,255,0.025), 0 1px 12px -4px rgba(110,168,255,0.15)}
+
+.composer{display:flex;align-items:center;gap:12px;padding:14px;background:var(--n-surface);border:1px solid var(--n-border);border-radius:9px;margin-bottom:24px;transition:border-color .2s, background .15s}
+.composer:hover{border-color:var(--n-border-2);background:var(--n-surface-2)}
+.composer-av{width:30px;height:30px;border-radius:50%;background:var(--n-chrome);display:flex;align-items:center;justify-content:center;font-family:var(--n-font-mono);font-size:10px;font-weight:600;color:#1a1a1a;box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),inset 0 -1px 0 rgba(0,0,0,0.2);flex-shrink:0;position:relative;overflow:hidden}
+.composer-input{flex:1;font-family:var(--n-font-sans);font-size:12.5px;color:var(--n-text-3)}
+.composer-share{padding:7px 14px;border-radius:6px;background:transparent;border:1px solid var(--n-border-2);color:var(--n-text-2);font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px}
+.composer-share:hover{border-color:var(--n-border-3);color:var(--n-text);background:var(--n-surface-2);transform:translateY(-1px)}
+.composer-share svg{width:11px;height:11px;stroke-width:2}
+
+/* ============ POSTS — w/ hover lift + glow ============ */
+.post{border:1px solid var(--n-border);border-radius:10px;padding:18px;margin-bottom:14px;background:var(--n-surface);transition:transform .25s ease-out, border-color .2s, background .15s, box-shadow .3s}
+.post:hover{transform:translateY(-2px);border-color:var(--n-border-2);box-shadow:0 8px 28px -10px rgba(0,0,0,0.7), 0 0 0 1px rgba(110,168,255,0.04), inset 0 1px 0 rgba(255,255,255,0.025)}
+.post-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.post-av{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--n-font-mono);font-size:11px;font-weight:600;color:#fff}
+.post-name{font-size:13px;font-weight:500;color:var(--n-text)}
+.post-handle{font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-3);letter-spacing:0.04em;margin-top:1px}
+.post-time{font-family:var(--n-font-mono);font-size:9.5px;color:var(--n-text-4);margin-left:auto;letter-spacing:0.06em}
+
+.trade-card{background:var(--n-surface-2);border:1px solid var(--n-border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:20px;transition:border-color .2s, box-shadow .25s}
+.post:hover .trade-card{border-color:var(--n-border-2);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.02)}
+.tc-sym{display:flex;flex-direction:column;gap:3px}
+.tc-sym-val{font-size:14px;font-weight:600;color:var(--n-text);font-family:var(--n-font-mono);letter-spacing:0.04em}
+.tc-side{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--n-text-3)}
+.tc-divider{width:1px;height:30px;background:var(--n-border)}
+.tc-pl{display:flex;flex-direction:column;gap:3px;flex:1}
+.tc-pl-val{font-family:var(--n-font-display);font-style:italic;font-size:24px;line-height:1}
+.tc-pl-val.profit{color:var(--n-profit)}
+.tc-pl-val.loss{color:var(--n-loss)}
+.tc-pl-r{font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.12em;color:var(--n-text-3);text-transform:uppercase}
+.tc-meta{font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-3);text-align:right;line-height:1.5;letter-spacing:0.04em}
+
+.post-note{margin-top:12px;font-size:13px;color:var(--n-text-2);line-height:1.55}
+
+.post-actions{display:flex;align-items:center;gap:18px;margin-top:14px;padding-top:14px;border-top:1px solid var(--n-border)}
+.pa{display:flex;align-items:center;gap:6px;color:var(--n-text-3);font-family:var(--n-font-mono);font-size:10.5px;cursor:pointer;letter-spacing:0.04em;transition:color .15s;background:none;border:none;padding:0}
+.pa:hover{color:var(--n-text)}
+.pa.liked{color:var(--n-accent-cool)}
+.pa svg{width:13px;height:13px;stroke-width:1.6;transition:transform .2s ease-out;transform-origin:center}
+.pa:hover svg{transform:scale(1.18)}
+.pa.liked svg{animation:heart-pop .55s cubic-bezier(0.34, 1.56, 0.64, 1)}
+@keyframes heart-pop{
+  0%{transform:scale(1)}
+  30%{transform:scale(1.4) rotate(-8deg)}
+  55%{transform:scale(0.92) rotate(4deg)}
+  80%{transform:scale(1.08) rotate(-2deg)}
+  100%{transform:scale(1) rotate(0)}
+}
+
+.replies{margin-top:14px;padding-top:14px;border-top:1px solid var(--n-border);display:flex;flex-direction:column;gap:10px}
+.reply{display:flex;gap:10px}
+.reply-av{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--n-font-mono);font-size:9px;font-weight:600;color:#fff}
+.reply-body{flex:1;background:var(--n-surface-2);border-radius:6px;padding:9px 11px;transition:background .15s, transform .2s}
+.reply:hover .reply-body{background:var(--n-surface-3);transform:translateX(2px)}
+.reply-name{font-size:11.5px;font-weight:500;color:var(--n-text);display:flex;align-items:center;gap:6px}
+.reply-name .t{font-family:var(--n-font-mono);font-size:9px;color:var(--n-text-4);letter-spacing:0.05em;font-weight:400}
+.reply-text{font-size:12px;color:var(--n-text-2);margin-top:4px;line-height:1.5}
+
+.rail{width:300px;padding:32px 22px;display:flex;flex-direction:column;gap:24px;flex-shrink:0;background:var(--n-bg)}
+.card{background:var(--n-surface);border:1px solid var(--n-border);border-radius:10px;padding:18px;transition:border-color .2s}
+.card:hover{border-color:var(--n-border-2)}
+.card-title{font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--n-text-3);margin-bottom:14px}
+
+.lb-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--n-border);transition:transform .2s}
+.lb-row:hover{transform:translateX(3px)}
+.lb-row:last-child{border-bottom:none;padding-bottom:0}
+.lb-row:first-of-type{padding-top:0}
+.lb-rank{font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-4);width:14px;letter-spacing:0.04em}
+.lb-rank.top{color:var(--n-text-2)}
+.lb-av{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--n-font-mono);font-size:9px;font-weight:600;color:#fff;position:relative;overflow:hidden}
+.lb-name{flex:1;font-size:12px;color:var(--n-text);font-weight:500;min-width:0}
+.lb-handle{font-family:var(--n-font-mono);font-size:9.5px;color:var(--n-text-3);letter-spacing:0.04em;margin-top:1px}
+.lb-pl{font-family:var(--n-font-display);font-style:italic;font-size:15px;flex-shrink:0}
+.lb-pl.profit{color:var(--n-profit)}
+.lb-pl.loss{color:var(--n-loss)}
+
+.member{padding:13px 0;border-bottom:1px solid var(--n-border);display:flex;flex-direction:column;gap:9px;cursor:pointer;position:relative;transition:transform .2s}
+.member:hover{transform:translateX(3px)}
+.member:last-child{border-bottom:none;padding-bottom:0}
+.member:first-of-type{padding-top:0}
+.member:hover .m-name{color:var(--n-text)}
+.m-row{display:flex;align-items:center;gap:9px}
+.m-av{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--n-font-mono);font-size:9.5px;font-weight:600;color:#fff;position:relative;overflow:hidden}
+.m-meta{flex:1;min-width:0}
+.m-name{font-size:12px;font-weight:500;color:var(--n-text-2);transition:.15s}
+.m-handle{font-family:var(--n-font-mono);font-size:9.5px;color:var(--n-text-3);letter-spacing:0.04em;margin-top:1px}
+.m-pl{font-family:var(--n-font-display);font-style:italic;font-size:14px;flex-shrink:0}
+.m-pl.profit{color:var(--n-profit)}
+.m-pl.loss{color:var(--n-loss)}
+
+.minical{display:grid;grid-template-columns:repeat(20,1fr);gap:2px;padding-left:35px}
+.mc-cell{aspect-ratio:1;border-radius:1.5px;background:var(--n-surface-3);transition:transform .2s, box-shadow .2s}
+.member:hover .mc-cell.p3{box-shadow:0 0 4px rgba(95,179,137,0.5)}
+.mc-cell.p1{background:rgba(95,179,137,0.25)}
+.mc-cell.p2{background:rgba(95,179,137,0.5)}
+.mc-cell.p3{background:rgba(95,179,137,0.85)}
+.mc-cell.l1{background:rgba(201,95,95,0.35)}
+.mc-cell.l2{background:rgba(201,95,95,0.7)}
+
+.member.hovered::after{content:"7-DAY · 5W 2L · +$3,420 · 71% WR";position:absolute;top:-4px;right:0;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;color:var(--n-text-3);background:var(--n-surface-3);border:1px solid var(--n-border-2);padding:5px 9px;border-radius:5px;white-space:nowrap;text-transform:uppercase;pointer-events:none;animation:tooltip-fade .4s ease-out}
+@keyframes tooltip-fade{
+  from{opacity:0;transform:translateY(-4px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.av-c1{background:radial-gradient(circle at 30% 30%,#7a9eff,#3b5eb8)}
+.av-c2{background:radial-gradient(circle at 30% 30%,#d4956b,#8a5a3a)}
+.av-c3{background:radial-gradient(circle at 30% 30%,#9b7dd4,#5a3a8a)}
+.av-c4{background:radial-gradient(circle at 30% 30%,#7dc4a8,#3a8a6a)}
+.av-c5{background:radial-gradient(circle at 30% 30%,#d47d9e,#8a3a5a)}
+.av-c6{background:radial-gradient(circle at 30% 30%,#c9b97d,#8a7a3a)}
+.av-chrome{background:var(--n-chrome) !important;color:#1a1a1a !important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),inset 0 -1px 0 rgba(0,0,0,0.2)}
+
+.btn-prim{padding:9px 18px;border-radius:7px;background:var(--n-text);color:#0a0a0a;font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;border:none;cursor:pointer;font-weight:500;transition:.2s}
+.btn-prim:hover{background:#fff;transform:translateY(-1px);box-shadow:0 4px 16px -4px rgba(255,255,255,0.2)}
+.btn-sec{padding:9px 18px;border-radius:7px;background:transparent;color:var(--n-text-2);font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;border:1px solid var(--n-border-2);cursor:pointer;font-weight:500;transition:.2s}
+.btn-sec:hover{color:var(--n-text);border-color:var(--n-border-3);background:var(--n-surface);transform:translateY(-1px)}
+
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 36px;min-height:600px}
+.empty-icon{width:72px;height:72px;border-radius:50%;background:var(--n-surface);border:1px solid var(--n-border);display:flex;align-items:center;justify-content:center;margin-bottom:24px;position:relative;animation:empty-float 5s ease-in-out infinite}
+@keyframes empty-float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-4px)}
+}
+.empty-icon svg{width:30px;height:30px;stroke-width:1.4;color:var(--n-text-3)}
+.empty-icon::before{content:"";position:absolute;inset:-8px;border-radius:50%;border:1px solid var(--n-border);opacity:0.5;animation:empty-ring 4s ease-in-out infinite}
+.empty-icon::after{content:"";position:absolute;inset:-18px;border-radius:50%;border:1px solid var(--n-border);opacity:0.25;animation:empty-ring 4s ease-in-out infinite .8s}
+@keyframes empty-ring{
+  0%,100%{transform:scale(1);opacity:0.5}
+  50%{transform:scale(1.04);opacity:0.25}
+}
+.empty-title{font-family:var(--n-font-display);font-style:italic;font-size:34px;color:var(--n-text);text-align:center;line-height:1.1;letter-spacing:-0.01em;max-width:480px}
+.empty-sub{font-family:var(--n-font-mono);font-size:10.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);margin-top:14px}
+.empty-desc{font-size:13.5px;color:var(--n-text-2);text-align:center;line-height:1.6;max-width:380px;margin-top:18px}
+.empty-actions{display:flex;gap:10px;margin-top:28px}
+
+.scene-divider{padding:48px 36px 28px 36px;border-top:1px solid var(--n-border);background:linear-gradient(to bottom,var(--n-bg) 0%,#070707 100%);display:flex;align-items:center;gap:16px}
+.scene-divider-bar{flex:1;height:1px;background:var(--n-border)}
+.scene-divider-label{font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:var(--n-text-4)}
+
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--n-border-2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--n-border-3)}
+</style></head><body>
+
+<div class="preview-banner">
+  <span class="dot"></span>
+  <span>Community page preview · standalone mockup · v3</span>
+</div>
+
+<aside class="sb">
+  <div class="sb-brand">Rewind</div>
+  <div class="sb-section">Workspace</div>
+  <a class="ni"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>Dashboard</a>
+  <a class="ni"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Calendar</a>
+  <a class="ni"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Log Trade</a>
+  <a class="ni"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>History</a>
+  <div class="sb-section">Insights</div>
+  <a class="ni"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>Equity Curve</a>
+  <a class="ni"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>Analytics</a>
+  <div class="sb-section">Connect</div>
+  <a class="ni on"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 11a4 4 0 0 0 0-8M22 21v-2a4 4 0 0 0-3-3.87"/></svg>Community</a>
+  <a class="ni"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Broker Sync</a>
+  <div class="sb-spacer"></div>
+  <div class="sb-profile">
+    <div class="sb-avatar">JM</div>
+    <div>
+      <div class="sb-pname">Jordan M</div>
+      <div class="sb-phandle">@jordan_m</div>
+    </div>
+  </div>
+</aside>
+
+<div class="right-col">
+
+<section class="scene">
+
+<aside class="csb">
+  <div class="csb-head">Communities</div>
+  <div class="csb-tabs">
+    <div class="csb-tab on">Groups</div>
+    <div class="csb-tab">Notifs <span class="csb-badge">5</span></div>
+  </div>
+  <div class="csb-list">
+    <div class="gitem on">
+      <div class="gicon c1">FS</div>
+      <div class="gmeta"><div class="gname">Futures Squad</div><div class="gsub">47 members</div></div>
+    </div>
+    <div class="gitem">
+      <div class="gicon c2">ES</div>
+      <div class="gmeta"><div class="gname-row"><div class="gname">ES Day Traders</div><div class="gunread"></div></div><div class="gsub">124 members · 3 new</div></div>
+    </div>
+    <div class="gitem">
+      <div class="gicon c3">FA</div>
+      <div class="gmeta"><div class="gname-row"><div class="gname">Funded Account Crew</div><div class="gunread"></div></div><div class="gsub">89 members · 12 new</div></div>
+    </div>
+    <div class="gitem">
+      <div class="gicon c4">BT</div>
+      <div class="gmeta"><div class="gname">Beta Testers</div><div class="gsub">23 members</div></div>
+    </div>
+  </div>
+  <div class="csb-create">+ New Group</div>
+</aside>
+
+<div class="feed-wrap">
+
+<div class="feed">
+  <div class="fhead">
+    <div>
+      <h1 class="ftitle">Futures Squad</h1>
+      <div class="fsub">47 Members · Private Group · Joined Mar 2025</div>
+    </div>
+    <div class="fhead-actions">
+      <button class="iconbtn" title="Invite"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg></button>
+      <button class="iconbtn" title="Settings"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    </div>
+  </div>
+
+  <div class="fbar">
+    <div class="fstat"><span class="fstat-label">Group P&L · 7D</span><span class="fstat-val profit">+$24,820<span class="cents">.40</span></span></div>
+    <div class="fstat"><span class="fstat-label">Trades Shared</span><span class="fstat-val">38</span></div>
+    <div class="fstat"><span class="fstat-label">Avg Win Rate</span><span class="fstat-val cool">62<span class="cents">%</span></span></div>
+  </div>
+
+  <!-- FILTER CHIPS -->
+  <div class="filters">
+    <button class="fchip on">Latest</button>
+    <button class="fchip">Top</button>
+    <button class="fchip">Wins</button>
+    <button class="fchip">Losses</button>
+    <button class="fchip">Mine</button>
+  </div>
+
+  <div class="composer">
+    <div class="composer-av">JM</div>
+    <div class="composer-input">Share a recent trade with the squad…</div>
+    <button class="composer-share"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Share Trade</button>
+  </div>
+
+  <div class="post">
+    <div class="post-head">
+      <div class="post-av av-chrome">KH</div>
+      <div><div class="post-name">Kim H</div><div class="post-handle">@kim_h</div></div>
+      <span class="post-time">2H AGO</span>
+    </div>
+    <div class="trade-card">
+      <div class="tc-sym"><span class="tc-sym-val">ES</span><span class="tc-side">Long · 4 contracts</span></div>
+      <div class="tc-divider"></div>
+      <div class="tc-pl"><span class="tc-pl-val profit">+$2,450<span class="cents">.00</span></span><span class="tc-pl-r">+3.2<span class="unit">R</span> · 14 min hold</span></div>
+      <div class="tc-meta">May 08<br>09:42 EST</div>
+    </div>
+    <div class="post-note">Cleared CPI gap perfectly. Levels held, structure was clean. Held into close — patience trade, not a runner trade.</div>
+    <div class="post-actions">
+      <button class="pa liked"><svg fill="currentColor" stroke="currentColor" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>12</button>
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>4</button>
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>Share</button>
+    </div>
+    <div class="replies">
+      <div class="reply">
+        <div class="reply-av av-c1">MT</div>
+        <div class="reply-body"><div class="reply-name">Markus T <span class="t">1H AGO</span></div><div class="reply-text">absolutely textbook. you waited for retest off the gap-fill, didn't fade it like everyone else.</div></div>
+      </div>
+      <div class="reply">
+        <div class="reply-av av-c5">SJ</div>
+        <div class="reply-body"><div class="reply-name">Sarah J <span class="t">42 MIN AGO</span></div><div class="reply-text">stealing this for tomorrow's plan 🫡</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="post">
+    <div class="post-head">
+      <div class="post-av av-c1">MT</div>
+      <div><div class="post-name">Markus T</div><div class="post-handle">@markus_t</div></div>
+      <span class="post-time">5H AGO</span>
+    </div>
+    <div class="trade-card">
+      <div class="tc-sym"><span class="tc-sym-val">NQ</span><span class="tc-side">Short · 2 contracts</span></div>
+      <div class="tc-divider"></div>
+      <div class="tc-pl"><span class="tc-pl-val loss">−$890<span class="cents">.00</span></span><span class="tc-pl-r">−1.0<span class="unit">R</span> · 6 min hold</span></div>
+      <div class="tc-meta">May 08<br>06:18 EST</div>
+    </div>
+    <div class="post-note">Stopped out at premarket high. Should've waited for the actual session open instead of front-running. Logging this as a process loss — entry was outside the plan.</div>
+    <div class="post-actions">
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>8</button>
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>2</button>
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>Share</button>
+    </div>
+  </div>
+
+  <div class="post">
+    <div class="post-head">
+      <div class="post-av av-c2">TV</div>
+      <div><div class="post-name">Tommy V</div><div class="post-handle">@tommy_v</div></div>
+      <span class="post-time">YESTERDAY</span>
+    </div>
+    <div class="trade-card">
+      <div class="tc-sym"><span class="tc-sym-val">CL</span><span class="tc-side">Long · 3 contracts</span></div>
+      <div class="tc-divider"></div>
+      <div class="tc-pl"><span class="tc-pl-val profit">+$1,120<span class="cents">.00</span></span><span class="tc-pl-r">+2.1<span class="unit">R</span> · 22 min hold</span></div>
+      <div class="tc-meta">May 07<br>10:30 EST</div>
+    </div>
+    <div class="post-note">Inventory beat expectations. Trapped shorts under 73 — got paid on the squeeze. Took 75% off at first target, trailed the runner to VWAP.</div>
+    <div class="post-actions">
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>17</button>
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>6</button>
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>Share</button>
+    </div>
+    <div class="replies">
+      <div class="reply">
+        <div class="reply-av av-chrome">KH</div>
+        <div class="reply-body"><div class="reply-name">Kim H <span class="t">22H AGO</span></div><div class="reply-text">trail to VWAP is the move when the squeeze loses momentum. clean exit.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="post">
+    <div class="post-head">
+      <div class="post-av av-c5">SJ</div>
+      <div><div class="post-name">Sarah J</div><div class="post-handle">@sarahj</div></div>
+      <span class="post-time">YESTERDAY</span>
+    </div>
+    <div class="trade-card">
+      <div class="tc-sym"><span class="tc-sym-val">ES</span><span class="tc-side">Short · 2 contracts</span></div>
+      <div class="tc-divider"></div>
+      <div class="tc-pl"><span class="tc-pl-val profit">+$340<span class="cents">.00</span></span><span class="tc-pl-r">+0.5<span class="unit">R</span> · 4 min hold</span></div>
+      <div class="tc-meta">May 07<br>14:08 EST</div>
+    </div>
+    <div class="post-note">Quick scalp at VWAP rejection. Took it off fast — no need to be greedy in chop.</div>
+    <div class="post-actions">
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>5</button>
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>1</button>
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>Share</button>
+    </div>
+  </div>
+
+  <div class="post">
+    <div class="post-head">
+      <div class="post-av av-c3">DR</div>
+      <div><div class="post-name">Devin R</div><div class="post-handle">@dev_r</div></div>
+      <span class="post-time">2D AGO</span>
+    </div>
+    <div class="trade-card">
+      <div class="tc-sym"><span class="tc-sym-val">ES</span><span class="tc-side">Long · 3 contracts</span></div>
+      <div class="tc-divider"></div>
+      <div class="tc-pl"><span class="tc-pl-val profit">+$1,890<span class="cents">.00</span></span><span class="tc-pl-r">+2.8<span class="unit">R</span> · 38 min hold</span></div>
+      <div class="tc-meta">May 06<br>14:22 EST</div>
+    </div>
+    <div class="post-note">FOMC fade after the initial spike. Waited for the third push to fail before getting in. Patience paid.</div>
+    <div class="post-actions">
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>21</button>
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>9</button>
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>Share</button>
+    </div>
+  </div>
+
+  <div class="post">
+    <div class="post-head">
+      <div class="post-av av-c4">AC</div>
+      <div><div class="post-name">Alex C</div><div class="post-handle">@alexc</div></div>
+      <span class="post-time">3D AGO</span>
+    </div>
+    <div class="trade-card">
+      <div class="tc-sym"><span class="tc-sym-val">GC</span><span class="tc-side">Long · 1 contract</span></div>
+      <div class="tc-divider"></div>
+      <div class="tc-pl"><span class="tc-pl-val loss">−$450<span class="cents">.00</span></span><span class="tc-pl-r">−1.0<span class="unit">R</span> · 18 min hold</span></div>
+      <div class="tc-meta">May 05<br>11:05 EST</div>
+    </div>
+    <div class="post-note">Got chopped. No setup, no business being there. Logging it so I remember not to do it again.</div>
+    <div class="post-actions">
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>14</button>
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>3</button>
+      <button class="pa"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>Share</button>
+    </div>
+  </div>
+
+</div>
+
+<aside class="rail">
+  <div class="card">
+    <div class="card-title">Top This Week</div>
+    <div class="lb-row"><span class="lb-rank top">1</span><div class="lb-av av-chrome">KH</div><div class="lb-name">Kim H<div class="lb-handle">@kim_h</div></div><span class="lb-pl profit">+$5.1k</span></div>
+    <div class="lb-row"><span class="lb-rank top">2</span><div class="lb-av av-c1">MT</div><div class="lb-name">Markus T<div class="lb-handle">@markus_t</div></div><span class="lb-pl profit">+$3.4k</span></div>
+    <div class="lb-row"><span class="lb-rank top">3</span><div class="lb-av av-c5">SJ</div><div class="lb-name">Sarah J<div class="lb-handle">@sarahj</div></div><span class="lb-pl profit">+$1.9k</span></div>
+    <div class="lb-row"><span class="lb-rank">4</span><div class="lb-av av-c3">DR</div><div class="lb-name">Devin R<div class="lb-handle">@dev_r</div></div><span class="lb-pl profit">+$890</span></div>
+    <div class="lb-row"><span class="lb-rank">5</span><div class="lb-av av-c2">TV</div><div class="lb-name">Tommy V<div class="lb-handle">@tommy_v</div></div><span class="lb-pl loss">−$420</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Members · 30D Activity</div>
+    <div class="member hovered">
+      <div class="m-row"><div class="m-av av-chrome">KH</div><div class="m-meta"><div class="m-name">Kim H</div><div class="m-handle">@kim_h</div></div><span class="m-pl profit">+$5.1k</span></div>
+      <div class="minical"><div class="mc-cell p2"></div><div class="mc-cell p1"></div><div class="mc-cell p3"></div><div class="mc-cell p2"></div><div class="mc-cell"></div><div class="mc-cell"></div><div class="mc-cell p3"></div><div class="mc-cell p2"></div><div class="mc-cell p1"></div><div class="mc-cell l1"></div><div class="mc-cell"></div><div class="mc-cell"></div><div class="mc-cell p2"></div><div class="mc-cell p3"></div><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell p2"></div><div class="mc-cell p3"></div><div class="mc-cell p2"></div><div class="mc-cell p3"></div></div>
+    </div>
+    <div class="member">
+      <div class="m-row"><div class="m-av av-c1">MT</div><div class="m-meta"><div class="m-name">Markus T</div><div class="m-handle">@markus_t</div></div><span class="m-pl profit">+$3.4k</span></div>
+      <div class="minical"><div class="mc-cell p1"></div><div class="mc-cell p2"></div><div class="mc-cell"></div><div class="mc-cell l1"></div><div class="mc-cell p2"></div><div class="mc-cell"></div><div class="mc-cell"></div><div class="mc-cell p3"></div><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell l2"></div><div class="mc-cell p2"></div><div class="mc-cell p1"></div><div class="mc-cell p3"></div><div class="mc-cell"></div><div class="mc-cell p2"></div><div class="mc-cell"></div><div class="mc-cell p1"></div><div class="mc-cell l1"></div><div class="mc-cell p2"></div></div>
+    </div>
+    <div class="member">
+      <div class="m-row"><div class="m-av av-c5">SJ</div><div class="m-meta"><div class="m-name">Sarah J</div><div class="m-handle">@sarahj</div></div><span class="m-pl profit">+$1.9k</span></div>
+      <div class="minical"><div class="mc-cell"></div><div class="mc-cell p1"></div><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell p2"></div><div class="mc-cell"></div><div class="mc-cell"></div><div class="mc-cell p1"></div><div class="mc-cell l1"></div><div class="mc-cell p2"></div><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell"></div><div class="mc-cell p2"></div><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell p1"></div><div class="mc-cell p2"></div><div class="mc-cell"></div><div class="mc-cell p1"></div></div>
+    </div>
+    <div class="member">
+      <div class="m-row"><div class="m-av av-c3">DR</div><div class="m-meta"><div class="m-name">Devin R</div><div class="m-handle">@dev_r</div></div><span class="m-pl profit">+$890</span></div>
+      <div class="minical"><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell l1"></div><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell p2"></div><div class="mc-cell"></div><div class="mc-cell"></div><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell"></div><div class="mc-cell l1"></div><div class="mc-cell p1"></div><div class="mc-cell p2"></div><div class="mc-cell"></div><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell"></div><div class="mc-cell p1"></div><div class="mc-cell p1"></div></div>
+    </div>
+    <div class="member">
+      <div class="m-row"><div class="m-av av-c2">TV</div><div class="m-meta"><div class="m-name">Tommy V</div><div class="m-handle">@tommy_v</div></div><span class="m-pl loss">−$420</span></div>
+      <div class="minical"><div class="mc-cell"></div><div class="mc-cell l1"></div><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell l2"></div><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell l1"></div><div class="mc-cell"></div><div class="mc-cell p2"></div><div class="mc-cell"></div><div class="mc-cell"></div><div class="mc-cell l1"></div><div class="mc-cell"></div><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell l1"></div><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell"></div></div>
+    </div>
+    <div class="member">
+      <div class="m-row"><div class="m-av av-c4">AC</div><div class="m-meta"><div class="m-name">Alex C</div><div class="m-handle">@alexc</div></div><span class="m-pl loss">−$180</span></div>
+      <div class="minical"><div class="mc-cell"></div><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell"></div><div class="mc-cell l1"></div><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell"></div><div class="mc-cell p2"></div><div class="mc-cell l1"></div><div class="mc-cell"></div><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell"></div><div class="mc-cell l1"></div><div class="mc-cell p1"></div><div class="mc-cell"></div><div class="mc-cell l2"></div><div class="mc-cell p1"></div><div class="mc-cell"></div></div>
+    </div>
+  </div>
+</aside>
+
+</div>
+</section>
+
+<div class="scene-divider">
+  <span class="scene-divider-label">Alt State · Notifs Tab + Empty State</span>
+  <span class="scene-divider-bar"></span>
+</div>
+
+<section class="scene">
+
+<aside class="csb">
+  <div class="csb-head">Communities</div>
+  <div class="csb-tabs">
+    <div class="csb-tab">Groups</div>
+    <div class="csb-tab on">Notifs <span class="csb-badge">5</span></div>
+  </div>
+  <div class="notif-list">
+    <div class="notif">
+      <div class="notif-av av-c1">MT</div>
+      <div class="notif-body"><div class="notif-text"><b>Markus T</b> replied to your trade in <b>Futures Squad</b></div><div class="notif-time">12 MIN AGO</div></div>
+      <div class="notif-dot"></div>
+    </div>
+    <div class="notif">
+      <div class="notif-av av-c5">SJ</div>
+      <div class="notif-body"><div class="notif-text"><b>Sarah J</b> liked your <b>ES short scalp</b></div><div class="notif-time">38 MIN AGO</div></div>
+      <div class="notif-dot"></div>
+    </div>
+    <div class="notif">
+      <div class="notif-av av-c4">PV</div>
+      <div class="notif-body"><div class="notif-text"><b>Prop Firm Vets</b> invited you to join their group</div><div class="notif-invite-actions"><button class="notif-btn primary">Accept</button><button class="notif-btn">Decline</button></div><div class="notif-time">2H AGO</div></div>
+      <div class="notif-dot"></div>
+    </div>
+    <div class="notif">
+      <div class="notif-av av-c2">TV</div>
+      <div class="notif-body"><div class="notif-text"><b>Tommy V</b> shared a trade in <b>Futures Squad</b></div><div class="notif-time">YESTERDAY</div></div>
+      <div class="notif-dot"></div>
+    </div>
+    <div class="notif">
+      <div class="notif-av av-c6">KH</div>
+      <div class="notif-body"><div class="notif-text"><b>Kim H</b> started following your journal</div><div class="notif-time">YESTERDAY</div></div>
+      <div class="notif-dot"></div>
+    </div>
+    <div class="notif" style="opacity:0.55">
+      <div class="notif-av av-c3">DR</div>
+      <div class="notif-body"><div class="notif-text"><b>Devin R</b> liked your <b>FOMC fade trade</b></div><div class="notif-time">2D AGO</div></div>
+    </div>
+    <div class="notif" style="opacity:0.55">
+      <div class="notif-av av-c4">AC</div>
+      <div class="notif-body"><div class="notif-text"><b>Alex C</b> joined <b>Futures Squad</b></div><div class="notif-time">3D AGO</div></div>
+    </div>
+  </div>
+  <div class="notif-mark">Mark all as read</div>
+</aside>
+
+<div class="feed-wrap">
+<div class="empty">
+  <div class="empty-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 11a4 4 0 0 0 0-8M22 21v-2a4 4 0 0 0-3-3.87"/></svg></div>
+  <h2 class="empty-title">Find your trading circle</h2>
+  <div class="empty-sub">Pick a group · or start your own</div>
+  <p class="empty-desc">Share trades, compare calendars, and pressure-test your edge with people who actually do the reps. No clout, no noise — just receipts.</p>
+  <div class="empty-actions"><button class="btn-prim">Create Group</button><button class="btn-sec">Browse Public</button></div>
+</div>
+</div>
+
+</section>
+
+</div>
+
+</body></html>
