@@ -32,6 +32,38 @@ update public.profiles
   set avatar_initials = upper(substring(coalesce(initials,'??') from 1 for 2))
   where avatar_initials is null;
 
+-- RLS — users can read/update/insert only their own row.
+-- This is the most common cause of "save succeeds but persistence fails":
+-- the profiles table has RLS enabled but no UPDATE policy, so writes return
+-- 0 rows updated without raising an error. .select() on the update reveals
+-- this; the JS is wired to surface it.
+alter table public.profiles enable row level security;
+
+drop policy if exists "users_read_own_profile"   on public.profiles;
+drop policy if exists "users_update_own_profile" on public.profiles;
+drop policy if exists "users_insert_own_profile" on public.profiles;
+drop policy if exists "Profiles read"            on public.profiles;
+drop policy if exists "Profiles update"          on public.profiles;
+drop policy if exists "Profiles insert"          on public.profiles;
+
+-- Note: this codebase uses `id` (not `user_id`) as the FK to auth.users.
+create policy "users_read_own_profile"
+  on public.profiles for select
+  using (auth.uid() = id);
+create policy "users_update_own_profile"
+  on public.profiles for update
+  using (auth.uid() = id)
+  with check (auth.uid() = id);
+create policy "users_insert_own_profile"
+  on public.profiles for insert
+  with check (auth.uid() = id);
+
+-- Verify after running:
+--   SELECT column_name, data_type, column_default
+--   FROM information_schema.columns
+--   WHERE table_name = 'profiles' AND column_name LIKE 'avatar%';
+--   SELECT policyname, cmd FROM pg_policies WHERE tablename = 'profiles';
+
 -- ─────────────────────────────────────────────────────────────────
 -- 2. Communities — group avatar fields
 -- ─────────────────────────────────────────────────────────────────

@@ -11900,7 +11900,10 @@ function _doSaveProfile() {
   function persist(){
     refreshAcctUI();
     if (_sb && currentUser) {
-      saveProfileToDB().catch(function(e){ console.warn('DB save failed:',e); });
+      saveProfileToDB().catch(function(e){
+        console.error('[profile save] failed:', e);
+        toast('Save failed: '+(e.message||'see console'));
+      });
     }
   }
   if (pending && _sb && currentUser){
@@ -14014,7 +14017,14 @@ async function doSignOut() {
 
 /* ── SUPABASE DB: PROFILE ── */
 async function loadProfileFromDB(user) {
-  var r = await _sb.from('profiles').select('*').eq('id', user.id).single();
+  var r = await _sb.from('profiles')
+    .select('id,display_name,username,initials,color,avatar_finish,avatar_initials,avatar_image_url,plan')
+    .eq('id', user.id).maybeSingle();
+  console.log('[avatar load] profile:', r.data, 'error:', r.error);
+  if (!r.data && !r.error) {
+    // Treat null-from-maybeSingle the same as PGRST116 (row not found).
+    r = { data: null, error: { code: 'PGRST116' } };
+  }
   if (r.error && r.error.code === 'PGRST116') {
     /* Row not found — new user, pull everything from signup metadata */
     var pendingName = '';
@@ -14064,23 +14074,58 @@ async function loadProfileFromDB(user) {
 
 async function saveProfileToDB() {
   if (!currentUser || !_sb) return;
+
+  // The codebase's profiles table uses `id` as the FK to auth.users.
   var payload = {
-    id: currentUser.id, display_name: acct.name, email: acct.email,
-    username: acct.username, initials: acct.initials,
-    color: acct.avatar_finish || acct.color,
+    display_name: acct.name,
+    email: acct.email,
+    username: acct.username,
+    initials: acct.initials,
+    color: acct.avatar_finish || acct.color || 'chrome',
     avatar_finish: acct.avatar_finish || acct.color || 'chrome',
-    avatar_initials: acct.avatar_initials || acct.initials,
+    avatar_initials: acct.avatar_initials || acct.initials || null,
     avatar_image_url: acct.avatar_image_url || null,
-    plan: acct.plan, updated_at: new Date().toISOString()
+    plan: acct.plan || 'free',
+    updated_at: new Date().toISOString()
   };
-  var r = await _sb.from('profiles').upsert(payload);
-  // If the new columns aren't migrated yet, retry with the legacy subset
-  // so saves don't fail silently on an un-migrated DB.
-  if (r && r.error && /column .* does not exist/i.test(r.error.message||'')){
-    delete payload.avatar_finish; delete payload.avatar_initials; delete payload.avatar_image_url;
-    await _sb.from('profiles').upsert(payload);
-    console.warn('Avatar columns not migrated yet — saved color/initials only. Run supabase-avatar-migration.sql');
+
+  // Try UPDATE first with .select() so we can detect 0-row updates.
+  var upd = await _sb.from('profiles').update(payload).eq('id', currentUser.id).select();
+  console.log('[avatar save] update result:', { rows: upd.data, error: upd.error });
+
+  // Schema not migrated yet → strip new columns and retry.
+  if (upd.error && /column .* does not exist/i.test(upd.error.message||'')) {
+    var legacy = Object.assign({}, payload);
+    delete legacy.avatar_finish; delete legacy.avatar_initials; delete legacy.avatar_image_url;
+    var upd2 = await _sb.from('profiles').update(legacy).eq('id', currentUser.id).select();
+    console.warn('[avatar save] avatar columns not migrated — saved legacy fields only. Run supabase-avatar-migration.sql', { rows: upd2.data, error: upd2.error });
+    if (upd2.error) throw upd2.error;
+    return upd2.data;
   }
+  if (upd.error) {
+    console.error('[avatar save] update failed:', {
+      message: upd.error.message, code: upd.error.code,
+      details: upd.error.details, hint: upd.error.hint, raw: upd.error
+    });
+    throw upd.error;
+  }
+
+  // Zero rows updated → row doesn't exist yet, INSERT.
+  if (!upd.data || upd.data.length === 0) {
+    var insertPayload = Object.assign({ id: currentUser.id }, payload);
+    var ins = await _sb.from('profiles').insert(insertPayload).select();
+    console.log('[avatar save] insert result:', { rows: ins.data, error: ins.error });
+    if (ins.error) {
+      console.error('[avatar save] insert failed:', {
+        message: ins.error.message, code: ins.error.code,
+        details: ins.error.details, hint: ins.error.hint, raw: ins.error
+      });
+      throw ins.error;
+    }
+    return ins.data;
+  }
+
+  return upd.data;
 }
 
 /* ── SUPABASE DB: TRADES ── */
