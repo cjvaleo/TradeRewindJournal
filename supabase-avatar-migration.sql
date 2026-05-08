@@ -1,16 +1,17 @@
 -- Avatar finish + custom upload migration
 -- Run in Supabase SQL editor (or via supabase db push).
+--
+-- Note: leaves the existing `trade-images` bucket untouched. Adds two new
+-- buckets (`avatars`, `group-avatars`) alongside it.
 
--- 1. Schema: add avatar_finish, avatar_image_url, avatar_initials.
--- The existing `color` column is repurposed by the app to store finish names
--- ('chrome','gold','sapphire',...). Old values ('pink','blue',...) fall back
--- to 'chrome' at render time, so no data backfill is required.
+-- ─────────────────────────────────────────────────────────────────
+-- 1. Profiles — personal avatar fields
+-- ─────────────────────────────────────────────────────────────────
 alter table public.profiles
   add column if not exists avatar_finish    text default 'chrome',
   add column if not exists avatar_image_url text,
   add column if not exists avatar_initials  text;
 
--- Constrain finish values.
 alter table public.profiles
   drop constraint if exists profiles_avatar_finish_chk;
 alter table public.profiles
@@ -19,7 +20,6 @@ alter table public.profiles
                       'sapphire','emerald','amethyst','slate')
   );
 
--- Backfill avatar_finish from legacy color where reasonable.
 update public.profiles
   set avatar_finish = case
     when color in ('chrome','gold','rosegold','gunmetal',
@@ -28,12 +28,13 @@ update public.profiles
   end
   where avatar_finish is null;
 
--- Backfill avatar_initials from existing initials column.
 update public.profiles
   set avatar_initials = upper(substring(coalesce(initials,'??') from 1 for 2))
   where avatar_initials is null;
 
--- 2. Communities — group avatars (rounded-square icon).
+-- ─────────────────────────────────────────────────────────────────
+-- 2. Communities — group avatar fields
+-- ─────────────────────────────────────────────────────────────────
 alter table public.communities
   add column if not exists avatar_finish    text default 'chrome',
   add column if not exists avatar_image_url text,
@@ -59,83 +60,113 @@ update public.communities
   set icon_initials = upper(substring(coalesce(name,'??') from 1 for 2))
   where icon_initials is null;
 
--- 3. Storage buckets — personal `avatars` and group `group-avatars`.
-insert into storage.buckets (id, name, public)
-  values ('avatars', 'avatars', true)
-  on conflict (id) do nothing;
-insert into storage.buckets (id, name, public)
-  values ('group-avatars', 'group-avatars', true)
-  on conflict (id) do nothing;
+-- ─────────────────────────────────────────────────────────────────
+-- 3. Storage buckets — public, 2MB cap, image MIME whitelist
+-- If your role can't INSERT into storage.buckets directly (managed
+-- Supabase often blocks it), create both buckets via the dashboard:
+--   Storage → New bucket → public:on, file size limit:2MB
+--   allowed types: image/jpeg, image/png, image/webp
+-- ─────────────────────────────────────────────────────────────────
+insert into storage.buckets
+  (id, name, public, file_size_limit, allowed_mime_types)
+  values
+  ('avatars', 'avatars', true, 2097152,
+   array['image/jpeg','image/png','image/webp'])
+  on conflict (id) do update
+    set public = excluded.public,
+        file_size_limit = excluded.file_size_limit,
+        allowed_mime_types = excluded.allowed_mime_types;
 
--- 4. RLS — `avatars` bucket: anyone reads; users write only own user_id path.
-drop policy if exists "avatars public read" on storage.objects;
-create policy "avatars public read"
+insert into storage.buckets
+  (id, name, public, file_size_limit, allowed_mime_types)
+  values
+  ('group-avatars', 'group-avatars', true, 2097152,
+   array['image/jpeg','image/png','image/webp'])
+  on conflict (id) do update
+    set public = excluded.public,
+        file_size_limit = excluded.file_size_limit,
+        allowed_mime_types = excluded.allowed_mime_types;
+
+-- ─────────────────────────────────────────────────────────────────
+-- 4. RLS — paths are folder-prefixed (`{user_id}/{timestamp}.jpg`).
+-- Drop old single-file policies from prior runs first (idempotent).
+-- ─────────────────────────────────────────────────────────────────
+drop policy if exists "avatars public read"        on storage.objects;
+drop policy if exists "avatars owner write"        on storage.objects;
+drop policy if exists "avatars owner update"       on storage.objects;
+drop policy if exists "avatars owner delete"       on storage.objects;
+drop policy if exists "avatars_public_read"        on storage.objects;
+drop policy if exists "avatars_user_write"         on storage.objects;
+drop policy if exists "avatars_user_update"        on storage.objects;
+drop policy if exists "avatars_user_delete"        on storage.objects;
+
+create policy "avatars_public_read"
   on storage.objects for select
   using (bucket_id = 'avatars');
 
-drop policy if exists "avatars owner write" on storage.objects;
-create policy "avatars owner write"
+create policy "avatars_user_write"
   on storage.objects for insert
   with check (
     bucket_id = 'avatars'
-    and auth.uid()::text = split_part(name, '.', 1)
+    and auth.uid()::text = (storage.foldername(name))[1]
   );
 
-drop policy if exists "avatars owner update" on storage.objects;
-create policy "avatars owner update"
+create policy "avatars_user_update"
   on storage.objects for update
   using (
     bucket_id = 'avatars'
-    and auth.uid()::text = split_part(name, '.', 1)
+    and auth.uid()::text = (storage.foldername(name))[1]
   );
 
-drop policy if exists "avatars owner delete" on storage.objects;
-create policy "avatars owner delete"
+create policy "avatars_user_delete"
   on storage.objects for delete
   using (
     bucket_id = 'avatars'
-    and auth.uid()::text = split_part(name, '.', 1)
+    and auth.uid()::text = (storage.foldername(name))[1]
   );
 
--- 5. RLS — `group-avatars` bucket: anyone reads; only the community's
--- owner_id can write/update/delete. Path is `${community_id}.<ext>`.
-drop policy if exists "group-avatars public read" on storage.objects;
-create policy "group-avatars public read"
+drop policy if exists "group-avatars public read"  on storage.objects;
+drop policy if exists "group-avatars owner write"  on storage.objects;
+drop policy if exists "group-avatars owner update" on storage.objects;
+drop policy if exists "group-avatars owner delete" on storage.objects;
+drop policy if exists "group_avatars_public_read"  on storage.objects;
+drop policy if exists "group_avatars_owner_write"  on storage.objects;
+drop policy if exists "group_avatars_owner_update" on storage.objects;
+drop policy if exists "group_avatars_owner_delete" on storage.objects;
+
+create policy "group_avatars_public_read"
   on storage.objects for select
   using (bucket_id = 'group-avatars');
 
-drop policy if exists "group-avatars owner write" on storage.objects;
-create policy "group-avatars owner write"
+create policy "group_avatars_owner_write"
   on storage.objects for insert
   with check (
     bucket_id = 'group-avatars'
     and exists (
-      select 1 from public.communities c
-      where c.id::text = split_part(name, '.', 1)
-        and c.owner_id = auth.uid()
+      select 1 from public.communities
+      where id::text = (storage.foldername(name))[1]
+        and owner_id = auth.uid()
     )
   );
 
-drop policy if exists "group-avatars owner update" on storage.objects;
-create policy "group-avatars owner update"
+create policy "group_avatars_owner_update"
   on storage.objects for update
   using (
     bucket_id = 'group-avatars'
     and exists (
-      select 1 from public.communities c
-      where c.id::text = split_part(name, '.', 1)
-        and c.owner_id = auth.uid()
+      select 1 from public.communities
+      where id::text = (storage.foldername(name))[1]
+        and owner_id = auth.uid()
     )
   );
 
-drop policy if exists "group-avatars owner delete" on storage.objects;
-create policy "group-avatars owner delete"
+create policy "group_avatars_owner_delete"
   on storage.objects for delete
   using (
     bucket_id = 'group-avatars'
     and exists (
-      select 1 from public.communities c
-      where c.id::text = split_part(name, '.', 1)
-        and c.owner_id = auth.uid()
+      select 1 from public.communities
+      where id::text = (storage.foldername(name))[1]
+        and owner_id = auth.uid()
     )
   );

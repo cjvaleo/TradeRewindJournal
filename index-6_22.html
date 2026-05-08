@@ -6144,7 +6144,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:18px;height:18px;stroke-width:1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
             </div>
           </div>
-          <input type="file" id="eg-file-input" accept="image/*" style="display:none" onchange="handleGroupAvatarFile(this.files&&this.files[0])"/>
+          <input type="file" id="eg-file-input" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleGroupAvatarFile(this.files&&this.files[0])"/>
         </div>
       </div>
 
@@ -6516,7 +6516,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
                 <div class="av lg"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></div>
                 <span class="swatch-name">Upload</span>
               </div>
-              <input type="file" id="av-file-input" accept="image/*" style="display:none" onchange="handleAvatarFile(this.files&&this.files[0])"/>
+              <input type="file" id="av-file-input" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleAvatarFile(this.files&&this.files[0])"/>
             </div>
           </div>
 
@@ -8523,39 +8523,33 @@ function openEditGroup(){
   if(isOwner) setTimeout(function(){if(el){el.focus();el.select();}},100);
 }
 
-/* Center-crop + resize the picked file to 256×256 jpeg, store as
-   {blob, previewUrl} in _editGroupPendingImage. Hero updates instantly. */
+/* Pick → validate (≤2MB, jpeg/png/webp) → data-URL preview the hero →
+   stash raw File in _editGroupPendingImage. Save flow uploads to
+   `group-avatars/{community_id}/{timestamp}.{ext}`. */
 function handleGroupAvatarFile(file){
-  if(!file){ return; }
-  if(!/^image\//.test(file.type)){ toast('Pick an image file'); return; }
-  if(file.size > 2*1024*1024){ toast('Image too large (2MB max)'); return; }
-  var reader=new FileReader();
-  reader.onload=function(ev){
-    var img=new Image();
-    img.onload=function(){
-      var size=256;
-      var canvas=document.createElement('canvas');
-      canvas.width=size; canvas.height=size;
-      var ctx=canvas.getContext('2d');
-      var s=Math.min(img.width,img.height);
-      ctx.drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,size,size);
-      canvas.toBlob(function(blob){
-        if(!blob){ toast('Couldn\'t process image'); return; }
-        _editGroupPendingImage = { blob: blob, previewUrl: canvas.toDataURL('image/jpeg',0.85) };
-        egPreview();
-      },'image/jpeg',0.85);
-    };
-    img.src=ev.target.result;
+  if(!file) return;
+  var allowed = ['image/jpeg','image/png','image/webp'];
+  if(allowed.indexOf(file.type) === -1){
+    toast('Only JPG, PNG, or WebP allowed'); return;
+  }
+  if(file.size > 2*1024*1024){
+    toast('Image must be under 2MB'); return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    _editGroupPendingImage = { file: file, previewUrl: ev.target.result };
+    egPreview();
   };
   reader.readAsDataURL(file);
 }
 
-async function uploadGroupAvatarImage(blob, communityId){
+async function uploadGroupAvatarImage(file, communityId){
   if(!_sb) throw new Error('Not signed in');
-  var ext = (blob.type==='image/png') ? 'png' : 'jpg';
-  var path = communityId + '.' + ext;
-  var r = await _sb.storage.from('group-avatars').upload(path, blob, {
-    upsert:true, contentType:blob.type, cacheControl:'3600'
+  var ext = ((file && file.name) ? file.name.split('.').pop() : 'jpg').toLowerCase();
+  if(['jpg','jpeg','png','webp'].indexOf(ext) === -1) ext = 'jpg';
+  var path = communityId + '/' + Date.now() + '.' + ext;
+  var r = await _sb.storage.from('group-avatars').upload(path, file, {
+    upsert:true, contentType:file.type || 'image/jpeg', cacheControl:'3600'
   });
   if(r.error) throw new Error(r.error.message);
   var pub = _sb.storage.from('group-avatars').getPublicUrl(path);
@@ -8577,11 +8571,11 @@ async function saveEditGroup(){
   // Upload pending image first if any
   if(_editGroupPendingImage && _sb && _comm.id){
     try{
-      _comm.avatar_image_url = await uploadGroupAvatarImage(_editGroupPendingImage.blob, _comm.id);
+      _comm.avatar_image_url = await uploadGroupAvatarImage(_editGroupPendingImage.file, _comm.id);
       _editGroupPendingImage = null;
     }catch(e){
       console.warn('Group avatar upload failed:',e);
-      toast('Image upload failed — '+(e.message||'try again'));
+      toast('Upload failed: '+(e.message||'try again'));
     }
   }
 
@@ -11923,11 +11917,13 @@ function _doSaveProfile() {
   }
   if (pending && _sb && currentUser){
     uploadAvatarImage(pending).then(function(url){
-      acct.avatar_image_url = url; acct._pendingImage = null;
+      acct.avatar_image_url = url;
+      acct._pendingImage = null;
+      window._pendingAvatarFile = null;
       persist();
     }).catch(function(e){
       console.warn('Avatar upload failed:',e);
-      toast('Avatar upload failed — '+(e.message||'try again'));
+      toast('Upload failed: '+(e.message||'try again'));
       persist();
     });
   } else {
@@ -11936,74 +11932,62 @@ function _doSaveProfile() {
 }
 
 /* ── AVATAR FILE PIPELINE ──────────────────────────────────
-   On file pick → validate (≤2MB, image/*) → center-crop to square →
-   resize to 256×256 via canvas → store as blob in acct._pendingImage.
-   Hero preview updates instantly via data URL. Save flow uploads to
-   Supabase Storage. */
+   Pick → validate (≤2MB, jpeg/png/webp) → preview hero with data URL →
+   stash File on window._pendingAvatarFile + acct._pendingImage. Save
+   flow uploads the raw File to `avatars/{user_id}/{timestamp}.{ext}`. */
+var ALLOWED_AV_TYPES = ['image/jpeg','image/png','image/webp'];
+
 function handleAvatarFile(file){
-  if(!file){ return; }
-  if(!/^image\//.test(file.type)){ toast('Pick an image file'); return; }
-  if(file.size > 2*1024*1024){ toast('Image too large (2MB max)'); return; }
+  if(!file) return;
+  if(ALLOWED_AV_TYPES.indexOf(file.type) === -1){
+    toast('Only JPG, PNG, or WebP allowed'); return;
+  }
+  if(file.size > 2*1024*1024){
+    toast('Image must be under 2MB'); return;
+  }
+  window._pendingAvatarFile = file;
+  acct._pendingImage = file; // legacy alias used by _doSaveProfile
+
   var reader = new FileReader();
   reader.onload = function(ev){
-    var img = new Image();
-    img.onload = function(){
-      var size = 256;
-      var canvas = document.createElement('canvas');
-      canvas.width = size; canvas.height = size;
-      var ctx = canvas.getContext('2d');
-      // Center-crop the source to a square, then draw scaled into 256×256.
-      var s = Math.min(img.width, img.height);
-      var sx = (img.width - s) / 2;
-      var sy = (img.height - s) / 2;
-      ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
-      canvas.toBlob(function(blob){
-        if(!blob){ toast('Couldn\'t process image'); return; }
-        acct._pendingImage = blob;
-        var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        // Show preview in hero immediately (un-saved state).
-        var preview = document.getElementById('pfp-preview');
-        if(preview){
-          preview.classList.add('custom');
-          var imgEl = preview.querySelector('img.av-img');
-          if(!imgEl){
-            imgEl = document.createElement('img');
-            imgEl.className='av-img';
-            imgEl.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;inset:0';
-            preview.appendChild(imgEl);
-          }
-          imgEl.src = dataUrl;
-          preview.style.position = 'relative';
-        }
-        var lbl = document.getElementById('av-finish-label');
-        if(lbl) lbl.textContent = 'Custom image · '+(acct.avatar_finish||'chrome');
-        // Highlight upload swatch.
-        document.querySelectorAll('#pg-account .av-palette .swatch').forEach(function(s){s.classList.remove('selected');});
-        var up = document.getElementById('swatch-upload');
-        if(up) up.classList.add('selected');
-      }, 'image/jpeg', 0.85);
-    };
-    img.src = ev.target.result;
+    var preview = document.getElementById('pfp-preview');
+    if(preview){
+      preview.classList.add('custom');
+      var imgEl = preview.querySelector('img.av-img');
+      if(!imgEl){
+        imgEl = document.createElement('img');
+        imgEl.className='av-img';
+        imgEl.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;inset:0';
+        preview.appendChild(imgEl);
+      }
+      imgEl.src = ev.target.result;
+      preview.style.position = 'relative';
+    }
+    var lbl = document.getElementById('av-finish-label');
+    if(lbl) lbl.textContent = 'Custom · '+(acct.avatar_finish||'chrome');
+    document.querySelectorAll('#pg-account .av-palette .swatch').forEach(function(s){s.classList.remove('selected');});
+    var up = document.getElementById('swatch-upload');
+    if(up) up.classList.add('selected');
   };
   reader.readAsDataURL(file);
 }
 
-async function uploadAvatarImage(blob){
+async function uploadAvatarImage(file){
   if(!_sb || !currentUser) throw new Error('Not signed in');
-  var ext = (blob.type === 'image/png') ? 'png' : 'jpg';
-  var path = currentUser.id + '.' + ext;
-  var r = await _sb.storage.from('avatars').upload(path, blob, {
-    upsert: true, contentType: blob.type, cacheControl: '3600'
+  var ext = ((file && file.name) ? file.name.split('.').pop() : 'jpg').toLowerCase();
+  if(['jpg','jpeg','png','webp'].indexOf(ext) === -1) ext = 'jpg';
+  var path = currentUser.id + '/' + Date.now() + '.' + ext;
+  var r = await _sb.storage.from('avatars').upload(path, file, {
+    upsert: true, contentType: file.type || 'image/jpeg', cacheControl: '3600'
   });
   if(r.error) throw new Error(r.error.message);
   var pub = _sb.storage.from('avatars').getPublicUrl(path);
-  // Append a cache-buster so the browser re-fetches after re-upload.
-  return pub.data.publicUrl + '?v=' + Date.now();
+  return pub.data.publicUrl;
 }
 
 function saveProfile() {
   _doSaveProfile();
-  toast('Profile saved!');
+  toast('Profile updated');
 }
 function cancelProfileEdit(){
   // Revert form fields + any pending image to the persisted acct state.
