@@ -98,6 +98,17 @@
 .av.lg{width:42px;height:42px;font-size:12px}
 .av.xl{width:180px;height:180px;font-size:60px}
 
+/* Recommended pill — small mono caps, cool-blue tint */
+.badge-recommended{
+  display:inline-block;margin-left:8px;padding:2px 8px;
+  font-family:var(--n-font-mono);font-size:8.5px;
+  letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--n-accent-cool);
+  background:rgba(110,168,255,0.10);
+  border:1px solid rgba(110,168,255,0.25);
+  border-radius:4px;vertical-align:middle;
+}
+
 /* Group icon — rounded square, same finishes as personal but distinct shape */
 .gicon{
   border-radius:14px;
@@ -146,12 +157,6 @@
   color:var(--n-text);font-family:var(--n-font-mono);
 }
 #edit-group-modal .eg-swatch .gicon{width:100%;height:100%;font-size:11px}
-#edit-group-modal .eg-swatch.upload .gicon{
-  background:var(--n-surface-3);border:1px dashed var(--n-border-3);
-  box-shadow:none;color:var(--n-text-3);
-}
-#edit-group-modal .eg-swatch.upload .gicon::after{display:none}
-#edit-group-modal .eg-swatch.upload:hover .gicon{border-color:var(--n-text-3);color:var(--n-text-2)}
 #edit-group-modal .eg-input:focus,
 #edit-group-modal #eg-icon-initials:focus{
   border-color:var(--n-border-3)!important;background:var(--n-surface-3)!important;
@@ -671,8 +676,10 @@
 }
 
 .dash-head{
-  display:flex;align-items:flex-start;justify-content:space-between;
-  margin-bottom:36px;position:relative;
+  display:flex;flex-direction:column;gap:14px;margin-bottom:36px;
+}
+.dash-head-row{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
 }
 .dash-head-left .h-title{
   font-family:var(--n-font-display);font-style:italic;
@@ -684,7 +691,6 @@
   text-transform:uppercase;color:var(--n-text-3);
 }
 .dash-journal{
-  position:absolute;left:50%;top:0;transform:translateX(-50%);
   display:flex;align-items:center;gap:8px;
   background:var(--n-surface-2);border:1px solid var(--n-border);
   border-radius:7px;padding:6px 10px 6px 12px;height:36px;
@@ -2979,7 +2985,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 #pg-account .av-palette{
   display:grid!important;
-  grid-template-columns:repeat(5,1fr)!important;
+  grid-template-columns:repeat(4,1fr)!important;
   gap:12px!important;margin-bottom:28px;
 }
 #pg-account .av-palette .swatch{
@@ -3014,15 +3020,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 #pg-account .av-palette .swatch:hover .swatch-name{color:var(--n-text-2)}
 #pg-account .av-palette .swatch.selected .swatch-name{color:var(--n-text)}
-#pg-account .av-palette .swatch.upload .av{
-  background:var(--n-surface-3);border:1px dashed var(--n-border-3);box-shadow:none;
-}
-#pg-account .av-palette .swatch.upload .av::after{display:none}
-#pg-account .av-palette .swatch.upload .av svg{
-  width:18px;height:18px;color:var(--n-text-3);stroke-width:1.6;transition:color .2s;
-}
-#pg-account .av-palette .swatch.upload:hover .av{border-color:var(--n-text-3)}
-#pg-account .av-palette .swatch.upload:hover .av svg{color:var(--n-text-2)}
 
 /* Display name + username — 2-col grid with @ prefix on username */
 #pg-account .av-form-grid{
@@ -4772,31 +4769,33 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 <!-- DASHBOARD -->
 <div id="pg-dashboard" class="page on">
 
-  <!-- HEADER -->
+  <!-- HEADER — two rows so journal + session-badge can't overlap -->
   <div class="dash-head">
-    <div class="dash-head-left">
-      <div class="h-title">Dashboard</div>
-      <div id="dash-date" class="h-date"></div>
-    </div>
-    <div class="dash-journal">
-      <span class="j-dot"></span>
-      <span class="j-label">Journal</span>
-      <select id="journal-select" onchange="switchJournal(this.value)">
-        <option value="funded">Funded Account</option>
-        <option value="paper">Paper Trading</option>
-      </select>
-      <span id="journal-badge" style="display:none"></span>
-    </div>
-    <div class="dash-head-right">
-      <div id="session-badge" class="dash-session">
-        <span id="session-dot" class="s-dot"></span>
-        <span id="session-name"></span>
-        <span id="session-detail"></span>
+    <div class="dash-head-row">
+      <div class="dash-head-left">
+        <div class="h-title">Dashboard</div>
+        <div id="dash-date" class="h-date"></div>
       </div>
       <div class="dash-tabs">
         <div class="dash-tab active" onclick="setPeriod('today',this)">Today</div>
         <div class="dash-tab" onclick="setPeriod('week',this)">Week</div>
         <div class="dash-tab" onclick="setPeriod('month',this)">Month</div>
+      </div>
+    </div>
+    <div class="dash-head-row">
+      <div class="dash-journal">
+        <span class="j-dot"></span>
+        <span class="j-label">Journal</span>
+        <select id="journal-select" onchange="switchJournal(this.value)">
+          <option value="funded">Funded Account</option>
+          <option value="paper">Paper Trading</option>
+        </select>
+        <span id="journal-badge" style="display:none"></span>
+      </div>
+      <div id="session-badge" class="dash-session">
+        <span id="session-dot" class="s-dot"></span>
+        <span id="session-name"></span>
+        <span id="session-detail"></span>
       </div>
     </div>
   </div>
@@ -4924,7 +4923,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       <svg viewBox="0 0 16 16"><path d="M2 12.5V14h1.5l8.5-8.5-1.5-1.5L2 12.5z"/></svg>Manual
     </div>
     <div class="mode-tab" onclick="setMode('ai',this)">
-      <svg viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="11" rx="1"/><line x1="6" y1="7" x2="11" y2="7"/><line x1="6" y1="10" x2="11" y2="10"/></svg>CSV Import
+      <svg viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="11" rx="1"/><line x1="6" y1="7" x2="11" y2="7"/><line x1="6" y1="10" x2="11" y2="10"/></svg>CSV Import <span class="badge-recommended">Recommended</span>
     </div>
   </div>
 
@@ -6109,7 +6108,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
           <span>Finish · 8 + Custom Image</span>
           <span style="color:var(--n-text-4);font-size:9px">click upload to use a photo</span>
         </div>
-        <div class="eg-palette" style="display:grid;grid-template-columns:repeat(9,1fr);gap:10px">
+        <div class="eg-palette" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
           <div class="eg-swatch" data-finish="chrome"   onclick="setGroupFinish('chrome')"  ><div class="gicon md chrome"  ></div></div>
           <div class="eg-swatch" data-finish="gold"     onclick="setGroupFinish('gold')"    ><div class="gicon md gold"    ></div></div>
           <div class="eg-swatch" data-finish="rosegold" onclick="setGroupFinish('rosegold')"><div class="gicon md rosegold"></div></div>
@@ -6118,12 +6117,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
           <div class="eg-swatch" data-finish="emerald"  onclick="setGroupFinish('emerald')" ><div class="gicon md emerald" ></div></div>
           <div class="eg-swatch" data-finish="amethyst" onclick="setGroupFinish('amethyst')"><div class="gicon md amethyst"></div></div>
           <div class="eg-swatch" data-finish="slate"    onclick="setGroupFinish('slate')"   ><div class="gicon md slate"   ></div></div>
-          <div class="eg-swatch upload" id="eg-swatch-upload" onclick="document.getElementById('eg-file-input').click()">
-            <div class="gicon md">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:18px;height:18px;stroke-width:1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-            </div>
-          </div>
-          <input type="file" id="eg-file-input" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleGroupAvatarFile(this.files&&this.files[0])"/>
         </div>
       </div>
 
@@ -6491,11 +6484,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
               <div class="swatch" id="swatch-emerald"  onclick="setPfpColor('emerald')"  title="Emerald" ><div class="av lg emerald shimmer" ></div><span class="swatch-name">Emerald</span></div>
               <div class="swatch" id="swatch-amethyst" onclick="setPfpColor('amethyst')" title="Amethyst"><div class="av lg amethyst shimmer"></div><span class="swatch-name">Amethyst</span></div>
               <div class="swatch" id="swatch-slate"    onclick="setPfpColor('slate')"    title="Slate"   ><div class="av lg slate shimmer"   ></div><span class="swatch-name">Slate</span></div>
-              <div class="swatch upload" id="swatch-upload" onclick="document.getElementById('av-file-input').click()" title="Upload">
-                <div class="av lg"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></div>
-                <span class="swatch-name">Upload</span>
-              </div>
-              <input type="file" id="av-file-input" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleAvatarFile(this.files&&this.files[0])"/>
             </div>
           </div>
 
@@ -8404,7 +8392,6 @@ function removeMember(id){
 }
 
 var _editGroupFinish='chrome';
-var _editGroupPendingImage=null;
 
 /* Legacy alias — old call sites pass a synthwave color name; we map it
    via normalizeFinish. New picker calls setGroupFinish directly. */
@@ -8412,7 +8399,6 @@ function setGroupColor(c){ setGroupFinish(c); }
 
 function setGroupFinish(finish){
   _editGroupFinish = normalizeFinish(finish);
-  _editGroupPendingImage = null;
   egPreview();
 }
 
@@ -8425,32 +8411,21 @@ function egPreview(){
   // Hero icon
   var hero=document.getElementById('eg-hero-icon');
   if(hero){
-    hero.className='gicon xl '+(_editGroupPendingImage?'custom':_editGroupFinish);
+    hero.className='gicon xl '+_editGroupFinish;
     hero.style.animation='av-hero-float 5s ease-in-out infinite';
     hero.style.filter='drop-shadow(0 18px 22px rgba(0,0,0,0.6))';
-    if(_editGroupPendingImage){
-      hero.innerHTML='';
-      var img=document.createElement('img');
-      img.src=_editGroupPendingImage.previewUrl;
-      img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:inherit;position:absolute;inset:0';
-      hero.appendChild(img);
-    } else {
-      hero.textContent=init;
-    }
+    hero.textContent=init;
   }
   // Finish label
   var lbl=document.getElementById('eg-finish-label');
   if(lbl){
-    var nm=_editGroupFinish.charAt(0).toUpperCase()+_editGroupFinish.slice(1);
-    lbl.textContent = _editGroupPendingImage ? ('Custom · '+nm) : nm;
+    lbl.textContent=_editGroupFinish.charAt(0).toUpperCase()+_editGroupFinish.slice(1);
   }
   // Swatch selection
   document.querySelectorAll('#edit-group-modal .eg-swatch').forEach(function(s){
     var f=s.getAttribute('data-finish');
-    s.classList.toggle('selected', !_editGroupPendingImage && f===_editGroupFinish);
+    s.classList.toggle('selected', f===_editGroupFinish);
   });
-  var up=document.getElementById('eg-swatch-upload');
-  if(up) up.classList.toggle('selected', !!_editGroupPendingImage);
 }
 
 function openEditGroup(){
@@ -8469,9 +8444,8 @@ function openEditGroup(){
   if(el) el.value = _comm.name || '';
   var initEl=document.getElementById('eg-icon-initials');
   if(initEl) initEl.value = _comm.icon_initials || (_comm.name||'??').slice(0,2).toUpperCase();
-  // Hydrate finish + image state from current comm row
+  // Hydrate finish from current comm row
   _editGroupFinish = normalizeFinish(_comm.avatar_finish || _comm.color);
-  _editGroupPendingImage = null;
   // Sub-header: name · N members
   var subEl=document.getElementById('eg-sub');
   if(subEl){
@@ -8502,48 +8476,6 @@ function openEditGroup(){
   if(isOwner) setTimeout(function(){if(el){el.focus();el.select();}},100);
 }
 
-/* Pick → validate (≤2MB, jpeg/png/webp) → data-URL preview the hero →
-   stash raw File in _editGroupPendingImage. Save flow uploads to
-   `group-avatars/{community_id}/{timestamp}.{ext}`. */
-function handleGroupAvatarFile(file){
-  if(!file) return;
-  var allowed = ['image/jpeg','image/png','image/webp'];
-  if(allowed.indexOf(file.type) === -1){
-    toast('Only JPG, PNG, or WebP allowed'); return;
-  }
-  if(file.size > 2*1024*1024){
-    toast('Image must be under 2MB'); return;
-  }
-  var reader = new FileReader();
-  reader.onload = function(ev){
-    _editGroupPendingImage = { file: file, previewUrl: ev.target.result };
-    egPreview();
-  };
-  reader.readAsDataURL(file);
-}
-
-async function uploadGroupAvatarImage(file, communityId){
-  if(!_sb) throw new Error('Not signed in');
-  var ext = ((file && file.name) ? file.name.split('.').pop() : 'jpg').toLowerCase();
-  if(['jpg','jpeg','png','webp'].indexOf(ext) === -1) ext = 'jpg';
-  var path = communityId + '/' + Date.now() + '.' + ext;
-  console.log('[group avatar upload] path:', path, 'type:', file.type, 'size:', file.size);
-  var r = await _sb.storage.from('group-avatars').upload(path, file, {
-    upsert:true, contentType:file.type || 'image/jpeg', cacheControl:'3600'
-  });
-  if(r.error){
-    console.error('[group avatar upload] failed:', {
-      message: r.error.message,
-      statusCode: r.error.statusCode,
-      error: r.error.error,
-      raw: r.error
-    });
-  }
-  if(r.error) throw new Error(r.error.message);
-  var pub = _sb.storage.from('group-avatars').getPublicUrl(path);
-  return pub.data.publicUrl + '?v=' + Date.now();
-}
-
 async function saveEditGroup(){
   if(!_comm||(currentUser&&_comm.owner_id!==currentUser.id)){toast('Only the group leader can edit');return;}
   var name=(document.getElementById('edit-grp-name').value||'').trim();
@@ -8556,25 +8488,15 @@ async function saveEditGroup(){
   _comm.avatar_finish=_editGroupFinish;
   _comm.color=_editGroupFinish; /* legacy alias */
 
-  // Upload pending image first if any
-  if(_editGroupPendingImage && _sb && _comm.id){
-    try{
-      _comm.avatar_image_url = await uploadGroupAvatarImage(_editGroupPendingImage.file, _comm.id);
-      _editGroupPendingImage = null;
-    }catch(e){
-      console.warn('Group avatar upload failed:',e);
-      toast('Upload failed: '+(e.message||'try again'));
-    }
-  }
-
   saveComm();
-  // Persist to Supabase row
+  // Persist to Supabase row. Custom image uploads removed — always
+  // null avatar_image_url so saves don't carry stale URLs forward.
   if(_sb && _comm.id){
     var payload = {
       id: _comm.id, name: _comm.name,
       avatar_finish: _comm.avatar_finish,
       icon_initials: _comm.icon_initials,
-      avatar_image_url: _comm.avatar_image_url || null
+      avatar_image_url: null
     };
     var r = await _sb.from('communities').update(payload).eq('id',_comm.id);
     if(r && r.error && /column .* does not exist/i.test(r.error.message||'')){
@@ -11734,11 +11656,9 @@ function refreshAcctUI(){
   Object.keys(pfpColors).forEach(function(k){
     var sw=document.getElementById('swatch-'+k);
     if(!sw) return;
-    sw.classList.toggle('selected', k === finishKey && !hasImg);
+    sw.classList.toggle('selected', k === finishKey);
     sw.style.borderColor = '';  // strip any legacy inline border
   });
-  var upSw=document.getElementById('swatch-upload');
-  if(upSw) upSw.classList.toggle('selected', hasImg);
   /* Update hero label */
   var lbl=document.getElementById('av-finish-label');
   if(lbl){
@@ -11895,94 +11815,13 @@ function _doSaveProfile() {
     acct.initials = derived; acct.avatar_initials = derived;
   }
   saveAcct();
-  // If a custom image is queued, upload first, then persist row.
-  var pending = acct._pendingImage;
-  function persist(){
-    refreshAcctUI();
-    if (_sb && currentUser) {
-      saveProfileToDB().catch(function(e){
-        console.error('[profile save] failed:', e);
-        toast('Save failed: '+(e.message||'see console'));
-      });
-    }
-  }
-  if (pending && _sb && currentUser){
-    uploadAvatarImage(pending).then(function(url){
-      acct.avatar_image_url = url;
-      acct._pendingImage = null;
-      window._pendingAvatarFile = null;
-      persist();
-    }).catch(function(e){
-      console.warn('Avatar upload failed:',e);
-      toast('Upload failed: '+(e.message||'try again'));
-      persist();
+  refreshAcctUI();
+  if (_sb && currentUser) {
+    saveProfileToDB().catch(function(e){
+      console.error('[profile save] failed:', e);
+      toast('Save failed: '+(e.message||'see console'));
     });
-  } else {
-    persist();
   }
-}
-
-/* ── AVATAR FILE PIPELINE ──────────────────────────────────
-   Pick → validate (≤2MB, jpeg/png/webp) → preview hero with data URL →
-   stash File on window._pendingAvatarFile + acct._pendingImage. Save
-   flow uploads the raw File to `avatars/{user_id}/{timestamp}.{ext}`. */
-var ALLOWED_AV_TYPES = ['image/jpeg','image/png','image/webp'];
-
-function handleAvatarFile(file){
-  if(!file) return;
-  if(ALLOWED_AV_TYPES.indexOf(file.type) === -1){
-    toast('Only JPG, PNG, or WebP allowed'); return;
-  }
-  if(file.size > 2*1024*1024){
-    toast('Image must be under 2MB'); return;
-  }
-  window._pendingAvatarFile = file;
-  acct._pendingImage = file; // legacy alias used by _doSaveProfile
-
-  var reader = new FileReader();
-  reader.onload = function(ev){
-    var preview = document.getElementById('pfp-preview');
-    if(preview){
-      preview.classList.add('custom');
-      var imgEl = preview.querySelector('img.av-img');
-      if(!imgEl){
-        imgEl = document.createElement('img');
-        imgEl.className='av-img';
-        imgEl.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;inset:0';
-        preview.appendChild(imgEl);
-      }
-      imgEl.src = ev.target.result;
-      preview.style.position = 'relative';
-    }
-    var lbl = document.getElementById('av-finish-label');
-    if(lbl) lbl.textContent = 'Custom · '+(acct.avatar_finish||'chrome');
-    document.querySelectorAll('#pg-account .av-palette .swatch').forEach(function(s){s.classList.remove('selected');});
-    var up = document.getElementById('swatch-upload');
-    if(up) up.classList.add('selected');
-  };
-  reader.readAsDataURL(file);
-}
-
-async function uploadAvatarImage(file){
-  if(!_sb || !currentUser) throw new Error('Not signed in');
-  var ext = ((file && file.name) ? file.name.split('.').pop() : 'jpg').toLowerCase();
-  if(['jpg','jpeg','png','webp'].indexOf(ext) === -1) ext = 'jpg';
-  var path = currentUser.id + '/' + Date.now() + '.' + ext;
-  console.log('[avatar upload] path:', path, 'type:', file.type, 'size:', file.size);
-  var r = await _sb.storage.from('avatars').upload(path, file, {
-    upsert: true, contentType: file.type || 'image/jpeg', cacheControl: '3600'
-  });
-  if(r.error){
-    console.error('[avatar upload] failed:', {
-      message: r.error.message,
-      statusCode: r.error.statusCode,
-      error: r.error.error,
-      raw: r.error
-    });
-    throw new Error(r.error.message);
-  }
-  var pub = _sb.storage.from('avatars').getPublicUrl(path);
-  return pub.data.publicUrl;
 }
 
 function saveProfile() {
@@ -11990,8 +11829,6 @@ function saveProfile() {
   toast('Profile updated');
 }
 function cancelProfileEdit(){
-  // Revert form fields + any pending image to the persisted acct state.
-  acct._pendingImage = null;
   refreshAcctUI();
   toast('Changes discarded');
 }
@@ -14084,7 +13921,9 @@ async function saveProfileToDB() {
     color: acct.avatar_finish || acct.color || 'chrome',
     avatar_finish: acct.avatar_finish || acct.color || 'chrome',
     avatar_initials: acct.avatar_initials || acct.initials || null,
-    avatar_image_url: acct.avatar_image_url || null,
+    // Custom image uploads removed — always clear so saves don't carry
+    // a stale URL forward. Column kept in case uploads return later.
+    avatar_image_url: null,
     plan: acct.plan || 'free',
     updated_at: new Date().toISOString()
   };
