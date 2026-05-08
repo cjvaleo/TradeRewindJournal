@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Rewind — Calendar Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --n-bg:#0a0a0a;
+  --n-surface:#121212;
+  --n-surface-2:#181818;
+  --n-surface-3:#1f1f1f;
+  --n-border:rgba(255,255,255,0.06);
+  --n-border-2:rgba(255,255,255,0.10);
+  --n-border-3:rgba(255,255,255,0.15);
+  --n-text:#f5f5f5;
+  --n-text-2:#a1a1a1;
+  --n-text-3:#6b6b6b;
+  --n-text-4:#4a4a4a;
+  --n-chrome:linear-gradient(135deg,#e8e8e8 0%,#b8b8b8 50%,#8a8a8a 100%);
+  --n-accent-cool:#6ea8ff;
+  --n-profit:#5fb389;
+  --n-loss:#c95f5f;
+  --n-font-sans:'Geist',-apple-system,sans-serif;
+  --n-font-mono:'Geist Mono',monospace;
+  --n-font-display:'Instrument Serif',Georgia,serif;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--n-bg);color:var(--n-text);font-family:var(--n-font-sans);min-height:100vh}
+body{display:flex}
+
+/* SIDEBAR (simplified, just for context) */
+.sb{
+  width:230px;flex-shrink:0;background:var(--n-bg);
+  border-right:1px solid var(--n-border);
+  display:flex;flex-direction:column;height:100vh;position:sticky;top:0;
+}
+.sb-logo{padding:22px 20px 18px;border-bottom:1px solid var(--n-border)}
+.sb-logo-text{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:30px;letter-spacing:-0.01em;color:var(--n-text);line-height:1;
+}
+.sb-nav{padding:14px 0;flex:1}
+.sb-sec{
+  padding:18px 20px 6px;font-family:var(--n-font-mono);
+  font-size:9.5px;letter-spacing:0.18em;color:var(--n-text-4);
+  text-transform:uppercase;
+}
+.sb-sec:first-child{padding-top:4px}
+.ni{
+  font-family:var(--n-font-sans);font-size:13px;font-weight:500;
+  color:var(--n-text-2);padding:8px 20px;display:flex;align-items:center;
+  gap:11px;border-left:2px solid transparent;cursor:pointer;
+  transition:.12s;text-decoration:none;
+}
+.ni:hover{color:var(--n-text);background:var(--n-surface)}
+.ni.on{
+  color:var(--n-text);background:var(--n-surface-2);
+  border-left-color:var(--n-text);
+}
+.ni svg{width:14px;height:14px;stroke-width:1.5;opacity:0.85}
+.sb-foot{padding:12px;border-top:1px solid var(--n-border)}
+.sb-prof{
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:6px;padding:9px 11px;display:flex;align-items:center;gap:10px;
+  cursor:pointer;transition:.12s;
+}
+.sb-prof:hover{border-color:var(--n-border-2);background:var(--n-surface-2)}
+.sb-prof .av{
+  width:28px;height:28px;border-radius:50%;background:var(--n-chrome);
+  border:1px solid var(--n-border-2);display:flex;align-items:center;
+  justify-content:center;font-family:var(--n-font-mono);font-size:11px;
+  color:var(--n-bg);font-weight:500;
+}
+.sb-prof .info{flex:1;min-width:0}
+.sb-prof .nm{font-size:13px;font-weight:500;color:var(--n-text)}
+.sb-prof .un{
+  font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-3);
+  margin-top:2px;
+}
+.sb-prof .arr{color:var(--n-text-4)}
+
+/* MAIN */
+.main{flex:1;min-width:0;padding:32px 40px 48px}
+
+/* HEADER */
+.cal-head{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:28px;
+}
+.cal-head-left .h-title{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:38px;line-height:1;letter-spacing:-0.01em;color:var(--n-text);
+}
+.cal-head-left .h-sub{
+  margin-top:8px;font-family:var(--n-font-mono);font-size:10.5px;
+  letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);
+}
+.cal-nav{
+  display:flex;align-items:center;gap:6px;
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:7px;padding:5px;height:36px;
+}
+.cal-nav-btn{
+  width:26px;height:26px;display:flex;align-items:center;justify-content:center;
+  background:transparent;border:none;color:var(--n-text-3);cursor:pointer;
+  border-radius:4px;font-size:14px;transition:.12s;
+}
+.cal-nav-btn:hover{color:var(--n-text);background:var(--n-surface-2)}
+.cal-nav-lbl{
+  min-width:140px;text-align:center;font-family:var(--n-font-mono);
+  font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-2);
+}
+
+/* STATS ROW */
+.cal-stats{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:10px;
+  margin-bottom:18px;
+}
+.n-stat-card{
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:8px;padding:14px;transition:.12s;
+}
+.n-stat-card:hover{border-color:var(--n-border-2);background:var(--n-surface-2)}
+.n-stat-card .stat-label{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-3);margin-bottom:8px;
+}
+.n-stat-card .stat-value{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:28px;line-height:1;letter-spacing:-0.01em;color:var(--n-text);
+}
+.n-stat-card .stat-value.pos{color:var(--n-profit)}
+.n-stat-card .stat-value.neg{color:var(--n-loss)}
+.n-stat-card .stat-value .cents{font-size:0.65em;opacity:0.7}
+.n-stat-card .stat-value .unit{
+  font-size:0.45em;opacity:0.6;font-family:var(--n-font-mono);
+  font-style:normal;margin-left:5px;letter-spacing:0.05em;
+}
+
+/* MAIN GRID */
+.cal-grid-wrap{
+  display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start;
+}
+.cal-card{
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:8px;padding:14px;
+}
+
+/* DOW headers */
+.cal-dow-row{
+  display:grid;grid-template-columns:32px repeat(7,1fr);gap:4px;margin-bottom:6px;
+}
+.cal-dow{
+  text-align:center;font-family:var(--n-font-mono);font-size:9.5px;
+  letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-4);padding:4px 0;
+}
+
+/* CALENDAR GRID */
+.big-cal{
+  display:grid;grid-template-columns:32px repeat(7,1fr);gap:4px;
+}
+.wk-num{
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  border-radius:4px;color:var(--n-text-4);font-family:var(--n-font-mono);
+  font-size:9px;letter-spacing:0.1em;writing-mode:vertical-lr;padding:4px 0;
+  transition:.12s;
+}
+.wk-num:hover{color:var(--n-text-2);background:var(--n-surface-2)}
+
+.cc{
+  min-height:104px;background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:5px;padding:8px;display:flex;flex-direction:column;cursor:pointer;
+  transition:border-color .12s,background .12s;position:relative;
+}
+.cc:hover{border-color:var(--n-border-2);background:var(--n-surface-3)}
+.cc.empty{background:transparent;border-color:transparent;cursor:default}
+.cc.today{border-color:var(--n-text-2)}
+.cc.today .cc-n{color:var(--n-text)}
+.cc.profit{
+  background:linear-gradient(180deg,rgba(95,179,137,0.06) 0%,var(--n-surface-2) 100%);
+  border-color:rgba(95,179,137,0.22);
+}
+.cc.profit:hover{border-color:rgba(95,179,137,0.45)}
+.cc.loss{
+  background:linear-gradient(180deg,rgba(201,95,95,0.06) 0%,var(--n-surface-2) 100%);
+  border-color:rgba(201,95,95,0.22);
+}
+.cc.loss:hover{border-color:rgba(201,95,95,0.45)}
+.cc.be{background:var(--n-surface-2);border-color:var(--n-border-2)}
+.cc.selected{border-color:var(--n-text);background:var(--n-surface-3)}
+
+.cc-n{
+  font-family:var(--n-font-mono);font-size:10.5px;font-weight:500;
+  color:var(--n-text-3);line-height:1;
+}
+.cc.profit .cc-n{color:var(--n-profit);opacity:0.85}
+.cc.loss .cc-n{color:var(--n-loss);opacity:0.85}
+
+.cc-body{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;gap:2px;
+}
+.cc-pnl{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:18px;line-height:1;letter-spacing:-0.01em;
+}
+.cc-pnl.pos{color:var(--n-profit)}
+.cc-pnl.neg{color:var(--n-loss)}
+.cc-pnl.zero{color:var(--n-text-3)}
+.cc-tcount{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.05em;
+  color:var(--n-text-4);text-transform:uppercase;margin-top:1px;
+}
+
+/* DAY PANEL */
+#day-panel{position:sticky;top:32px}
+.day-panel-title{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:24px;line-height:1.1;color:var(--n-text);margin-bottom:14px;
+  letter-spacing:-0.01em;
+}
+.day-summary-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;
+}
+.day-summary-cell{
+  background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:5px;padding:10px;text-align:center;
+}
+.day-summary-cell .lbl{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-4);margin-bottom:6px;
+}
+.day-summary-cell .val{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:22px;line-height:1;letter-spacing:-0.01em;
+}
+.day-summary-cell .val.pos{color:var(--n-profit)}
+.day-summary-cell .val.neg{color:var(--n-loss)}
+.day-summary-cell .val.neutral{color:var(--n-text)}
+.day-summary-cell .wlb{
+  font-family:var(--n-font-mono);font-size:14px;font-weight:500;letter-spacing:0.05em;
+}
+.day-summary-cell .wlb .w{color:var(--n-profit)}
+.day-summary-cell .wlb .l{color:var(--n-loss)}
+.day-summary-cell .wlb .b{color:var(--n-text-2)}
+.day-summary-cell .wlb .sep{color:var(--n-text-4);margin:0 4px}
+
+.day-section-lbl{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-3);margin:14px 0 8px;
+}
+.day-trade-row{
+  display:flex;align-items:center;gap:8px;padding:9px 0;
+  border-bottom:1px solid var(--n-border);
+}
+.day-trade-row:last-child{border-bottom:none}
+.day-trade-row .sym{
+  font-family:var(--n-font-sans);font-size:13px;font-weight:500;color:var(--n-text);flex:1;
+}
+.day-trade-row .typ{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;
+  color:var(--n-text-3);text-transform:uppercase;
+}
+.day-trade-row .pnl{
+  font-family:var(--n-font-display);font-style:italic;font-size:16px;letter-spacing:-0.01em;
+}
+.day-trade-row .pnl.pos{color:var(--n-profit)}
+.day-trade-row .pnl.neg{color:var(--n-loss)}
+.day-trade-row .edit-btn{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.12em;
+  padding:4px 8px;border-radius:4px;border:1px solid var(--n-border-2);
+  background:transparent;color:var(--n-text-3);cursor:pointer;
+  text-transform:uppercase;transition:.12s;flex-shrink:0;
+}
+.day-trade-row .edit-btn:hover{color:var(--n-text);border-color:var(--n-text-3)}
+
+.day-img-row{
+  border-radius:6px;overflow:hidden;border:1px solid var(--n-border);
+  cursor:pointer;transition:border-color .12s;margin-bottom:8px;
+}
+.day-img-row:hover{border-color:var(--n-border-2)}
+.day-img-row .img-meta{
+  background:var(--n-surface-2);padding:5px 9px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.day-img-row .img-meta .sym{
+  font-family:var(--n-font-sans);font-size:11px;font-weight:500;color:var(--n-text-2);
+}
+.day-img-row .img-meta .pnl{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.05em;
+}
+.day-img-row .img-meta .pnl.pos{color:var(--n-profit)}
+.day-img-row .img-meta .pnl.neg{color:var(--n-loss)}
+.day-img-row .img-placeholder{
+  height:140px;background:linear-gradient(135deg,#1a1a1a 0%,#0d0d0d 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.1em;
+  color:var(--n-text-4);text-transform:uppercase;
+}
+
+.day-notes{
+  margin-top:14px;background:var(--n-surface-2);
+  border-left:2px solid var(--n-accent-cool);padding:10px 12px;border-radius:0 5px 5px 0;
+}
+.day-notes .lbl{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  color:var(--n-text-4);margin-bottom:5px;text-transform:uppercase;
+}
+.day-notes .body{
+  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);line-height:1.55;
+}
+
+/* PREVIEW BANNER */
+.preview-banner{
+  background:linear-gradient(135deg,#1a1a1a 0%,#0a0a0a 100%);
+  border-bottom:1px solid var(--n-border);
+  padding:10px 24px;display:flex;align-items:center;gap:12px;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.15em;
+  color:var(--n-text-3);text-transform:uppercase;position:fixed;
+  top:0;left:0;right:0;z-index:100;
+}
+.preview-banner .dot{
+  width:6px;height:6px;border-radius:50%;background:var(--n-accent-cool);
+  box-shadow:0 0 8px rgba(110,168,255,0.6);
+}
+body{padding-top:38px}
+</style>
+</head>
+<body>
+
+<div class="preview-banner">
+  <span class="dot"></span>
+  <span>CALENDAR PAGE PREVIEW &middot; STANDALONE MOCKUP</span>
+</div>
+
+<!-- SIDEBAR (truncated for context) -->
+<aside class="sb">
+  <div class="sb-logo">
+    <div class="sb-logo-text">Rewind</div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-sec">Main</div>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Log Trade</a>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>History</a>
+    <div class="sb-sec">Insights</div>
+    <a class="ni on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 17 9 11 13 15 21 7"/></svg>Equity Curve</a>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="6" y1="20" x2="6" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg>Analytics</a>
+    <div class="sb-sec">Connect</div>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 1 1-6.2-8.5"/><polyline points="21 4 21 12 13 12"/></svg>Broker Sync</a>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Community</a>
+  </div>
+  <div class="sb-foot">
+    <div class="sb-prof">
+      <div class="av">CV</div>
+      <div class="info">
+        <div class="nm">valeo</div>
+        <div class="un">@christianvaleo</div>
+      </div>
+      <div class="arr">›</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HEADER -->
+  <div class="cal-head">
+    <div class="cal-head-left">
+      <div class="h-title">Calendar</div>
+      <div class="h-sub">Daily P&amp;L heatmap</div>
+    </div>
+    <div class="cal-nav">
+      <button class="cal-nav-btn">←</button>
+      <span class="cal-nav-lbl">May 2026</span>
+      <button class="cal-nav-btn">→</button>
+    </div>
+  </div>
+
+  <!-- STATS ROW -->
+  <div class="cal-stats">
+    <div class="n-stat-card">
+      <div class="stat-label">Monthly P&amp;L</div>
+      <div class="stat-value pos">+$2,847<span class="cents">.50</span></div>
+    </div>
+    <div class="n-stat-card">
+      <div class="stat-label">Green Days</div>
+      <div class="stat-value">8<span class="unit">days</span></div>
+    </div>
+    <div class="n-stat-card">
+      <div class="stat-label">Red Days</div>
+      <div class="stat-value">3<span class="unit">days</span></div>
+    </div>
+    <div class="n-stat-card">
+      <div class="stat-label">Avg Daily P&amp;L</div>
+      <div class="stat-value pos">+$258<span class="cents">.86</span></div>
+    </div>
+    <div class="n-stat-card">
+      <div class="stat-label">Current Streak</div>
+      <div class="stat-value pos">3<span class="unit">W</span></div>
+    </div>
+  </div>
+
+  <!-- CALENDAR GRID + DAY PANEL -->
+  <div class="cal-grid-wrap">
+
+    <!-- CALENDAR -->
+    <div class="cal-card">
+      <div class="cal-dow-row">
+        <div></div>
+        <div class="cal-dow">Sun</div>
+        <div class="cal-dow">Mon</div>
+        <div class="cal-dow">Tue</div>
+        <div class="cal-dow">Wed</div>
+        <div class="cal-dow">Thu</div>
+        <div class="cal-dow">Fri</div>
+        <div class="cal-dow">Sat</div>
+      </div>
+
+      <div class="big-cal">
+        <!-- WEEK 1 -->
+        <div class="wk-num">W18</div>
+        <div class="cc empty"></div>
+        <div class="cc empty"></div>
+        <div class="cc empty"></div>
+        <div class="cc empty"></div>
+        <div class="cc empty"></div>
+        <div class="cc profit"><div class="cc-n">1</div><div class="cc-body"><div class="cc-pnl pos">+$340</div><div class="cc-tcount">3 trades</div></div></div>
+        <div class="cc"><div class="cc-n">2</div></div>
+
+        <!-- WEEK 2 -->
+        <div class="wk-num">W19</div>
+        <div class="cc"><div class="cc-n">3</div></div>
+        <div class="cc loss"><div class="cc-n">4</div><div class="cc-body"><div class="cc-pnl neg">−$220</div><div class="cc-tcount">2 trades</div></div></div>
+        <div class="cc profit"><div class="cc-n">5</div><div class="cc-body"><div class="cc-pnl pos">+$485</div><div class="cc-tcount">4 trades</div></div></div>
+        <div class="cc profit"><div class="cc-n">6</div><div class="cc-body"><div class="cc-pnl pos">+$612</div><div class="cc-tcount">5 trades</div></div></div>
+        <div class="cc be"><div class="cc-n">7</div><div class="cc-body"><div class="cc-pnl zero">$0</div><div class="cc-tcount">2 trades</div></div></div>
+        <div class="cc profit selected today"><div class="cc-n">8</div><div class="cc-body"><div class="cc-pnl pos">+$425</div><div class="cc-tcount">3 trades</div></div></div>
+        <div class="cc"><div class="cc-n">9</div></div>
+
+        <!-- WEEK 3 -->
+        <div class="wk-num">W20</div>
+        <div class="cc"><div class="cc-n">10</div></div>
+        <div class="cc profit"><div class="cc-n">11</div><div class="cc-body"><div class="cc-pnl pos">+$280</div><div class="cc-tcount">2 trades</div></div></div>
+        <div class="cc loss"><div class="cc-n">12</div><div class="cc-body"><div class="cc-pnl neg">−$415</div><div class="cc-tcount">3 trades</div></div></div>
+        <div class="cc profit"><div class="cc-n">13</div><div class="cc-body"><div class="cc-pnl pos">+$190</div><div class="cc-tcount">2 trades</div></div></div>
+        <div class="cc profit"><div class="cc-n">14</div><div class="cc-body"><div class="cc-pnl pos">+$735</div><div class="cc-tcount">6 trades</div></div></div>
+        <div class="cc loss"><div class="cc-n">15</div><div class="cc-body"><div class="cc-pnl neg">−$152</div><div class="cc-tcount">1 trade</div></div></div>
+        <div class="cc"><div class="cc-n">16</div></div>
+
+        <!-- WEEK 4 -->
+        <div class="wk-num">W21</div>
+        <div class="cc"><div class="cc-n">17</div></div>
+        <div class="cc"><div class="cc-n">18</div></div>
+        <div class="cc"><div class="cc-n">19</div></div>
+        <div class="cc"><div class="cc-n">20</div></div>
+        <div class="cc"><div class="cc-n">21</div></div>
+        <div class="cc"><div class="cc-n">22</div></div>
+        <div class="cc"><div class="cc-n">23</div></div>
+
+        <!-- WEEK 5 -->
+        <div class="wk-num">W22</div>
+        <div class="cc"><div class="cc-n">24</div></div>
+        <div class="cc"><div class="cc-n">25</div></div>
+        <div class="cc"><div class="cc-n">26</div></div>
+        <div class="cc"><div class="cc-n">27</div></div>
+        <div class="cc"><div class="cc-n">28</div></div>
+        <div class="cc"><div class="cc-n">29</div></div>
+        <div class="cc"><div class="cc-n">30</div></div>
+
+        <!-- WEEK 6 -->
+        <div class="wk-num">W23</div>
+        <div class="cc"><div class="cc-n">31</div></div>
+        <div class="cc empty"></div>
+        <div class="cc empty"></div>
+        <div class="cc empty"></div>
+        <div class="cc empty"></div>
+        <div class="cc empty"></div>
+        <div class="cc empty"></div>
+      </div>
+    </div>
+
+    <!-- DAY PANEL -->
+    <div class="cal-card" id="day-panel">
+      <div class="day-panel-title">Thursday, May 8</div>
+
+      <div class="day-summary-row">
+        <div class="day-summary-cell">
+          <div class="lbl">Net P&amp;L</div>
+          <div class="val pos">+$425<span class="cents">.00</span></div>
+        </div>
+        <div class="day-summary-cell">
+          <div class="lbl">W &middot; L &middot; BE</div>
+          <div class="val wlb">
+            <span class="w">2</span><span class="sep">/</span><span class="l">1</span><span class="sep">/</span><span class="b">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="day-section-lbl">Trades</div>
+      <div class="day-trade-row">
+        <span class="sym">ES</span>
+        <span class="typ">long</span>
+        <span class="pnl pos">+$280</span>
+        <button class="edit-btn">Edit</button>
+      </div>
+      <div class="day-trade-row">
+        <span class="sym">NQ</span>
+        <span class="typ">short</span>
+        <span class="pnl pos">+$210</span>
+        <button class="edit-btn">Edit</button>
+      </div>
+      <div class="day-trade-row">
+        <span class="sym">CL</span>
+        <span class="typ">long</span>
+        <span class="pnl neg">−$65</span>
+        <button class="edit-btn">Edit</button>
+      </div>
+
+      <div class="day-section-lbl">Screenshots (2)</div>
+      <div class="day-img-row">
+        <div class="img-meta">
+          <span class="sym">ES</span>
+          <span class="pnl pos">+$280.00</span>
+        </div>
+        <div class="img-placeholder">[ Trade Screenshot ]</div>
+      </div>
+      <div class="day-img-row">
+        <div class="img-meta">
+          <span class="sym">CL</span>
+          <span class="pnl neg">−$65.00</span>
+        </div>
+        <div class="img-placeholder">[ Trade Screenshot ]</div>
+      </div>
+
+      <div class="day-notes">
+        <div class="lbl">Notes</div>
+        <div class="body">Clean morning session. Stuck to plan on ES, took NQ short on FOMC reaction. CL stop got run after no follow-through — shouldn't have entered at that level.</div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+</body>
+</html>
