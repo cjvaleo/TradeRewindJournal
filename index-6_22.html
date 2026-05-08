@@ -3257,6 +3257,689 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   background:var(--n-surface);border:1px solid var(--n-border);
   color:var(--n-text-3);
 }
+
+/* ── COMMUNITY REDESIGN v3 ─────────────────────────────── */
+
+#pg-community.page.on{
+  display:flex!important;flex-direction:row!important;
+  padding:0!important;margin:0!important;
+  background:var(--n-bg);
+  height:calc(100vh - 0px);max-height:100vh;
+  overflow:hidden;width:100%;max-width:100%;position:relative;
+}
+#pg-community.on > .ph{display:none}
+
+/* Ambient page glow — only when community is the active page so it doesn't
+   bleed onto other pages. Sits at z-index:0 behind content. */
+#pg-community.page.on::before{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 900px 600px at 88% 12%, rgba(110,168,255,0.022), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 12% 88%, rgba(95,179,137,0.012), transparent 60%);
+  animation:comm-ambient-drift 22s ease-in-out infinite alternate;
+}
+@keyframes comm-ambient-drift{
+  0%{transform:translate(0,0) scale(1)}
+  100%{transform:translate(-2%,-1%) scale(1.05)}
+}
+#pg-community .csb,
+#pg-community #comm-main{position:relative;z-index:1}
+
+/* ── CHROME SHIMMER SWEEP — applied to every chrome avatar ── */
+#pg-community .av-chrome,
+#pg-community .post-av.av-chrome,
+#pg-community .composer-av,
+#pg-community .gicon.c1,
+#pg-community .lb-av.av-chrome,
+#pg-community .m-av.av-chrome,
+#pg-community .reply-av.av-chrome{
+  position:relative;overflow:hidden;
+}
+#pg-community .av-chrome::after,
+#pg-community .post-av.av-chrome::after,
+#pg-community .composer-av::after,
+#pg-community .gicon.c1::after,
+#pg-community .lb-av.av-chrome::after,
+#pg-community .m-av.av-chrome::after,
+#pg-community .reply-av.av-chrome::after{
+  content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,0.55) 50%,transparent 65%);
+  background-size:280% 100%;background-position:280% 0;
+  animation:comm-chrome-sweep 5.5s ease-in-out infinite;
+}
+@keyframes comm-chrome-sweep{
+  0%, 28%{background-position:280% 0}
+  72%, 100%{background-position:-80% 0}
+}
+
+/* ── LEFT COMMUNITIES SUB-SIDEBAR ── */
+#pg-community .csb{
+  width:260px;flex-shrink:0;
+  border-right:1px solid var(--n-border);
+  padding:24px 16px;display:flex;flex-direction:column;
+  background:var(--n-bg);overflow-y:auto;height:100%;
+}
+#pg-community .csb-head{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--n-text-3);padding:0 8px 14px;
+  text-shadow:none;
+}
+#pg-community .csb-tabs{
+  display:flex;gap:2px;background:var(--n-surface);
+  border:1px solid var(--n-border);border-radius:8px;padding:3px;margin-bottom:16px;
+}
+#pg-community .csb-tab{
+  flex:1;padding:7px 10px;text-align:center;
+  font-family:var(--n-font-mono)!important;font-size:10px!important;
+  letter-spacing:0.12em!important;text-transform:uppercase;
+  color:var(--n-text-3)!important;border-radius:6px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:.2s;background:transparent!important;border:none!important;
+  text-shadow:none!important;position:relative;font-weight:500!important;
+}
+#pg-community .csb-tab.on{
+  background:var(--n-surface-3)!important;color:var(--n-text)!important;
+  border:none!important;text-shadow:none!important;
+}
+#pg-community .csb-tab:hover:not(.on){color:var(--n-text-2)!important;background:transparent!important}
+#pg-community .csb-badge{
+  display:inline-flex!important;align-items:center;justify-content:center;
+  min-width:16px;height:16px;padding:0 5px;border-radius:8px!important;
+  background:var(--n-accent-cool)!important;color:#0a0a0a!important;
+  font-size:9px!important;font-weight:600!important;
+  font-family:var(--n-font-sans)!important;letter-spacing:0!important;
+  text-shadow:none!important;
+  box-shadow:0 0 8px rgba(110,168,255,0.3)!important;
+  position:static!important;top:auto!important;right:auto!important;
+  animation:comm-dot-pulse 2.4s ease-in-out infinite;
+}
+@keyframes comm-dot-pulse{
+  0%,100%{opacity:1;box-shadow:0 0 8px rgba(110,168,255,0.45)}
+  50%{opacity:.6;box-shadow:0 0 14px rgba(110,168,255,0.3)}
+}
+
+#pg-community #comm-sidebar-list,
+#pg-community #comm-sidebar-notifs{
+  flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:2px;
+  padding:0!important;background:transparent!important;
+}
+
+/* ── GROUP LIST ITEM (.gitem) ── */
+#pg-community .gitem{
+  display:flex;align-items:center;gap:10px;padding:10px;
+  border-radius:7px;cursor:pointer;border:1px solid transparent;
+  transition:background .15s, border-color .15s;
+  text-shadow:none;background:transparent;
+}
+#pg-community .gitem:hover{background:var(--n-surface)}
+#pg-community .gitem.on{background:var(--n-surface-2);border-color:var(--n-border-2)}
+#pg-community .gicon{
+  width:32px;height:32px;border-radius:7px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono);font-size:10.5px;font-weight:600;
+  color:#fff;letter-spacing:0;text-shadow:none;
+  transition:transform .35s cubic-bezier(0.34,1.56,0.64,1);
+  transform-style:preserve-3d;
+}
+#pg-community .gitem:hover .gicon{
+  transform:perspective(140px) rotateY(-14deg) rotateX(4deg) scale(1.06);
+}
+#pg-community .gitem.on .gicon{transform:perspective(140px) rotateY(-6deg)}
+#pg-community .gicon.c1{
+  background:var(--n-chrome);color:#1a1a1a;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),inset 0 -1px 0 rgba(0,0,0,0.2);
+}
+#pg-community .gicon.c2{background:radial-gradient(circle at 30% 30%,#7a9eff,#3b5eb8)}
+#pg-community .gicon.c3{background:radial-gradient(circle at 30% 30%,#d4956b,#8a5a3a)}
+#pg-community .gicon.c4{background:radial-gradient(circle at 30% 30%,#9b7dd4,#5a3a8a)}
+#pg-community .gicon.c5{background:radial-gradient(circle at 30% 30%,#7dc4a8,#3a8a6a)}
+#pg-community .gicon.c6{background:radial-gradient(circle at 30% 30%,#d47d9e,#8a3a5a)}
+#pg-community .gmeta{flex:1;min-width:0}
+#pg-community .gname{
+  font-family:var(--n-font-sans);font-size:12.5px;font-weight:500;
+  color:var(--n-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  letter-spacing:0;text-shadow:none;
+}
+#pg-community .gname-row{display:flex;align-items:center;gap:6px}
+#pg-community .gsub{
+  font-family:var(--n-font-mono);font-size:9.5px;color:var(--n-text-3);
+  margin-top:2px;letter-spacing:0.04em;
+}
+#pg-community .gunread{
+  width:6px;height:6px;border-radius:50%;background:var(--n-accent-cool);
+  flex-shrink:0;box-shadow:0 0 6px rgba(110,168,255,0.5);
+  animation:comm-dot-pulse 2.4s ease-in-out infinite;
+}
+#pg-community .csb-create{
+  margin-top:12px;padding:10px;
+  border:1px dashed var(--n-border-2);border-radius:7px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--n-text-3);
+  cursor:pointer;transition:.2s;background:transparent;text-shadow:none;
+  width:100%;
+}
+#pg-community .csb-create:hover{
+  border-color:var(--n-border-3);color:var(--n-text-2);background:var(--n-surface);
+}
+
+/* ── NOTIF LIST ── */
+#pg-community .notif-list{display:flex;flex-direction:column}
+#pg-community .notif{
+  display:flex;gap:10px;padding:13px 8px;
+  border-bottom:1px solid var(--n-border);cursor:pointer;
+  transition:.15s;align-items:flex-start;
+}
+#pg-community .notif:hover{background:var(--n-surface)}
+#pg-community .notif-av{
+  width:30px;height:30px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono);font-size:10px;font-weight:600;
+  color:#fff;text-shadow:none;letter-spacing:0;
+}
+#pg-community .notif-body{flex:1;min-width:0}
+#pg-community .notif-text{
+  font-family:var(--n-font-sans);font-size:12px;color:var(--n-text-2);
+  line-height:1.45;letter-spacing:0;text-shadow:none;
+}
+#pg-community .notif-text b{color:var(--n-text);font-weight:500}
+#pg-community .notif-time{
+  font-family:var(--n-font-mono);font-size:9.5px;color:var(--n-text-4);
+  margin-top:5px;letter-spacing:0.04em;
+}
+#pg-community .notif-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--n-accent-cool);
+  flex-shrink:0;align-self:center;box-shadow:0 0 6px rgba(110,168,255,0.5);
+  animation:comm-dot-pulse 2.4s ease-in-out infinite;
+}
+#pg-community .notif-invite-actions{display:flex;gap:6px;margin-top:9px}
+#pg-community .notif-btn{
+  padding:5px 11px;border-radius:5px;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.12em;
+  text-transform:uppercase;cursor:pointer;
+  border:1px solid var(--n-border-2);background:transparent;
+  color:var(--n-text-2);transition:.15s;text-shadow:none;
+}
+#pg-community .notif-btn:hover{
+  color:var(--n-text);border-color:var(--n-border-3);transform:translateY(-1px);
+}
+#pg-community .notif-btn.primary{
+  background:var(--n-text);color:#0a0a0a;border-color:var(--n-text);
+}
+#pg-community .notif-btn.primary:hover{background:#fff}
+#pg-community .notif-mark{
+  padding:8px 0;text-align:right;font-family:var(--n-font-mono);
+  font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--n-text-3);cursor:pointer;transition:.15s;
+}
+#pg-community .notif-mark:hover{color:var(--n-text-2)}
+#pg-community .notif-empty{
+  padding:32px 12px;text-align:center;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-4);line-height:1.8;
+}
+
+/* ── MAIN AREA ── */
+#pg-community #comm-main{
+  flex:1;display:flex;min-width:0;height:100%;overflow:hidden;
+  background:var(--n-bg);
+}
+#pg-community #comm-feed-view{
+  flex:1;display:flex;min-width:0;height:100%;overflow:hidden;
+}
+#pg-community .feed{
+  flex:1;min-width:0;padding:32px 36px;
+  border-right:1px solid var(--n-border);
+  overflow-y:auto;height:100%;background:transparent;
+}
+#pg-community .rail{
+  width:300px;padding:32px 22px;
+  display:flex;flex-direction:column;gap:24px;flex-shrink:0;
+  background:transparent;overflow-y:auto;height:100%;
+}
+
+/* ── EMPTY STATE ── */
+#pg-community .empty{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:80px 36px;min-height:600px;
+}
+#pg-community .empty-icon{
+  width:72px;height:72px;border-radius:50%;
+  background:var(--n-surface);border:1px solid var(--n-border);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:24px;position:relative;
+  animation:comm-empty-float 5s ease-in-out infinite;
+}
+@keyframes comm-empty-float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-4px)}
+}
+#pg-community .empty-icon svg{
+  width:30px;height:30px;stroke-width:1.4;
+  stroke:var(--n-text-3);fill:none;
+}
+#pg-community .empty-icon::before{
+  content:"";position:absolute;inset:-8px;border-radius:50%;
+  border:1px solid var(--n-border);opacity:0.5;
+  animation:comm-empty-ring 4s ease-in-out infinite;
+}
+#pg-community .empty-icon::after{
+  content:"";position:absolute;inset:-18px;border-radius:50%;
+  border:1px solid var(--n-border);opacity:0.25;
+  animation:comm-empty-ring 4s ease-in-out infinite .8s;
+}
+@keyframes comm-empty-ring{
+  0%,100%{transform:scale(1);opacity:0.5}
+  50%{transform:scale(1.04);opacity:0.25}
+}
+#pg-community .empty-title{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:34px;color:var(--n-text);text-align:center;
+  line-height:1.1;letter-spacing:-0.01em;max-width:480px;
+  text-shadow:none;font-weight:400;
+}
+#pg-community .empty-sub{
+  font-family:var(--n-font-mono);font-size:10.5px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-3);margin-top:14px;
+}
+#pg-community .empty-desc{
+  font-family:var(--n-font-sans);font-size:13.5px;color:var(--n-text-2);
+  text-align:center;line-height:1.6;max-width:380px;margin-top:18px;
+  letter-spacing:0;text-shadow:none;
+}
+#pg-community .empty-actions{display:flex;gap:10px;margin-top:28px}
+#pg-community .btn-prim{
+  padding:9px 18px;border-radius:7px;background:var(--n-text);color:#0a0a0a;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;
+  text-transform:uppercase;border:none;cursor:pointer;
+  font-weight:500;transition:.2s;text-shadow:none;
+}
+#pg-community .btn-prim:hover{
+  background:#fff;transform:translateY(-1px);
+  box-shadow:0 4px 16px -4px rgba(255,255,255,0.2);
+}
+#pg-community .btn-sec{
+  padding:9px 18px;border-radius:7px;background:transparent;color:var(--n-text-2);
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;
+  text-transform:uppercase;border:1px solid var(--n-border-2);cursor:pointer;
+  font-weight:500;transition:.2s;text-shadow:none;
+}
+#pg-community .btn-sec:hover{
+  color:var(--n-text);border-color:var(--n-border-3);background:var(--n-surface);
+  transform:translateY(-1px);
+}
+
+/* ── FEED HEADER + STAT BAR ── */
+#pg-community .fhead{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:16px;margin-bottom:6px;border:none;padding:0;
+}
+#pg-community .ftitle{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:38px;color:var(--n-text);line-height:1.1;letter-spacing:-0.01em;
+  text-shadow:none;font-weight:400;
+}
+#pg-community .fsub{
+  font-family:var(--n-font-mono);font-size:10.5px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-3);margin-top:8px;
+}
+#pg-community .fhead-actions{display:flex;gap:8px;flex-shrink:0;margin-top:6px}
+#pg-community .iconbtn{
+  width:32px;height:32px;border-radius:7px;
+  border:1px solid var(--n-border);background:var(--n-surface);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--n-text-2);cursor:pointer;transition:.2s;
+}
+#pg-community .iconbtn:hover{
+  border-color:var(--n-border-2);background:var(--n-surface-2);color:var(--n-text);
+  transform:translateY(-1px);
+}
+#pg-community .iconbtn svg{
+  width:14px;height:14px;stroke-width:1.5;stroke:currentColor;fill:none;
+}
+#pg-community .fbar{
+  display:flex;align-items:center;gap:32px;padding:18px 0;
+  border-top:1px solid var(--n-border);border-bottom:1px solid var(--n-border);
+  margin-top:24px;margin-bottom:20px;
+}
+#pg-community .fstat{display:flex;flex-direction:column;gap:4px}
+#pg-community .fstat-label{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-4);
+}
+#pg-community .fstat-val{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:22px;color:var(--n-text);line-height:1;text-shadow:none;
+}
+#pg-community .fstat-val.profit{color:var(--n-profit)}
+#pg-community .fstat-val.loss{color:var(--n-loss)}
+#pg-community .fstat-val.cool{color:var(--n-accent-cool)}
+#pg-community .fstat-val .cents{font-size:0.65em;opacity:0.7}
+#pg-community .fstat-val .unit{
+  font-size:0.55em;opacity:0.6;font-family:var(--n-font-mono);
+  font-style:normal;margin-left:1px;
+}
+
+/* ── FILTER CHIPS ── */
+#pg-community .filters{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+#pg-community .fchip{
+  padding:6px 13px;border-radius:14px;
+  border:1px solid var(--n-border);background:transparent;
+  color:var(--n-text-3);font-family:var(--n-font-mono);
+  font-size:10px;letter-spacing:0.13em;text-transform:uppercase;
+  cursor:pointer;text-shadow:none;
+  transition:color .2s, border-color .2s, background .25s, box-shadow .25s, transform .15s;
+}
+#pg-community .fchip:hover{
+  color:var(--n-text-2);border-color:var(--n-border-2);transform:translateY(-1px);
+}
+#pg-community .fchip.on{
+  background:var(--n-surface-2);color:var(--n-text);border-color:var(--n-border-2);
+  box-shadow:
+    0 0 0 1px var(--n-border-2),
+    inset 0 0 14px rgba(255,255,255,0.025),
+    0 1px 12px -4px rgba(110,168,255,0.15);
+}
+
+/* ── COMPOSER ── */
+#pg-community .composer{
+  display:flex;align-items:center;gap:12px;padding:14px;
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:9px;margin-bottom:24px;
+  transition:border-color .2s, background .15s;
+}
+#pg-community .composer:hover{border-color:var(--n-border-2);background:var(--n-surface-2)}
+#pg-community .composer-av{
+  width:30px;height:30px;border-radius:50%;background:var(--n-chrome);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono);font-size:10px;font-weight:600;
+  color:#1a1a1a;letter-spacing:0;text-shadow:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),inset 0 -1px 0 rgba(0,0,0,0.2);
+  flex-shrink:0;
+}
+#pg-community .composer-input{
+  flex:1;font-family:var(--n-font-sans);font-size:12.5px;
+  color:var(--n-text-3);text-shadow:none;
+}
+#pg-community .composer-share{
+  padding:7px 14px;border-radius:6px;background:transparent;
+  border:1px solid var(--n-border-2);color:var(--n-text-2);
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;
+  text-transform:uppercase;cursor:pointer;transition:.2s;
+  display:flex;align-items:center;gap:6px;text-shadow:none;
+}
+#pg-community .composer-share:hover{
+  border-color:var(--n-border-3);color:var(--n-text);
+  background:var(--n-surface-2);transform:translateY(-1px);
+}
+#pg-community .composer-share svg{width:11px;height:11px;stroke-width:2;stroke:currentColor;fill:none}
+
+/* ── POSTS — chrome card with hover lift ── */
+#pg-community .post{
+  border:1px solid var(--n-border);border-radius:10px;
+  padding:18px;margin-bottom:14px;background:var(--n-surface);
+  transition:transform .25s ease-out, border-color .2s, background .15s, box-shadow .3s;
+}
+#pg-community .post:hover{
+  transform:translateY(-2px);border-color:var(--n-border-2);
+  box-shadow:
+    0 8px 28px -10px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(110,168,255,0.04),
+    inset 0 1px 0 rgba(255,255,255,0.025);
+}
+#pg-community .post-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+#pg-community .post-av{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono);font-size:11px;font-weight:600;
+  color:#fff;letter-spacing:0;text-shadow:none;
+}
+#pg-community .post-name{
+  font-family:var(--n-font-sans);font-size:13px;font-weight:500;color:var(--n-text);
+  letter-spacing:0;text-shadow:none;
+}
+#pg-community .post-handle{
+  font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-3);
+  letter-spacing:0.04em;margin-top:1px;
+}
+#pg-community .post-time{
+  font-family:var(--n-font-mono);font-size:9.5px;color:var(--n-text-4);
+  margin-left:auto;letter-spacing:0.06em;
+}
+
+#pg-community .trade-card{
+  background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:8px;padding:14px 16px;
+  display:flex;align-items:center;gap:20px;
+  transition:border-color .2s, box-shadow .25s;
+}
+#pg-community .post:hover .trade-card{
+  border-color:var(--n-border-2);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.02);
+}
+#pg-community .tc-sym{display:flex;flex-direction:column;gap:3px}
+#pg-community .tc-sym-val{
+  font-family:var(--n-font-mono);font-size:14px;font-weight:600;
+  color:var(--n-text);letter-spacing:0.04em;text-shadow:none;
+}
+#pg-community .tc-side{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+#pg-community .tc-divider{width:1px;height:30px;background:var(--n-border)}
+#pg-community .tc-pl{display:flex;flex-direction:column;gap:3px;flex:1}
+#pg-community .tc-pl-val{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:24px;line-height:1;color:var(--n-text);
+  letter-spacing:-0.01em;text-shadow:none;
+}
+#pg-community .tc-pl-val.profit{color:var(--n-profit)}
+#pg-community .tc-pl-val.loss{color:var(--n-loss)}
+#pg-community .tc-pl-r{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.12em;
+  color:var(--n-text-3);text-transform:uppercase;
+}
+#pg-community .tc-meta{
+  font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-3);
+  text-align:right;line-height:1.5;letter-spacing:0.04em;
+}
+#pg-community .post-note{
+  margin-top:12px;font-family:var(--n-font-sans);font-size:13px;
+  color:var(--n-text-2);line-height:1.55;letter-spacing:0;text-shadow:none;
+}
+#pg-community .post-img{
+  margin-top:10px;width:100%;max-height:280px;object-fit:cover;
+  border-radius:7px;cursor:pointer;display:block;
+  border:1px solid var(--n-border);
+}
+#pg-community .post-actions{
+  display:flex;align-items:center;gap:18px;margin-top:14px;
+  padding-top:14px;border-top:1px solid var(--n-border);
+}
+#pg-community .pa{
+  display:flex;align-items:center;gap:6px;color:var(--n-text-3);
+  font-family:var(--n-font-mono);font-size:10.5px;cursor:pointer;
+  letter-spacing:0.04em;transition:color .15s;
+  background:none;border:none;padding:0;text-shadow:none;
+}
+#pg-community .pa:hover{color:var(--n-text)}
+#pg-community .pa.liked{color:var(--n-accent-cool)}
+#pg-community .pa svg{
+  width:13px;height:13px;stroke-width:1.6;
+  transition:transform .2s ease-out;transform-origin:center;
+  stroke:currentColor;fill:none;
+}
+#pg-community .pa.liked svg{fill:currentColor}
+#pg-community .pa:hover svg{transform:scale(1.18)}
+#pg-community .pa.liked svg{animation:comm-heart-pop .55s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes comm-heart-pop{
+  0%{transform:scale(1)}
+  30%{transform:scale(1.4) rotate(-8deg)}
+  55%{transform:scale(0.92) rotate(4deg)}
+  80%{transform:scale(1.08) rotate(-2deg)}
+  100%{transform:scale(1) rotate(0)}
+}
+
+/* Reply box (inline below post when expanded) */
+#pg-community .reply-box{
+  margin-top:14px;padding-top:14px;border-top:1px solid var(--n-border);
+  display:flex;flex-direction:column;gap:10px;
+}
+#pg-community .reply{display:flex;gap:10px}
+#pg-community .reply-av{
+  width:24px;height:24px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono);font-size:9px;font-weight:600;
+  color:#fff;text-shadow:none;letter-spacing:0;
+}
+#pg-community .reply-body{
+  flex:1;background:var(--n-surface-2);border-radius:6px;padding:9px 11px;
+  transition:background .15s, transform .2s;
+}
+#pg-community .reply:hover .reply-body{background:var(--n-surface-3);transform:translateX(2px)}
+#pg-community .reply-name{
+  font-family:var(--n-font-sans);font-size:11.5px;font-weight:500;
+  color:var(--n-text);display:flex;align-items:center;gap:6px;
+  letter-spacing:0;text-shadow:none;
+}
+#pg-community .reply-name .t{
+  font-family:var(--n-font-mono);font-size:9px;color:var(--n-text-4);
+  letter-spacing:0.05em;font-weight:400;
+}
+#pg-community .reply-text{
+  font-family:var(--n-font-sans);font-size:12px;color:var(--n-text-2);
+  margin-top:4px;line-height:1.5;letter-spacing:0;text-shadow:none;
+}
+#pg-community .reply-input-row{display:flex;gap:8px;margin-top:4px}
+#pg-community .reply-input{
+  flex:1;background:var(--n-surface-2)!important;
+  border:1px solid var(--n-border)!important;border-radius:6px!important;
+  padding:8px 11px!important;color:var(--n-text)!important;
+  font-family:var(--n-font-sans)!important;font-size:12px!important;
+  outline:none;letter-spacing:0!important;text-shadow:none!important;
+}
+#pg-community .reply-input:focus{border-color:var(--n-border-3)!important;background:var(--n-surface-3)!important}
+#pg-community .reply-send{
+  padding:8px 12px;border-radius:6px;
+  border:1px solid var(--n-border-2);background:transparent;
+  color:var(--n-text-2);font-family:var(--n-font-mono);font-size:9.5px;
+  letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;
+  transition:.15s;text-shadow:none;
+}
+#pg-community .reply-send:hover{
+  color:var(--n-text);border-color:var(--n-border-3);background:var(--n-surface);
+}
+#pg-community .post-empty{
+  padding:48px 20px;text-align:center;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-4);
+  background:var(--n-surface);border:1px solid var(--n-border);border-radius:10px;
+}
+
+/* ── RIGHT RAIL ── */
+#pg-community .card{
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:10px;padding:18px;transition:border-color .2s;
+}
+#pg-community .card:hover{border-color:var(--n-border-2)}
+#pg-community .card-title{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--n-text-3);margin-bottom:14px;
+  text-shadow:none;
+}
+
+/* Leaderboard */
+#pg-community .lb-row{
+  display:flex;align-items:center;gap:10px;padding:9px 0;
+  border-bottom:1px solid var(--n-border);transition:transform .2s;
+}
+#pg-community .lb-row:hover{transform:translateX(3px)}
+#pg-community .lb-row:last-child{border-bottom:none;padding-bottom:0}
+#pg-community .lb-row:first-of-type{padding-top:0}
+#pg-community .lb-rank{
+  font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-4);
+  width:14px;letter-spacing:0.04em;
+}
+#pg-community .lb-rank.top{color:var(--n-text-2)}
+#pg-community .lb-av{
+  width:24px;height:24px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono);font-size:9px;font-weight:600;
+  color:#fff;letter-spacing:0;text-shadow:none;position:relative;
+}
+#pg-community .lb-name{
+  flex:1;font-family:var(--n-font-sans);font-size:12px;
+  color:var(--n-text);font-weight:500;min-width:0;
+  letter-spacing:0;text-shadow:none;
+}
+#pg-community .lb-handle{
+  font-family:var(--n-font-mono);font-size:9.5px;color:var(--n-text-3);
+  letter-spacing:0.04em;margin-top:1px;
+}
+#pg-community .lb-pl{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:15px;flex-shrink:0;color:var(--n-text);text-shadow:none;
+}
+#pg-community .lb-pl.profit{color:var(--n-profit)}
+#pg-community .lb-pl.loss{color:var(--n-loss)}
+
+/* Members + minical */
+#pg-community .member{
+  padding:13px 0;border-bottom:1px solid var(--n-border);
+  display:flex;flex-direction:column;gap:9px;cursor:pointer;
+  position:relative;transition:transform .2s;
+}
+#pg-community .member:hover{transform:translateX(3px)}
+#pg-community .member:last-child{border-bottom:none;padding-bottom:0}
+#pg-community .member:first-of-type{padding-top:0}
+#pg-community .member:hover .m-name{color:var(--n-text)}
+#pg-community .m-row{display:flex;align-items:center;gap:9px}
+#pg-community .m-av{
+  width:26px;height:26px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono);font-size:9.5px;font-weight:600;
+  color:#fff;letter-spacing:0;text-shadow:none;position:relative;
+}
+#pg-community .m-meta{flex:1;min-width:0}
+#pg-community .m-name{
+  font-family:var(--n-font-sans);font-size:12px;font-weight:500;
+  color:var(--n-text-2);transition:.15s;letter-spacing:0;text-shadow:none;
+}
+#pg-community .m-handle{
+  font-family:var(--n-font-mono);font-size:9.5px;color:var(--n-text-3);
+  letter-spacing:0.04em;margin-top:1px;
+}
+#pg-community .m-pl{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:14px;flex-shrink:0;color:var(--n-text);text-shadow:none;
+}
+#pg-community .m-pl.profit{color:var(--n-profit)}
+#pg-community .m-pl.loss{color:var(--n-loss)}
+#pg-community .minical{
+  display:grid;grid-template-columns:repeat(20,1fr);gap:2px;padding-left:35px;
+}
+#pg-community .mc-cell{
+  aspect-ratio:1;border-radius:1.5px;background:var(--n-surface-3);
+  transition:transform .2s, box-shadow .2s;
+}
+#pg-community .member:hover .mc-cell.p3{box-shadow:0 0 4px rgba(95,179,137,0.5)}
+#pg-community .mc-cell.p1{background:rgba(95,179,137,0.25)}
+#pg-community .mc-cell.p2{background:rgba(95,179,137,0.5)}
+#pg-community .mc-cell.p3{background:rgba(95,179,137,0.85)}
+#pg-community .mc-cell.l1{background:rgba(201,95,95,0.35)}
+#pg-community .mc-cell.l2{background:rgba(201,95,95,0.7)}
+
+/* Avatar color swatches reused throughout the page */
+#pg-community .av-c1{background:radial-gradient(circle at 30% 30%,#7a9eff,#3b5eb8)}
+#pg-community .av-c2{background:radial-gradient(circle at 30% 30%,#d4956b,#8a5a3a)}
+#pg-community .av-c3{background:radial-gradient(circle at 30% 30%,#9b7dd4,#5a3a8a)}
+#pg-community .av-c4{background:radial-gradient(circle at 30% 30%,#7dc4a8,#3a8a6a)}
+#pg-community .av-c5{background:radial-gradient(circle at 30% 30%,#d47d9e,#8a3a5a)}
+#pg-community .av-c6{background:radial-gradient(circle at 30% 30%,#c9b97d,#8a7a3a)}
+#pg-community .av-chrome{
+  background:var(--n-chrome)!important;color:#1a1a1a!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),inset 0 -1px 0 rgba(0,0,0,0.2);
+}
 </style>
 </head>
 <body>
@@ -4605,173 +5288,101 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
 
 <!-- COMMUNITY -->
-<div id="pg-community" class="page" style="padding:0;display:none;height:100vh;overflow:hidden">
-<div style="display:flex;height:100%;overflow:hidden;width:100%;min-width:0">
+<div id="pg-community" class="page">
 
-  <!-- LEFT SIDEBAR: Communities list -->
-  <div style="width:240px;flex-shrink:0;background:rgba(6,0,20,.97);border-right:1px solid rgba(255,45,155,.2);display:flex;flex-direction:column;height:100%;overflow:hidden">
-    <div style="padding:14px 16px 0;border-bottom:1px solid rgba(255,45,155,.15)">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;color:var(--pink);margin-bottom:10px">Communities</div>
-      <div style="display:flex;gap:0">
-        <button id="comm-tab-groups" onclick="switchCommSidebar('groups')" style="flex:1;padding:7px 0;border:none;border-bottom:2px solid var(--pink);background:transparent;color:var(--pink);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;cursor:pointer">Groups</button>
-        <button id="comm-tab-notifs" onclick="switchCommSidebar('notifs')" style="flex:1;padding:7px 0;border:none;border-bottom:2px solid transparent;background:transparent;color:rgba(255,255,255,.88);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;cursor:pointer;position:relative">
-          Invites
-          <span id="comm-invite-badge" style="display:none;position:absolute;top:4px;right:10px;width:7px;height:7px;border-radius:50%;background:var(--pink)"></span>
-        </button>
+  <!-- LEFT COMMUNITIES SUB-SIDEBAR -->
+  <aside class="csb">
+    <div class="csb-head">Communities</div>
+    <div class="csb-tabs">
+      <div class="csb-tab on" id="comm-tab-groups" onclick="switchCommSidebar('groups')">Groups</div>
+      <div class="csb-tab" id="comm-tab-notifs" onclick="switchCommSidebar('notifs')">
+        Notifs <span class="csb-badge" id="comm-invite-badge" style="display:none">0</span>
       </div>
     </div>
-    <div style="flex:1;overflow-y:auto;padding:10px 8px;display:block" id="comm-sidebar-list"></div>
-    <div style="flex:1;overflow-y:auto;padding:10px 8px;display:none" id="comm-sidebar-notifs"></div>
-    <div style="padding:12px">
-      <button onclick="openCreateGroup()" style="width:100%;padding:10px;border-radius:7px;border:1px solid rgba(255,45,155,.4);background:rgba(255,45,155,.1);color:var(--pink);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer">+ New Group</button>
-    </div>
-  </div>
+    <div class="csb-list" id="comm-sidebar-list"></div>
+    <div class="notif-list" id="comm-sidebar-notifs" style="display:none"></div>
+    <div class="csb-create" onclick="openCreateGroup()">+ New Group</div>
+  </aside>
 
-  <!-- MAIN: Feed or empty state -->
-  <div style="flex:1;overflow-y:auto;padding:0" id="comm-main">
-    <!-- empty state shown when no community selected -->
-    <div id="comm-empty-state" style="display:flex;align-items:center;justify-content:center;height:100%;padding:40px">
-      <div style="text-align:center">
-        <div style="font-size:48px;margin-bottom:14px">👥</div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:#fff;margin-bottom:8px">Select a Community</div>
-        <div style="font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.88);line-height:1.8">Pick a group from the left<br>or create a new one</div>
-        <div id="empty-invite-hint" style="display:none;margin-top:20px;padding:12px 18px;background:rgba(255,45,155,.08);border:1px solid rgba(255,45,155,.3);border-radius:10px">
-          <div style="font-size:18px;margin-bottom:6px">✉️</div>
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--pink);letter-spacing:1px">You have pending invites</div>
-          <div style="font-family:'Orbitron',monospace;font-size:15px;color:rgba(255,255,255,.88);margin-top:4px">Check the Invites tab →</div>
-        </div>
+  <!-- MAIN AREA -->
+  <div id="comm-main">
+
+    <!-- EMPTY STATE -->
+    <div id="comm-empty-state" class="empty">
+      <div class="empty-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 11a4 4 0 0 0 0-8M22 21v-2a4 4 0 0 0-3-3.87"/></svg>
+      </div>
+      <h2 class="empty-title">Find your trading circle</h2>
+      <div class="empty-sub">Pick a group &middot; or start your own</div>
+      <p class="empty-desc">Share trades, compare calendars, and pressure-test your edge with people who actually do the reps. No clout, no noise &mdash; just receipts.</p>
+      <div class="empty-actions">
+        <button class="btn-prim" onclick="openCreateGroup()">Create Group</button>
+        <button class="btn-sec" onclick="toast('Public groups — coming soon')">Browse Public</button>
       </div>
     </div>
-    <!-- community feed shown when one is selected -->
-    <div id="comm-feed-view" style="display:none;padding:16px 18px;width:100%;box-sizing:border-box;overflow-y:auto">
-      <!-- Group stats banner -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;width:100%">
-        <div style="background:rgba(0,0,0,.3);border:1px solid rgba(255,45,155,.2);border-radius:8px;padding:16px 20px;text-align:center">
-          <div style="font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.88);margin-bottom:4px">GROUP P&amp;L</div>
-          <div id="grp-stat-pnl" style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;color:var(--grn)">—</div>
+
+    <!-- FEED VIEW -->
+    <div id="comm-feed-view" style="display:none">
+      <div class="feed">
+        <div class="fhead">
+          <div>
+            <h1 class="ftitle" id="feed-grp-name">Group</h1>
+            <div class="fsub" id="feed-grp-meta">&mdash; members</div>
+          </div>
+          <div class="fhead-actions">
+            <button class="iconbtn" onclick="openInviteFlow()" title="Invite member">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
+            </button>
+            <button class="iconbtn" id="feed-edit-btn" onclick="openEditGroup()" title="Edit group" style="display:none">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
+            <button class="iconbtn" id="leave-or-delete-btn" onclick="confirmLeaveOrDelete()" title="Leave/delete">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </button>
+          </div>
         </div>
-        <div style="background:rgba(0,0,0,.3);border:1px solid rgba(0,180,255,.2);border-radius:8px;padding:10px 12px;text-align:center">
-          <div style="font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.88);margin-bottom:4px">TOTAL TRADES</div>
-          <div id="grp-stat-trades" style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;color:var(--cyan)">—</div>
+
+        <div class="fbar">
+          <div class="fstat"><span class="fstat-label">Group P&amp;L</span><span class="fstat-val" id="grp-stat-pnl">&mdash;</span></div>
+          <div class="fstat"><span class="fstat-label">Trades Shared</span><span class="fstat-val" id="grp-stat-trades">&mdash;</span></div>
+          <div class="fstat"><span class="fstat-label">Avg Win Rate</span><span class="fstat-val cool" id="grp-stat-wr">&mdash;</span></div>
         </div>
-        <div style="background:rgba(0,0,0,.3);border:1px solid rgba(0,255,136,.2);border-radius:8px;padding:10px 12px;text-align:center">
-          <div style="font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.88);margin-bottom:4px">GROUP WIN RATE</div>
-          <div id="grp-stat-wr" style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;color:var(--grn)">—</div>
+
+        <!-- FILTER CHIPS -->
+        <div class="filters">
+          <button class="fchip on" data-filter="latest" onclick="applyFeedFilter('latest',this)">Latest</button>
+          <button class="fchip" data-filter="top" onclick="applyFeedFilter('top',this)">Top</button>
+          <button class="fchip" data-filter="wins" onclick="applyFeedFilter('wins',this)">Wins</button>
+          <button class="fchip" data-filter="losses" onclick="applyFeedFilter('losses',this)">Losses</button>
+          <button class="fchip" data-filter="mine" onclick="applyFeedFilter('mine',this)">Mine</button>
         </div>
-        <div style="background:rgba(0,0,0,.3);border:1px solid rgba(204,0,255,.2);border-radius:8px;padding:10px 12px;text-align:center">
-          <div style="font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.88);margin-bottom:4px">BEST STREAK</div>
-          <div id="grp-stat-streak" style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;color:var(--purple)">—</div>
+
+        <div class="composer">
+          <div class="composer-av" id="comm-composer-av">??</div>
+          <div class="composer-input">Share a recent trade with the group&hellip;</div>
+          <button class="composer-share" onclick="openShareModal()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            Share Trade
+          </button>
         </div>
+
+        <div id="comm-feed-posts"></div>
       </div>
 
-      <!-- Feed header -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div>
-          <div style="display:flex;align-items:center;gap:10px"><div id="feed-grp-name" style="font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:3px;color:#fff"></div><div style="font-size:8px;font-family:Orbitron,monospace;color:var(--grn);background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);padding:3px 8px;border-radius:10px;letter-spacing:1px">● LIVE</div></div>
-          <div id="feed-grp-meta" style="font-family:'Orbitron',monospace;font-size:15px;color:rgba(255,255,255,.88);margin-top:3px"></div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <div style="position:relative;cursor:pointer" onclick="toggleNotifPanel()">
-            <div style="width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,45,155,.35);background:rgba(255,45,155,.08);display:flex;align-items:center;justify-content:center;font-size:15px">🔔</div>
-            <div id="notif-dot" style="display:none;position:absolute;top:1px;right:1px;width:8px;height:8px;border-radius:50%;background:var(--pink);border:2px solid var(--bg)"></div>
-          </div>
-          <button id="feed-edit-btn" onclick="openEditGroup()" style="font-family:'Orbitron',monospace;font-size:15px;padding:6px 14px;border-radius:6px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.6);cursor:pointer;letter-spacing:1px">EDIT</button>
-          <button id="leave-or-delete-btn" onclick="confirmLeaveOrDelete()" style="font-family:'Orbitron',monospace;font-size:15px;padding:6px 14px;border-radius:6px;border:1px solid rgba(255,34,85,.3);background:rgba(255,34,85,.08);color:var(--red);cursor:pointer;letter-spacing:1px">LEAVE</button>
-        </div>
-      </div>
-
-      <!-- Feed + right panel -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:start;width:100%;min-height:calc(100vh - 110px)">
-
-        <!-- Trade Feed -->
-        <div>
-          <!-- Feed filter -->
-          <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
-            <button onclick="setFeedFilter('today')" id="ff-today" style="padding:5px 14px;border-radius:20px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,45,155,.35);background:rgba(255,45,155,.08);color:rgba(255,255,255,.5);transition:.15s">TODAY</button>
-            <button onclick="setFeedFilter('week')"  id="ff-week"  style="padding:5px 14px;border-radius:20px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,45,155,.35);background:rgba(255,45,155,.08);color:rgba(255,255,255,.5);transition:.15s">THIS WEEK</button>
-            <button onclick="setFeedFilter('month')" id="ff-month" style="padding:5px 14px;border-radius:20px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,45,155,.35);background:rgba(255,45,155,.08);color:rgba(255,255,255,.5);transition:.15s">THIS MONTH</button>
-            <button onclick="setFeedFilter('all')"   id="ff-all"   style="padding:5px 14px;border-radius:20px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,45,155,.6);background:rgba(255,45,155,.18);color:var(--pink);transition:.15s">ALL TIME</button>
-          </div>
-          <!-- Check-in strip -->
-          <div id="checkin-strip" style="margin-bottom:12px"></div>
-          <div id="comm-feed-posts"></div>
+      <aside class="rail">
+        <div class="card">
+          <div class="card-title">Top This Week</div>
+          <div id="feed-leaderboard"></div>
         </div>
 
-        <!-- Right column: Leaderboard + Members + Invite -->
-        <div style="display:flex;flex-direction:column;gap:14px;padding:0 0 20px 16px;border-left:1px solid rgba(255,255,255,.06)">
-
-          <!-- Trade of the Week -->
-          <div class="crd" id="totw-card">
-            <div class="crd-h">
-              <div class="crd-title">🏆 Trade of the Week</div>
-              <span id="totw-pin-btn"></span>
-            </div>
-            <div class="crd-b" id="totw-content"></div>
-          </div>
-
-          <!-- Accountability Check-In -->
-          <div class="crd">
-            <div class="crd-h"><div class="crd-title">Today's Check-In</div></div>
-            <div class="crd-b" id="checkin-panel"></div>
-          </div>
-
-          <!-- Daily Challenge -->
-          <div class="crd">
-            <div class="crd-h"><div class="crd-title">Trading Rules 📋</div><button onclick="openRulesEditor()" style="font-family:'Orbitron',monospace;font-size:14px;padding:3px 10px;border-radius:4px;border:1px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.5);cursor:pointer;letter-spacing:1px">EDIT</button></div>
-            <div class="crd-b" id="daily-challenge-content"></div>
-          </div>
-
-          <!-- Recent Activity -->
-          <div class="crd">
-            <div class="crd-h"><div class="crd-title">Recent Activity</div></div>
-            <div class="crd-b" id="group-activity" style="display:flex;flex-direction:column;gap:8px"></div>
-          </div>
-
-          <!-- Leaderboard -->
-          <div class="crd">
-            <div class="crd-h"><div class="crd-title">Leaderboard</div></div>
-            <div style="display:flex;gap:4px;padding:6px 10px;border-bottom:1px solid var(--bord)">
-              <div class="tf on" style="font-size:14px;padding:3px 8px" onclick="setLbFilter('pnl',this)">P&amp;L</div>
-              <div class="tf" style="font-size:14px;padding:3px 8px" onclick="setLbFilter('wr',this)">Win Rate</div>
-              <div class="tf" style="font-size:14px;padding:3px 8px" onclick="setLbFilter('aplus',this)">A+ Setups</div>
-            </div>
-            <div class="crd-b" id="feed-leaderboard"></div>
-          </div>
-
-          <!-- Members -->
-          <div class="crd">
-            <div class="crd-h"><div class="crd-title">Members</div><div id="feed-slots" style="font-family:Orbitron,monospace;font-size:14px;color:var(--grn)"></div></div>
-            <div class="crd-b" id="feed-members"></div>
-          </div>
-
-          <!-- Invite -->
-          <div class="crd" id="feed-invite-section">
-            <div class="crd-b">
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:var(--cyan);margin-bottom:10px">Invite Trader</div>
-              <div style="display:flex;gap:6px">
-                <input type="text" id="invite-search" placeholder="@username" oninput="searchTrader()" autocomplete="off"
-                  style="flex:1;background:rgba(0,0,0,.4);border:1px solid var(--bord);border-radius:6px;padding:8px 10px;color:#fff;font-family:'Chakra Petch',sans-serif;font-size:15px;outline:none"/>
-                <button onclick="sendInvite()" style="padding:8px 12px;border-radius:6px;border:1px solid rgba(0,255,136,.35);background:rgba(0,255,136,.1);color:var(--grn);font-family:'Bebas Neue',sans-serif;font-size:14px;cursor:pointer">Send</button>
-              </div>
-              <div id="search-results" style="margin-top:6px"></div>
-            </div>
-          </div>
-
-          <!-- Sent Invites -->
-          <div class="crd">
-            <div class="crd-h"><div class="crd-title">Sent Invites</div></div>
-            <div class="crd-b" id="sent-invites-list">
-              <div style="font-family:Orbitron,monospace;font-size:15px;color:rgba(255,255,255,.78)">No invites sent</div>
-            </div>
-          </div>
-
-          <!-- Member Calendars -->
-          <div id="member-calendars-section"></div>
-
+        <div class="card">
+          <div class="card-title">Members &middot; 30D Activity</div>
+          <div id="feed-members"></div>
         </div>
-      </div>
+      </aside>
     </div>
   </div>
+</div>
 
 <!-- PIN TRADE MODAL -->
 <div id="pin-trade-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9996;align-items:center;justify-content:center">
@@ -5719,17 +6330,31 @@ function switchCommSidebar(tab) {
   var groupsBtn  = document.getElementById('comm-tab-groups');
   var notifsBtn  = document.getElementById('comm-tab-notifs');
   if (tab === 'groups') {
-    if (groupsPane) groupsPane.style.display = 'block';
+    if (groupsPane) groupsPane.style.display = 'flex';
     if (notifsPane) notifsPane.style.display = 'none';
-    if (groupsBtn)  { groupsBtn.style.borderBottomColor = 'var(--pink)'; groupsBtn.style.color = 'var(--pink)'; }
-    if (notifsBtn)  { notifsBtn.style.borderBottomColor = 'transparent'; notifsBtn.style.color = 'rgba(255,255,255,.4)'; }
+    if (groupsBtn)  groupsBtn.classList.add('on');
+    if (notifsBtn)  notifsBtn.classList.remove('on');
+    [groupsBtn, notifsBtn].forEach(function(b){if(b){b.style.color='';b.style.borderBottomColor='';b.style.background='';}});
   } else {
     if (groupsPane) groupsPane.style.display = 'none';
-    if (notifsPane) notifsPane.style.display = 'block';
-    if (groupsBtn)  { groupsBtn.style.borderBottomColor = 'transparent'; groupsBtn.style.color = 'rgba(255,255,255,.4)'; }
-    if (notifsBtn)  { notifsBtn.style.borderBottomColor = 'var(--pink)'; notifsBtn.style.color = 'var(--pink)'; }
+    if (notifsPane) notifsPane.style.display = 'flex';
+    if (groupsBtn)  groupsBtn.classList.remove('on');
+    if (notifsBtn)  notifsBtn.classList.add('on');
+    [groupsBtn, notifsBtn].forEach(function(b){if(b){b.style.color='';b.style.borderBottomColor='';b.style.background='';}});
     renderCommInvites();
   }
+}
+
+/* ── COMMUNITY FEED FILTER (v3) ──
+   Filter chips above the composer drive what posts the feed shows.
+   Default 'latest' = sort by created_at desc (legacy behavior). */
+var currentFeedFilter = 'latest';
+function applyFeedFilter(filter, btn){
+  if(!filter) return;
+  currentFeedFilter = filter;
+  document.querySelectorAll('#pg-community .fchip').forEach(function(c){c.classList.remove('on');});
+  if(btn) btn.classList.add('on');
+  if(typeof _comm !== 'undefined' && _comm) renderFeedPosts(_comm);
 }
 
 function getCommInvites() {
@@ -5744,29 +6369,47 @@ function renderCommInvites() {
   var invites = getCommInvites();
 
   if (!invites.length) {
-    el.innerHTML = '<div style="padding:20px 8px;text-align:center">'
-      + '<div style="font-size:28px;margin-bottom:8px">✉️</div>'
-      + '<div style="font-family:\'Orbitron\',monospace;font-size:15px;color:rgba(255,255,255,.78);line-height:1.8">No pending invites.<br>Ask a group leader<br>to invite you.</div>'
-      + '</div>';
+    el.innerHTML = '<div class="notif-empty">No pending invites<br>Ask a group leader<br>to invite you</div>';
     return;
   }
 
-  el.innerHTML = invites.map(function(inv) {
+  // Avatar tone palette for notif rows — cycles by inviter index
+  var TONES = ['av-c1','av-c5','av-c4','av-c2','av-c6','av-c3'];
+  var listHtml = invites.map(function(inv, i) {
     var accepted = inv.accepted, declined = inv.declined;
-    return '<div style="background:rgba(0,0,0,.3);border:1px solid rgba(255,45,155,.2);border-radius:8px;padding:12px;margin-bottom:8px">'
-      + '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;letter-spacing:1px;color:#fff;margin-bottom:2px">' + safeText(inv.groupName || 'Unknown Group') + '</div>'
-      + '<div style="font-family:\'Orbitron\',monospace;font-size:14px;color:rgba(255,255,255,.88);margin-bottom:10px">Invited by ' + safeText(inv.from || 'Leader') + '</div>'
-      + (accepted
-          ? '<div style="font-family:\'Orbitron\',monospace;font-size:15px;color:var(--grn)">✓ Joined</div>'
-          : declined
-          ? '<div style="font-family:\'Orbitron\',monospace;font-size:15px;color:rgba(255,255,255,.78)">Declined</div>'
-          : '<div style="display:flex;gap:6px">'
-              + '<button onclick="acceptCommInvite(\'' + safeText(inv.id) + '\')" style="flex:1;padding:7px;border-radius:5px;border:1px solid rgba(0,255,136,.35);background:rgba(0,255,136,.1);color:var(--grn);font-family:\'Bebas Neue\',sans-serif;font-size:14px;cursor:pointer;letter-spacing:1px">Accept</button>'
-              + '<button onclick="declineCommInvite(\'' + safeText(inv.id) + '\')" style="flex:1;padding:7px;border-radius:5px;border:1px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.88);font-family:\'Bebas Neue\',sans-serif;font-size:14px;cursor:pointer;letter-spacing:1px">Decline</button>'
-            + '</div>'
-        )
+    var fromName = safeText(inv.from || 'Leader');
+    var groupName = safeText(inv.groupName || 'Unknown Group');
+    var initials = safeText(((inv.from||'??').slice(0,2) || '??').toUpperCase());
+    var tone = TONES[i % TONES.length];
+    var actionsHtml = '';
+    if(accepted){
+      actionsHtml = '<div class="notif-time" style="color:var(--n-profit)">Joined</div>';
+    } else if(declined){
+      actionsHtml = '<div class="notif-time">Declined</div>';
+    } else {
+      actionsHtml = '<div class="notif-invite-actions">'
+        + '<button class="notif-btn primary" onclick="acceptCommInvite(\'' + safeText(inv.id) + '\')">Accept</button>'
+        + '<button class="notif-btn" onclick="declineCommInvite(\'' + safeText(inv.id) + '\')">Decline</button>'
+        + '</div>';
+    }
+    return '<div class="notif">'
+      + '<div class="notif-av ' + tone + '">' + initials + '</div>'
+      + '<div class="notif-body">'
+      +   '<div class="notif-text"><b>' + groupName + '</b> &middot; invited by <b>' + fromName + '</b></div>'
+      +   actionsHtml
+      + '</div>'
+      + (accepted || declined ? '' : '<div class="notif-dot"></div>')
       + '</div>';
   }).join('');
+  el.innerHTML = listHtml + '<div class="notif-mark" onclick="markAllInvitesRead()">Mark all as read</div>';
+}
+
+function markAllInvitesRead(){
+  if(!Array.isArray(_notifications)) return;
+  _notifications.forEach(function(n){ if(n.type==='invite') n.read = true; });
+  try{ localStorage.setItem('tr1_notifs', JSON.stringify(_notifications)); }catch(e){}
+  if(typeof updateInviteBadge === 'function') updateInviteBadge();
+  renderCommInvites();
 }
 
 function acceptCommInvite(invId) {
@@ -5860,29 +6503,39 @@ function renderCommunity(){
 function renderCommSidebar(){
   var el=document.getElementById('comm-sidebar-list');if(!el)return;
   var groups=(_comms&&_comms.length)?_comms:[];
-  if(!groups.length){el.innerHTML='<div style="font-family:Orbitron,monospace;font-size:15px;color:rgba(255,255,255,.78);padding:14px 8px;text-align:center;line-height:2">No groups yet.<br>Create one below.</div>';return;}
+  if(!groups.length){
+    el.innerHTML='<div class="notif-empty">No groups yet<br>Create one below</div>';
+    return;
+  }
+  // Map group color → chrome icon class. 'chrome'/'pink' → c1 (silver),
+  // others map to the closest tonal radial gradient from the v3 palette.
+  function _icon(color){
+    var m={chrome:'c1',pink:'c5',blue:'c2',purple:'c4',green:'c5',orange:'c3',red:'c6',yellow:'c3',black:'c4'};
+    return m[color] || 'c2';
+  }
   el.innerHTML=groups.map(function(g){
     var isActive=_activeCommId===g.id;
-    var myPnl=trades.reduce(function(a,t){return a+(t.pnl||0);},0);
-    var pnlCol=myPnl>0?'var(--grn)':myPnl<0?'var(--red)':'rgba(255,255,255,.4)';
+    var safeId=safeText(g.id);
     var safeName=safeText(g.name||'');
-    var safeInitials=safeText((g.name||'').slice(0,2).toUpperCase());
-    return '<div data-gid="'+safeText(g.id)+'" onclick="setActiveGroup(\'' + safeText(g.id) + '\')" class="grp-card" style="display:block;box-sizing:border-box;width:100%;cursor:pointer;padding:10px 12px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);">'
-      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
-        +(function(){var s=getAvatarStyle(g.color||'pink');return '<div style="width:28px;height:28px;border-radius:6px;background:'+s.bg+';border:1px solid '+s.border+';display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:15px;color:'+s.text+';flex-shrink:0">'+safeInitials+'</div>';}())
-        +'<div class="grp-label" style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;letter-spacing:1px;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+safeName+'</div>'
-      +'</div>'
-      +'<div style="display:flex;justify-content:space-between">'
-        +'<div style="font-family:Orbitron,monospace;font-size:14px;color:rgba(255,255,255,.82)">'+g.members.length+'/25 members</div>'
-        +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:'+pnlCol+'">'+(myPnl>=0?'+':'-')+'$'+Math.abs(myPnl).toFixed(0)+'</div>'
-      +'</div>'
-      +'</div>';
+    var safeInitials=safeText((g.name||'??').slice(0,2).toUpperCase());
+    var memberCount = (g.members && g.members.length) || 0;
+    var iconCls = _icon(g.color || 'chrome');
+    return '<div class="gitem'+(isActive?' on':'')+'" data-gid="'+safeId+'" onclick="setActiveGroup(\''+safeId+'\')">'
+      + '<div class="gicon '+iconCls+'">'+safeInitials+'</div>'
+      + '<div class="gmeta">'
+      +   '<div class="gname">'+safeName+'</div>'
+      +   '<div class="gsub">'+memberCount+(memberCount===1?' member':' members')+'</div>'
+      + '</div>'
+      + '</div>';
   }).join('');
 }
 
 function setActiveGroup(gid){
-  document.querySelectorAll('#comm-sidebar-list .grp-card').forEach(function(c){
+  // Toggle .on on the new chrome .gitem rows. Also kept .grp-active in sync
+  // for any legacy CSS that still hooks the old class name.
+  document.querySelectorAll('#comm-sidebar-list .gitem').forEach(function(c){
     var active=c.getAttribute('data-gid')===gid;
+    c.classList.toggle('on',active);
     c.classList.toggle('grp-active',active);
   });
   openCommFeed(gid);
@@ -5896,17 +6549,39 @@ function openCommFeed(gid){
   var empty=document.getElementById('comm-empty-state');
   var feed=document.getElementById('comm-feed-view');
   if(empty)empty.style.display='none';
-  if(feed)feed.style.display='block';
+  // The new chrome layout uses display:flex on #comm-feed-view so .feed and
+  // .rail lay out side-by-side. Legacy was 'block'.
+  if(feed)feed.style.display='flex';
   var nameEl=document.getElementById('feed-grp-name');if(nameEl)nameEl.textContent=g.name;
-  var metaEl=document.getElementById('feed-grp-meta');if(metaEl)metaEl.textContent=g.members.length+' members';
+  var metaEl=document.getElementById('feed-grp-meta');
+  if(metaEl){
+    var n = g.members ? g.members.length : 0;
+    metaEl.textContent = n + (n===1 ? ' member' : ' members');
+  }
   var editBtn=document.getElementById('feed-edit-btn');if(editBtn)editBtn.style.display=(currentUser&&g.owner_id===currentUser.id)?'':'none';
-  renderFeedPosts(g);renderFeedLeaderboard(g);renderFeedMembers(g);renderSentInvites();renderMemberCalendars(g);renderCommunityWidgets(g);
-  renderGroupStats(g);try{renderDailyChallenge();}catch(e){}renderGroupActivity(g);
-  updateLeaveDeleteBtn();
+  // Sync the composer avatar's initials with the active user
+  var compAv=document.getElementById('comm-composer-av');
+  if(compAv) compAv.textContent = (acct && acct.initials) || (acct && acct.name ? acct.name.slice(0,2).toUpperCase() : '??');
+  renderFeedPosts(g);renderFeedLeaderboard(g);renderFeedMembers(g);
+  // Legacy renderers (renderSentInvites/renderMemberCalendars/renderCommunityWidgets/
+  // renderDailyChallenge/renderGroupActivity) target IDs not present in the v3
+  // chrome layout, so they no-op via their getElementById guards.
+  if(typeof renderSentInvites==='function') renderSentInvites();
+  if(typeof renderMemberCalendars==='function') renderMemberCalendars(g);
+  if(typeof renderCommunityWidgets==='function') renderCommunityWidgets(g);
+  renderGroupStats(g);
+  try{ if(typeof renderDailyChallenge==='function') renderDailyChallenge(); }catch(e){}
+  if(typeof renderGroupActivity==='function') renderGroupActivity(g);
+  if(typeof updateLeaveDeleteBtn==='function') updateLeaveDeleteBtn();
+  // The v3 layout doesn't include #feed-invite-section anymore (invite is now
+  // an icon-button in the header) — guard against the missing element.
   var inv=document.getElementById('feed-invite-section');if(inv)inv.style.display=g.members.length>=25?'none':'';
   renderCommSidebar();
-  document.querySelectorAll('#comm-sidebar-list .grp-card').forEach(function(c){c.classList.toggle('grp-active',c.getAttribute('data-gid')===_activeCommId);});
-  // Async: sync own trades to DB then load all members' posts
+  document.querySelectorAll('#comm-sidebar-list .gitem').forEach(function(c){
+    var active=c.getAttribute('data-gid')===_activeCommId;
+    c.classList.toggle('on',active);
+    c.classList.toggle('grp-active',active);
+  });
   syncAndLoadCommFeed(g);
   subscribeToCommFeed(g);
 }
@@ -6169,111 +6844,194 @@ async function syncAndLoadCommFeed(g){
 function renderFeedPosts(g){
   var el=document.getElementById('comm-feed-posts');if(!el)return;
 
-  // Build combined list: own trades + remote members' posts
+  // ── Build combined list: own trades + remote members' posts ───────
   var combined=[];
   var myId=currentUser?currentUser.id:null;
   var myName=(acct&&acct.username)?acct.username:'You';
   var myInit=(acct&&acct.initials)?acct.initials:'ME';
+  var myColor=(acct&&acct.color)||'chrome';
 
-  // Add own trades
-  var sorted=trades.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
-  var myPosts=feedFilterDate(sorted).slice(0,30);
-  myPosts.forEach(function(t){
-    combined.push({isMe:true,trade:t,pnl:t.pnl||0,date:t.date||'',username:myName,initials:myInit});
+  trades.slice().forEach(function(t){
+    if(!feedFilterDate([{date:t.date||''}]).length) return;
+    combined.push({
+      isMe:true, trade:t, pnl:t.pnl||0,
+      date:t.date||'', username:myName, initials:myInit,
+      user_id: myId, color: myColor
+    });
   });
 
-  // Add remote members' posts
- _remotePosts.forEach(function(row){
+  _remotePosts.forEach(function(row){
     var rt={};try{rt=JSON.parse(row.content||'{}');}catch(e){}
-    var rp={isMe:false,trade:rt,pnl:row.pnl_today||0,date:rt.date||row.created_at||'',username:row.username||'Trader',initials:row.initials||'??',row:row};
+    var rp={
+      isMe:false, trade:rt, pnl:row.pnl_today||0,
+      date:rt.date||row.created_at||'',
+      username:row.username||'Trader',
+      initials:row.initials||'??',
+      user_id: row.user_id || null,
+      color: row.avatar_color || 'blue',
+      row:row
+    };
     if(feedFilterDate([{date:rp.date}]).length) combined.push(rp);
   });
 
-  // Sort all together by date descending
-  combined.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  // ── Apply filter chip selection ──────────────────────────────────
+  var f = (typeof currentFeedFilter !== 'undefined' && currentFeedFilter) || 'latest';
+  function _ts(p){ return new Date(p.date).getTime() || 0; }
+  if(f === 'top'){
+    combined.sort(function(a,b){return (b.pnl||0) - (a.pnl||0);});
+  } else if(f === 'wins'){
+    combined = combined.filter(function(p){return (p.pnl||0) > 0;})
+                        .sort(function(a,b){return _ts(b) - _ts(a);});
+  } else if(f === 'losses'){
+    combined = combined.filter(function(p){return (p.pnl||0) < 0;})
+                        .sort(function(a,b){return _ts(b) - _ts(a);});
+  } else if(f === 'mine'){
+    combined = combined.filter(function(p){
+      if(p.isMe) return true;
+      return myId && p.user_id === myId;
+    }).sort(function(a,b){return _ts(b) - _ts(a);});
+  } else { // 'latest' (default)
+    combined.sort(function(a,b){return _ts(b) - _ts(a);});
+  }
 
-  // Pagination — only render the first _feedShown cards, append "Load more" if there are more
+  // Pagination — only render the first _feedShown cards
   var total = combined.length;
   var visible = combined.slice(0, _feedShown);
   var hasMore = total > _feedShown;
 
   if(!combined.length){
-    var filterLabel={'today':'today','week':'this week','month':'this month','all':''}[_feedFilter]||'';
-    el.innerHTML='<div class="crd"><div class="crd-b" style="text-align:center;padding:30px"><div style="font-size:32px;margin-bottom:10px">📋</div><div style="font-family:Orbitron,monospace;font-size:14px;color:rgba(255,255,255,.88)">No trades in the feed yet'+(filterLabel?' '+filterLabel:'')+'.</div></div></div>';
+    var emptyMsg = {
+      'wins':   'No winning trades to show',
+      'losses': 'No losing trades to show',
+      'mine':   "You haven't shared any trades yet",
+      'top':    'No trades in the feed yet',
+      'latest': 'No trades in the feed yet'
+    }[f] || 'No trades in the feed yet';
+    el.innerHTML = '<div class="post-empty">' + emptyMsg + '</div>';
     return;
   }
 
-  el.innerHTML=visible.map(function(p){
-    var t=p.trade;
-    var pnl=p.pnl;
-    var pnlCol=pnl>0?'var(--grn)':pnl<0?'var(--red)':'rgba(255,255,255,.4)';
-    var hasImg=t.images&&t.images[0];
-    var safeImgURL=hasImg?safeURL(t.images[0]):'';
-    var imgHtml=safeImgURL?'<img src="'+safeImgURL+'" onclick="openImgLightbox(this.src)" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-bottom:8px;cursor:pointer;display:block;">':'';
-    var symSize=hasImg?'24px':'34px';
-    var pnlSize=hasImg?'28px':'42px';
-    var metaSize=hasImg?'11px':'15px';
-    // Use each user's actual avatar color
-    var _colorMap={
-      pink:  {bg:'rgba(255,0,170,.15)',  border:'rgba(255,0,170,.35)',  text:'#ff00aa'},
-      blue:  {bg:'rgba(0,180,255,.15)',  border:'rgba(0,180,255,.35)',  text:'#00b4ff'},
-      purple:{bg:'rgba(191,0,255,.15)',  border:'rgba(191,0,255,.35)',  text:'#bf00ff'},
-      green: {bg:'rgba(0,255,136,.15)',  border:'rgba(0,255,136,.35)',  text:'#00ff88'},
-      orange:{bg:'rgba(255,107,0,.15)',  border:'rgba(255,107,0,.35)',  text:'#ff6b00'},
-      red:   {bg:'rgba(255,34,85,.15)',  border:'rgba(255,34,85,.35)',  text:'#ff2255'},
-      yellow:{bg:'rgba(255,230,0,.15)',  border:'rgba(255,230,0,.35)',  text:'#ffe600'},
-      black: {bg:'rgba(100,100,100,.15)',border:'rgba(100,100,100,.35)',text:'#aaaaaa'}
+  // Map account avatar color → chrome avatar tone class.
+  function _avTone(color){
+    var m={
+      chrome:'av-chrome', pink:'av-c5', blue:'av-c1', purple:'av-c3',
+      green:'av-c4',  orange:'av-c2',  red:'av-c5',  yellow:'av-c6',
+      black:'av-c3'
     };
-    var _colorKey=p.isMe?(acct&&acct.color||'pink'):(p.row&&p.row.avatar_color||'blue');
-    var _clr=_colorMap[_colorKey]||_colorMap.pink;
-    var avatarBg=_clr.bg;
-    var avatarBorder=_clr.border;
-    var nameColor=_clr.text;
-    var postId=p.isMe?(t.id||''):(p.row?p.row.id:'');
-    var likes=_likeCounts[postId]||0;
-    var youLiked=!!_myLikes[postId];
+    return m[color] || 'av-c1';
+  }
+  function _shortMoney(n){
+    var sign = n>0 ? '+' : n<0 ? '−' : '';
+    var a = Math.abs(n);
+    var int = Math.floor(a).toLocaleString('en-US');
+    var cents = (a - Math.floor(a)).toFixed(2).slice(1);
+    return sign + '$' + int + '<span class="cents">' + cents + '</span>';
+  }
+  function _relTime(d){
+    if(!d) return '';
+    var then = new Date(d).getTime();
+    if(!then || isNaN(then)) return safeText(String(d).toUpperCase());
+    var diff = Date.now() - then;
+    var hr = Math.floor(diff / 3600000);
+    if(hr < 1) return 'JUST NOW';
+    if(hr < 24) return hr + 'H AGO';
+    var dy = Math.floor(hr / 24);
+    if(dy === 1) return 'YESTERDAY';
+    if(dy < 7) return dy + 'D AGO';
+    return safeText(String(d).slice(0, 10).toUpperCase());
+  }
 
-    return '<div class="crd" style="margin-bottom:12px"><div class="crd-b">'
-      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'
-        +'<div style="width:42px;height:42px;border-radius:50%;background:'+avatarBg+';border:1px solid '+avatarBorder+';display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:15px;color:'+nameColor+';flex-shrink:0">'+safeText(p.initials)+'</div>'
-        +'<div>'
-          +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;letter-spacing:1px;color:'+nameColor+'">'+safeText(p.username)+(p.isMe?' <span style="font-family:Orbitron,monospace;font-size:6px;background:rgba(255,45,155,.15);border:1px solid rgba(255,45,155,.3);padding:1px 5px;border-radius:3px">YOU</span>':'')+'</div>'
-          +'<div style="font-family:Orbitron,monospace;font-size:13px;color:rgba(255,255,255,.7)">'+safeText(t.date||'')+(t.session?' · '+safeText(t.session):'')+(t.market?' · '+safeText(t.market):'')+'</div>'
-        +'</div>'
-      +'</div>'
-      +imgHtml
-      +'<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.3);border-radius:8px;padding:'+(hasImg?'8px 10px':'12px 14px')+';margin-bottom:10px">'
-        +'<div style="display:flex;align-items:center;gap:10px">'
-          +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:'+symSize+';letter-spacing:2px;color:var(--cyan)">'+safeText(t.sym||'—')+'</div>'
-          +(t.type?'<span style="padding:2px 8px;border-radius:4px;font-family:\'Bebas Neue\',sans-serif;font-size:13px;background:'+(t.type==='long'?'rgba(0,255,136,.15)':'rgba(255,34,85,.15)')+';color:'+(t.type==='long'?'var(--grn)':'var(--red)')+'">'+safeText(String(t.type).toUpperCase())+'</span>':'')
-          +'<div style="font-family:Orbitron,monospace;font-size:'+metaSize+';color:rgba(255,255,255,.5)">'+(t.entry?'Entry: '+safeText(t.entry)+' · Exit: '+safeText(t.exit):'')+(t.qty?'<br>'+safeText(t.qty)+' ct · '+safeText(t.date||''):'')+'</div>'
-        +'</div>'
-        +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:'+pnlSize+';letter-spacing:1px;color:'+pnlCol+';text-shadow:0 0 18px '+pnlCol+'">'+(pnl>=0?'+':'-')+'$'+Math.abs(pnl).toFixed(2)+'</div>'
-      +'</div>'
-      +(t.notes?'<div style="font-family:\'Chakra Petch\',sans-serif;font-size:13px;color:rgba(255,255,255,.7);margin-bottom:10px;line-height:1.5">'+commEsc(t.notes)+'</div>':'')
-      +'<div style="display:flex;gap:8px;align-items:center">'
-        +'<button onclick="feedLike(this)" data-id="'+safeText(postId)+'"'+(youLiked?' data-liked="1"':'')+' style="padding:5px 14px;border-radius:5px;border:1px solid '+(youLiked?'rgba(0,255,136,.45)':'rgba(255,255,255,.12)')+';background:'+(youLiked?'rgba(0,255,136,.08)':'rgba(255,255,255,.04)')+';color:'+(youLiked?'var(--grn)':'rgba(255,255,255,.7)')+';font-family:\'Orbitron\',monospace;font-size:12px;cursor:pointer;transition:.15s" onmouseover="this.style.borderColor=\'rgba(0,255,136,.4)\';this.style.color=\'var(--grn)\'" onmouseout="if(!this.dataset.liked){this.style.borderColor=\'rgba(255,255,255,.12)\';this.style.color=\'rgba(255,255,255,.7)\'}"><span id="like-count-'+safeText(postId)+'">👍 '+likes+'</span></button>'
-        +'<button onclick="feedReply(\''+safeText(postId)+'\',this)" style="padding:5px 14px;border-radius:5px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:rgba(255,255,255,.7);font-family:\'Orbitron\',monospace;font-size:12px;cursor:pointer;transition:.15s" onmouseover="this.style.borderColor=\'rgba(0,180,255,.4)\';this.style.color=\'var(--cyan)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,.12)\';this.style.color=\'rgba(255,255,255,.7)\'">💬 Reply</button>'
-      +'</div>'
-      +'<div id="reply-box-'+safeText(postId)+'" style="display:none;margin-top:10px">'
-        +'<div id="replies-'+safeText(postId)+'" style="margin-bottom:8px"></div>'
-        +'<div style="display:flex;gap:8px">'
-          +'<input type="text" id="reply-input-'+safeText(postId)+'" placeholder="Write a reply..." style="flex:1;background:rgba(0,0,0,.4);border:1px solid rgba(0,180,255,.25);border-radius:6px;padding:8px 12px;color:#fff;font-family:\'Chakra Petch\',sans-serif;font-size:13px;outline:none"/>'
-          +'<button onclick="feedSubmitReply(\''+safeText(postId)+'\')" style="padding:8px 14px;border-radius:6px;border:1px solid rgba(0,180,255,.4);background:rgba(0,180,255,.1);color:var(--cyan);font-family:\'Bebas Neue\',sans-serif;font-size:14px;cursor:pointer">Send</button>'
-        +'</div>'
-      +'</div>'
-    +'</div></div>';
+  el.innerHTML = visible.map(function(p){
+    var t = p.trade || {};
+    var pnl = p.pnl || 0;
+    var pnlTone = pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : '';
+    var avTone = _avTone(p.color);
+    var postId = p.isMe ? (t.id || '') : (p.row ? p.row.id : '');
+    var safePid = safeText(postId);
+    var likes = _likeCounts[postId] || 0;
+    var youLiked = !!_myLikes[postId];
+
+    var sideTxt = '';
+    if(t.type){
+      sideTxt = String(t.type).charAt(0).toUpperCase() + String(t.type).slice(1).toLowerCase();
+      if(t.qty) sideTxt += ' · ' + safeText(t.qty) + ' contract' + (Number(t.qty)>1?'s':'');
+    }
+    var rrTxt = '';
+    if(t.rr) rrTxt = (pnl>=0?'+':'') + Number(t.rr).toFixed(1) + 'R';
+    var holdTxt = '';
+    if(t.duration) holdTxt = (rrTxt ? ' · ' : '') + Math.round(Number(t.duration)) + ' min hold';
+    var rrHoldHtml = '';
+    if(rrTxt || holdTxt){
+      rrHoldHtml = '<span class="tc-pl-r">'
+        + (rrTxt ? rrTxt.replace('R','<span class="unit">R</span>') : '')
+        + safeText(holdTxt)
+        + '</span>';
+    }
+
+    var dateStr = '';
+    if(t.date){
+      var d = new Date(t.date + 'T12:00:00');
+      if(!isNaN(d)) dateStr = d.toLocaleDateString('en-US',{month:'short',day:'2-digit'});
+      else dateStr = safeText(t.date);
+    }
+    var sessTxt = t.session ? safeText(String(t.session).toUpperCase()) : '';
+
+    var hasImg = t.images && t.images[0];
+    var imgHtml = hasImg
+      ? '<img class="post-img" src="' + safeURL(t.images[0]) + '" onclick="openImgLightbox(this.src)">'
+      : '';
+
+    return '<div class="post" data-pid="'+safePid+'">'
+      + '<div class="post-head">'
+      +   '<div class="post-av '+avTone+'">'+safeText(p.initials || '??')+'</div>'
+      +   '<div>'
+      +     '<div class="post-name">'+safeText(p.username || 'Trader')+(p.isMe?' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase">you</span>':'')+'</div>'
+      +     '<div class="post-handle">@'+safeText((p.username||'trader').replace(/^@/,''))+'</div>'
+      +   '</div>'
+      +   '<span class="post-time">'+_relTime(p.date)+'</span>'
+      + '</div>'
+      + '<div class="trade-card">'
+      +   '<div class="tc-sym">'
+      +     '<span class="tc-sym-val">'+safeText(t.sym || '—')+'</span>'
+      +     (sideTxt ? '<span class="tc-side">'+sideTxt+'</span>' : '')
+      +   '</div>'
+      +   '<div class="tc-divider"></div>'
+      +   '<div class="tc-pl">'
+      +     '<span class="tc-pl-val '+pnlTone+'">'+_shortMoney(pnl)+'</span>'
+      +     rrHoldHtml
+      +   '</div>'
+      +   (dateStr || sessTxt
+            ? '<div class="tc-meta">'+safeText(dateStr)+(sessTxt && dateStr ? '<br>' : '')+sessTxt+'</div>'
+            : '')
+      + '</div>'
+      + imgHtml
+      + (t.notes ? '<div class="post-note">'+commEsc(t.notes)+'</div>' : '')
+      + '<div class="post-actions">'
+      +   '<button class="pa'+(youLiked?' liked':'')+'" onclick="feedLike(this)" data-id="'+safePid+'"'+(youLiked?' data-liked="1"':'')+'>'
+      +     '<svg viewBox="0 0 24 24"' + (youLiked ? ' fill="currentColor"' : '') + '><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+      +     '<span id="like-count-'+safePid+'">'+likes+'</span>'
+      +   '</button>'
+      +   '<button class="pa" onclick="feedReply(\''+safePid+'\',this)">'
+      +     '<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+      +     'Reply'
+      +   '</button>'
+      + '</div>'
+      + '<div id="reply-box-'+safePid+'" class="reply-box" style="display:none">'
+      +   '<div id="replies-'+safePid+'"></div>'
+      +   '<div class="reply-input-row">'
+      +     '<input type="text" class="reply-input" id="reply-input-'+safePid+'" placeholder="Write a reply…"/>'
+      +     '<button class="reply-send" onclick="feedSubmitReply(\''+safePid+'\')">Send</button>'
+      +   '</div>'
+      + '</div>'
+      + '</div>';
   }).join('');
 
-  // Append "Load more" button if there are more posts to show
   if (hasMore) {
     var remaining = total - _feedShown;
     var nextBatch = Math.min(30, remaining);
-    el.innerHTML += '<button onclick="_feedShown+=30;renderFeedPosts(_comm)" '
-      + 'onmouseover="this.style.borderColor=\'rgba(255,45,155,.5)\';this.style.color=\'var(--pink)\'" '
-      + 'onmouseout="this.style.borderColor=\'rgba(255,255,255,.15)\';this.style.color=\'rgba(255,255,255,.6)\'" '
-      + 'style="width:100%;padding:11px;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:8px;color:rgba(255,255,255,.6);font-family:\'Bebas Neue\',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;margin-top:8px;transition:.15s">'
-      + '▼ LOAD ' + nextBatch + ' MORE · ' + remaining + ' REMAINING'
+    el.innerHTML +=
+      '<button class="btn-sec" style="width:100%;margin-top:8px" onclick="_feedShown+=30;renderFeedPosts(_comm)">'
+      + 'Load ' + nextBatch + ' more · ' + remaining + ' remaining'
       + '</button>';
   }
 }
@@ -6590,14 +7348,27 @@ function renderGroupStats(g){
   var nonBE=all.filter(function(t){return Math.abs(t.pnl||0)>0.01;}).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   var curW=0,maxW=0;
   nonBE.forEach(function(t){if(t.pnl>0){curW++;maxW=Math.max(maxW,curW);}else curW=0;});
-  var pnlEl=document.getElementById('grp-stat-pnl');
-  var trEl=document.getElementById('grp-stat-trades');
-  var wrEl=document.getElementById('grp-stat-wr');
-  var stEl=document.getElementById('grp-stat-streak');
-  if(pnlEl){pnlEl.textContent=(totalPnl>=0?'+':'-')+'$'+Math.abs(totalPnl).toFixed(0);pnlEl.style.color=totalPnl>=0?'var(--grn)':'var(--red)';}
-  if(trEl)trEl.textContent=total;
-  if(wrEl){wrEl.textContent=wr+'%';wrEl.style.color=wr>=50?'var(--grn)':'var(--red)';}
-  if(stEl)stEl.textContent=maxW+'W';
+
+  // Chrome stat values use class-based tone instead of inline neon colors.
+  function _setStat(id, html, tone){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = html;
+    el.className = 'fstat-val' + (tone ? ' ' + tone : '');
+    el.style.color = ''; el.style.textShadow = '';
+  }
+  function _money(v){
+    var sign = v>0 ? '+' : v<0 ? '−' : '';
+    var abs = Math.abs(v);
+    var int = Math.floor(abs).toLocaleString('en-US');
+    var cents = (abs - Math.floor(abs)).toFixed(2).slice(1);
+    return sign + '$' + int + '<span class="cents">' + cents + '</span>';
+  }
+  _setStat('grp-stat-pnl', total ? _money(totalPnl) : '—', totalPnl>0 ? 'profit' : totalPnl<0 ? 'loss' : '');
+  _setStat('grp-stat-trades', String(total), '');
+  _setStat('grp-stat-wr', total ? wr + '<span class="cents">%</span>' : '—', wr>=50 ? 'cool' : '');
+  // grp-stat-streak isn't in the v3 layout; setStat early-returns if missing.
+  _setStat('grp-stat-streak', maxW + 'W', '');
 }
 
 
@@ -6660,7 +7431,7 @@ function renderFeedLeaderboard(g){
   var mT=getMemberTradesLookup();
   var myPnl=trades.reduce(function(a,t){return a+(t.pnl||0);},0);
   var myWr=trades.length?Math.round(trades.filter(function(t){return t.pnl>0;}).length/trades.length*100):0;
-  var rows=[{username:(acct&&acct.username)||'You',pnl:myPnl,wr:myWr,aplus:trades.filter(function(t){return t.grade==='A+';}).length,isMe:true,color:(acct&&acct.color)||'pink'}];
+  var rows=[{username:(acct&&acct.username)||'You',pnl:myPnl,wr:myWr,aplus:trades.filter(function(t){return t.grade==='A+';}).length,isMe:true,color:(acct&&acct.color)||'chrome'}];
   (g.members||[]).filter(function(m){return!m.isMe;}).forEach(function(m){
     var mt=mT[m.id]||[];
     var pnl=mt.reduce(function(a,t){return a+(t.pnl||0);},0);
@@ -6670,21 +7441,43 @@ function renderFeedLeaderboard(g){
   if(_lbFilter==='wr') rows.sort(function(a,b){return b.wr-a.wr;});
   else if(_lbFilter==='aplus') rows.sort(function(a,b){return b.aplus-a.aplus;});
   else rows.sort(function(a,b){return b.pnl-a.pnl;});
+
+  // Map account avatar color → chrome avatar tone class
+  function _avTone(color){
+    var m={chrome:'av-chrome',pink:'av-c5',blue:'av-c1',purple:'av-c3',green:'av-c4',orange:'av-c2',red:'av-c5',yellow:'av-c6',black:'av-c3'};
+    return m[color] || 'av-c1';
+  }
+  function _shortK(n){
+    var s = n>=0 ? '+' : '−';
+    var a = Math.abs(n);
+    if(a >= 1000) return s + '$' + (a/1000).toFixed(1) + 'k';
+    return s + '$' + Math.round(a);
+  }
+
   el.innerHTML=rows.map(function(r,i){
-    var valStr=_lbFilter==='wr'?r.wr+'%':_lbFilter==='aplus'?r.aplus+' A+':((r.pnl>=0?'+':'-')+'$'+Math.abs(r.pnl).toFixed(0));
-    var valCol=_lbFilter==='wr'?(r.wr>=50?'var(--grn)':'var(--red)'):_lbFilter==='aplus'?'var(--cyan)':(r.pnl>0?'var(--grn)':r.pnl<0?'var(--red)':'rgba(255,255,255,.4)');
-    var rc=i===0?'var(--yellow)':i===1?'rgba(200,200,200,.7)':i===2?'#cd7f32':'rgba(255,255,255,.3)';
-    var s=getAvatarStyle(r.color||'pink');
-    var safeUname=safeText(r.username||'');
-    var safeUInit=safeText((r.username||'').slice(0,2).toUpperCase());
-    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
-      +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;color:'+rc+';width:18px;flex-shrink:0">'+(i+1)+'</div>'
-      +'<div style="width:26px;height:26px;border-radius:50%;background:'+s.bg+';display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:12px;color:'+s.text+';flex-shrink:0">'+safeUInit+'</div>'
-      +'<div style="flex:1"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px">'+safeUname+(r.isMe?' <span style="opacity:.4">(you)</span>':'')+'</div>'
-        +'<div style="font-family:Orbitron,monospace;font-size:11px;color:rgba(255,255,255,.5)">'+r.wr+'% WR</div>'
-      +'</div>'
-      +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:16px;color:'+valCol+'">'+valStr+'</div>'
-      +'</div>';
+    var valStr, valCls;
+    if(_lbFilter==='wr'){
+      valStr = r.wr + '%';
+      valCls = r.wr>=50 ? 'profit' : 'loss';
+    } else if(_lbFilter==='aplus'){
+      valStr = r.aplus + ' A+';
+      valCls = '';
+    } else {
+      valStr = _shortK(r.pnl);
+      valCls = r.pnl>0 ? 'profit' : r.pnl<0 ? 'loss' : '';
+    }
+    var rankCls = i < 3 ? 'lb-rank top' : 'lb-rank';
+    var avTone = _avTone(r.color);
+    var safeUname = safeText(r.username || '');
+    var safeUInit = safeText((r.username || '').slice(0,2).toUpperCase());
+    return '<div class="lb-row">'
+      + '<span class="' + rankCls + '">' + (i+1) + '</span>'
+      + '<div class="lb-av ' + avTone + '">' + safeUInit + '</div>'
+      + '<div class="lb-name">' + safeUname + (r.isMe ? ' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase">you</span>' : '')
+      +   '<div class="lb-handle">@' + safeText((r.username||'trader').replace(/^@/,'')) + '</div>'
+      + '</div>'
+      + '<span class="lb-pl ' + valCls + '">' + valStr + '</span>'
+      + '</div>';
   }).join('');
 }
 
@@ -6747,22 +7540,46 @@ function renderMemberCalendars(g){
 
 
 function buildMiniCal(tData){
-  var now=new Date(),y=now.getFullYear(),m=now.getMonth();
-  var days=new Date(y,m+1,0).getDate(),first=new Date(y,m,1).getDay();
-  var dp={};
-  tData.forEach(function(t){if(!t.date)return;var td=new Date(t.date+'T00:00:00');if(td.getFullYear()===y&&td.getMonth()===m){var d=td.getDate();dp[d]=(dp[d]||0)+(t.pnl||0);}});
-  var h='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">';
-  ['S','M','T','W','T','F','S'].forEach(function(d){h+='<div style="font-family:Orbitron,monospace;font-size:5px;color:rgba(255,255,255,.7);text-align:center;padding-bottom:2px">'+d+'</div>';});
-  for(var i=0;i<first;i++)h+='<div></div>';
-  for(var d=1;d<=days;d++){
-    var isT=d===now.getDate();
-    var pnl=dp[d];var has=pnl!==undefined;
-    var bg=has?(pnl>0?'rgba(0,255,136,.2)':pnl<0?'rgba(255,34,85,.2)':'rgba(255,255,255,.06)'):'transparent';
-    var brd=isT?'var(--cyan)':has?(pnl>0?'rgba(0,255,136,.5)':pnl<0?'rgba(255,34,85,.5)':'rgba(255,255,255,.2)'):'rgba(255,255,255,.05)';
-    h+='<div style="aspect-ratio:1;border-radius:2px;background:'+bg+';border:1px solid '+brd+';display:flex;align-items:center;justify-content:center">'
-      +'<span style="font-family:Orbitron,monospace;font-size:5px;color:'+(isT?'var(--cyan)':has?'#fff':'rgba(255,255,255,.25)')+'">'+d+'</span>'+'</div>';
+  // v3 community member calendar — a 20-cell heatmap strip showing the last
+  // 20 trading-days of activity (oldest → newest). Each cell maps daily P&L
+  // intensity to a chrome tone class:
+  //   p1/p2/p3 = sage profit (rising intensity)
+  //   l1/l2    = rose loss
+  //   blank    = no trades that day
+  // Used by renderFeedMembers; do NOT collide with buildDashMiniCal.
+  var byDay = {};
+  (tData||[]).forEach(function(t){
+    if(!t.date) return;
+    var key = String(t.date).slice(0,10);
+    if(!byDay[key]) byDay[key] = 0;
+    byDay[key] += (t.pnl || 0);
+  });
+  // Find magnitude reference for tier calculation (max absolute daily P&L)
+  var ref = 0;
+  Object.keys(byDay).forEach(function(k){ var v=Math.abs(byDay[k]); if(v>ref) ref=v; });
+  if(ref < 1) ref = 1;
+
+  var cells = [];
+  var today = new Date(); today.setHours(12,0,0,0);
+  for(var i = 19; i >= 0; i--){
+    var d = new Date(today);
+    d.setDate(d.getDate() - i);
+    var key = d.toISOString().slice(0,10);
+    var pnl = byDay[key];
+    if(pnl === undefined || Math.abs(pnl) < 0.01){
+      cells.push('<div class="mc-cell"></div>');
+      continue;
+    }
+    var ratio = Math.abs(pnl) / ref;
+    var cls;
+    if(pnl > 0){
+      cls = ratio >= 0.66 ? 'p3' : ratio >= 0.33 ? 'p2' : 'p1';
+    } else {
+      cls = ratio >= 0.5 ? 'l2' : 'l1';
+    }
+    cells.push('<div class="mc-cell ' + cls + '"></div>');
   }
-  return h+'</div>';
+  return '<div class="minical">' + cells.join('') + '</div>';
 }
 
 function openMemberCal(memberId,username){
@@ -6805,24 +7622,38 @@ function renderFeedMembers(g){
   var el=document.getElementById('feed-members');
   var slots=document.getElementById('feed-slots');if(slots)slots.textContent=(25-g.members.length)+' slots open';
   if(!el)return;
-  var owner=(currentUser&&_comm&&_comm.owner_id===currentUser.id);
   var mT=getMemberTradesLookup();
+  function _avTone(color){
+    var m={chrome:'av-chrome',pink:'av-c5',blue:'av-c1',purple:'av-c3',green:'av-c4',orange:'av-c2',red:'av-c5',yellow:'av-c6',black:'av-c3'};
+    return m[color] || 'av-c1';
+  }
+  function _shortK(n){
+    var s = n>=0 ? '+' : '−';
+    var a = Math.abs(n);
+    if(a >= 1000) return s + '$' + (a/1000).toFixed(1) + 'k';
+    return s + '$' + Math.round(a);
+  }
   el.innerHTML=(g.members||[]).map(function(m){
-    var mt=m.isMe?trades:(mT[m.id]||[]);
-    var pnl=mt.reduce(function(a,t){return a+(t.pnl||0);},0);
-    var col=pnl>0?'var(--grn)':pnl<0?'var(--red)':'rgba(255,255,255,.4)';
-    var isLead=m.isOwner||(currentUser&&m.id===g.owner_id);
-    var s=memberAvatarStyle(m);
-    var safeUname=safeText(m.username||'');
-    var safeInit=safeText((m.username||'').slice(0,2).toUpperCase());
-    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)">'
-      +'<div style="width:28px;height:28px;border-radius:50%;background:'+s.bg+';display:flex;align-items:center;justify-content:center;font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:'+s.text+';flex-shrink:0">'+safeInit+'</div>'
-      +'<div style="flex:1"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:15px">'+safeUname+(m.isMe?' <span style="opacity:.4">(you)</span>':'')+'</div>'
-        +(isLead?'<div style="font-family:Orbitron,monospace;font-size:6px;color:#ffc800">LEADER</div>':'')
-      +'</div>'
-      +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:14px;color:'+col+'">'+(pnl>=0?'+':'-')+'$'+Math.abs(pnl).toFixed(0)+'</div>'
-      +(!m.isMe&&owner?'<button onclick="removeMember(\''+safeText(m.id)+'\')" style="background:none;border:none;color:rgba(255,255,255,.65);cursor:pointer;font-size:14px;padding:2px">✕</button>':'')
-      +'</div>';
+    var mt = m.isMe ? trades : (mT[m.id] || []);
+    var pnl = mt.reduce(function(a,t){return a+(t.pnl||0);},0);
+    var pnlCls = pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : '';
+    var color = m.isMe ? ((acct && acct.color) || 'chrome') : (m.color || 'blue');
+    var avTone = _avTone(color);
+    var safeMid = safeText(m.id || '');
+    var safeUname = safeText(m.username || '');
+    var safeInit = safeText((m.username || '??').slice(0,2).toUpperCase());
+    var nameDisplay = safeUname + (m.isMe ? ' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase">you</span>' : '');
+    return '<div class="member" data-mid="'+safeMid+'" data-uname="'+safeUname+'" onclick="openMemberCal(this.dataset.mid,this.dataset.uname)">'
+      + '<div class="m-row">'
+      +   '<div class="m-av '+avTone+'">'+safeInit+'</div>'
+      +   '<div class="m-meta">'
+      +     '<div class="m-name">'+nameDisplay+'</div>'
+      +     '<div class="m-handle">@'+safeText((m.username||'trader').replace(/^@/,''))+'</div>'
+      +   '</div>'
+      +   '<span class="m-pl '+pnlCls+'">'+_shortK(pnl)+'</span>'
+      + '</div>'
+      + buildMiniCal(mt)
+      + '</div>';
   }).join('');
 }
 
@@ -6911,13 +7742,14 @@ function updateLeaveDeleteBtn(){
   var btn=document.getElementById('leave-or-delete-btn');
   if(!btn||!_comm)return;
   var isOwner=currentUser&&_comm.owner_id===currentUser.id;
-  // DELETE button — only visible to owner
-  btn.textContent=isOwner?'DELETE':'LEAVE';
-  btn.style.borderColor=isOwner?'rgba(255,34,85,.5)':'rgba(255,34,85,.3)';
-  btn.style.display='block';
-  // EDIT button — only visible to owner
+  // The chrome iconbtn keeps its inline SVG — only update the title hint
+  // and a class so we can re-style if we ever want a destructive variant.
+  btn.title = isOwner ? 'Delete group' : 'Leave group';
+  btn.classList.toggle('is-owner', !!isOwner);
+  btn.style.display = '';
+  // Edit button — only visible to owner
   var editBtn=document.getElementById('feed-edit-btn');
-  if(editBtn) editBtn.style.display=isOwner?'inline-block':'none';
+  if(editBtn) editBtn.style.display=isOwner?'':'none';
 }
 
 function searchTrader(){
