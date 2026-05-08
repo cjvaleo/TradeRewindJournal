@@ -3914,6 +3914,400 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   background:var(--n-chrome)!important;color:#1a1a1a!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),inset 0 -1px 0 rgba(0,0,0,0.2);
 }
+
+/* ── MODAL / POPUP / OVERLAY CHROME OVERRIDES ─────────────────────
+   Targets every modal, dropdown, and floating popover in the app.
+   Most modals carry inline synthwave styles, so these rules use
+   !important to win without rewriting markup. Page-scoped #pg-*
+   styles are NOT touched. */
+
+/* Backdrop — every full-screen modal */
+#cal-edit-modal,#pin-trade-modal,#rules-modal,#member-cal-modal,
+#edit-group-modal,#create-group-modal,#share-modal,#pb-modal,
+#edit-modal,#acct-settings-modal,#weekly-report-modal{
+  background:rgba(0,0,0,0.78)!important;
+  backdrop-filter:blur(2px)!important;
+  -webkit-backdrop-filter:blur(2px)!important;
+}
+
+/* Inner modal card — chrome surface, refined shadow */
+#cal-edit-modal > div,#pin-trade-modal > div,#rules-modal > div,
+#member-cal-modal > div,#edit-group-modal > div,#create-group-modal > div,
+#share-modal > div,#pb-modal > div,#edit-modal > div,
+#acct-settings-modal > div,#weekly-report-modal > div{
+  background:var(--n-surface)!important;
+  border:1px solid var(--n-border-2)!important;
+  border-radius:12px!important;
+  box-shadow:
+    0 24px 64px -12px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(255,255,255,0.02) inset !important;
+  color:var(--n-text)!important;
+}
+
+/* Modal title — italic-serif. Catches inline `font-family:'Black Ops One'`
+   spans/divs by attribute substring (legacy synthwave header font). */
+#cal-edit-modal [style*="Black Ops One"],
+#pin-trade-modal [style*="Black Ops One"],
+#rules-modal [style*="Black Ops One"],
+#member-cal-modal [style*="Black Ops One"],
+#edit-group-modal [style*="Black Ops One"],
+#create-group-modal [style*="Black Ops One"],
+#share-modal [style*="Black Ops One"],
+#pb-modal [style*="Black Ops One"],
+#edit-modal [style*="Black Ops One"],
+#acct-settings-modal [style*="Black Ops One"],
+#weekly-report-modal [style*="Black Ops One"]{
+  font-family:var(--n-font-display)!important;font-style:italic!important;
+  font-size:24px!important;color:var(--n-text)!important;
+  letter-spacing:-0.01em!important;
+  text-shadow:none!important;text-transform:none!important;font-weight:400!important;
+}
+
+/* Inner cards (.crd) inside modals lose their synthwave purple bg */
+#cal-edit-modal .crd,#pin-trade-modal .crd,#rules-modal .crd,
+#member-cal-modal .crd,#edit-group-modal .crd,#create-group-modal .crd,
+#share-modal .crd,#pb-modal .crd,#edit-modal .crd,
+#acct-settings-modal .crd,#weekly-report-modal .crd{
+  background:var(--n-surface-2)!important;
+  border:1px solid var(--n-border)!important;
+  box-shadow:none!important;border-radius:8px!important;
+}
+#cal-edit-modal .crd-h,#pin-trade-modal .crd-h,#rules-modal .crd-h,
+#member-cal-modal .crd-h,#edit-group-modal .crd-h,#create-group-modal .crd-h,
+#share-modal .crd-h,#pb-modal .crd-h,#edit-modal .crd-h,
+#acct-settings-modal .crd-h,#weekly-report-modal .crd-h{
+  border-bottom-color:var(--n-border)!important;background:transparent!important;
+}
+#cal-edit-modal .crd-title,#pin-trade-modal .crd-title,#rules-modal .crd-title,
+#member-cal-modal .crd-title,#edit-group-modal .crd-title,#create-group-modal .crd-title,
+#share-modal .crd-title,#pb-modal .crd-title,#edit-modal .crd-title,
+#acct-settings-modal .crd-title,#weekly-report-modal .crd-title{
+  font-family:var(--n-font-mono)!important;font-size:9.5px!important;
+  letter-spacing:0.18em!important;text-transform:uppercase!important;
+  color:var(--n-text-3)!important;text-shadow:none!important;font-weight:400!important;
+}
+
+/* Form inputs inside modals */
+#cal-edit-modal input,#pin-trade-modal input,#rules-modal input,
+#member-cal-modal input,#edit-group-modal input,#create-group-modal input,
+#share-modal input,#pb-modal input,#edit-modal input,
+#acct-settings-modal input,#weekly-report-modal input,
+#cal-edit-modal textarea,#pin-trade-modal textarea,#rules-modal textarea,
+#member-cal-modal textarea,#edit-group-modal textarea,#create-group-modal textarea,
+#share-modal textarea,#pb-modal textarea,#edit-modal textarea,
+#acct-settings-modal textarea,#weekly-report-modal textarea,
+#cal-edit-modal select,#pin-trade-modal select,#rules-modal select,
+#member-cal-modal select,#edit-group-modal select,#create-group-modal select,
+#share-modal select,#pb-modal select,#edit-modal select,
+#acct-settings-modal select,#weekly-report-modal select{
+  background:var(--n-surface-2)!important;
+  border:1px solid var(--n-border)!important;
+  color:var(--n-text)!important;
+  font-family:var(--n-font-sans)!important;font-size:13px!important;
+  padding:10px 12px!important;border-radius:7px!important;
+  outline:none!important;text-shadow:none!important;letter-spacing:0!important;
+  box-shadow:none!important;font-weight:400!important;
+  transition:border-color .15s, background .15s !important;
+}
+#cal-edit-modal input:focus,#pin-trade-modal input:focus,#rules-modal input:focus,
+#member-cal-modal input:focus,#edit-group-modal input:focus,#create-group-modal input:focus,
+#share-modal input:focus,#pb-modal input:focus,#edit-modal input:focus,
+#acct-settings-modal input:focus,#weekly-report-modal input:focus,
+#cal-edit-modal textarea:focus,#pin-trade-modal textarea:focus,#rules-modal textarea:focus,
+#member-cal-modal textarea:focus,#edit-group-modal textarea:focus,#create-group-modal textarea:focus,
+#share-modal textarea:focus,#pb-modal textarea:focus,#edit-modal textarea:focus,
+#acct-settings-modal textarea:focus,#weekly-report-modal textarea:focus,
+#cal-edit-modal select:focus,#pin-trade-modal select:focus,#rules-modal select:focus,
+#member-cal-modal select:focus,#edit-group-modal select:focus,#create-group-modal select:focus,
+#share-modal select:focus,#pb-modal select:focus,#edit-modal select:focus,
+#acct-settings-modal select:focus,#weekly-report-modal select:focus{
+  border-color:var(--n-border-3)!important;background:var(--n-surface-3)!important;
+}
+#cal-edit-modal input::placeholder,#pin-trade-modal input::placeholder,#rules-modal input::placeholder,
+#member-cal-modal input::placeholder,#edit-group-modal input::placeholder,#create-group-modal input::placeholder,
+#share-modal input::placeholder,#pb-modal input::placeholder,#edit-modal input::placeholder,
+#acct-settings-modal input::placeholder,#weekly-report-modal input::placeholder,
+#cal-edit-modal textarea::placeholder,#share-modal textarea::placeholder,
+#pb-modal textarea::placeholder,#edit-modal textarea::placeholder,
+#acct-settings-modal textarea::placeholder,#weekly-report-modal textarea::placeholder{
+  color:var(--n-text-4)!important;
+}
+
+/* Form labels (.f-row label) */
+#cal-edit-modal .f-row label,#pin-trade-modal .f-row label,#rules-modal .f-row label,
+#member-cal-modal .f-row label,#edit-group-modal .f-row label,#create-group-modal .f-row label,
+#share-modal .f-row label,#pb-modal .f-row label,#edit-modal .f-row label,
+#acct-settings-modal .f-row label,#weekly-report-modal .f-row label{
+  font-family:var(--n-font-mono)!important;font-size:9.5px!important;
+  letter-spacing:0.16em!important;text-transform:uppercase!important;
+  color:var(--n-text-3)!important;margin-bottom:6px!important;
+  text-shadow:none!important;font-weight:400!important;display:block!important;
+}
+
+/* Buttons inside modals — style by detecting common synthwave inline patterns
+   so we don't have to know every button class. The selectors target inline
+   `style` snippets that the legacy markup uses for primary / cancel / danger
+   variants. */
+[id$="-modal"] button[style*="rgba(0,255,136"],
+#cal-edit-modal button[style*="rgba(0,180,255"],
+#pin-trade-modal button[style*="rgba(0,180,255"],
+#rules-modal button[style*="rgba(0,180,255"],
+#member-cal-modal button[style*="rgba(0,180,255"],
+#edit-group-modal button[style*="rgba(0,180,255"],
+#create-group-modal button[style*="rgba(0,180,255"],
+#share-modal button[style*="rgba(0,180,255"],
+#pb-modal button[style*="rgba(0,180,255"],
+#edit-modal button[style*="rgba(0,180,255"],
+#acct-settings-modal button[style*="rgba(0,180,255"],
+#weekly-report-modal button[style*="rgba(0,180,255"]{
+  /* Primary chrome button — Save / Confirm / Submit */
+  background:var(--n-text)!important;color:#0a0a0a!important;
+  border:none!important;
+  font-family:var(--n-font-mono)!important;font-size:10px!important;
+  letter-spacing:0.16em!important;text-transform:uppercase!important;
+  padding:9px 18px!important;border-radius:7px!important;
+  font-weight:500!important;text-shadow:none!important;
+  transition:background .15s, transform .15s !important;
+  box-shadow:none!important;
+}
+[id$="-modal"] button[style*="rgba(0,255,136"]:hover,
+[id$="-modal"] button[style*="rgba(0,180,255"]:hover{
+  background:#fff!important;transform:translateY(-1px)!important;
+}
+
+/* Secondary / cancel button — buttons styled with white-text borders */
+#cal-edit-modal button[style*="rgba(255,255,255,.2"],
+#pin-trade-modal button[style*="rgba(255,255,255,.2"],
+#rules-modal button[style*="rgba(255,255,255,.2"],
+#member-cal-modal button[style*="rgba(255,255,255,.2"],
+#edit-group-modal button[style*="rgba(255,255,255,.2"],
+#create-group-modal button[style*="rgba(255,255,255,.2"],
+#share-modal button[style*="rgba(255,255,255,.2"],
+#pb-modal button[style*="rgba(255,255,255,.2"],
+#edit-modal button[style*="rgba(255,255,255,.2"],
+#acct-settings-modal button[style*="rgba(255,255,255,.2"],
+#weekly-report-modal button[style*="rgba(255,255,255,.2"]{
+  background:transparent!important;color:var(--n-text-2)!important;
+  border:1px solid var(--n-border-2)!important;
+  font-family:var(--n-font-mono)!important;font-size:10px!important;
+  letter-spacing:0.16em!important;text-transform:uppercase!important;
+  padding:9px 18px!important;border-radius:7px!important;
+  font-weight:500!important;text-shadow:none!important;
+  transition:color .15s, border-color .15s, background .15s !important;
+  box-shadow:none!important;
+}
+#cal-edit-modal button[style*="rgba(255,255,255,.2"]:hover,
+#pin-trade-modal button[style*="rgba(255,255,255,.2"]:hover,
+#rules-modal button[style*="rgba(255,255,255,.2"]:hover,
+#member-cal-modal button[style*="rgba(255,255,255,.2"]:hover,
+#edit-group-modal button[style*="rgba(255,255,255,.2"]:hover,
+#create-group-modal button[style*="rgba(255,255,255,.2"]:hover,
+#share-modal button[style*="rgba(255,255,255,.2"]:hover,
+#pb-modal button[style*="rgba(255,255,255,.2"]:hover,
+#edit-modal button[style*="rgba(255,255,255,.2"]:hover,
+#acct-settings-modal button[style*="rgba(255,255,255,.2"]:hover,
+#weekly-report-modal button[style*="rgba(255,255,255,.2"]:hover{
+  color:var(--n-text)!important;border-color:var(--n-border-3)!important;
+  background:var(--n-surface-2)!important;
+}
+
+/* Danger button — Delete variants. Catches the legacy synthwave red. */
+#cal-edit-modal button[style*="rgba(255,34,85"],
+#pin-trade-modal button[style*="rgba(255,34,85"],
+#rules-modal button[style*="rgba(255,34,85"],
+#member-cal-modal button[style*="rgba(255,34,85"],
+#edit-group-modal button[style*="rgba(255,34,85"],
+#create-group-modal button[style*="rgba(255,34,85"],
+#share-modal button[style*="rgba(255,34,85"],
+#pb-modal button[style*="rgba(255,34,85"],
+#edit-modal button[style*="rgba(255,34,85"],
+#acct-settings-modal button[style*="rgba(255,34,85"],
+#weekly-report-modal button[style*="rgba(255,34,85"]{
+  background:rgba(201,95,95,0.10)!important;color:var(--n-loss)!important;
+  border:1px solid rgba(201,95,95,0.35)!important;
+  font-family:var(--n-font-mono)!important;font-size:10px!important;
+  letter-spacing:0.16em!important;text-transform:uppercase!important;
+  padding:9px 18px!important;border-radius:7px!important;
+  font-weight:500!important;text-shadow:none!important;box-shadow:none!important;
+}
+
+/* Close (X) button in top-right of modals */
+[id$="-modal"] button[onclick*="display=\\'none\\'"],
+[id$="-modal"] button[onclick*="closeAccountSettings"],
+[id$="-modal"] button[onclick*="closeCalEdit"],
+[id$="-modal"] button[onclick*="closeShareModal"]{
+  /* Catch close-x buttons by their close-handler pattern. We narrow further
+     by also requiring the small close glyph (✕). Inline color/border are
+     overridden inline below. */
+}
+
+/* Symbol picker dropdowns */
+#sym-dropdown,#cem-sym-dd{
+  background:var(--n-surface)!important;
+  border:1px solid var(--n-border-2)!important;border-top:none!important;
+  border-radius:0 0 7px 7px!important;
+  box-shadow:0 8px 24px rgba(0,0,0,0.5)!important;
+}
+#sym-dropdown > div,#cem-sym-dd > div{
+  padding:10px 12px!important;border-radius:0!important;cursor:pointer!important;
+  font-family:var(--n-font-sans)!important;font-size:13px!important;
+  color:var(--n-text)!important;letter-spacing:0!important;text-shadow:none!important;
+  background:transparent!important;border:none!important;
+  border-bottom:1px solid var(--n-border)!important;
+  transition:background .12s !important;
+}
+#sym-dropdown > div:last-child,#cem-sym-dd > div:last-child{border-bottom:none!important}
+#sym-dropdown > div:hover,#cem-sym-dd > div:hover{
+  background:var(--n-surface-2)!important;
+}
+#sym-dropdown > div.on,#cem-sym-dd > div.on,
+#sym-dropdown > div.active,#cem-sym-dd > div.active,
+#sym-dropdown > div.sel,#cem-sym-dd > div.sel{
+  background:var(--n-surface-3)!important;color:var(--n-text)!important;
+}
+
+/* Notification panel (popover, not full-screen modal) */
+#notif-panel{
+  background:var(--n-surface)!important;
+  border:1px solid var(--n-border-2)!important;
+  border-radius:10px!important;
+  box-shadow:0 24px 64px -12px rgba(0,0,0,0.7),
+             0 0 0 1px rgba(255,255,255,0.02) inset !important;
+  color:var(--n-text)!important;
+}
+#notif-panel > div:first-child{
+  font-family:var(--n-font-mono)!important;font-size:10px!important;
+  letter-spacing:0.18em!important;text-transform:uppercase!important;
+  color:var(--n-text-3)!important;text-shadow:none!important;
+  margin-bottom:10px!important;font-weight:400!important;
+}
+
+/* Cookie banner — bottom popup */
+#cookie-banner{
+  background:var(--n-surface)!important;
+  border-top:1px solid var(--n-border-2)!important;
+  color:var(--n-text)!important;
+}
+
+/* Search-results dropdown inside modals (invite member typeahead) */
+[id$="-modal"] #search-results > div{
+  background:var(--n-surface-2)!important;
+  border:1px solid var(--n-border)!important;
+  color:var(--n-text)!important;font-family:var(--n-font-sans)!important;
+}
+
+/* Bebas Neue titles inside modals → italic-serif (catches weekly-report) */
+[id$="-modal"] [style*="Bebas Neue"]{
+  font-family:var(--n-font-display)!important;font-style:italic!important;
+  font-size:24px!important;color:var(--n-text)!important;
+  letter-spacing:-0.01em!important;text-transform:none!important;
+  text-shadow:none!important;font-weight:400!important;
+}
+
+/* Purple/pink header divider lines under titles */
+[id$="-modal"] [style*="border-bottom:1px solid rgba(191,0,255"],
+[id$="-modal"] [style*="border-bottom:1px solid rgba(255,45,155"],
+[id$="-modal"] [style*="border-bottom:1px solid rgba(0,180,255"],
+[id$="-modal"] [style*="border-bottom:1px solid rgba(0,255,136"]{
+  border-bottom-color:var(--n-border)!important;
+}
+
+/* Pink primary buttons (legacy --pink synthwave) → chrome white-on-dark */
+[id$="-modal"] button[style*="rgba(255,45,155"],
+[id$="-modal"] button[style*="rgba(204,0,255"]{
+  background:var(--n-text)!important;color:#0a0a0a!important;
+  border:none!important;
+  font-family:var(--n-font-mono)!important;font-size:10px!important;
+  letter-spacing:0.16em!important;text-transform:uppercase!important;
+  padding:9px 18px!important;border-radius:7px!important;
+  font-weight:500!important;text-shadow:none!important;box-shadow:none!important;
+  transition:background .15s, transform .15s !important;
+}
+[id$="-modal"] button[style*="rgba(255,45,155"]:hover,
+[id$="-modal"] button[style*="rgba(204,0,255"]:hover{
+  background:#fff!important;transform:translateY(-1px)!important;
+}
+
+/* Close-X buttons that use red synthwave styling → ghost chrome */
+[id$="-modal"] button[onclick*="closeEditModal"],
+[id$="-modal"] button[onclick*="closePbModal"]{
+  background:transparent!important;
+  border:1px solid var(--n-border-2)!important;
+  color:var(--n-text-3)!important;
+  text-shadow:none!important;box-shadow:none!important;
+  border-radius:6px!important;
+  transition:color .15s, border-color .15s, background .15s !important;
+}
+[id$="-modal"] button[onclick*="closeEditModal"]:hover,
+[id$="-modal"] button[onclick*="closePbModal"]:hover{
+  color:var(--n-text)!important;border-color:var(--n-border-3)!important;
+  background:var(--n-surface-2)!important;
+}
+
+/* Account settings theme toggle (Dark/Light) — neutralize synthwave colors */
+#acct-settings-modal button[onclick*="setTheme"],
+#acct-settings-modal button[onclick*="theme"]{
+  background:var(--n-surface-2)!important;
+  border:1px solid var(--n-border-2)!important;
+  color:var(--n-text-2)!important;
+  font-family:var(--n-font-mono)!important;font-size:10px!important;
+  letter-spacing:0.16em!important;text-transform:uppercase!important;
+  padding:8px 14px!important;border-radius:7px!important;
+  font-weight:500!important;text-shadow:none!important;box-shadow:none!important;
+}
+#acct-settings-modal button[onclick*="setTheme"].on,
+#acct-settings-modal button[onclick*="theme"].on{
+  background:var(--n-text)!important;color:#0a0a0a!important;
+  border-color:transparent!important;
+}
+
+/* cal-edit-modal direction toggle (Long/Short) — chrome */
+#cal-edit-modal .dir-b{
+  background:var(--n-surface-2)!important;
+  border:1px solid var(--n-border-2)!important;
+  color:var(--n-text-3)!important;
+  font-family:var(--n-font-mono)!important;font-size:10px!important;
+  letter-spacing:0.16em!important;text-transform:uppercase!important;
+  text-shadow:none!important;box-shadow:none!important;font-weight:500!important;
+  border-radius:6px!important;
+}
+#cal-edit-modal .dir-b.on{
+  background:var(--n-text)!important;color:#0a0a0a!important;
+  border-color:transparent!important;
+}
+
+/* cal-edit-modal session pills (.sess-btn) — chrome */
+#cal-edit-modal .sess-btn{
+  background:var(--n-surface-2)!important;
+  border:1px solid var(--n-border-2)!important;
+  color:var(--n-text-3)!important;
+  font-family:var(--n-font-mono)!important;font-size:9.5px!important;
+  letter-spacing:0.14em!important;text-transform:uppercase!important;
+  text-shadow:none!important;box-shadow:none!important;font-weight:500!important;
+  border-radius:5px!important;
+}
+#cal-edit-modal .sess-btn.on{
+  background:var(--n-text)!important;color:#0a0a0a!important;
+  border-color:transparent!important;
+}
+
+/* Range sliders inside modals — chrome track + thumb (no rainbow) */
+[id$="-modal"] input[type=range]{
+  -webkit-appearance:none!important;appearance:none!important;
+  background:var(--n-surface-3)!important;
+  height:4px!important;border-radius:2px!important;
+  outline:none!important;border:none!important;box-shadow:none!important;
+}
+[id$="-modal"] input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none!important;appearance:none!important;
+  width:14px!important;height:14px!important;border-radius:50%!important;
+  background:var(--n-text)!important;border:none!important;cursor:pointer!important;
+  box-shadow:0 1px 4px rgba(0,0,0,0.5)!important;
+}
+[id$="-modal"] input[type=range]::-moz-range-thumb{
+  width:14px!important;height:14px!important;border-radius:50%!important;
+  background:var(--n-text)!important;border:none!important;cursor:pointer!important;
+}
 </style>
 </head>
 <body>
