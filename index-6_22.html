@@ -873,40 +873,13 @@
   margin-top:2px;
 }
 
-html{background:var(--n-bg);color:var(--n-text);scrollbar-width:thin;scrollbar-color:var(--n-border-2) transparent}
-body{font-family:var(--n-font-sans);background:var(--n-bg);color:var(--n-text);font-size:13px;min-height:100vh}
+body{font-family:'Chakra Petch',sans-serif;background:var(--bg);background-image:radial-gradient(ellipse at 50% 0%,rgba(140,0,200,.18) 0%,transparent 60%),radial-gradient(ellipse at 100% 100%,rgba(255,45,155,.08) 0%,transparent 50%);color:var(--txt);font-size:13px;min-height:100vh}
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,rgba(0,0,0,.08) 0px,rgba(0,0,0,.08) 1px,transparent 1px,transparent 4px);pointer-events:none;z-index:9999}
 
-/* Synthwave horizon overlays — neutralized for the chrome aesthetic. The
-   <div class="bg-grid"> / <div class="bg-horizon"> elements still render
-   in the wrap markup but are hidden globally. */
-.bg-grid,.bg-horizon,.bg-horizon2{display:none!important}
-
-/* Global UI components — chrome overrides for the few elements that still
-   shipped synthwave palette (toast, mobile nav, notif panel, cookie banner).
-   These render on top of every page so they break theme consistency if
-   left as legacy purple/pink/cyan. */
-.toast{
-  background:var(--n-surface-3)!important;
-  border:1px solid var(--n-border-2)!important;
-  color:var(--n-text)!important;
-  font-family:var(--n-font-mono)!important;font-size:11px!important;
-  letter-spacing:0.05em!important;text-shadow:none!important;
-  padding:9px 14px!important;border-radius:6px!important;
-  box-shadow:0 8px 24px rgba(0,0,0,0.5)!important;
-}
-#mobile-nav{
-  background:var(--n-surface)!important;
-  border-top:1px solid var(--n-border)!important;
-}
-#notif-panel{
-  background:var(--n-surface)!important;
-  border:1px solid var(--n-border-2)!important;
-  box-shadow:0 8px 24px rgba(0,0,0,0.5)!important;
-}
-#cookie-banner{
-  background:var(--n-surface)!important;
-  border-top:1px solid var(--n-border)!important;
-}
+.bg-grid{position:fixed;bottom:0;left:0;right:0;height:45%;perspective:400px;z-index:0;opacity:.22;pointer-events:none}
+.bg-grid-inner{pointer-events:none;width:100%;height:100%;background:linear-gradient(90deg,var(--pink) 1px,transparent 1px),linear-gradient(0deg,var(--pink) 1px,transparent 1px);background-size:50px 50px;transform:rotateX(75deg) translateY(30%);transform-origin:top center}
+.bg-horizon{position:fixed;top:60%;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--pink),var(--cyan),var(--pink),transparent);opacity:.6;z-index:0;pointer-events:none}
+.bg-horizon2{position:fixed;top:calc(60% + 4px);left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.35;z-index:0;pointer-events:none}
 
 .wrap{display:none;min-height:100vh;position:relative;z-index:1;width:100%;overflow:visible}
 
@@ -1189,10 +1162,7 @@ tbody tr:hover td{background:rgba(0,180,255,.04)}
 
 .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(8px);background:rgba(0,180,255,.2);border:1px solid rgba(0,180,255,.4);color:var(--cyan);padding:9px 22px;border-radius:6px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;opacity:0;transition:.28s;pointer-events:none;z-index:9998;text-shadow:0 0 8px var(--cyan)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-::-webkit-scrollbar{width:8px;height:8px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--n-border-2);border-radius:4px}
-::-webkit-scrollbar-thumb:hover{background:var(--n-border-3)}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(191,0,255,.3);border-radius:2px}
 
 @keyframes pfpFloat{
   0%{transform:translateY(0px) rotate(0deg)}
