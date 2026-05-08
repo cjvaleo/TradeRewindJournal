@@ -1950,6 +1950,178 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-log #csv-img-preview > div > button{background:var(--n-loss)!important}
 
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── HISTORY REDESIGN ─────────────────────────────── */
+
+#pg-history.page.on{
+  padding:32px 40px 48px;
+  background:var(--n-bg);
+  position:relative;z-index:1;
+}
+#pg-history.on > .ph{display:none}
+
+#pg-history .h-head{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:24px;flex-wrap:wrap;gap:14px;border:none;padding:0;
+}
+#pg-history .h-head .h-title{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:38px;line-height:1;letter-spacing:-0.01em;color:var(--n-text);
+  text-shadow:none;
+}
+#pg-history .h-head .h-sub{
+  margin-top:8px;font-family:var(--n-font-mono);font-size:10.5px;
+  letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);
+}
+
+#pg-history .h-filters{display:flex;gap:6px;align-items:center}
+#pg-history .h-filter{
+  display:flex;align-items:center;background:var(--n-surface);
+  border:1px solid var(--n-border);border-radius:6px;
+  padding:0 10px 0 12px;height:34px;transition:.12s;
+}
+#pg-history .h-filter:hover{border-color:var(--n-border-2)}
+#pg-history .h-filter .lbl{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--n-text-4);margin-right:8px;
+}
+#pg-history .h-filter select{
+  appearance:none;-webkit-appearance:none;background:transparent;
+  border:none;color:var(--n-text);font-family:var(--n-font-sans);
+  font-size:12px;font-weight:500;outline:none;cursor:pointer;
+  padding:0 18px 0 0;height:100%;text-shadow:none;letter-spacing:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6b6b' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right center;
+  box-shadow:none;
+}
+
+#pg-history .h-summary{
+  display:flex;align-items:center;gap:14px;margin-bottom:14px;
+  padding:10px 14px;background:var(--n-surface);
+  border:1px solid var(--n-border);border-radius:8px;
+}
+#pg-history .h-summary .item{display:flex;align-items:baseline;gap:6px}
+#pg-history .h-summary .lbl{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-4);
+}
+#pg-history .h-summary .val{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:20px;line-height:1;color:var(--n-text);
+  letter-spacing:-0.01em;text-shadow:none;
+}
+#pg-history .h-summary .val.pos{color:var(--n-profit)}
+#pg-history .h-summary .val.neg{color:var(--n-loss)}
+#pg-history .h-summary .val .cents{font-size:0.65em;opacity:0.7}
+#pg-history .h-summary .val .unit{font-size:0.55em;opacity:0.7;font-family:var(--n-font-mono);font-style:normal;margin-left:2px;letter-spacing:0.05em}
+#pg-history .h-summary .sep{color:var(--n-border-3);font-size:14px}
+
+#pg-history .h-table-card{
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:10px;overflow:hidden;
+}
+#pg-history .h-table-wrap{overflow-x:auto}
+#pg-history .h-table{width:100%;border-collapse:collapse}
+#pg-history .h-table thead th{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-4);text-align:left;
+  padding:12px 14px;font-weight:400;background:var(--n-surface-2);
+  border-bottom:1px solid var(--n-border-2);white-space:nowrap;
+  text-shadow:none;
+}
+#pg-history .h-table thead th.right{text-align:right}
+#pg-history .h-table thead th.center{text-align:center}
+#pg-history .h-table tbody td{
+  padding:13px 14px;border-bottom:1px solid var(--n-border);
+  vertical-align:middle;white-space:nowrap;color:var(--n-text);
+  font-size:13px;font-weight:400;
+}
+#pg-history .h-table tbody tr{transition:background .1s}
+#pg-history .h-table tbody tr:hover td{background:var(--n-surface-2)}
+#pg-history .h-table tbody tr:last-child td{border-bottom:none}
+
+#pg-history .cell-date{
+  font-family:var(--n-font-mono);font-size:11px;
+  color:var(--n-text-3);letter-spacing:0.02em;
+}
+#pg-history .cell-sym{
+  font-family:var(--n-font-sans);font-size:13px;font-weight:500;
+  color:var(--n-text);letter-spacing:0;
+}
+#pg-history .cell-market{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.1em;
+  color:var(--n-text-3);text-transform:uppercase;
+}
+#pg-history .cell-dir{
+  display:inline-block;font-family:var(--n-font-mono);font-size:9px;
+  letter-spacing:0.18em;text-transform:uppercase;padding:3px 8px;
+  border-radius:3px;font-weight:500;text-shadow:none;
+}
+#pg-history .cell-dir.long{
+  background:rgba(95,179,137,0.10);color:var(--n-profit);
+  border:1px solid rgba(95,179,137,0.20);
+}
+#pg-history .cell-dir.short{
+  background:rgba(201,95,95,0.10);color:var(--n-loss);
+  border:1px solid rgba(201,95,95,0.20);
+}
+#pg-history .cell-price{
+  font-family:var(--n-font-mono);font-size:12px;
+  color:var(--n-text-2);letter-spacing:0.02em;
+}
+#pg-history .cell-qty{font-family:var(--n-font-mono);font-size:12px;color:var(--n-text-2)}
+#pg-history .cell-qty .acct{color:var(--n-accent-cool);margin-left:3px}
+#pg-history .cell-pnl{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:18px;letter-spacing:-0.01em;line-height:1;text-align:right;
+  text-shadow:none;
+}
+#pg-history .cell-pnl.pos{color:var(--n-profit)}
+#pg-history .cell-pnl.neg{color:var(--n-loss)}
+#pg-history .cell-pnl.zero{color:var(--n-text-3)}
+#pg-history .cell-pnl .cents{font-size:0.65em;opacity:0.7}
+#pg-history .cell-notes{text-align:center;position:relative}
+#pg-history .cell-notes.empty{
+  color:var(--n-text-4);font-family:var(--n-font-mono);font-size:11px;
+}
+#pg-history .notes-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:4px;cursor:pointer;
+  color:var(--n-accent-cool);transition:.12s;
+}
+#pg-history .notes-icon:hover{background:rgba(110,168,255,0.10)}
+#pg-history .notes-icon svg{width:13px;height:13px;stroke-width:1.5;fill:none;stroke:currentColor}
+#pg-history .notes-tooltip{
+  display:none;position:absolute;
+  right:auto;left:50%;top:calc(100% + 6px);transform:translateX(-50%);
+  background:var(--n-surface-3)!important;
+  border:1px solid var(--n-border-2)!important;
+  padding:10px 12px!important;border-radius:6px!important;
+  font-family:var(--n-font-sans)!important;font-size:12px!important;
+  color:var(--n-text-2)!important;line-height:1.5!important;
+  width:240px;text-align:left;
+  box-shadow:0 8px 24px rgba(0,0,0,0.5)!important;
+  z-index:50;white-space:normal;font-weight:400;letter-spacing:0;
+  margin:0;
+}
+#pg-history .cell-notes:hover .notes-tooltip,
+#pg-history .cell-notes:focus-within .notes-tooltip{display:block}
+
+#pg-history .cell-actions{text-align:right}
+#pg-history .cell-actions .del-btn{
+  width:24px;height:24px;border-radius:4px;border:none;background:transparent;
+  color:var(--n-text-4);cursor:pointer;font-size:14px;line-height:1;
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:.12s;padding:0;
+}
+#pg-history .cell-actions .del-btn:hover{
+  color:var(--n-loss);background:rgba(201,95,95,0.10);border:none;
+}
+#pg-history .h-empty{
+  padding:60px 20px;text-align:center;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-4);
+}
 </style>
 </head>
 <body>
@@ -2800,17 +2972,73 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
 <!-- HISTORY -->
 <div id="pg-history" class="page">
-  <div class="ph"><div><div class="ptitle">History</div><div class="ptitle-sub">All trades across all accounts</div></div>
-    <div style="display:flex;gap:7px">
-      <select class="act-btn ghost" style="padding:6px 10px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;font-size:14px" id="h-mkt" onchange="renderHistory()"><option value="">All Markets</option><option>Stocks</option><option>Crypto</option><option>Options</option><option>Forex</option><option>Futures</option></select>
-      <select class="act-btn ghost" style="padding:6px 10px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;font-size:14px" id="h-dir" onchange="renderHistory()"><option value="">All Dir</option><option value="long">Long</option><option value="short">Short</option></select>
-      <select class="act-btn ghost" style="padding:6px 10px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;font-size:14px" id="h-res" onchange="renderHistory()"><option value="">All Results</option><option value="win">Wins</option><option value="loss">Losses</option></select>
+
+  <!-- HEADER -->
+  <div class="h-head">
+    <div>
+      <div class="h-title">History</div>
+      <div class="h-sub">All trades across all accounts</div>
+    </div>
+    <div class="h-filters">
+      <div class="h-filter">
+        <span class="lbl">Market</span>
+        <select id="h-mkt" onchange="renderHistory()">
+          <option value="">All</option>
+          <option>Futures</option><option>Stocks</option><option>Crypto</option><option>Options</option><option>Forex</option>
+        </select>
+      </div>
+      <div class="h-filter">
+        <span class="lbl">Direction</span>
+        <select id="h-dir" onchange="renderHistory()">
+          <option value="">All</option>
+          <option value="long">Long</option>
+          <option value="short">Short</option>
+        </select>
+      </div>
+      <div class="h-filter">
+        <span class="lbl">Result</span>
+        <select id="h-res" onchange="renderHistory()">
+          <option value="">All</option>
+          <option value="win">Wins</option>
+          <option value="loss">Losses</option>
+        </select>
+      </div>
     </div>
   </div>
-  <div class="crd"><div style="overflow-x:auto">
-    <table><thead><tr><th>Date</th><th>Symbol</th><th>Market</th><th>Dir</th><th>Entry</th><th>Exit</th><th>Qty</th><th>P&amp;L</th><th>Notes</th><th></th></tr></thead>
-    <tbody id="hist-body"></tbody></table>
-  </div></div>
+
+  <!-- SUMMARY -->
+  <div class="h-summary">
+    <div class="item"><span class="lbl">Trades</span><span class="val" id="hs-count">&mdash;</span></div>
+    <span class="sep">/</span>
+    <div class="item"><span class="lbl">Net P&amp;L</span><span class="val" id="hs-pnl">&mdash;</span></div>
+    <span class="sep">/</span>
+    <div class="item"><span class="lbl">Win Rate</span><span class="val" id="hs-wr">&mdash;</span></div>
+    <span class="sep">/</span>
+    <div class="item"><span class="lbl">Avg Trade</span><span class="val" id="hs-avg">&mdash;</span></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="h-table-card">
+    <div class="h-table-wrap">
+      <table class="h-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Symbol</th>
+            <th>Market</th>
+            <th>Dir</th>
+            <th>Entry</th>
+            <th>Exit</th>
+            <th>Qty</th>
+            <th class="right">P&amp;L</th>
+            <th class="center">Notes</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="hist-body"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <!-- CALENDAR -->
@@ -6966,30 +7194,85 @@ async function deleteTrade(id){
 }
 function renderHistory(){
   const fm=document.getElementById('h-mkt').value,fd=document.getElementById('h-dir').value,fr=document.getElementById('h-res').value;
-  let ft=trades.filter(t=>{if(fm&&t.market!==fm)return false;if(fd&&t.type!==fd)return false;if(fr==='win'&&t.pnl<=0)return false;if(fr==='loss'&&t.pnl>=0)return false;return true;});
+  const ft=trades.filter(t=>{if(fm&&t.market!==fm)return false;if(fd&&t.type!==fd)return false;if(fr==='win'&&t.pnl<=0)return false;if(fr==='loss'&&t.pnl>=0)return false;return true;});
+
+  // ── SUMMARY STRIP (live counts from filtered results) ──────────
+  function _setSum(id, html, tone){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = html;
+    el.className = 'val' + (tone ? ' '+tone : '');
+  }
+  function _money(v, withCents){
+    const sign = v>0 ? '+' : v<0 ? '−' : '';
+    const abs = Math.abs(v);
+    const int = Math.floor(abs).toLocaleString('en-US');
+    if(!withCents) return sign + '$' + int;
+    const cents = (abs - Math.floor(abs)).toFixed(2).slice(1);
+    return sign + '$' + int + '<span class="cents">' + cents + '</span>';
+  }
+  function _tone(v){return v>0?'pos':v<0?'neg':''}
+  if(!ft.length){
+    _setSum('hs-count','0','');
+    _setSum('hs-pnl','&mdash;','');
+    _setSum('hs-wr','&mdash;','');
+    _setSum('hs-avg','&mdash;','');
+  } else {
+    const totalPnl = ft.reduce((s,t)=>s+(t.pnl||0),0);
+    const wins = ft.filter(t=>(t.pnl||0)>0).length;
+    const losses = ft.filter(t=>(t.pnl||0)<0).length;
+    const decided = wins + losses; // exclude breakevens for win-rate denominator
+    const wr = decided>0 ? Math.round((wins/decided)*100) : 0;
+    const avg = totalPnl / ft.length;
+    _setSum('hs-count', String(ft.length), '');
+    _setSum('hs-pnl',  _money(totalPnl, true),  _tone(totalPnl));
+    _setSum('hs-wr',   wr + '<span class="unit">%</span>', '');
+    _setSum('hs-avg',  _money(avg, true), _tone(avg));
+  }
+
+  // ── ROWS ───────────────────────────────────────────────────────
   const tb=document.getElementById('hist-body');
-  if(!ft.length){tb.innerHTML=`<tr><td colspan="10" class="tbl-empty">No trades found</td></tr>`;return;}
-  tb.innerHTML=ft.map(t=>{
-    var notesCell = t.notes
-      ? `<td style="text-align:center;position:relative">
-           <div class="notes-icon-wrap" tabindex="0">
-             <span style="font-size:14px;cursor:pointer;opacity:.8;filter:drop-shadow(0 0 4px rgba(0,180,255,.5))">📝</span>
-             <div class="notes-tooltip">${t.notes.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
-           </div>
-         </td>`
-      : '<td style="text-align:center;color:rgba(255,255,255,.15);font-size:14px">—</td>';
-    return `<tr>
-      <td style="font-family:Orbitron,monospace;font-size:15px;color:var(--muted)">${t.date||'—'}</td>
-      <td style="font-family:Bebas Neue,sans-serif;font-size:14px;letter-spacing:1px" class="nb">${t.sym}</td>
-      <td style="font-family:Orbitron,monospace;font-size:15px;color:rgba(255,255,255,.9)">${t.market||'—'}</td>
-      <td><span class="bdg ${t.type}">${t.type.toUpperCase()}</span></td>
-      <td>$${t.entry.toFixed(2)}</td>
-      <td>$${t.exit.toFixed(2)}</td>
-      <td style="font-family:Orbitron,monospace;font-size:14px">${t.qty}${t.accounts>1?' <span style=\'font-family:Orbitron,monospace;font-size:15px;color:rgba(0,180,255,.7)\'>×'+t.accounts+'</span>':''}</td>
-      <td class="${t.pnl>=0?'ng':'nr'}" style="font-family:Bebas Neue,sans-serif;font-size:14px;letter-spacing:1px">${t.pnl>=0?'+':''}$${t.pnl.toFixed(2)}</td>
-      ${notesCell}
-      <td><button class="del-btn" onclick="deleteTrade(${t.id})">&#10005;</button></td>
-    </tr>`;
+  if(!ft.length){
+    tb.innerHTML = '<tr><td colspan="10" class="h-empty">No trades found</td></tr>';
+    return;
+  }
+  function _esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function _fmtDate(iso){
+    if(!iso) return '—';
+    const d = new Date(iso + 'T12:00:00');
+    if(isNaN(d)) return _esc(iso);
+    return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  }
+  function _fmtPrice(v){
+    if(v==null||isNaN(v)) return '—';
+    return '$' + Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+  const NOTES_SVG = '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="14" y2="17"/></svg>';
+
+  tb.innerHTML = ft.map(t => {
+    const dir = t.type==='short' ? 'short' : 'long';
+    const dirLabel = dir.charAt(0).toUpperCase()+dir.slice(1);
+    const pnl = t.pnl||0;
+    const pnlCls = pnl>0 ? 'pos' : pnl<0 ? 'neg' : 'zero';
+    const acctSpan = (t.accounts && t.accounts>1) ? ' <span class="acct">&times;'+t.accounts+'</span>' : '';
+    const notesCell = t.notes
+      ? '<td class="cell-notes" tabindex="0">'
+        + '<span class="notes-icon">'+NOTES_SVG+'</span>'
+        + '<div class="notes-tooltip">'+_esc(t.notes)+'</div>'
+        + '</td>'
+      : '<td class="cell-notes empty">—</td>';
+    return '<tr>'
+      + '<td class="cell-date">'+_fmtDate(t.date)+'</td>'
+      + '<td class="cell-sym">'+_esc(t.sym||'—')+'</td>'
+      + '<td class="cell-market">'+_esc(t.market||'—')+'</td>'
+      + '<td><span class="cell-dir '+dir+'">'+dirLabel+'</span></td>'
+      + '<td class="cell-price">'+_fmtPrice(t.entry)+'</td>'
+      + '<td class="cell-price">'+_fmtPrice(t.exit)+'</td>'
+      + '<td class="cell-qty">'+_esc(t.qty!=null?t.qty:'—')+acctSpan+'</td>'
+      + '<td class="cell-pnl '+pnlCls+'">'+_money(pnl, true)+'</td>'
+      + notesCell
+      + '<td class="cell-actions"><button class="del-btn" onclick="deleteTrade('+t.id+')">&times;</button></td>'
+      + '</tr>';
   }).join('');
 }
 
