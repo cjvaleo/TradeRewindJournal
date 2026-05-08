@@ -51,7 +51,73 @@
   --n-font-display: 'Instrument Serif', Georgia, serif;
   --n-font-sans:    'Geist', system-ui, sans-serif;
   --n-font-mono:    'Geist Mono', ui-monospace, monospace;
+
+  /* ─── Avatar finish tints (community-post accents) ─── */
+  --tint-chrome:    rgba(232,232,232,0.18);
+  --tint-gold:      rgba(245,215,124,0.32);
+  --tint-rosegold:  rgba(240,196,176,0.30);
+  --tint-gunmetal:  rgba(120,128,138,0.32);
+  --tint-sapphire:  rgba(106,143,208,0.36);
+  --tint-emerald:   rgba(106,180,136,0.32);
+  --tint-amethyst:  rgba(160,122,204,0.34);
+  --tint-slate:     rgba(160,168,176,0.28);
 }
+
+/* ─── Avatar (.av) — 8 finishes + custom upload ─── */
+.av{
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono);font-weight:600;letter-spacing:0.02em;
+  position:relative;overflow:hidden;flex-shrink:0;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 0 rgba(0,0,0,0.28);
+  transition:transform .25s, box-shadow .25s;
+}
+.av::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,0.42) 50%,transparent 62%);
+  background-size:280% 100%;background-position:280% 0;
+  animation:av-shimmer 5.5s ease-in-out infinite;
+  pointer-events:none;border-radius:inherit;
+}
+@keyframes av-shimmer{0%,30%{background-position:280% 0}70%,100%{background-position:-80% 0}}
+.av.chrome   {background:linear-gradient(135deg,#ededed 0%,#9a9a9a 50%,#ededed 100%);color:#1a1a1a}
+.av.gold     {background:linear-gradient(135deg,#f5d77c 0%,#9a7530 50%,#f5d77c 100%);color:#2a1f0a}
+.av.rosegold {background:linear-gradient(135deg,#f0c4b0 0%,#b07868 50%,#f0c4b0 100%);color:#2a1812}
+.av.gunmetal {background:linear-gradient(135deg,#5e646c 0%,#252930 50%,#5e646c 100%);color:#f5f5f5}
+.av.sapphire {background:linear-gradient(135deg,#6a8fd0 0%,#2a4a8a 50%,#6a8fd0 100%);color:#f0f5ff}
+.av.emerald  {background:linear-gradient(135deg,#6ab488 0%,#2a6a4a 50%,#6ab488 100%);color:#f0fff5}
+.av.amethyst {background:linear-gradient(135deg,#a07acc 0%,#5a3a8a 50%,#a07acc 100%);color:#f5f0ff}
+.av.slate    {background:linear-gradient(135deg,#a0a8b0 0%,#4a525c 50%,#a0a8b0 100%);color:#0f1418}
+.av.custom   {background:#222;color:transparent}
+.av.custom img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
+.av.custom::after{display:none}
+.av.sm{width:24px;height:24px;font-size:9px}
+.av.md{width:30px;height:30px;font-size:10.5px}
+.av.lg{width:42px;height:42px;font-size:12px}
+.av.xl{width:180px;height:180px;font-size:60px}
+
+/* Finish text color must beat the per-avatar-class color:#fff above */
+#pg-community .post-av.av.chrome,#pg-community .lb-av.av.chrome,
+#pg-community .m-av.av.chrome,#pg-community .reply-av.av.chrome,
+#pg-community .notif-av.av.chrome{color:#1a1a1a}
+#pg-community .post-av.av.gold,#pg-community .lb-av.av.gold,
+#pg-community .m-av.av.gold,#pg-community .reply-av.av.gold,
+#pg-community .notif-av.av.gold{color:#2a1f0a}
+#pg-community .post-av.av.rosegold,#pg-community .lb-av.av.rosegold,
+#pg-community .m-av.av.rosegold,#pg-community .reply-av.av.rosegold,
+#pg-community .notif-av.av.rosegold{color:#2a1812}
+#pg-community .post-av.av.slate,#pg-community .lb-av.av.slate,
+#pg-community .m-av.av.slate,#pg-community .reply-av.av.slate,
+#pg-community .notif-av.av.slate{color:#0f1418}
+
+/* Community post tinting — keyed by poster's finish */
+.post.tint-chrome   {--av-tint:var(--tint-chrome)}
+.post.tint-gold     {--av-tint:var(--tint-gold)}
+.post.tint-rosegold {--av-tint:var(--tint-rosegold)}
+.post.tint-gunmetal {--av-tint:var(--tint-gunmetal)}
+.post.tint-sapphire {--av-tint:var(--tint-sapphire)}
+.post.tint-emerald  {--av-tint:var(--tint-emerald)}
+.post.tint-amethyst {--av-tint:var(--tint-amethyst)}
+.post.tint-slate    {--av-tint:var(--tint-slate)}
 
 /* ─── NEW DESIGN SYSTEM — base components (v2) ────────── */
 /* Auth screen (login/signup) and any redesigned pages use these. */
@@ -842,8 +908,6 @@
   background:var(--n-surface-2)!important;
 }
 #sb-avatar{
-  background:var(--n-chrome)!important;
-  box-shadow:none!important;
   animation:none!important;
   border:1px solid var(--n-border-2);
 }
@@ -852,7 +916,6 @@
   font-family:var(--n-font-mono)!important;
   font-style:normal!important;
   font-weight:500!important;
-  color:var(--n-bg)!important;
   text-shadow:none!important;
   letter-spacing:0!important;
   font-size:12px!important;
@@ -2814,11 +2877,101 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   letter-spacing:2px!important;flex-shrink:0;
   animation:none!important;box-shadow:none!important;
 }
+#pg-account #pfp-preview{width:180px!important;height:180px!important;font-size:60px!important;background:none!important;border:none!important}
 #pg-account #pfp-preview > span#pfp-preview-txt{
-  font-family:var(--n-font-mono)!important;font-size:24px!important;
-  font-weight:600!important;color:var(--n-bg)!important;letter-spacing:2px!important;
-  text-shadow:none!important;
+  font-family:var(--n-font-mono)!important;font-size:60px!important;
+  font-weight:600!important;letter-spacing:2px!important;
+  text-shadow:none!important;color:inherit!important;position:relative;z-index:1;
 }
+
+/* Avatar picker (account → profile tab) */
+#pg-account .av-picker{margin-bottom:22px}
+#pg-account .av-hero{
+  position:relative;height:280px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--n-border);border-radius:14px;
+  background:radial-gradient(ellipse at center,var(--n-surface) 0%,var(--n-bg) 75%);
+  overflow:hidden;margin-bottom:24px;
+}
+#pg-account .av-hero::after{
+  content:'';position:absolute;bottom:34px;left:50%;transform:translateX(-50%);
+  width:170px;height:22px;
+  background:radial-gradient(ellipse,rgba(0,0,0,0.55) 0%,transparent 65%);
+  filter:blur(5px);animation:av-shadow-bob 5s ease-in-out infinite;z-index:0;
+}
+@keyframes av-shadow-bob{0%,100%{transform:translateX(-50%) scale(1);opacity:0.55}50%{transform:translateX(-50%) scale(0.85);opacity:0.35}}
+#pg-account .av.hero-pfp{
+  animation:av-hero-float 5s ease-in-out infinite;
+  filter:drop-shadow(0 22px 28px rgba(0,0,0,0.6));z-index:1;
+}
+@keyframes av-hero-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+#pg-account .av-hero-meta{position:absolute;top:18px;left:24px;display:flex;flex-direction:column;gap:3px;z-index:2}
+#pg-account .av-hero-meta-label{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--n-text-4)}
+#pg-account .av-hero-meta-val{font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.08em;color:var(--n-text-2);text-transform:uppercase}
+#pg-account .av-initials-input{position:absolute;top:18px;right:24px;display:flex;align-items:center;gap:8px;z-index:2}
+#pg-account .av-initials-label{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-4)}
+#pg-account .av-initials-field,
+#pg-account .av-initials-input #p-initials{
+  width:54px!important;padding:6px 8px!important;
+  background:var(--n-surface)!important;
+  border:1px solid var(--n-border-2)!important;border-radius:6px!important;
+  text-align:center!important;
+  font-family:var(--n-font-mono)!important;font-size:11px!important;
+  letter-spacing:0.08em!important;
+  color:var(--n-text)!important;text-transform:uppercase!important;outline:none!important;
+}
+#pg-account .av-palette-label{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--n-text-3);
+  margin:8px 0 14px;display:flex;align-items:center;justify-content:space-between;
+}
+#pg-account .av-palette-hint{color:var(--n-text-4);font-size:9px}
+#pg-account .av-palette{
+  display:grid;grid-template-columns:repeat(9,1fr);gap:12px;margin-bottom:20px;
+}
+#pg-account .av-palette .swatch{
+  aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;padding:12px 4px;background:var(--n-surface);
+  border:1px solid var(--n-border);border-radius:11px;cursor:pointer;
+  transition:border-color .2s,transform .25s,background .15s;position:relative;
+  width:auto;height:auto;
+}
+#pg-account .av-palette .swatch:hover{
+  border-color:var(--n-border-2);background:var(--n-surface-2);transform:translateY(-2px);
+}
+#pg-account .av-palette .swatch.selected{
+  border-color:rgba(255,255,255,0.4);background:var(--n-surface-2);
+  box-shadow:0 0 0 1px rgba(255,255,255,0.15),0 0 24px -8px rgba(255,255,255,0.15);
+}
+#pg-account .av-palette .swatch.selected::after{
+  content:'✓';position:absolute;top:6px;right:7px;font-size:10px;
+  color:var(--n-text);font-family:var(--n-font-mono);
+}
+#pg-account .av-palette .swatch .av{width:42px;height:42px;font-size:12px}
+#pg-account .av-palette .swatch-name{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--n-text-3);text-align:center;line-height:1.2;
+}
+#pg-account .av-palette .swatch:hover .swatch-name{color:var(--n-text-2)}
+#pg-account .av-palette .swatch.selected .swatch-name{color:var(--n-text)}
+#pg-account .av-palette .swatch.upload .av{
+  background:var(--n-surface-3);border:1px dashed var(--n-border-3);box-shadow:none;
+}
+#pg-account .av-palette .swatch.upload .av::after{display:none}
+#pg-account .av-palette .swatch.upload .av svg{
+  width:18px;height:18px;color:var(--n-text-3);stroke-width:1.6;transition:color .2s;
+}
+#pg-account .av-palette .swatch.upload:hover .av{border-color:var(--n-text-3)}
+#pg-account .av-palette .swatch.upload:hover .av svg{color:var(--n-text-2)}
+#pg-account .av-sync-note{
+  margin-top:18px;padding:14px 16px;background:var(--n-surface);
+  border:1px solid var(--n-border);border-left:2px solid var(--n-accent-cool);
+  border-radius:8px;display:flex;align-items:flex-start;gap:12px;
+  font-size:12.5px;color:var(--n-text-2);line-height:1.55;
+}
+#pg-account .av-sync-note svg{
+  width:16px;height:16px;color:var(--n-accent-cool);flex-shrink:0;margin-top:1px;
+}
+#pg-account .av-sync-note b{color:var(--n-text);font-weight:500}
 #pg-account .pfp-info{flex:1}
 #pg-account .pfp-info .display-name,
 #pg-account #pf-name-display{
@@ -3672,15 +3825,18 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 #pg-community .composer-share svg{width:11px;height:11px;stroke-width:2;stroke:currentColor;fill:none}
 
-/* ── POSTS — chrome card with hover lift ── */
+/* ── POSTS — chrome card with hover lift + finish-tinted left border ── */
 #pg-community .post{
   border:1px solid var(--n-border);border-radius:10px;
+  border-left:3px solid var(--av-tint,rgba(255,255,255,0.06));
   padding:18px;margin-bottom:14px;background:var(--n-surface);
   transition:transform .25s ease-out, border-color .2s, background .15s, box-shadow .3s;
 }
 #pg-community .post:hover{
   transform:translateY(-2px);border-color:var(--n-border-2);
+  border-left-color:var(--av-tint,rgba(255,255,255,0.12));
   box-shadow:
+    -6px 0 24px -10px var(--av-tint,transparent),
     0 8px 28px -10px rgba(0,0,0,0.7),
     0 0 0 1px rgba(110,168,255,0.04),
     inset 0 1px 0 rgba(255,255,255,0.025);
@@ -4526,7 +4682,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   <!-- ACCOUNT BTN -->
   <div style="padding:10px 12px;border-top:1px solid var(--bord);flex-shrink:0">
     <div onclick="openAccountSettings()" style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 10px;border-radius:8px;border:1px solid var(--bord);background:rgba(0,0,0,.2);transition:.15s" onmouseover="this.style.borderColor='rgba(255,0,170,.4)'" onmouseout="this.style.borderColor='var(--bord)'">
-      <div class="y2kavt" id="sb-avatar" style="width:32px;height:32px;animation:pfpFloat 12s linear infinite"><span style="font-size:14px" id="sb-avatar-txt">?</span></div>
+      <div class="y2kavt av chrome" id="sb-avatar" style="width:32px;height:32px"><span style="font-size:14px;position:relative;z-index:1" id="sb-avatar-txt">?</span></div>
       <div style="flex:1;min-width:0">
         <div id="sb-name" style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">My Account</div>
         <div id="sb-username" style="font-family:'Orbitron',monospace;font-size:11px;color:rgba(255,255,255,.65);font-weight:600;letter-spacing:.5px">@username</div>
@@ -6170,30 +6326,48 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
             <div class="panel-card-sub">Avatar &middot; display name &middot; username</div>
           </div>
 
-          <div class="pfp-section">
-            <div class="pfp-preview-large" id="pfp-preview"><span id="pfp-preview-txt">?</span></div>
-            <div class="pfp-info">
-              <div class="display-name" id="pf-name-display">My Account</div>
-              <div class="display-user" id="pf-user-display">No username set</div>
-              <div class="pfp-controls">
-                <div class="pfp-row">
-                  <div class="lbl">Initials</div>
-                  <input class="pfp-letters-input" id="p-initials" maxlength="2" placeholder="TR" oninput="onPfpInput(this)"/>
+          <!-- Avatar picker — hero + 9-tile palette + sync note -->
+          <div class="av-picker">
+            <div class="av-hero">
+              <div class="av-hero-meta">
+                <div class="av-hero-meta-label">Selected</div>
+                <div class="av-hero-meta-val" id="av-finish-label">Chrome</div>
+              </div>
+              <div class="av-initials-input">
+                <span class="av-initials-label">Initials</span>
+                <input class="av-initials-field" id="p-initials" maxlength="2" placeholder="TR" oninput="onPfpInput(this)"/>
+              </div>
+              <div class="av hero-pfp xl chrome" id="pfp-preview"><span id="pfp-preview-txt">?</span></div>
+              <div class="display-name" id="pf-name-display" style="display:none">My Account</div>
+              <div class="display-user" id="pf-user-display" style="display:none">No username set</div>
+            </div>
+
+            <div class="av-palette-label">
+              <span>Pick a finish · 8 + custom</span>
+              <span class="av-palette-hint">tints your community posts</span>
+            </div>
+            <div class="av-palette">
+              <div class="swatch" id="swatch-chrome"   onclick="setPfpColor('chrome')"   title="Chrome"  ><div class="av lg chrome"  ></div><span class="swatch-name">Chrome</span></div>
+              <div class="swatch" id="swatch-gold"     onclick="setPfpColor('gold')"     title="Gold"    ><div class="av lg gold"    ></div><span class="swatch-name">Gold</span></div>
+              <div class="swatch" id="swatch-rosegold" onclick="setPfpColor('rosegold')" title="Rose Gold"><div class="av lg rosegold"></div><span class="swatch-name">Rose Gold</span></div>
+              <div class="swatch" id="swatch-gunmetal" onclick="setPfpColor('gunmetal')" title="Gunmetal"><div class="av lg gunmetal"></div><span class="swatch-name">Gunmetal</span></div>
+              <div class="swatch" id="swatch-sapphire" onclick="setPfpColor('sapphire')" title="Sapphire"><div class="av lg sapphire"></div><span class="swatch-name">Sapphire</span></div>
+              <div class="swatch" id="swatch-emerald"  onclick="setPfpColor('emerald')"  title="Emerald" ><div class="av lg emerald" ></div><span class="swatch-name">Emerald</span></div>
+              <div class="swatch" id="swatch-amethyst" onclick="setPfpColor('amethyst')" title="Amethyst"><div class="av lg amethyst"></div><span class="swatch-name">Amethyst</span></div>
+              <div class="swatch" id="swatch-slate"    onclick="setPfpColor('slate')"    title="Slate"   ><div class="av lg slate"   ></div><span class="swatch-name">Slate</span></div>
+              <div class="swatch upload" id="swatch-upload" onclick="document.getElementById('av-file-input').click()" title="Upload">
+                <div class="av lg">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
                 </div>
-                <div class="pfp-row">
-                  <div class="lbl">Color</div>
-                  <div class="pfp-swatches">
-                    <div class="swatch chrome on" id="swatch-chrome" onclick="setPfpColor('chrome')" title="Chrome"></div>
-                    <div class="swatch pink"     id="swatch-pink"   onclick="setPfpColor('pink')"   title="Pink"></div>
-                    <div class="swatch blue"     id="swatch-blue"   onclick="setPfpColor('blue')"   title="Blue"></div>
-                    <div class="swatch purple"   id="swatch-purple" onclick="setPfpColor('purple')" title="Purple"></div>
-                    <div class="swatch green"    id="swatch-green"  onclick="setPfpColor('green')"  title="Green"></div>
-                    <div class="swatch orange"   id="swatch-orange" onclick="setPfpColor('orange')" title="Orange"></div>
-                    <div class="swatch red"      id="swatch-red"    onclick="setPfpColor('red')"    title="Red"></div>
-                    <div class="swatch yellow"   id="swatch-yellow" onclick="setPfpColor('yellow')" title="Yellow"></div>
-                    <div class="swatch black"    id="swatch-black"  onclick="setPfpColor('black')"  title="Black"></div>
-                  </div>
-                </div>
+                <span class="swatch-name">Upload</span>
+              </div>
+              <input type="file" id="av-file-input" accept="image/*" style="display:none" onchange="handleAvatarFile(this.files&&this.files[0])"/>
+            </div>
+
+            <div class="av-sync-note">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path d="M21 12a9 9 0 0 1-9 9m0 0a9 9 0 0 1-9-9m9 9V3m9 9H3"/></svg>
+              <div>
+                <b>Syncs everywhere.</b> Your finish updates your sidebar, community posts, leaderboard, and replies — and tints every post you've shared. Custom uploads still keep your finish for the tint accent.
               </div>
             </div>
           </div>
@@ -6762,8 +6936,8 @@ function renderCommInvites() {
     return;
   }
 
-  // Avatar tone palette for notif rows — cycles by inviter index
-  var TONES = ['av-c1','av-c5','av-c4','av-c2','av-c6','av-c3'];
+  // Avatar finish palette for notif rows — cycles by inviter index
+  var TONES = ['sapphire','rosegold','emerald','gold','amethyst','gunmetal'];
   var listHtml = invites.map(function(inv, i) {
     var accepted = inv.accepted, declined = inv.declined;
     var fromName = safeText(inv.from || 'Leader');
@@ -6782,7 +6956,7 @@ function renderCommInvites() {
         + '</div>';
     }
     return '<div class="notif">'
-      + '<div class="notif-av ' + tone + '">' + initials + '</div>'
+      + '<div class="notif-av av ' + tone + '">' + initials + '</div>'
       + '<div class="notif-body">'
       +   '<div class="notif-text"><b>' + groupName + '</b> &middot; invited by <b>' + fromName + '</b></div>'
       +   actionsHtml
@@ -7188,7 +7362,15 @@ async function syncAndLoadCommFeed(g){
   var r=await _sb.from('trades').select('*').in('user_id',memberIds).order('created_at',{ascending:false}).limit(200);
   if(r.error){ console.warn('Feed fetch error:',r.error.message,r.error.details); _remotePosts=[]; renderFeedPosts(g); return; }
 
-  // Build member lookup for username/color
+  // Live profile lookup — owner's CURRENT avatar_finish/initials/image,
+  // not the cached community_members snapshot. This is what makes finish
+  // changes propagate across every group.
+  var profMap={};
+  try{
+    var pf=await _sb.from('profiles').select('id,username,initials,color,avatar_finish,avatar_image_url,avatar_initials').in('id',memberIds);
+    if(pf.data) pf.data.forEach(function(p){ profMap[p.id]=p; });
+  }catch(e){ console.warn('Profile fetch skipped:',e.message); }
+
   var memberLookup={};
   (g.members||[]).forEach(function(m){ memberLookup[m.id]=m; });
 
@@ -7196,16 +7378,28 @@ async function syncAndLoadCommFeed(g){
   _remotePosts=(r.data||[]).map(function(row){
     var t={}; try{ t=JSON.parse(row.trade_data||'{}'); }catch(e){}
     var m=memberLookup[row.user_id]||{};
+    var p=profMap[row.user_id]||{};
     return {
       id: String(row.id)+'_'+row.user_id,
       user_id: row.user_id,
-      username: m.username||'Trader',
-      initials: m.initials||(m.username?m.username.slice(0,2).toUpperCase():'??'),
-      avatar_color: m.color||m.avatar_color||'blue',
+      username: p.username || m.username || 'Trader',
+      initials: p.avatar_initials || p.initials || m.initials || (p.username||m.username||'??').slice(0,2).toUpperCase(),
+      avatar_finish: p.avatar_finish || p.color || m.color || m.avatar_color || 'chrome',
+      avatar_image_url: p.avatar_image_url || null,
+      avatar_color: p.avatar_finish || p.color || m.color || m.avatar_color || 'chrome',
       pnl_today: t.pnl||0,
       content: row.trade_data,
       created_at: t.date||row.created_at||''
     };
+  });
+
+  // Also patch g.members with live profile data so renderFeedMembers and
+  // renderFeedLeaderboard reflect current finishes.
+  (g.members||[]).forEach(function(m){
+    var p=profMap[m.id]; if(!p) return;
+    m.avatar_finish = p.avatar_finish || p.color || m.color || 'chrome';
+    m.avatar_image_url = p.avatar_image_url || null;
+    m.initials = p.avatar_initials || p.initials || m.initials;
   });
 
   // Fetch checkins for today from community_posts
@@ -7237,15 +7431,17 @@ function renderFeedPosts(g){
   var combined=[];
   var myId=currentUser?currentUser.id:null;
   var myName=(acct&&acct.username)?acct.username:'You';
-  var myInit=(acct&&acct.initials)?acct.initials:'ME';
-  var myColor=(acct&&acct.color)||'chrome';
+  var myInit=(acct&&acct.avatar_initials||acct&&acct.initials)?(acct.avatar_initials||acct.initials):'ME';
+  var myFinish=(acct&&(acct.avatar_finish||acct.color))||'chrome';
+  var myImgUrl=(acct&&acct.avatar_image_url)||null;
 
   trades.slice().forEach(function(t){
     if(!feedFilterDate([{date:t.date||''}]).length) return;
     combined.push({
       isMe:true, trade:t, pnl:t.pnl||0,
       date:t.date||'', username:myName, initials:myInit,
-      user_id: myId, color: myColor
+      user_id: myId, color: myFinish,
+      avatar_finish: myFinish, avatar_image_url: myImgUrl
     });
   });
 
@@ -7257,7 +7453,9 @@ function renderFeedPosts(g){
       username:row.username||'Trader',
       initials:row.initials||'??',
       user_id: row.user_id || null,
-      color: row.avatar_color || 'blue',
+      color: row.avatar_finish || row.avatar_color || 'chrome',
+      avatar_finish: row.avatar_finish || row.avatar_color || 'chrome',
+      avatar_image_url: row.avatar_image_url || null,
       row:row
     };
     if(feedFilterDate([{date:rp.date}]).length) combined.push(rp);
@@ -7300,15 +7498,9 @@ function renderFeedPosts(g){
     return;
   }
 
-  // Map account avatar color → chrome avatar tone class.
-  function _avTone(color){
-    var m={
-      chrome:'av-chrome', pink:'av-c5', blue:'av-c1', purple:'av-c3',
-      green:'av-c4',  orange:'av-c2',  red:'av-c5',  yellow:'av-c6',
-      black:'av-c3'
-    };
-    return m[color] || 'av-c1';
-  }
+  // Map account avatar finish → finish CSS class. Legacy synthwave keys
+  // are aliased via normalizeFinish so old posts still render.
+  function _avTone(finish){ return normalizeFinish(finish); }
   function _shortMoney(n){
     var sign = n>0 ? '+' : n<0 ? '−' : '';
     var a = Math.abs(n);
@@ -7334,7 +7526,13 @@ function renderFeedPosts(g){
     var t = p.trade || {};
     var pnl = p.pnl || 0;
     var pnlTone = pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : '';
-    var avTone = _avTone(p.color);
+    var avTone = _avTone(p.avatar_finish || p.color);
+    var avHtml = renderAvatar({
+      avatar_finish: p.avatar_finish || p.color,
+      avatar_image_url: p.avatar_image_url,
+      avatar_initials: p.initials
+    }, 'md');
+    var tintClass = 'tint-' + avTone;
     var postId = p.isMe ? (t.id || '') : (p.row ? p.row.id : '');
     var safePid = safeText(postId);
     var likes = _likeCounts[postId] || 0;
@@ -7370,9 +7568,13 @@ function renderFeedPosts(g){
       ? '<img class="post-img" src="' + safeURL(t.images[0]) + '" onclick="openImgLightbox(this.src)">'
       : '';
 
-    return '<div class="post" data-pid="'+safePid+'">'
+    var pAvInner = p.avatar_image_url
+      ? '<img src="'+safeURL(p.avatar_image_url)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;position:absolute;inset:0">'
+      : safeText(p.initials || '??');
+    var pAvExtra = p.avatar_image_url ? ' custom' : '';
+    return '<div class="post '+tintClass+'" data-pid="'+safePid+'">'
       + '<div class="post-head">'
-      +   '<div class="post-av '+avTone+'">'+safeText(p.initials || '??')+'</div>'
+      +   '<div class="post-av av '+avTone+pAvExtra+'">'+pAvInner+'</div>'
       +   '<div>'
       +     '<div class="post-name">'+safeText(p.username || 'Trader')+(p.isMe?' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase">you</span>':'')+'</div>'
       +     '<div class="post-handle">@'+safeText((p.username||'trader').replace(/^@/,''))+'</div>'
@@ -7831,11 +8033,8 @@ function renderFeedLeaderboard(g){
   else if(_lbFilter==='aplus') rows.sort(function(a,b){return b.aplus-a.aplus;});
   else rows.sort(function(a,b){return b.pnl-a.pnl;});
 
-  // Map account avatar color → chrome avatar tone class
-  function _avTone(color){
-    var m={chrome:'av-chrome',pink:'av-c5',blue:'av-c1',purple:'av-c3',green:'av-c4',orange:'av-c2',red:'av-c5',yellow:'av-c6',black:'av-c3'};
-    return m[color] || 'av-c1';
-  }
+  // Avatar finish CSS class — alias-safe via normalizeFinish.
+  function _avTone(finish){ return normalizeFinish(finish); }
   function _shortK(n){
     var s = n>=0 ? '+' : '−';
     var a = Math.abs(n);
@@ -7856,12 +8055,16 @@ function renderFeedLeaderboard(g){
       valCls = r.pnl>0 ? 'profit' : r.pnl<0 ? 'loss' : '';
     }
     var rankCls = i < 3 ? 'lb-rank top' : 'lb-rank';
-    var avTone = _avTone(r.color);
+    var avTone = _avTone(r.avatar_finish || r.color);
     var safeUname = safeText(r.username || '');
-    var safeUInit = safeText((r.username || '').slice(0,2).toUpperCase());
+    var safeUInit = safeText(r.initials || (r.username || '').slice(0,2).toUpperCase());
+    var avInner = r.avatar_image_url
+      ? '<img src="'+safeURL(r.avatar_image_url)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;position:absolute;inset:0">'
+      : safeUInit;
+    var avExtra = r.avatar_image_url ? ' custom' : '';
     return '<div class="lb-row">'
       + '<span class="' + rankCls + '">' + (i+1) + '</span>'
-      + '<div class="lb-av ' + avTone + '">' + safeUInit + '</div>'
+      + '<div class="lb-av av ' + avTone + avExtra + '">' + avInner + '</div>'
       + '<div class="lb-name">' + safeUname + (r.isMe ? ' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase">you</span>' : '')
       +   '<div class="lb-handle">@' + safeText((r.username||'trader').replace(/^@/,'')) + '</div>'
       + '</div>'
@@ -8012,10 +8215,7 @@ function renderFeedMembers(g){
   var slots=document.getElementById('feed-slots');if(slots)slots.textContent=(25-g.members.length)+' slots open';
   if(!el)return;
   var mT=getMemberTradesLookup();
-  function _avTone(color){
-    var m={chrome:'av-chrome',pink:'av-c5',blue:'av-c1',purple:'av-c3',green:'av-c4',orange:'av-c2',red:'av-c5',yellow:'av-c6',black:'av-c3'};
-    return m[color] || 'av-c1';
-  }
+  function _avTone(finish){ return normalizeFinish(finish); }
   function _shortK(n){
     var s = n>=0 ? '+' : '−';
     var a = Math.abs(n);
@@ -8026,15 +8226,21 @@ function renderFeedMembers(g){
     var mt = m.isMe ? trades : (mT[m.id] || []);
     var pnl = mt.reduce(function(a,t){return a+(t.pnl||0);},0);
     var pnlCls = pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : '';
-    var color = m.isMe ? ((acct && acct.color) || 'chrome') : (m.color || 'blue');
-    var avTone = _avTone(color);
+    var finish = m.isMe ? ((acct && (acct.avatar_finish||acct.color)) || 'chrome')
+                        : (m.avatar_finish || m.color || 'chrome');
+    var avTone = _avTone(finish);
+    var imgUrl = m.isMe ? (acct && acct.avatar_image_url) : m.avatar_image_url;
+    var avExtra = imgUrl ? ' custom' : '';
     var safeMid = safeText(m.id || '');
     var safeUname = safeText(m.username || '');
-    var safeInit = safeText((m.username || '??').slice(0,2).toUpperCase());
+    var safeInit = safeText(m.initials || (m.username || '??').slice(0,2).toUpperCase());
     var nameDisplay = safeUname + (m.isMe ? ' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase">you</span>' : '');
+    var avInner = imgUrl
+      ? '<img src="'+safeURL(imgUrl)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;position:absolute;inset:0">'
+      : safeInit;
     return '<div class="member" data-mid="'+safeMid+'" data-uname="'+safeUname+'" onclick="openMemberCal(this.dataset.mid,this.dataset.uname)">'
       + '<div class="m-row">'
-      +   '<div class="m-av '+avTone+'">'+safeInit+'</div>'
+      +   '<div class="m-av av '+avTone+avExtra+'">'+avInner+'</div>'
       +   '<div class="m-meta">'
       +     '<div class="m-name">'+nameDisplay+'</div>'
       +     '<div class="m-handle">@'+safeText((m.username||'trader').replace(/^@/,''))+'</div>'
@@ -11191,27 +11397,58 @@ function loadAcct(){
 }
 function saveAcct(){try{localStorage.setItem('tr1_acct',JSON.stringify(acct));}catch(e){}}
 function refreshAcctUI(){
-  var init=acct.initials&&acct.initials!='?'?acct.initials:(acct.name?acct.name.split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2):'?');
+  var init=acct.avatar_initials||acct.initials;
+  if(!init || init==='?'){
+    init = acct.name?acct.name.split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2):'?';
+  }
   acct.initials=init;
+  acct.avatar_initials=init;
   var els=['sb-avatar-txt','ap-avatar-txt','pfp-preview-txt'];
   els.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=init;});
-  /* apply avatar color to all avatar elements — default to chrome for the new aesthetic */
-  var colorKey = acct.color && pfpColors[acct.color] ? acct.color : 'chrome';
-  var col=pfpColors[colorKey];
+  /* apply avatar finish + optional image to all avatar elements */
+  var finishKey = normalizeFinish(acct.avatar_finish || acct.color);
+  var col=pfpColors[finishKey];
+  var hasImg = !!acct.avatar_image_url;
+  var FINISHES=['chrome','gold','rosegold','gunmetal','sapphire','emerald','amethyst','slate','custom'];
   ['sb-avatar','ap-avatar','pfp-preview'].forEach(function(id){
     var el=document.getElementById(id);
     if(!el) return;
-    el.style.background = col.bg;
+    /* Ensure .av base class + correct finish class */
+    el.classList.add('av');
+    FINISHES.forEach(function(f){ el.classList.remove(f); });
+    el.classList.add(hasImg ? 'custom' : finishKey);
+    el.style.background = hasImg ? '#222' : col.bg;
     el.style.boxShadow  = col.glow;
     el.style.color      = col.fg;
+    /* For custom-image avatars, layer an <img> child. The text span remains
+       but is hidden by the image overlay. */
+    var imgEl = el.querySelector('img.av-img');
+    if(hasImg){
+      if(!imgEl){
+        imgEl=document.createElement('img');
+        imgEl.className='av-img';
+        imgEl.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;inset:0;display:block';
+        el.style.position='relative'; el.style.overflow='hidden';
+        el.appendChild(imgEl);
+      }
+      imgEl.src = acct.avatar_image_url;
+    } else if(imgEl){ imgEl.remove(); }
   });
   /* highlight active swatch via class (CSS handles the ring) */
   Object.keys(pfpColors).forEach(function(k){
     var sw=document.getElementById('swatch-'+k);
     if(!sw) return;
-    sw.classList.toggle('on', k === colorKey);
+    sw.classList.toggle('selected', k === finishKey && !hasImg);
     sw.style.borderColor = '';  // strip any legacy inline border
   });
+  var upSw=document.getElementById('swatch-upload');
+  if(upSw) upSw.classList.toggle('selected', hasImg);
+  /* Update hero label */
+  var lbl=document.getElementById('av-finish-label');
+  if(lbl){
+    var name = finishKey.charAt(0).toUpperCase()+finishKey.slice(1);
+    lbl.textContent = hasImg ? ('Custom · '+name) : name;
+  }
   var n=document.getElementById('sb-name');if(n)n.textContent=acct.name||'My Account';
   var su=document.getElementById('sb-username');if(su)su.textContent=acct.username?'@'+acct.username.replace('@',''):'@username';
   var planMap={free:'Free Plan',pro:'Pro — $19/mo',elite:'Elite — $39/mo'};
@@ -11250,7 +11487,11 @@ function showTab(tab){
 }
 function onPfpInput(el){
   el.value=el.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,2);
-  var sp=document.getElementById('pfp-preview-txt');if(sp)sp.textContent=el.value||'?';
+  var v = el.value || '?';
+  var sp=document.getElementById('pfp-preview-txt'); if(sp) sp.textContent=v;
+  var sb=document.getElementById('sb-avatar-txt');   if(sb) sb.textContent=v;
+  acct.avatar_initials = v;
+  acct.initials = v;
 }
 // Shared helper — returns {bg, border, text} for any avatar color key
 function getAvatarStyle(colorKey){
@@ -11271,37 +11512,58 @@ function memberAvatarStyle(m){
   return getAvatarStyle(key);
 }
 
+/* 8 chrome/luxe finishes. Keys match .av.<finish> CSS classes and
+   profiles.avatar_finish DB values. Legacy synthwave keys are aliased so
+   old DB rows ('pink','blue','purple',...) render as a sensible finish. */
 var pfpColors={
-  // Chrome silver — default for the chrome aesthetic. No glow.
-  chrome:{bg:'linear-gradient(135deg,#e8e8e8 0%,#b8b8b8 50%,#8a8a8a 100%)',     glow:'none', fg:'#0a0a0a'},
-  pink:  {bg:'radial-gradient(circle at 32% 30%,#ff88cc,#bf2288 45%,#5a1745)', glow:'none', fg:'#fff'},
-  blue:  {bg:'radial-gradient(circle at 32% 30%,#66ccff,#3877b8 45%,#1d3a5a)', glow:'none', fg:'#fff'},
-  purple:{bg:'radial-gradient(circle at 32% 30%,#cc66ff,#8842c0 45%,#3a1a52)', glow:'none', fg:'#fff'},
-  green: {bg:'radial-gradient(circle at 32% 30%,#7fdba1,#3f9466 45%,#1d4a32)', glow:'none', fg:'#fff'},
-  orange:{bg:'radial-gradient(circle at 32% 30%,#ffb066,#bd6f2c 45%,#5a3414)', glow:'none', fg:'#fff'},
-  red:   {bg:'radial-gradient(circle at 32% 30%,#ff8888,#c34c4c 45%,#5a1d1d)', glow:'none', fg:'#fff'},
-  yellow:{bg:'radial-gradient(circle at 32% 30%,#fff088,#bba43c 45%,#5a4a14)', glow:'none', fg:'#fff'},
-  black: {bg:'radial-gradient(circle at 32% 30%,#555,#222 45%,#000)',          glow:'none', fg:'#fff'}
+  chrome:   {bg:'linear-gradient(135deg,#ededed 0%,#9a9a9a 50%,#ededed 100%)', glow:'none', fg:'#1a1a1a'},
+  gold:     {bg:'linear-gradient(135deg,#f5d77c 0%,#9a7530 50%,#f5d77c 100%)', glow:'none', fg:'#2a1f0a'},
+  rosegold: {bg:'linear-gradient(135deg,#f0c4b0 0%,#b07868 50%,#f0c4b0 100%)', glow:'none', fg:'#2a1812'},
+  gunmetal: {bg:'linear-gradient(135deg,#5e646c 0%,#252930 50%,#5e646c 100%)', glow:'none', fg:'#f5f5f5'},
+  sapphire: {bg:'linear-gradient(135deg,#6a8fd0 0%,#2a4a8a 50%,#6a8fd0 100%)', glow:'none', fg:'#f0f5ff'},
+  emerald:  {bg:'linear-gradient(135deg,#6ab488 0%,#2a6a4a 50%,#6ab488 100%)', glow:'none', fg:'#f0fff5'},
+  amethyst: {bg:'linear-gradient(135deg,#a07acc 0%,#5a3a8a 50%,#a07acc 100%)', glow:'none', fg:'#f5f0ff'},
+  slate:    {bg:'linear-gradient(135deg,#a0a8b0 0%,#4a525c 50%,#a0a8b0 100%)', glow:'none', fg:'#0f1418'}
 };
+/* Legacy aliases — old DB rows map onto a finish for back-compat. */
+var pfpAliases={pink:'rosegold',blue:'sapphire',purple:'amethyst',green:'emerald',
+                orange:'gold',red:'rosegold',yellow:'gold',black:'gunmetal'};
+function normalizeFinish(k){
+  if(!k) return 'chrome';
+  if(pfpColors[k]) return k;
+  if(pfpAliases[k]) return pfpAliases[k];
+  return 'chrome';
+}
+/* Single source of truth for any avatar render. Pass {avatar_finish,
+   avatar_image_url, avatar_initials, name} (any field optional). */
+function renderAvatar(user, sizeClass){
+  user = user || {};
+  sizeClass = sizeClass || 'md';
+  var safe = (typeof safeText==='function') ? safeText : function(s){return String(s||'').replace(/[<>&"]/g,'');};
+  var safeUrl = (typeof safeURL==='function') ? safeURL : function(s){return String(s||'').replace(/["'<>]/g,'');};
+  if(user.avatar_image_url){
+    return '<div class="av custom '+sizeClass+'"><img src="'+safeUrl(user.avatar_image_url)+'" alt=""></div>';
+  }
+  var finish = normalizeFinish(user.avatar_finish || user.color);
+  var init = user.avatar_initials || user.initials ||
+             (user.name ? user.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase() : '??');
+  return '<div class="av '+finish+' '+sizeClass+'">'+safe(init)+'</div>';
+}
 function setPfpColor(color){
-  if(!pfpColors[color]) color = 'chrome';
-  acct.color=color;
-  var col=pfpColors[color];
-  ['sb-avatar','ap-avatar','pfp-preview'].forEach(function(id){
-    var el=document.getElementById(id);
-    if(!el) return;
-    el.style.background = col.bg;
-    el.style.boxShadow  = col.glow;
-    el.style.color      = col.fg;
-  });
-  Object.keys(pfpColors).forEach(function(k){
-    var sw=document.getElementById('swatch-'+k);
-    if(!sw) return;
-    sw.classList.toggle('on', k === color);
-    // Strip the legacy inline borderColor toggle so the .swatch.on class can win.
-    sw.style.borderColor = '';
-  });
-  // Persist immediately so refreshes don't snap back to the legacy default.
+  color = normalizeFinish(color);
+  acct.color = color;
+  acct.avatar_finish = color;
+  // If switching to a finish, drop any pending custom image preview so the
+  // hero shows the gradient. We don't clear avatar_image_url from acct
+  // here — Save commits the choice; Cancel reverts via refreshAcctUI.
+  acct._pendingImage = null;
+  refreshAcctUI();
+  if(typeof saveAcct === 'function') saveAcct();
+}
+function clearAvatarImage(){
+  acct.avatar_image_url = null;
+  acct._pendingImage = null;
+  refreshAcctUI();
   if(typeof saveAcct === 'function') saveAcct();
 }
 function _doSaveProfile() {
@@ -11313,11 +11575,98 @@ function _doSaveProfile() {
   var init  = initEl ? (initEl.value||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,2) : '';
   if (name)  acct.name     = name;
   if (uname) acct.username = uname;
-  if (init)  acct.initials = init;
-  else if (name) acct.initials = name.split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
+  if (init){ acct.initials = init; acct.avatar_initials = init; }
+  else if (name){
+    var derived = name.split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
+    acct.initials = derived; acct.avatar_initials = derived;
+  }
   saveAcct();
-  refreshAcctUI();
-  if (_sb && currentUser) { saveProfileToDB().catch(function(e){ console.warn('DB save failed:',e); }); }
+  // If a custom image is queued, upload first, then persist row.
+  var pending = acct._pendingImage;
+  function persist(){
+    refreshAcctUI();
+    if (_sb && currentUser) {
+      saveProfileToDB().catch(function(e){ console.warn('DB save failed:',e); });
+    }
+  }
+  if (pending && _sb && currentUser){
+    uploadAvatarImage(pending).then(function(url){
+      acct.avatar_image_url = url; acct._pendingImage = null;
+      persist();
+    }).catch(function(e){
+      console.warn('Avatar upload failed:',e);
+      toast('Avatar upload failed — '+(e.message||'try again'));
+      persist();
+    });
+  } else {
+    persist();
+  }
+}
+
+/* ── AVATAR FILE PIPELINE ──────────────────────────────────
+   On file pick → validate (≤2MB, image/*) → center-crop to square →
+   resize to 256×256 via canvas → store as blob in acct._pendingImage.
+   Hero preview updates instantly via data URL. Save flow uploads to
+   Supabase Storage. */
+function handleAvatarFile(file){
+  if(!file){ return; }
+  if(!/^image\//.test(file.type)){ toast('Pick an image file'); return; }
+  if(file.size > 2*1024*1024){ toast('Image too large (2MB max)'); return; }
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    var img = new Image();
+    img.onload = function(){
+      var size = 256;
+      var canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      var ctx = canvas.getContext('2d');
+      // Center-crop the source to a square, then draw scaled into 256×256.
+      var s = Math.min(img.width, img.height);
+      var sx = (img.width - s) / 2;
+      var sy = (img.height - s) / 2;
+      ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
+      canvas.toBlob(function(blob){
+        if(!blob){ toast('Couldn\'t process image'); return; }
+        acct._pendingImage = blob;
+        var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        // Show preview in hero immediately (un-saved state).
+        var preview = document.getElementById('pfp-preview');
+        if(preview){
+          preview.classList.add('custom');
+          var imgEl = preview.querySelector('img.av-img');
+          if(!imgEl){
+            imgEl = document.createElement('img');
+            imgEl.className='av-img';
+            imgEl.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;inset:0';
+            preview.appendChild(imgEl);
+          }
+          imgEl.src = dataUrl;
+          preview.style.position = 'relative';
+        }
+        var lbl = document.getElementById('av-finish-label');
+        if(lbl) lbl.textContent = 'Custom image · '+(acct.avatar_finish||'chrome');
+        // Highlight upload swatch.
+        document.querySelectorAll('#pg-account .av-palette .swatch').forEach(function(s){s.classList.remove('selected');});
+        var up = document.getElementById('swatch-upload');
+        if(up) up.classList.add('selected');
+      }, 'image/jpeg', 0.85);
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function uploadAvatarImage(blob){
+  if(!_sb || !currentUser) throw new Error('Not signed in');
+  var ext = (blob.type === 'image/png') ? 'png' : 'jpg';
+  var path = currentUser.id + '.' + ext;
+  var r = await _sb.storage.from('avatars').upload(path, blob, {
+    upsert: true, contentType: blob.type, cacheControl: '3600'
+  });
+  if(r.error) throw new Error(r.error.message);
+  var pub = _sb.storage.from('avatars').getPublicUrl(path);
+  // Append a cache-buster so the browser re-fetches after re-upload.
+  return pub.data.publicUrl + '?v=' + Date.now();
 }
 
 function saveProfile() {
@@ -13369,7 +13718,10 @@ async function loadProfileFromDB(user) {
     acct.email    = user.email || '';
     acct.username = user.user_metadata?.username || pendingUser || '';
     acct.initials = acct.name ? acct.name.split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2) : '?';
-    acct.color    = 'pink';
+    acct.avatar_initials = acct.initials;
+    acct.color    = 'chrome';
+    acct.avatar_finish = 'chrome';
+    acct.avatar_image_url = null;
     acct.plan     = 'free';
     await _sb.from('profiles').upsert({
       id: user.id,
@@ -13377,7 +13729,9 @@ async function loadProfileFromDB(user) {
       email: user.email,
       username: acct.username,
       initials: acct.initials,
-      color: 'pink',
+      color: 'chrome',
+      avatar_finish: 'chrome',
+      avatar_initials: acct.initials,
       plan: 'free'
     });
     // Clear pending signup data now that profile is saved
@@ -13392,20 +13746,35 @@ async function loadProfileFromDB(user) {
     var pendingUser2=''; try{pendingUser2=localStorage.getItem('tr1_pending_username')||'';}catch(e){}
     acct.username = r.data.username || user.user_metadata?.username || pendingUser2 || '';
     if(acct.username && !r.data.username){ try{localStorage.removeItem('tr1_pending_username');}catch(e){} }
-    acct.initials = r.data.initials || '?';
-    acct.color    = r.data.color || 'pink';
-    acct.plan     = r.data.plan || 'free';
+    acct.initials         = r.data.avatar_initials || r.data.initials || '?';
+    acct.avatar_initials  = acct.initials;
+    acct.color            = normalizeFinish(r.data.avatar_finish || r.data.color);
+    acct.avatar_finish    = acct.color;
+    acct.avatar_image_url = r.data.avatar_image_url || null;
+    acct.plan             = r.data.plan || 'free';
     saveAcct();
   }
 }
 
 async function saveProfileToDB() {
   if (!currentUser || !_sb) return;
-  await _sb.from('profiles').upsert({
+  var payload = {
     id: currentUser.id, display_name: acct.name, email: acct.email,
     username: acct.username, initials: acct.initials,
-    color: acct.color, plan: acct.plan, updated_at: new Date().toISOString()
-  });
+    color: acct.avatar_finish || acct.color,
+    avatar_finish: acct.avatar_finish || acct.color || 'chrome',
+    avatar_initials: acct.avatar_initials || acct.initials,
+    avatar_image_url: acct.avatar_image_url || null,
+    plan: acct.plan, updated_at: new Date().toISOString()
+  };
+  var r = await _sb.from('profiles').upsert(payload);
+  // If the new columns aren't migrated yet, retry with the legacy subset
+  // so saves don't fail silently on an un-migrated DB.
+  if (r && r.error && /column .* does not exist/i.test(r.error.message||'')){
+    delete payload.avatar_finish; delete payload.avatar_initials; delete payload.avatar_image_url;
+    await _sb.from('profiles').upsert(payload);
+    console.warn('Avatar columns not migrated yet — saved color/initials only. Run supabase-avatar-migration.sql');
+  }
 }
 
 /* ── SUPABASE DB: TRADES ── */
