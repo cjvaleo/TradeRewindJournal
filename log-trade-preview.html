@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Rewind — Log Trade Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --n-bg:#0a0a0a;
+  --n-surface:#121212;
+  --n-surface-2:#181818;
+  --n-surface-3:#1f1f1f;
+  --n-border:rgba(255,255,255,0.06);
+  --n-border-2:rgba(255,255,255,0.10);
+  --n-border-3:rgba(255,255,255,0.15);
+  --n-text:#f5f5f5;
+  --n-text-2:#a1a1a1;
+  --n-text-3:#6b6b6b;
+  --n-text-4:#4a4a4a;
+  --n-chrome:linear-gradient(135deg,#e8e8e8 0%,#b8b8b8 50%,#8a8a8a 100%);
+  --n-accent-cool:#6ea8ff;
+  --n-profit:#5fb389;
+  --n-loss:#c95f5f;
+  --n-font-sans:'Geist',-apple-system,sans-serif;
+  --n-font-mono:'Geist Mono',monospace;
+  --n-font-display:'Instrument Serif',Georgia,serif;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--n-bg);color:var(--n-text);font-family:var(--n-font-sans);min-height:100vh}
+body{display:flex;padding-top:38px}
+
+/* PREVIEW BANNER */
+.preview-banner{
+  background:linear-gradient(135deg,#1a1a1a 0%,#0a0a0a 100%);
+  border-bottom:1px solid var(--n-border);
+  padding:10px 24px;display:flex;align-items:center;gap:12px;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.15em;
+  color:var(--n-text-3);text-transform:uppercase;position:fixed;
+  top:0;left:0;right:0;z-index:100;
+}
+.preview-banner .dot{
+  width:6px;height:6px;border-radius:50%;background:var(--n-accent-cool);
+  box-shadow:0 0 8px rgba(110,168,255,0.6);
+}
+
+/* SIDEBAR */
+.sb{width:230px;flex-shrink:0;background:var(--n-bg);border-right:1px solid var(--n-border);display:flex;flex-direction:column;height:calc(100vh - 38px);position:sticky;top:38px}
+.sb-logo{padding:22px 20px 18px;border-bottom:1px solid var(--n-border)}
+.sb-logo-text{font-family:var(--n-font-display);font-style:italic;font-size:30px;letter-spacing:-0.01em;color:var(--n-text);line-height:1}
+.sb-nav{padding:14px 0;flex:1}
+.sb-sec{padding:18px 20px 6px;font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;color:var(--n-text-4);text-transform:uppercase}
+.sb-sec:first-child{padding-top:4px}
+.ni{font-family:var(--n-font-sans);font-size:13px;font-weight:500;color:var(--n-text-2);padding:8px 20px;display:flex;align-items:center;gap:11px;border-left:2px solid transparent;cursor:pointer;transition:.12s;text-decoration:none}
+.ni:hover{color:var(--n-text);background:var(--n-surface)}
+.ni.on{color:var(--n-text);background:var(--n-surface-2);border-left-color:var(--n-text)}
+.ni svg{width:14px;height:14px;stroke-width:1.5;opacity:0.85}
+.sb-foot{padding:12px;border-top:1px solid var(--n-border)}
+.sb-prof{background:var(--n-surface);border:1px solid var(--n-border);border-radius:6px;padding:9px 11px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:.12s}
+.sb-prof:hover{border-color:var(--n-border-2);background:var(--n-surface-2)}
+.sb-prof .av{width:28px;height:28px;border-radius:50%;background:var(--n-chrome);border:1px solid var(--n-border-2);display:flex;align-items:center;justify-content:center;font-family:var(--n-font-mono);font-size:11px;color:var(--n-bg);font-weight:500}
+.sb-prof .info{flex:1;min-width:0}
+.sb-prof .nm{font-size:13px;font-weight:500;color:var(--n-text)}
+.sb-prof .un{font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-3);margin-top:2px}
+.sb-prof .arr{color:var(--n-text-4)}
+
+/* MAIN */
+.main{flex:1;min-width:0;padding:32px 40px 48px}
+
+/* HEADER */
+.lg-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px}
+.lg-head .h-title{font-family:var(--n-font-display);font-style:italic;font-size:38px;line-height:1;letter-spacing:-0.01em;color:var(--n-text)}
+.lg-head .h-sub{margin-top:8px;font-family:var(--n-font-mono);font-size:10.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3)}
+.quick-fill-btn{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;
+  padding:9px 14px;border-radius:6px;border:1px solid rgba(95,179,137,0.25);
+  background:rgba(95,179,137,0.06);color:var(--n-profit);cursor:pointer;transition:.12s;
+}
+.quick-fill-btn:hover{border-color:rgba(95,179,137,0.5);background:rgba(95,179,137,0.10)}
+
+/* MODE TABS */
+.mode-tabs{
+  display:inline-flex;gap:2px;background:var(--n-surface);
+  border:1px solid var(--n-border);border-radius:7px;padding:4px;margin-bottom:18px;
+}
+.mode-tab{
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;
+  padding:9px 18px;border-radius:5px;color:var(--n-text-3);cursor:pointer;
+  display:flex;align-items:center;gap:8px;transition:.12s;
+}
+.mode-tab.on{background:var(--n-surface-2);color:var(--n-text)}
+.mode-tab:hover:not(.on){color:var(--n-text-2)}
+.mode-tab svg{width:11px;height:11px;stroke-width:1.5;fill:none;stroke:currentColor}
+
+/* CARD */
+.lg-card{background:var(--n-surface);border:1px solid var(--n-border);border-radius:10px;padding:24px}
+
+/* DIRECTION TOGGLE */
+.dir-tog{display:inline-flex;gap:2px;background:var(--n-surface-2);border:1px solid var(--n-border);border-radius:7px;padding:4px;margin-bottom:24px}
+.dir-b{
+  font-family:var(--n-font-sans);font-size:13px;font-weight:500;
+  padding:10px 24px;border-radius:5px;border:none;background:transparent;
+  color:var(--n-text-3);cursor:pointer;transition:.12s;letter-spacing:0;
+}
+.dir-b.on.long{background:rgba(95,179,137,0.12);color:var(--n-profit);box-shadow:inset 0 0 0 1px rgba(95,179,137,0.25)}
+.dir-b.on.short{background:rgba(201,95,95,0.12);color:var(--n-loss);box-shadow:inset 0 0 0 1px rgba(201,95,95,0.25)}
+.dir-b:hover:not(.on){color:var(--n-text-2)}
+
+/* 3 COL LAYOUT */
+.lg-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px}
+.lg-col{display:flex;flex-direction:column}
+.col-head{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--n-text-3);margin-bottom:18px;
+  padding-bottom:10px;border-bottom:1px solid var(--n-border);
+}
+
+/* FORM FIELDS */
+.f-row{margin-bottom:14px}
+.f-row label{
+  display:block;font-family:var(--n-font-mono);font-size:9.5px;
+  letter-spacing:0.15em;text-transform:uppercase;color:var(--n-text-3);
+  margin-bottom:6px;
+}
+.f-row label .opt{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;
+  color:var(--n-text-4);margin-left:4px;text-transform:none;
+}
+.f-input{
+  width:100%;padding:11px 12px;background:var(--n-surface-2);
+  border:1px solid var(--n-border);border-radius:6px;color:var(--n-text);
+  font-family:var(--n-font-sans);font-size:13px;outline:none;transition:.12s;
+}
+.f-input:focus{border-color:var(--n-border-3);background:var(--n-surface-3)}
+.f-input::placeholder{color:var(--n-text-4)}
+select.f-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6b6b' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.qty-row{display:flex;align-items:center;gap:8px}
+.qty-row .x{font-family:var(--n-font-mono);font-size:13px;color:var(--n-text-4);flex-shrink:0}
+.qty-row .acct-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.qty-row .acct-wrap input{width:100%;text-align:center}
+.qty-row .acct-lbl{font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.18em;color:var(--n-text-4);text-transform:uppercase}
+
+/* LIVE CALC */
+.live-calc{
+  margin-top:14px;padding:14px;border:1px solid var(--n-border);
+  background:var(--n-surface-2);border-radius:8px;
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;
+}
+.calc-cell{text-align:center}
+.calc-cell .lbl{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-4);margin-bottom:6px}
+.calc-cell .val{font-family:var(--n-font-display);font-style:italic;font-size:24px;line-height:1;letter-spacing:-0.01em;color:var(--n-text)}
+.calc-cell .val.pos{color:var(--n-profit)}
+.calc-cell .val.neg{color:var(--n-loss)}
+.calc-cell .val.cool{color:var(--n-accent-cool)}
+.calc-cell .acct-note{font-family:var(--n-font-mono);font-size:9px;color:var(--n-text-4);letter-spacing:0.05em;margin-top:3px}
+
+/* SESSION GRID */
+.sess-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:18px}
+.sess-btn{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+  background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:6px;cursor:pointer;transition:.12s;
+}
+.sess-btn:hover{background:var(--n-surface-3);border-color:var(--n-border-2)}
+.sess-btn.on{border-color:var(--n-text-3);background:var(--n-surface-3)}
+.sess-btn .dot{width:6px;height:6px;border-radius:50%;background:var(--n-text-4);flex-shrink:0;transition:.12s}
+.sess-btn.on .dot{background:var(--n-text)}
+.sess-btn .info{flex:1;min-width:0;text-align:left}
+.sess-btn .nm{font-family:var(--n-font-sans);font-size:12px;font-weight:500;color:var(--n-text-2);letter-spacing:0}
+.sess-btn.on .nm{color:var(--n-text)}
+.sess-btn .tm{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.08em;color:var(--n-text-4);margin-top:2px}
+
+/* TEXTAREA */
+.notes-area{
+  width:100%;padding:12px;background:var(--n-surface-2);
+  border:1px solid var(--n-border);border-radius:6px;color:var(--n-text);
+  font-family:var(--n-font-sans);font-size:13px;line-height:1.55;outline:none;
+  resize:none;min-height:120px;transition:.12s;
+}
+.notes-area:focus{border-color:var(--n-border-3);background:var(--n-surface-3)}
+.notes-area::placeholder{color:var(--n-text-4)}
+
+/* IMAGE DROP */
+.img-drop{
+  margin-top:10px;padding:18px 14px;border:1px dashed var(--n-border-3);
+  border-radius:8px;text-align:center;cursor:pointer;transition:.12s;
+  background:var(--n-surface-2);
+}
+.img-drop:hover{border-color:var(--n-text-3);background:var(--n-surface-3)}
+.img-drop .icn{font-family:var(--n-font-mono);font-size:18px;color:var(--n-text-4);margin-bottom:5px;line-height:1}
+.img-drop .txt{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--n-text-3)}
+
+/* SLIDER GROUP */
+.slider-group{margin-bottom:24px}
+.slider-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px}
+.slider-head .lbl{font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.15em;text-transform:uppercase;color:var(--n-text-3)}
+.slider-head .desc{font-family:var(--n-font-sans);font-size:11px;color:var(--n-text-3);font-weight:400}
+.slider-display{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.slider-display .val{font-family:var(--n-font-display);font-style:italic;font-size:48px;line-height:1;letter-spacing:-0.02em;color:var(--n-text)}
+.slider-display .val.pos{color:var(--n-profit)}
+.slider-display .val.neg{color:var(--n-loss)}
+.slider-display .val.cool{color:var(--n-accent-cool)}
+.slider-display .desc-r{font-family:var(--n-font-sans);font-size:12px;color:var(--n-text-2);font-weight:400;text-align:right}
+
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:3px;
+  background:var(--n-surface-3);border-radius:2px;outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:14px;height:14px;
+  border-radius:50%;background:var(--n-text);cursor:pointer;
+  border:2px solid var(--n-bg);box-shadow:0 0 0 1px var(--n-text-3);
+  transition:.12s;
+}
+input[type=range]::-webkit-slider-thumb:hover{box-shadow:0 0 0 1px var(--n-text)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--n-text);cursor:pointer;border:2px solid var(--n-bg);box-shadow:0 0 0 1px var(--n-text-3)}
+
+.slider-marks{display:flex;justify-content:space-between;margin-top:8px}
+.slider-marks span{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;color:var(--n-text-4);text-transform:uppercase}
+
+/* SUBMIT */
+.lg-submit{
+  width:100%;padding:15px;border-radius:7px;border:none;cursor:pointer;
+  background:var(--n-text);color:var(--n-bg);font-family:var(--n-font-sans);
+  font-size:13px;font-weight:500;letter-spacing:0;transition:.12s;margin-bottom:8px;
+}
+.lg-submit:hover{background:#fff}
+.lg-reset{
+  width:100%;padding:13px;border-radius:7px;cursor:pointer;
+  border:1px solid var(--n-border);background:transparent;color:var(--n-text-2);
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;
+  text-transform:uppercase;transition:.12s;
+}
+.lg-reset:hover{color:var(--n-loss);border-color:rgba(201,95,95,0.3)}
+</style>
+</head>
+<body>
+
+<div class="preview-banner">
+  <span class="dot"></span>
+  <span>LOG TRADE PAGE PREVIEW &middot; STANDALONE MOCKUP</span>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sb">
+  <div class="sb-logo"><div class="sb-logo-text">Rewind</div></div>
+  <div class="sb-nav">
+    <div class="sb-sec">Main</div>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+    <a class="ni on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Log Trade</a>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>History</a>
+    <div class="sb-sec">Insights</div>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 17 9 11 13 15 21 7"/></svg>Equity Curve</a>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="6" y1="20" x2="6" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg>Analytics</a>
+    <div class="sb-sec">Connect</div>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 1 1-6.2-8.5"/><polyline points="21 4 21 12 13 12"/></svg>Broker Sync</a>
+    <a class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Community</a>
+  </div>
+  <div class="sb-foot">
+    <div class="sb-prof">
+      <div class="av">CV</div>
+      <div class="info"><div class="nm">valeo</div><div class="un">@christianvaleo</div></div>
+      <div class="arr">›</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HEADER -->
+  <div class="lg-head">
+    <div>
+      <div class="h-title">Log a Trade</div>
+      <div class="h-sub">Manual entry &middot; CSV import</div>
+    </div>
+    <button class="quick-fill-btn">⚡ Last Trade</button>
+  </div>
+
+  <!-- MODE TABS -->
+  <div class="mode-tabs">
+    <div class="mode-tab on">
+      <svg viewBox="0 0 16 16"><path d="M2 12.5V14h1.5l8.5-8.5-1.5-1.5L2 12.5z"/></svg>
+      Manual
+    </div>
+    <div class="mode-tab">
+      <svg viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="11" rx="1"/><line x1="6" y1="7" x2="11" y2="7"/><line x1="6" y1="10" x2="11" y2="10"/></svg>
+      CSV Import
+    </div>
+  </div>
+
+  <!-- CARD -->
+  <div class="lg-card">
+
+    <!-- DIRECTION -->
+    <div class="dir-tog">
+      <button class="dir-b long on">Long</button>
+      <button class="dir-b short">Short</button>
+    </div>
+
+    <!-- 3 COL -->
+    <div class="lg-grid">
+
+      <!-- COL 1: Trade Info -->
+      <div class="lg-col">
+        <div class="col-head">Trade Info</div>
+
+        <div class="f-row">
+          <label>Market</label>
+          <select class="f-input"><option>Futures</option><option>Stocks</option><option>Crypto</option><option>Options</option><option>Forex</option></select>
+        </div>
+
+        <div class="f-row">
+          <label>Symbol</label>
+          <input type="text" class="f-input" placeholder="Type to search…" value="ES"/>
+        </div>
+
+        <div class="f-row">
+          <label>Date</label>
+          <input type="date" class="f-input" value="2026-05-08"/>
+        </div>
+
+        <div class="f-row">
+          <label>Entry Price</label>
+          <input type="number" class="f-input" placeholder="0.00" value="5847.25"/>
+        </div>
+
+        <div class="f-row">
+          <label>Exit Price</label>
+          <input type="number" class="f-input" placeholder="0.00" value="5854.50"/>
+        </div>
+
+        <div class="f-row">
+          <label>Stop Loss Points <span class="opt">(optional)</span></label>
+          <input type="number" class="f-input" placeholder="e.g. 4" value="3"/>
+        </div>
+
+        <div class="f-row">
+          <label>Contracts / Qty</label>
+          <div class="qty-row">
+            <input type="number" class="f-input" value="2" style="flex:1;text-align:center"/>
+            <div class="x">×</div>
+            <div class="acct-wrap">
+              <input type="number" class="f-input" value="1"/>
+              <div class="acct-lbl">Accounts</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIVE CALC -->
+        <div class="live-calc">
+          <div class="calc-cell">
+            <div class="lbl">P&amp;L</div>
+            <div class="val pos">+$725</div>
+            <div class="acct-note">1 acct</div>
+          </div>
+          <div class="calc-cell">
+            <div class="lbl">Risk $</div>
+            <div class="val neg">$300</div>
+          </div>
+          <div class="calc-cell">
+            <div class="lbl">R : R</div>
+            <div class="val cool">2.4<span style="font-size:0.55em;opacity:0.6">R</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL 2: Session + Notes -->
+      <div class="lg-col">
+        <div class="col-head">Session &amp; Notes</div>
+
+        <div style="margin-bottom:18px">
+          <label style="display:block;font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.15em;text-transform:uppercase;color:var(--n-text-3);margin-bottom:8px">Session</label>
+          <div class="sess-grid">
+            <div class="sess-btn">
+              <div class="dot"></div>
+              <div class="info">
+                <div class="nm">Asia</div>
+                <div class="tm">8PM – 12AM ET</div>
+              </div>
+            </div>
+            <div class="sess-btn">
+              <div class="dot"></div>
+              <div class="info">
+                <div class="nm">London</div>
+                <div class="tm">2AM – 5AM ET</div>
+              </div>
+            </div>
+            <div class="sess-btn on">
+              <div class="dot"></div>
+              <div class="info">
+                <div class="nm">NY AM</div>
+                <div class="tm">9:30 – 11AM ET</div>
+              </div>
+            </div>
+            <div class="sess-btn">
+              <div class="dot"></div>
+              <div class="info">
+                <div class="nm">NY Lunch</div>
+                <div class="tm">12 – 1PM ET</div>
+              </div>
+            </div>
+            <div class="sess-btn">
+              <div class="dot"></div>
+              <div class="info">
+                <div class="nm">NY PM</div>
+                <div class="tm">1:30 – 4PM ET</div>
+              </div>
+            </div>
+            <div class="sess-btn">
+              <div class="dot"></div>
+              <div class="info">
+                <div class="nm">Other</div>
+                <div class="tm">Custom</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="f-row" style="display:flex;flex-direction:column">
+          <label>Notes &middot; Setup</label>
+          <textarea class="notes-area" placeholder="Setup rationale, emotions, lessons learned…">Clean break of premarket high. Waited for reclaim, entered with structure on the 5m. Stuck to plan, took partial at 1R, runner stopped at BE.</textarea>
+        </div>
+
+        <div class="img-drop">
+          <div class="icn">+</div>
+          <div class="txt">Drop chart screenshots</div>
+        </div>
+      </div>
+
+      <!-- COL 3: Trade Rating + Submit -->
+      <div class="lg-col">
+        <div class="col-head">Trade Rating</div>
+
+        <!-- TRADE GRADE -->
+        <div class="slider-group">
+          <div class="slider-head">
+            <div class="lbl">Trade Grade</div>
+          </div>
+          <div class="slider-display">
+            <div class="val pos">A</div>
+            <div class="desc-r">Excellent execution</div>
+          </div>
+          <input type="range" min="0" max="5" value="4" step="1"/>
+          <div class="slider-marks"><span>F</span><span>D</span><span>C</span><span>B</span><span>A</span><span>A+</span></div>
+        </div>
+
+        <!-- EMOTION SCORE -->
+        <div class="slider-group">
+          <div class="slider-head">
+            <div class="lbl">Emotion Score</div>
+          </div>
+          <div class="slider-display">
+            <div class="val">2</div>
+            <div class="desc-r">Mostly composed</div>
+          </div>
+          <input type="range" min="1" max="5" value="2" step="1"/>
+          <div class="slider-marks"><span>Calm</span><span style="opacity:0">·</span><span style="opacity:0">·</span><span style="opacity:0">·</span><span>Max</span></div>
+        </div>
+
+        <!-- CONFIDENCE -->
+        <div class="slider-group">
+          <div class="slider-head">
+            <div class="lbl">Confidence</div>
+          </div>
+          <div class="slider-display">
+            <div class="val cool">4</div>
+            <div class="desc-r">High conviction</div>
+          </div>
+          <input type="range" min="1" max="5" value="4" step="1"/>
+          <div class="slider-marks"><span>None</span><span style="opacity:0">·</span><span style="opacity:0">·</span><span style="opacity:0">·</span><span>Max</span></div>
+        </div>
+
+        <!-- SUBMIT -->
+        <button class="lg-submit">+ Log Trade</button>
+        <button class="lg-reset">↺ Reset Form</button>
+      </div>
+
+    </div><!-- /3col -->
+  </div><!-- /lg-card -->
+
+</main>
+
+</body>
+</html>
