@@ -95,6 +95,65 @@
 .av.lg{width:42px;height:42px;font-size:12px}
 .av.xl{width:180px;height:180px;font-size:60px}
 
+/* Group icon — rounded square, same finishes as personal but distinct shape */
+.gicon{
+  border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono);font-weight:600;letter-spacing:0.02em;
+  position:relative;overflow:hidden;flex-shrink:0;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 0 rgba(0,0,0,0.28);
+  transition:transform .25s, box-shadow .25s;
+}
+.gicon::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,0.42) 50%,transparent 62%);
+  background-size:280% 100%;background-position:280% 0;
+  animation:av-shimmer 5.5s ease-in-out infinite;
+  pointer-events:none;border-radius:inherit;
+}
+.gicon.chrome   {background:linear-gradient(135deg,#ededed 0%,#9a9a9a 50%,#ededed 100%);color:#1a1a1a}
+.gicon.gold     {background:linear-gradient(135deg,#f5d77c 0%,#9a7530 50%,#f5d77c 100%);color:#2a1f0a}
+.gicon.rosegold {background:linear-gradient(135deg,#f0c4b0 0%,#b07868 50%,#f0c4b0 100%);color:#2a1812}
+.gicon.gunmetal {background:linear-gradient(135deg,#5e646c 0%,#252930 50%,#5e646c 100%);color:#f5f5f5}
+.gicon.sapphire {background:linear-gradient(135deg,#6a8fd0 0%,#2a4a8a 50%,#6a8fd0 100%);color:#f0f5ff}
+.gicon.emerald  {background:linear-gradient(135deg,#6ab488 0%,#2a6a4a 50%,#6ab488 100%);color:#f0fff5}
+.gicon.amethyst {background:linear-gradient(135deg,#a07acc 0%,#5a3a8a 50%,#a07acc 100%);color:#f5f0ff}
+.gicon.slate    {background:linear-gradient(135deg,#a0a8b0 0%,#4a525c 50%,#a0a8b0 100%);color:#0f1418}
+.gicon.custom   {background:#222;color:transparent}
+.gicon.custom img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0;border-radius:inherit}
+.gicon.custom::after{display:none}
+.gicon.sm{width:24px;height:24px;border-radius:6px;font-size:9px}
+.gicon.md{width:32px;height:32px;border-radius:8px;font-size:10.5px}
+.gicon.lg{width:42px;height:42px;border-radius:10px;font-size:12px}
+.gicon.xl{width:120px;height:120px;border-radius:24px;font-size:38px}
+
+/* Edit-group modal swatch picker */
+#edit-group-modal .eg-swatch{
+  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:10px;cursor:pointer;transition:.2s;position:relative;padding:8px;
+}
+#edit-group-modal .eg-swatch:hover{border-color:var(--n-border-2);transform:translateY(-2px)}
+#edit-group-modal .eg-swatch.selected{
+  border-color:rgba(255,255,255,0.4);
+  box-shadow:0 0 0 1px rgba(255,255,255,0.15),0 0 24px -8px rgba(255,255,255,0.15);
+}
+#edit-group-modal .eg-swatch.selected::after{
+  content:'✓';position:absolute;top:4px;right:6px;font-size:10px;
+  color:var(--n-text);font-family:var(--n-font-mono);
+}
+#edit-group-modal .eg-swatch .gicon{width:100%;height:100%;font-size:11px}
+#edit-group-modal .eg-swatch.upload .gicon{
+  background:var(--n-surface-3);border:1px dashed var(--n-border-3);
+  box-shadow:none;color:var(--n-text-3);
+}
+#edit-group-modal .eg-swatch.upload .gicon::after{display:none}
+#edit-group-modal .eg-swatch.upload:hover .gicon{border-color:var(--n-text-3);color:var(--n-text-2)}
+#edit-group-modal .eg-input:focus,
+#edit-group-modal #eg-icon-initials:focus{
+  border-color:var(--n-border-3)!important;background:var(--n-surface-3)!important;
+}
+
 /* Finish text color must beat the per-avatar-class color:#fff above */
 #pg-community .post-av.av.chrome,#pg-community .lb-av.av.chrome,
 #pg-community .m-av.av.chrome,#pg-community .reply-av.av.chrome,
@@ -3536,15 +3595,11 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   transform:perspective(140px) rotateY(-14deg) rotateX(4deg) scale(1.06);
 }
 #pg-community .gitem.on .gicon{transform:perspective(140px) rotateY(-6deg)}
-#pg-community .gicon.c1{
-  background:var(--n-chrome);color:#1a1a1a;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),inset 0 -1px 0 rgba(0,0,0,0.2);
-}
-#pg-community .gicon.c2{background:radial-gradient(circle at 30% 30%,#7a9eff,#3b5eb8)}
-#pg-community .gicon.c3{background:radial-gradient(circle at 30% 30%,#d4956b,#8a5a3a)}
-#pg-community .gicon.c4{background:radial-gradient(circle at 30% 30%,#9b7dd4,#5a3a8a)}
-#pg-community .gicon.c5{background:radial-gradient(circle at 30% 30%,#7dc4a8,#3a8a6a)}
-#pg-community .gicon.c6{background:radial-gradient(circle at 30% 30%,#d47d9e,#8a3a5a)}
+/* Finish text colors must beat the per-element color:#fff above */
+#pg-community .gicon.chrome,#pg-community .gicon.gold,
+#pg-community .gicon.rosegold,#pg-community .gicon.slate{color:#1a1a1a}
+#pg-community .gicon.gunmetal,#pg-community .gicon.sapphire,
+#pg-community .gicon.emerald,#pg-community .gicon.amethyst{color:#f5f5f5}
 #pg-community .gmeta{flex:1;min-width:0}
 #pg-community .gname{
   font-family:var(--n-font-sans);font-size:12.5px;font-weight:500;
@@ -5873,9 +5928,12 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     <div id="comm-feed-view" style="display:none">
       <div class="feed">
         <div class="fhead">
-          <div>
-            <h1 class="ftitle" id="feed-grp-name">Group</h1>
-            <div class="fsub" id="feed-grp-meta">&mdash; members</div>
+          <div style="display:flex;align-items:center;gap:14px">
+            <div id="feed-grp-icon" class="gicon lg chrome">??</div>
+            <div>
+              <h1 class="ftitle" id="feed-grp-name">Group</h1>
+              <div class="fsub" id="feed-grp-meta">&mdash; members</div>
+            </div>
           </div>
           <div class="fhead-actions">
             <button class="iconbtn" onclick="openInviteFlow()" title="Invite member">
@@ -5982,34 +6040,95 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   <div id="notif-list"></div>
 </div>
 
-<!-- EDIT GROUP MODAL -->
-<div id="edit-group-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9990;align-items:center;justify-content:center">
-  <div style="background:#0a0520;border:1px solid rgba(255,45,155,.35);border-radius:14px;padding:28px 32px;max-width:420px;width:92%">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <div style="font-size:15px;letter-spacing:2px;color:var(--n-text-2)">Edit Group</div>
-      <button onclick="document.getElementById('edit-group-modal').style.display='none'" style="background:none;border:none;color:var(--n-text-2);font-size:18px;cursor:pointer">✕</button>
-    </div>
-    <div class="f-row" style="margin-bottom:16px">
-      <label>Group Name</label>
-      <input type="text" id="edit-grp-name" style="padding:11px 14px;font-size:14px"/>
-    </div>
-    <!-- Group color picker -->
-    <div style="margin-bottom:20px">
-      <label style="display:block;font-size:12px;color:var(--n-text-2);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Group Color</label>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <div onclick="setGroupColor('pink')"   id="gc-pink"   style="width:30px;height:30px;border-radius:50%;background:#ff00aa;cursor:pointer;border:2px solid transparent;transition:.15s"></div>
-        <div onclick="setGroupColor('blue')"   id="gc-blue"   style="width:30px;height:30px;border-radius:50%;background:#00b4ff;cursor:pointer;border:2px solid transparent;transition:.15s"></div>
-        <div onclick="setGroupColor('purple')" id="gc-purple" style="width:30px;height:30px;border-radius:50%;background:#bf00ff;cursor:pointer;border:2px solid transparent;transition:.15s"></div>
-        <div onclick="setGroupColor('green')"  id="gc-green"  style="width:30px;height:30px;border-radius:50%;background:#00ff88;cursor:pointer;border:2px solid transparent;transition:.15s"></div>
-        <div onclick="setGroupColor('orange')" id="gc-orange" style="width:30px;height:30px;border-radius:50%;background:#ff6b00;cursor:pointer;border:2px solid transparent;transition:.15s"></div>
-        <div onclick="setGroupColor('red')"    id="gc-red"    style="width:30px;height:30px;border-radius:50%;background:#ff2255;cursor:pointer;border:2px solid transparent;transition:.15s"></div>
-        <div onclick="setGroupColor('yellow')" id="gc-yellow" style="width:30px;height:30px;border-radius:50%;background:#ffe600;cursor:pointer;border:2px solid transparent;transition:.15s"></div>
-        <div onclick="setGroupColor('black')"  id="gc-black"  style="width:30px;height:30px;border-radius:50%;background:#333;cursor:pointer;border:2px solid transparent;transition:.15s"></div>
+<!-- EDIT GROUP MODAL — owner edits avatar+name; non-owners see info only -->
+<div id="edit-group-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(3px);z-index:9990;align-items:center;justify-content:center;padding:24px">
+  <div class="eg-modal" style="background:var(--n-surface);border:1px solid var(--n-border-2);border-radius:14px;width:100%;max-width:680px;max-height:calc(100vh - 100px);overflow-y:auto;box-shadow:0 32px 80px -16px rgba(0,0,0,0.85)">
+    <div class="eg-head" style="padding:22px 26px;border-bottom:1px solid var(--n-border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:sticky;top:0;background:var(--n-surface);z-index:2">
+      <div>
+        <div style="font-family:var(--n-font-display);font-style:italic;font-size:28px;color:var(--n-text);line-height:1.1;letter-spacing:-0.01em;display:flex;align-items:center;gap:12px">
+          <span>Edit Group</span>
+          <span class="eg-owner-badge" id="eg-owner-badge" style="display:none;font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--n-accent-cool);padding:3px 8px;border:1px solid rgba(110,168,255,0.3);border-radius:5px;background:rgba(110,168,255,0.08)">Owner</span>
+        </div>
+        <div id="eg-sub" style="font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);margin-top:6px"></div>
       </div>
+      <button onclick="document.getElementById('edit-group-modal').style.display='none'" style="width:30px;height:30px;border-radius:6px;border:1px solid var(--n-border);background:transparent;color:var(--n-text-3);cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <button onclick="document.getElementById('edit-group-modal').style.display='none'" style="padding:11px;border-radius:7px;border:1px solid rgba(255,255,255,.2);background:transparent;color:var(--n-text-2);font-size:15px;letter-spacing:2px;cursor:pointer">Cancel</button>
-      <button onclick="saveEditGroup()" style="padding:11px;border-radius:7px;border:1px solid rgba(0,255,136,.35);background:rgba(0,255,136,.1);color:var(--n-profit);font-size:14px;letter-spacing:2px;cursor:pointer">Save</button>
+
+    <div class="eg-body" style="padding:24px 26px">
+
+      <!-- IDENTITY (owner-only) -->
+      <div class="eg-section eg-owner-only" id="eg-section-identity" style="margin-bottom:28px">
+        <div class="eg-section-label" style="font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--n-text-3);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+          <span>Group Identity</span>
+          <span style="color:var(--n-text-4);font-size:9px">how the group appears everywhere</span>
+        </div>
+
+        <div class="eg-hero" style="height:200px;display:flex;align-items:center;justify-content:center;border:1px solid var(--n-border);border-radius:12px;background:radial-gradient(ellipse at center,var(--n-surface-2) 0%,var(--n-bg) 80%);position:relative;overflow:hidden;margin-bottom:14px">
+          <div class="eg-hero-meta" style="position:absolute;top:14px;left:18px;z-index:2">
+            <div style="font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--n-text-4)">Selected</div>
+            <div id="eg-finish-label" style="font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-2);letter-spacing:0.06em;text-transform:uppercase">Chrome</div>
+          </div>
+          <div id="eg-hero-icon" class="gicon xl chrome" style="z-index:1;animation:av-hero-float 5s ease-in-out infinite;filter:drop-shadow(0 18px 22px rgba(0,0,0,0.6))">??</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3)">Group Name</span>
+            <input id="edit-grp-name" class="eg-input" oninput="egPreview()" style="padding:10px 12px;background:var(--n-surface-2);border:1px solid var(--n-border);color:var(--n-text);font-family:var(--n-font-sans);font-size:13px;border-radius:7px;outline:none"/>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3)">Icon Initials · 2 Chars</span>
+            <input id="eg-icon-initials" maxlength="2" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,2);egPreview()" style="padding:10px 12px;background:var(--n-surface-2);border:1px solid var(--n-border);color:var(--n-text);font-family:var(--n-font-mono);font-size:13px;border-radius:7px;text-transform:uppercase;text-align:center;letter-spacing:0.08em;outline:none"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- FINISH (owner-only) -->
+      <div class="eg-section eg-owner-only" id="eg-section-finish" style="margin-bottom:28px">
+        <div class="eg-section-label" style="font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--n-text-3);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+          <span>Finish · 8 + Custom Image</span>
+          <span style="color:var(--n-text-4);font-size:9px">click upload to use a photo</span>
+        </div>
+        <div class="eg-palette" style="display:grid;grid-template-columns:repeat(9,1fr);gap:10px">
+          <div class="eg-swatch" data-finish="chrome"   onclick="setGroupFinish('chrome')"  ><div class="gicon md chrome"  ></div></div>
+          <div class="eg-swatch" data-finish="gold"     onclick="setGroupFinish('gold')"    ><div class="gicon md gold"    ></div></div>
+          <div class="eg-swatch" data-finish="rosegold" onclick="setGroupFinish('rosegold')"><div class="gicon md rosegold"></div></div>
+          <div class="eg-swatch" data-finish="gunmetal" onclick="setGroupFinish('gunmetal')"><div class="gicon md gunmetal"></div></div>
+          <div class="eg-swatch" data-finish="sapphire" onclick="setGroupFinish('sapphire')"><div class="gicon md sapphire"></div></div>
+          <div class="eg-swatch" data-finish="emerald"  onclick="setGroupFinish('emerald')" ><div class="gicon md emerald" ></div></div>
+          <div class="eg-swatch" data-finish="amethyst" onclick="setGroupFinish('amethyst')"><div class="gicon md amethyst"></div></div>
+          <div class="eg-swatch" data-finish="slate"    onclick="setGroupFinish('slate')"   ><div class="gicon md slate"   ></div></div>
+          <div class="eg-swatch upload" id="eg-swatch-upload" onclick="document.getElementById('eg-file-input').click()">
+            <div class="gicon md">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:18px;height:18px;stroke-width:1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            </div>
+          </div>
+          <input type="file" id="eg-file-input" accept="image/*" style="display:none" onchange="handleGroupAvatarFile(this.files&&this.files[0])"/>
+        </div>
+      </div>
+
+      <!-- META (visible to everyone) -->
+      <div class="eg-section" style="margin-bottom:18px">
+        <div class="eg-section-label" style="font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--n-text-3);margin-bottom:14px"><span>Group Info</span></div>
+        <div class="eg-meta-row" id="eg-meta-visibility" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--n-surface-2);border:1px solid var(--n-border);border-radius:8px;margin-bottom:10px">
+          <span style="font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:var(--n-text-3)">Visibility</span>
+          <span id="eg-visibility-val" style="font-size:13px;color:var(--n-text);font-weight:500">Private <span style="font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-3);margin-left:6px">· invite-only</span></span>
+        </div>
+        <div class="eg-meta-row" id="eg-meta-created" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--n-surface-2);border:1px solid var(--n-border);border-radius:8px;margin-bottom:10px">
+          <span style="font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:var(--n-text-3)">Created</span>
+          <span id="eg-created-val" style="font-size:13px;color:var(--n-text);font-weight:500">—</span>
+        </div>
+        <div class="eg-meta-row" id="eg-meta-owner" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--n-surface-2);border:1px solid var(--n-border);border-radius:8px">
+          <span style="font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:var(--n-text-3)">Owner</span>
+          <span id="eg-owner-val" style="font-size:13px;color:var(--n-text);font-weight:500">—</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="eg-foot" style="padding:16px 26px;border-top:1px solid var(--n-border);display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:var(--n-surface)">
+      <button onclick="document.getElementById('edit-group-modal').style.display='none'" class="eg-btn-sec" style="padding:10px 22px;border-radius:7px;background:transparent;color:var(--n-text-2);font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;border:1px solid var(--n-border-2);cursor:pointer;font-weight:500">Cancel</button>
+      <button id="eg-save-btn" onclick="saveEditGroup()" class="eg-btn-prim" style="padding:10px 22px;border-radius:7px;background:var(--n-text);color:#0a0a0a;font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;border:none;cursor:pointer;font-weight:500">Save Changes</button>
     </div>
   </div>
 </div>
@@ -6807,6 +6926,12 @@ async function loadCommunityFromDB(user){
       if(!row.comm_data) continue;
       try{
         var g=JSON.parse(row.comm_data);
+        // Merge live group avatar fields from the row (source of truth).
+        if(row.avatar_finish)    g.avatar_finish    = row.avatar_finish;
+        if(row.avatar_image_url) g.avatar_image_url = row.avatar_image_url;
+        if(row.icon_initials)    g.icon_initials    = row.icon_initials;
+        if(row.created_at)       g.created_at       = row.created_at;
+        if(row.is_public != null)g.is_public        = row.is_public;
         // Merge accepted members from invites
         var acc=await window._sb.from('invites').select('to_id,to_username,from_username').eq('community_id',g.id).eq('status','accepted');
         if(!acc.error&&acc.data){
@@ -6843,6 +6968,11 @@ async function loadCommunityFromDB(user){
       if(!cr.error&&cr.data&&cr.data.comm_data){
         try{
           var jg=JSON.parse(cr.data.comm_data);
+          if(cr.data.avatar_finish)    jg.avatar_finish    = cr.data.avatar_finish;
+          if(cr.data.avatar_image_url) jg.avatar_image_url = cr.data.avatar_image_url;
+          if(cr.data.icon_initials)    jg.icon_initials    = cr.data.icon_initials;
+          if(cr.data.created_at)       jg.created_at       = cr.data.created_at;
+          if(cr.data.is_public != null)jg.is_public        = cr.data.is_public;
           if(jg.members){ jg.members.forEach(function(m){ m.isMe=(m.id===myId); }); }
           if(!jg.members||!jg.members.find(function(m){return m.isMe;}))
             (jg.members=jg.members||[]).push({id:myId,username:(acct&&acct.username)?acct.username:'You',isMe:true});
@@ -7070,21 +7200,13 @@ function renderCommSidebar(){
     el.innerHTML='<div class="notif-empty">No groups yet<br>Create one below</div>';
     return;
   }
-  // Map group color → chrome icon class. 'chrome'/'pink' → c1 (silver),
-  // others map to the closest tonal radial gradient from the v3 palette.
-  function _icon(color){
-    var m={chrome:'c1',pink:'c5',blue:'c2',purple:'c4',green:'c5',orange:'c3',red:'c6',yellow:'c3',black:'c4'};
-    return m[color] || 'c2';
-  }
   el.innerHTML=groups.map(function(g){
     var isActive=_activeCommId===g.id;
     var safeId=safeText(g.id);
     var safeName=safeText(g.name||'');
-    var safeInitials=safeText((g.name||'??').slice(0,2).toUpperCase());
     var memberCount = (g.members && g.members.length) || 0;
-    var iconCls = _icon(g.color || 'chrome');
     return '<div class="gitem'+(isActive?' on':'')+'" data-gid="'+safeId+'" onclick="setActiveGroup(\''+safeId+'\')">'
-      + '<div class="gicon '+iconCls+'">'+safeInitials+'</div>'
+      + renderGroupAvatar(g, 'md')
       + '<div class="gmeta">'
       +   '<div class="gname">'+safeName+'</div>'
       +   '<div class="gsub">'+memberCount+(memberCount===1?' member':' members')+'</div>'
@@ -7121,7 +7243,15 @@ function openCommFeed(gid){
     var n = g.members ? g.members.length : 0;
     metaEl.textContent = n + (n===1 ? ' member' : ' members');
   }
-  var editBtn=document.getElementById('feed-edit-btn');if(editBtn)editBtn.style.display=(currentUser&&g.owner_id===currentUser.id)?'':'none';
+  // Group icon — finish + optional custom image
+  var iconEl=document.getElementById('feed-grp-icon');
+  if(iconEl){ iconEl.outerHTML = renderGroupAvatar(g, 'lg').replace('class="gicon ', 'id="feed-grp-icon" class="gicon '); }
+  // Edit button is visible to all members; non-owners see info-only modal.
+  var editBtn=document.getElementById('feed-edit-btn');
+  if(editBtn){
+    editBtn.style.display='';
+    editBtn.title = (currentUser&&g.owner_id===currentUser.id) ? 'Edit group' : 'Group info';
+  }
   // Sync the composer avatar's initials with the active user
   var compAv=document.getElementById('comm-composer-av');
   if(compAv) compAv.textContent = (acct && acct.initials) || (acct && acct.name ? acct.name.slice(0,2).toUpperCase() : '??');
@@ -8260,39 +8390,189 @@ function removeMember(id){
   toast((m?'@'+m.username:' Member')+' removed from group');
 }
 
-var _editGroupColor='pink';
-function setGroupColor(c){
-  _editGroupColor=c;
-  ['pink','blue','purple','green','orange','red','yellow','black'].forEach(function(k){
-    var sw=document.getElementById('gc-'+k);
-    if(sw) sw.style.borderColor=(k===c)?'#fff':'transparent';
-  });
-}
-function openEditGroup(){
-  if(!_comm||(currentUser&&_comm.owner_id!==currentUser.id)){toast('Only the group leader can edit');return;}
-  var el=document.getElementById('edit-grp-name');
-  if(el)el.value=_comm?_comm.name:'';
-  _editGroupColor=_comm.color||'pink';
-  setGroupColor(_editGroupColor);
-  document.getElementById('edit-group-modal').style.display='flex';
-  setTimeout(function(){if(el)el.focus();el.select();},100);
+var _editGroupFinish='chrome';
+var _editGroupPendingImage=null;
+
+/* Legacy alias — old call sites pass a synthwave color name; we map it
+   via normalizeFinish. New picker calls setGroupFinish directly. */
+function setGroupColor(c){ setGroupFinish(c); }
+
+function setGroupFinish(finish){
+  _editGroupFinish = normalizeFinish(finish);
+  _editGroupPendingImage = null;
+  egPreview();
 }
 
-function saveEditGroup(){
+function egPreview(){
+  if(!_comm) return;
+  var name = (document.getElementById('edit-grp-name')||{}).value || _comm.name || '';
+  var init = (document.getElementById('eg-icon-initials')||{}).value
+            || _comm.icon_initials
+            || (name||'??').slice(0,2).toUpperCase();
+  // Hero icon
+  var hero=document.getElementById('eg-hero-icon');
+  if(hero){
+    hero.className='gicon xl '+(_editGroupPendingImage?'custom':_editGroupFinish);
+    hero.style.animation='av-hero-float 5s ease-in-out infinite';
+    hero.style.filter='drop-shadow(0 18px 22px rgba(0,0,0,0.6))';
+    if(_editGroupPendingImage){
+      hero.innerHTML='';
+      var img=document.createElement('img');
+      img.src=_editGroupPendingImage.previewUrl;
+      img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:inherit;position:absolute;inset:0';
+      hero.appendChild(img);
+    } else {
+      hero.textContent=init;
+    }
+  }
+  // Finish label
+  var lbl=document.getElementById('eg-finish-label');
+  if(lbl){
+    var nm=_editGroupFinish.charAt(0).toUpperCase()+_editGroupFinish.slice(1);
+    lbl.textContent = _editGroupPendingImage ? ('Custom · '+nm) : nm;
+  }
+  // Swatch selection
+  document.querySelectorAll('#edit-group-modal .eg-swatch').forEach(function(s){
+    var f=s.getAttribute('data-finish');
+    s.classList.toggle('selected', !_editGroupPendingImage && f===_editGroupFinish);
+  });
+  var up=document.getElementById('eg-swatch-upload');
+  if(up) up.classList.toggle('selected', !!_editGroupPendingImage);
+}
+
+function openEditGroup(){
+  if(!_comm){return;}
+  var isOwner = currentUser && _comm.owner_id===currentUser.id;
+  // Toggle owner-only sections + Save button
+  document.querySelectorAll('#edit-group-modal .eg-owner-only').forEach(function(s){
+    s.style.display = isOwner ? '' : 'none';
+  });
+  var ownerBadge=document.getElementById('eg-owner-badge');
+  if(ownerBadge) ownerBadge.style.display = isOwner ? '' : 'none';
+  var saveBtn=document.getElementById('eg-save-btn');
+  if(saveBtn) saveBtn.style.display = isOwner ? '' : 'none';
+  // Populate name + initials
+  var el=document.getElementById('edit-grp-name');
+  if(el) el.value = _comm.name || '';
+  var initEl=document.getElementById('eg-icon-initials');
+  if(initEl) initEl.value = _comm.icon_initials || (_comm.name||'??').slice(0,2).toUpperCase();
+  // Hydrate finish + image state from current comm row
+  _editGroupFinish = normalizeFinish(_comm.avatar_finish || _comm.color);
+  _editGroupPendingImage = null;
+  // Sub-header: name · N members
+  var subEl=document.getElementById('eg-sub');
+  if(subEl){
+    var n=(_comm.members||[]).length;
+    subEl.textContent = (_comm.name||'') + ' · ' + n + (n===1?' member':' members');
+  }
+  // Meta rows
+  var visEl=document.getElementById('eg-visibility-val');
+  if(visEl){
+    var pub = _comm.is_public || _comm.visibility==='public';
+    visEl.innerHTML = pub
+      ? 'Public <span style="font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-3);margin-left:6px">· anyone can find</span>'
+      : 'Private <span style="font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-3);margin-left:6px">· invite-only</span>';
+  }
+  var crEl=document.getElementById('eg-created-val');
+  if(crEl){
+    var d = _comm.created_at ? new Date(_comm.created_at) : null;
+    crEl.textContent = d && !isNaN(d) ? d.toLocaleDateString('en-US',{month:'short',day:'2-digit',year:'numeric'}) : '—';
+  }
+  var ownerEl=document.getElementById('eg-owner-val');
+  if(ownerEl){
+    var ownerMember = (_comm.members||[]).find(function(m){return m.id===_comm.owner_id;});
+    var ownerName = (ownerMember && ownerMember.username) || (isOwner ? (acct&&acct.username) : 'Group leader');
+    ownerEl.innerHTML = safeText(ownerName||'—') + (isOwner ? ' <span style="font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-3);margin-left:6px">· you</span>' : '');
+  }
+  egPreview();
+  document.getElementById('edit-group-modal').style.display='flex';
+  if(isOwner) setTimeout(function(){if(el){el.focus();el.select();}},100);
+}
+
+/* Center-crop + resize the picked file to 256×256 jpeg, store as
+   {blob, previewUrl} in _editGroupPendingImage. Hero updates instantly. */
+function handleGroupAvatarFile(file){
+  if(!file){ return; }
+  if(!/^image\//.test(file.type)){ toast('Pick an image file'); return; }
+  if(file.size > 2*1024*1024){ toast('Image too large (2MB max)'); return; }
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var img=new Image();
+    img.onload=function(){
+      var size=256;
+      var canvas=document.createElement('canvas');
+      canvas.width=size; canvas.height=size;
+      var ctx=canvas.getContext('2d');
+      var s=Math.min(img.width,img.height);
+      ctx.drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,size,size);
+      canvas.toBlob(function(blob){
+        if(!blob){ toast('Couldn\'t process image'); return; }
+        _editGroupPendingImage = { blob: blob, previewUrl: canvas.toDataURL('image/jpeg',0.85) };
+        egPreview();
+      },'image/jpeg',0.85);
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function uploadGroupAvatarImage(blob, communityId){
+  if(!_sb) throw new Error('Not signed in');
+  var ext = (blob.type==='image/png') ? 'png' : 'jpg';
+  var path = communityId + '.' + ext;
+  var r = await _sb.storage.from('group-avatars').upload(path, blob, {
+    upsert:true, contentType:blob.type, cacheControl:'3600'
+  });
+  if(r.error) throw new Error(r.error.message);
+  var pub = _sb.storage.from('group-avatars').getPublicUrl(path);
+  return pub.data.publicUrl + '?v=' + Date.now();
+}
+
+async function saveEditGroup(){
+  if(!_comm||(currentUser&&_comm.owner_id!==currentUser.id)){toast('Only the group leader can edit');return;}
   var name=(document.getElementById('edit-grp-name').value||'').trim();
   if(!name){toast('Enter a group name');return;}
+  var initEl=document.getElementById('eg-icon-initials');
+  var initials = ((initEl&&initEl.value)||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,2)
+                 || name.slice(0,2).toUpperCase();
   _comm.name=name;
-  _comm.color=_editGroupColor;
-  // Update color for owner member entry too
-  if(_comm.members){
-    _comm.members.forEach(function(m){
-      if(m.isMe||m.id===(currentUser&&currentUser.id)) m.color=_editGroupColor;
-    });
+  _comm.icon_initials=initials;
+  _comm.avatar_finish=_editGroupFinish;
+  _comm.color=_editGroupFinish; /* legacy alias */
+
+  // Upload pending image first if any
+  if(_editGroupPendingImage && _sb && _comm.id){
+    try{
+      _comm.avatar_image_url = await uploadGroupAvatarImage(_editGroupPendingImage.blob, _comm.id);
+      _editGroupPendingImage = null;
+    }catch(e){
+      console.warn('Group avatar upload failed:',e);
+      toast('Image upload failed — '+(e.message||'try again'));
+    }
   }
+
   saveComm();
+  // Persist to Supabase row
+  if(_sb && _comm.id){
+    var payload = {
+      id: _comm.id, name: _comm.name,
+      avatar_finish: _comm.avatar_finish,
+      icon_initials: _comm.icon_initials,
+      avatar_image_url: _comm.avatar_image_url || null
+    };
+    var r = await _sb.from('communities').update(payload).eq('id',_comm.id);
+    if(r && r.error && /column .* does not exist/i.test(r.error.message||'')){
+      delete payload.avatar_finish; delete payload.icon_initials; delete payload.avatar_image_url;
+      await _sb.from('communities').update(payload).eq('id',_comm.id);
+      console.warn('Communities avatar columns not migrated yet — saved name only. Run supabase-avatar-migration.sql');
+    }
+  }
+
   document.getElementById('edit-group-modal').style.display='none';
   renderCommunity();
   renderCommSidebar();
+  // Refresh feed header gicon
+  if(_comm) openCommFeed(_comm.id);
   toast('Group updated!');
 }
 
@@ -11534,9 +11814,9 @@ function normalizeFinish(k){
   if(pfpAliases[k]) return pfpAliases[k];
   return 'chrome';
 }
-/* Single source of truth for any avatar render. Pass {avatar_finish,
-   avatar_image_url, avatar_initials, name} (any field optional). */
-function renderAvatar(user, sizeClass){
+/* User-avatar renderer. Pass {avatar_finish, avatar_image_url,
+   avatar_initials, initials, name, color} (any field optional). */
+function renderUserAvatar(user, sizeClass){
   user = user || {};
   sizeClass = sizeClass || 'md';
   var safe = (typeof safeText==='function') ? safeText : function(s){return String(s||'').replace(/[<>&"]/g,'');};
@@ -11548,6 +11828,24 @@ function renderAvatar(user, sizeClass){
   var init = user.avatar_initials || user.initials ||
              (user.name ? user.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase() : '??');
   return '<div class="av '+finish+' '+sizeClass+'">'+safe(init)+'</div>';
+}
+/* Backwards-compatible alias — earlier callers used renderAvatar. */
+var renderAvatar = renderUserAvatar;
+
+/* Group-icon renderer. Rounded square so groups read distinct from people.
+   Pass {avatar_finish, avatar_image_url, icon_initials, name, color}. */
+function renderGroupAvatar(community, sizeClass){
+  community = community || {};
+  sizeClass = sizeClass || 'md';
+  var safe = (typeof safeText==='function') ? safeText : function(s){return String(s||'').replace(/[<>&"]/g,'');};
+  var safeUrl = (typeof safeURL==='function') ? safeURL : function(s){return String(s||'').replace(/["'<>]/g,'');};
+  if(community.avatar_image_url){
+    return '<div class="gicon custom '+sizeClass+'"><img src="'+safeUrl(community.avatar_image_url)+'" alt=""></div>';
+  }
+  var finish = normalizeFinish(community.avatar_finish || community.color);
+  var init = community.icon_initials ||
+             (community.name ? community.name.slice(0,2).toUpperCase() : '??');
+  return '<div class="gicon '+finish+' '+sizeClass+'">'+safe(init)+'</div>';
 }
 function setPfpColor(color){
   color = normalizeFinish(color);
