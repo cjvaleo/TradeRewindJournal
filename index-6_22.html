@@ -2647,6 +2647,458 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;
   text-transform:uppercase;color:var(--n-text-4);
 }
+
+/* ── ACCOUNT REDESIGN ─────────────────────────────── */
+
+#pg-account.page.on{
+  padding:32px 40px 48px;
+  background:var(--n-bg);
+  position:relative;z-index:1;
+}
+#pg-account.on > .ph{display:none}
+
+#pg-account .acct-head{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:24px;border:none;padding:0;flex-wrap:wrap;gap:14px;
+}
+#pg-account .acct-head .h-title{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:38px;line-height:1;letter-spacing:-0.01em;color:var(--n-text);
+  text-shadow:none;
+}
+#pg-account .acct-head .h-sub{
+  margin-top:8px;font-family:var(--n-font-mono);font-size:10.5px;
+  letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);
+}
+#pg-account .signout-btn{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;
+  text-transform:uppercase;padding:9px 14px;border-radius:6px;
+  border:1px solid rgba(201,95,95,0.25);background:rgba(201,95,95,0.06);
+  color:var(--n-loss);cursor:pointer;transition:.12s;text-shadow:none;
+}
+#pg-account .signout-btn:hover{
+  border-color:rgba(201,95,95,0.5);background:rgba(201,95,95,0.10);
+}
+
+#pg-account .acct-grid{display:grid;grid-template-columns:240px 1fr;gap:20px;align-items:start}
+
+/* Left nav card */
+#pg-account .acct-nav-card{
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:10px;overflow:hidden;position:sticky;top:32px;
+}
+#pg-account .acct-nav-head{
+  padding:22px 18px 18px;text-align:center;
+  border-bottom:1px solid var(--n-border);
+}
+#pg-account .acct-avatar{
+  width:64px;height:64px;border-radius:50%;
+  background:var(--n-chrome);
+  border:1px solid var(--n-border-2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono);font-size:18px;font-weight:600;
+  color:var(--n-bg);
+  margin:0 auto 12px;letter-spacing:1px;
+  /* Override any animation/glow set by the legacy synthwave .y2kavt class */
+  animation:none!important;box-shadow:none!important;
+}
+#pg-account .acct-nav-head .nm,
+#pg-account #ap-name{
+  font-family:var(--n-font-sans);font-size:14px;font-weight:500;color:var(--n-text);
+  text-shadow:none;letter-spacing:0;
+}
+#pg-account .acct-nav-head .em,
+#pg-account #ap-email{
+  font-family:var(--n-font-mono);font-size:10.5px;color:var(--n-text-3);
+  margin-top:3px;letter-spacing:0.02em;font-weight:400;text-shadow:none;
+}
+#pg-account #ap-badge{
+  display:inline-block;margin-top:10px;padding:3px 8px;border-radius:4px;
+  background:var(--n-surface-2);border:1px solid var(--n-border-2);
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-2);font-weight:400;text-shadow:none;
+}
+#pg-account #ap-badge.pro{
+  background:rgba(110,168,255,0.10);border-color:rgba(110,168,255,0.25);
+  color:var(--n-accent-cool);
+}
+
+#pg-account .acct-nav-list{padding:8px 0}
+#pg-account .atl{
+  display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;
+  font-family:var(--n-font-sans)!important;font-size:13px!important;
+  font-weight:500!important;color:var(--n-text-2)!important;
+  border-left:2px solid transparent!important;transition:.12s;
+  letter-spacing:0!important;text-transform:none!important;text-shadow:none!important;
+}
+#pg-account .atl:hover{color:var(--n-text)!important;background:var(--n-surface-2)!important}
+#pg-account .atl.on{
+  color:var(--n-text)!important;background:var(--n-surface-2)!important;
+  border-left-color:var(--n-text)!important;
+}
+#pg-account .atl svg{
+  width:14px!important;height:14px!important;stroke:currentColor!important;
+  stroke-width:1.5!important;fill:none!important;opacity:0.85;
+}
+#pg-account .atl.dz{color:var(--n-loss)!important;border-left-color:transparent!important}
+#pg-account .atl.dz:hover{background:rgba(201,95,95,0.08)!important;color:var(--n-loss)!important}
+#pg-account .atl.dz.on{
+  background:rgba(201,95,95,0.12)!important;color:var(--n-loss)!important;
+  border-left-color:var(--n-loss)!important;
+}
+#pg-account .atl-divider{margin:6px 14px;height:1px;background:var(--n-border)}
+
+/* Right panels */
+#pg-account .acct-tab{display:none}
+#pg-account .acct-tab.on{display:block}
+
+#pg-account .panel-card{
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:10px;padding:24px;margin-bottom:16px;
+}
+#pg-account .panel-card-head{
+  margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--n-border);
+}
+#pg-account .panel-card-title{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:24px;line-height:1;letter-spacing:-0.01em;color:var(--n-text);
+  text-shadow:none;
+}
+#pg-account .panel-card-sub{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--n-text-3);margin-top:6px;
+}
+#pg-account .max-460{max-width:460px}
+
+/* PFP section */
+#pg-account .pfp-section{
+  display:flex;gap:20px;align-items:flex-start;
+  padding-bottom:22px;margin-bottom:22px;border-bottom:1px solid var(--n-border);
+}
+#pg-account .pfp-preview-large,
+#pg-account #pfp-preview{
+  width:88px!important;height:88px!important;border-radius:50%!important;
+  background:var(--n-chrome)!important;
+  border:1px solid var(--n-border-2)!important;
+  display:flex!important;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono)!important;font-size:24px!important;
+  font-weight:600!important;color:var(--n-bg)!important;
+  letter-spacing:2px!important;flex-shrink:0;
+  animation:none!important;box-shadow:none!important;
+}
+#pg-account #pfp-preview > span#pfp-preview-txt{
+  font-family:var(--n-font-mono)!important;font-size:24px!important;
+  font-weight:600!important;color:var(--n-bg)!important;letter-spacing:2px!important;
+  text-shadow:none!important;
+}
+#pg-account .pfp-info{flex:1}
+#pg-account .pfp-info .display-name,
+#pg-account #pf-name-display{
+  font-family:var(--n-font-sans);font-size:16px;font-weight:500;
+  color:var(--n-text);letter-spacing:0;text-shadow:none;
+}
+#pg-account .pfp-info .display-user,
+#pg-account #pf-user-display{
+  font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-3);
+  margin-top:3px;letter-spacing:0.02em;font-weight:400;text-shadow:none;
+}
+#pg-account .pfp-controls{
+  margin-top:14px;display:flex;flex-direction:column;gap:14px;
+}
+#pg-account .pfp-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+#pg-account .pfp-row .lbl{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--n-text-3);width:100px;
+}
+#pg-account .pfp-letters-input,
+#pg-account #p-initials{
+  width:64px!important;text-align:center!important;
+  background:var(--n-surface-2)!important;border:1px solid var(--n-border-2)!important;
+  border-radius:6px!important;padding:8px!important;
+  font-family:var(--n-font-mono)!important;font-size:14px!important;
+  color:var(--n-text)!important;letter-spacing:2px!important;
+  text-transform:uppercase;outline:none;text-shadow:none!important;
+  font-weight:500!important;
+}
+#pg-account .pfp-letters-input:focus,
+#pg-account #p-initials:focus{
+  border-color:var(--n-text-3)!important;background:var(--n-surface-3)!important;
+}
+#pg-account .pfp-swatches{display:flex;gap:6px;flex-wrap:wrap}
+#pg-account .swatch{
+  width:24px!important;height:24px!important;border-radius:50%!important;
+  cursor:pointer;border:2px solid transparent!important;transition:.12s;
+  position:relative;box-shadow:none!important;
+}
+#pg-account .swatch.on{
+  border-color:var(--n-text)!important;
+  box-shadow:0 0 0 1px var(--n-bg)!important;
+}
+#pg-account .swatch:hover{transform:scale(1.08)}
+#pg-account .swatch.chrome{
+  background:var(--n-chrome)!important;
+}
+#pg-account .swatch.pink{background:radial-gradient(circle at 32% 30%,#ff88cc,#bf2288 45%,#5a1745)!important}
+#pg-account .swatch.blue{background:radial-gradient(circle at 32% 30%,#66ccff,#3877b8 45%,#1d3a5a)!important}
+#pg-account .swatch.purple{background:radial-gradient(circle at 32% 30%,#cc66ff,#8842c0 45%,#3a1a52)!important}
+#pg-account .swatch.green{background:radial-gradient(circle at 32% 30%,#7fdba1,#3f9466 45%,#1d4a32)!important}
+#pg-account .swatch.orange{background:radial-gradient(circle at 32% 30%,#ffb066,#bd6f2c 45%,#5a3414)!important}
+#pg-account .swatch.red{background:radial-gradient(circle at 32% 30%,#ff8888,#c34c4c 45%,#5a1d1d)!important}
+#pg-account .swatch.yellow{background:radial-gradient(circle at 32% 30%,#fff088,#bba43c 45%,#5a4a14)!important}
+#pg-account .swatch.black{background:radial-gradient(circle at 32% 30%,#555,#222 45%,#000)!important}
+
+/* Form fields */
+#pg-account .f-row{margin-bottom:14px}
+#pg-account .f-row label{
+  display:block;font-family:var(--n-font-mono);font-size:9.5px;
+  letter-spacing:0.15em;text-transform:uppercase;color:var(--n-text-3);
+  margin-bottom:6px;font-weight:400;text-shadow:none;
+}
+#pg-account .f-input,
+#pg-account .f-row input[type=text],
+#pg-account .f-row input[type=email],
+#pg-account .f-row input[type=password]{
+  width:100%;padding:11px 12px;background:var(--n-surface-2);
+  border:1px solid var(--n-border);border-radius:6px;color:var(--n-text);
+  font-family:var(--n-font-sans);font-size:13px;outline:none;transition:.12s;
+  font-weight:400;letter-spacing:0;text-shadow:none;
+}
+#pg-account .f-input:focus,
+#pg-account .f-row input[type=text]:focus,
+#pg-account .f-row input[type=email]:focus,
+#pg-account .f-row input[type=password]:focus{
+  border-color:var(--n-border-3);background:var(--n-surface-3);
+}
+#pg-account .f-input::placeholder{color:var(--n-text-4)}
+#pg-account .f-row input::placeholder{color:var(--n-text-4)}
+#pg-account .f-with-prefix{
+  display:flex;align-items:stretch;background:var(--n-surface-2);
+  border:1px solid var(--n-border);border-radius:6px;overflow:hidden;
+}
+#pg-account .f-with-prefix:focus-within{
+  border-color:var(--n-border-3);background:var(--n-surface-3);
+}
+#pg-account .f-with-prefix .prefix{
+  padding:0 6px 0 12px;display:flex;align-items:center;
+  font-family:var(--n-font-mono);font-size:13px;color:var(--n-text-3);
+}
+#pg-account .f-with-prefix input{
+  flex:1;padding:11px 12px 11px 0!important;background:transparent!important;
+  border:none!important;color:var(--n-text)!important;
+  font-family:var(--n-font-sans)!important;font-size:13px!important;
+  outline:none!important;
+}
+
+#pg-account .btn-primary{
+  width:100%;padding:12px;border-radius:7px;border:none;cursor:pointer;
+  background:var(--n-text);color:var(--n-bg);font-family:var(--n-font-sans);
+  font-size:13px;font-weight:500;transition:.12s;margin-top:6px;
+  letter-spacing:0;text-shadow:none;text-transform:none;
+}
+#pg-account .btn-primary:hover{background:#fff}
+#pg-account .btn-primary.ghost{
+  background:transparent;color:var(--n-text);border:1px solid var(--n-border-2);
+}
+#pg-account .btn-primary.ghost:hover{background:var(--n-surface-2);color:var(--n-text)}
+#pg-account .btn-primary.ghost-quiet{
+  background:transparent;color:var(--n-text-3);border:1px solid var(--n-border);
+}
+#pg-account .btn-danger{
+  width:100%;padding:12px;border-radius:7px;cursor:pointer;
+  border:1px solid rgba(201,95,95,0.3);background:rgba(201,95,95,0.08);
+  color:var(--n-loss);font-family:var(--n-font-mono);font-size:11px;
+  letter-spacing:0.15em;text-transform:uppercase;font-weight:500;
+  transition:.12s;text-shadow:none;
+}
+#pg-account .btn-danger:hover{
+  border-color:rgba(201,95,95,0.5);background:rgba(201,95,95,0.14);
+}
+
+#pg-account .form-divider{height:1px;background:var(--n-border);margin:18px 0}
+#pg-account .section-lbl{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-3);margin-bottom:12px;
+}
+
+/* Subscription tiers */
+#pg-account .tier-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+#pg-account .tier-card{
+  background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:8px;padding:18px;
+}
+#pg-account .tier-card.current{
+  border-color:var(--n-accent-cool);background:rgba(110,168,255,0.04);
+}
+#pg-account .tier-name{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:24px;color:var(--n-text);letter-spacing:-0.01em;text-shadow:none;
+}
+#pg-account .tier-price{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:32px;color:var(--n-text);margin:8px 0 14px;
+  letter-spacing:-0.02em;text-shadow:none;
+}
+#pg-account .tier-price .per{
+  font-size:0.45em;font-family:var(--n-font-mono);font-style:normal;
+  color:var(--n-text-3);letter-spacing:0.05em;margin-left:4px;
+}
+#pg-account .tier-features{list-style:none;margin-bottom:18px;padding:0}
+#pg-account .tier-features li{
+  display:flex;align-items:flex-start;gap:8px;padding:5px 0;
+  font-family:var(--n-font-sans);font-size:12px;color:var(--n-text-2);
+}
+#pg-account .tier-features li svg{
+  width:11px;height:11px;flex-shrink:0;margin-top:3px;
+  stroke:var(--n-profit);stroke-width:2;fill:none;
+}
+#pg-account .tier-current-badge{
+  display:inline-block;padding:3px 8px;border-radius:4px;
+  background:rgba(110,168,255,0.12);border:1px solid rgba(110,168,255,0.3);
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  color:var(--n-accent-cool);text-transform:uppercase;margin-bottom:10px;
+}
+#pg-account .tier-btn{
+  width:100%;padding:11px;border-radius:6px;cursor:pointer;
+  font-family:var(--n-font-sans);font-size:13px;font-weight:500;transition:.12s;
+}
+#pg-account .tier-btn.current{
+  background:transparent;border:1px solid var(--n-border-2);
+  color:var(--n-text-3);cursor:default;
+}
+#pg-account .tier-btn.upgrade{
+  background:var(--n-text);color:var(--n-bg);border:none;
+}
+#pg-account .tier-btn.upgrade:hover{background:#fff}
+
+/* Billing rows */
+#pg-account .billing-row{
+  display:flex;justify-content:space-between;padding:14px 0;
+  border-bottom:1px solid var(--n-border);align-items:center;
+}
+#pg-account .billing-row:last-child{border-bottom:none}
+#pg-account .billing-label{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+#pg-account .billing-value{
+  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);
+}
+#pg-account .billing-value.cool{color:var(--n-accent-cool)}
+
+/* Notifications */
+#pg-account .notif-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 0;border-bottom:1px solid var(--n-border);gap:14px;
+}
+#pg-account .notif-row:last-child{border-bottom:none}
+#pg-account .notif-info{flex:1;min-width:0}
+#pg-account .notif-info .nm{
+  font-family:var(--n-font-sans);font-size:13px;font-weight:500;
+  color:var(--n-text);letter-spacing:0;text-shadow:none;
+}
+#pg-account .notif-info .desc{
+  font-family:var(--n-font-sans);font-size:11.5px;color:var(--n-text-3);
+  margin-top:3px;font-weight:400;text-shadow:none;
+}
+#pg-account .toggle{
+  width:34px;height:20px;border-radius:10px;background:var(--n-surface-3);
+  position:relative;cursor:pointer;transition:.15s;flex-shrink:0;
+  border:none!important;
+}
+#pg-account .toggle::after{
+  content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;
+  border-radius:50%;background:var(--n-text-3);transition:.15s;box-shadow:none;
+}
+#pg-account .toggle.on{background:var(--n-profit)}
+#pg-account .toggle.on::after{left:16px;background:#fff}
+
+/* Danger zone */
+#pg-account .danger-card{
+  background:rgba(201,95,95,0.04);border:1px solid rgba(201,95,95,0.20);
+  border-radius:8px;padding:18px;margin-bottom:12px;
+}
+#pg-account .danger-card:last-child{margin-bottom:0}
+#pg-account .danger-card .ttl{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:18px;color:var(--n-loss);letter-spacing:-0.01em;text-shadow:none;
+}
+#pg-account .danger-card .desc{
+  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);
+  margin-top:8px;line-height:1.5;letter-spacing:0;text-shadow:none;
+}
+#pg-account .danger-card.warn{
+  background:rgba(201,158,95,0.04);border-color:rgba(201,158,95,0.20);
+}
+#pg-account .danger-card.warn .ttl{color:#c99e5f}
+#pg-account .danger-card.info{
+  background:rgba(95,179,137,0.04);border-color:rgba(95,179,137,0.20);
+}
+#pg-account .danger-card.info .ttl{color:var(--n-profit)}
+
+/* Legal list */
+#pg-account .legal-list a{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 0;border-bottom:1px solid var(--n-border);
+  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);
+  text-decoration:none;transition:.12s;cursor:pointer;
+  letter-spacing:0;text-shadow:none;font-weight:400;
+}
+#pg-account .legal-list a:last-child{border-bottom:none}
+#pg-account .legal-list a:hover{color:var(--n-text)}
+#pg-account .legal-list a svg{
+  width:13px;height:13px;stroke:var(--n-text-3);stroke-width:1.5;fill:none;
+}
+
+/* In-card lock overlay */
+#pg-account .locked-tab{position:relative}
+#pg-account .locked-tab .panel-card{position:relative;overflow:hidden}
+#pg-account .locked-tab .peek-content{
+  filter:blur(4px);pointer-events:none;user-select:none;opacity:0.45;
+}
+#pg-account .locked-tab .tab-lock{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;padding:30px;
+  background:radial-gradient(circle at center,rgba(18,18,18,0.5) 0%,rgba(18,18,18,0.92) 100%);
+  border-radius:10px;
+}
+#pg-account .tab-lock .icon-wrap{
+  width:54px;height:54px;border-radius:50%;background:var(--n-surface-2);
+  border:1px solid var(--n-border-2);
+  display:flex;align-items:center;justify-content:center;position:relative;
+}
+#pg-account .tab-lock .icon-wrap::before{
+  content:'';position:absolute;inset:-2px;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent 0deg 270deg,
+    var(--n-accent-cool) 290deg 305deg,transparent 320deg 360deg);
+  opacity:0.4;z-index:-1;animation:lockSpin 8s linear infinite;
+}
+@keyframes lockSpin{to{transform:rotate(360deg)}}
+#pg-account .tab-lock .icon-wrap svg{
+  width:20px;height:20px;stroke:var(--n-text-2);stroke-width:1.5;fill:none;
+}
+#pg-account .tab-lock .ttl{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:30px;line-height:1;letter-spacing:-0.01em;color:var(--n-text);
+  text-shadow:none;
+}
+#pg-account .tab-lock .status{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:5px 11px;border:1px solid rgba(110,168,255,0.25);
+  background:rgba(110,168,255,0.08);border-radius:20px;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--n-accent-cool);text-shadow:none;
+}
+#pg-account .tab-lock .status .pulse{
+  width:5px;height:5px;border-radius:50%;background:var(--n-accent-cool);
+  box-shadow:0 0 6px var(--n-accent-cool);
+  animation:lockPulse 2s ease-in-out infinite;
+}
+@keyframes lockPulse{0%,100%{opacity:1}50%{opacity:0.4}}
+#pg-account .tab-lock .desc{
+  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);
+  text-align:center;max-width:340px;line-height:1.55;
+  letter-spacing:0;text-shadow:none;
+}
 </style>
 </head>
 <body>
@@ -4442,365 +4894,302 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
 <!-- ACCOUNT PAGE -->
 <div id="pg-account" class="page">
-  <div class="ph"><div><div class="ptitle">Account</div><div class="ptitle-sub">Manage your profile, plan and preferences</div></div><button onclick="doSignOut()" style="padding:8px 18px;border-radius:6px;background:rgba(255,34,85,.1);border:1px solid rgba(255,34,85,.3);color:var(--red);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;cursor:pointer">Sign Out</button></div>
-  <div style="display:grid;grid-template-columns:190px 1fr;gap:18px;align-items:start">
+
+  <!-- HEADER -->
+  <div class="acct-head">
+    <div>
+      <div class="h-title">Account</div>
+      <div class="h-sub">Manage your profile, plan and preferences</div>
+    </div>
+    <button class="signout-btn" onclick="doSignOut()">Sign Out</button>
+  </div>
+
+  <div class="acct-grid">
 
     <!-- LEFT NAV -->
-    <div class="crd" style="position:sticky;top:22px;overflow:hidden">
-      <div style="padding:18px 16px;text-align:center;border-bottom:1px solid var(--bord)">
-        <div class="y2kavt" id="ap-avatar" style="width:64px;height:64px;margin:0 auto 10px;animation:pfpFloat 12s linear infinite"><span style="font-size:20px" id="ap-avatar-txt">?</span></div>
-        <div id="ap-name" style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:#fff">My Account</div>
-        <div id="ap-email" style="font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.95);font-weight:600;margin-top:2px">Not signed in</div>
-        <div id="ap-badge" style="display:inline-block;margin-top:8px;padding:3px 10px;border-radius:3px;background:rgba(122,106,170,.15);border:1px solid rgba(122,106,170,.3);font-family:'Orbitron',monospace;font-size:14px;color:#fff;font-weight:600;letter-spacing:.8px">FREE PLAN</div>
+    <div class="acct-nav-card">
+      <div class="acct-nav-head">
+        <div class="acct-avatar" id="ap-avatar"><span id="ap-avatar-txt">?</span></div>
+        <div class="nm" id="ap-name">My Account</div>
+        <div class="em" id="ap-email">Not signed in</div>
+        <div class="badge" id="ap-badge">Free Plan</div>
       </div>
-      <div style="padding:5px 0">
-        <div class="atl on"  id="atl-profile"       onclick="showTab('profile')">      <svg viewBox="0 0 16 16"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>Profile</div>
-        <div class="atl"     id="atl-security"      onclick="showTab('security')">     <svg viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>Email &amp; Password</div>
-        <div class="atl"     id="atl-subscription"  onclick="showTab('subscription')"> <svg viewBox="0 0 16 16"><polygon points="8,1 10,6 15,6 11,9 13,14 8,11 3,14 5,9 1,6 6,6"/></svg>Subscription</div>
-        <div class="atl"     id="atl-billing"       onclick="showTab('billing')">      <svg viewBox="0 0 16 16"><rect x="1" y="4" width="14" height="10" rx="1.5"/><line x1="1" y1="8" x2="15" y2="8"/></svg>Billing</div>
-        <div class="atl"     id="atl-notifications" onclick="showTab('notifications')"><svg viewBox="0 0 16 16"><path d="M8 1a5 5 0 0 1 5 5v3l1.5 2H1.5L3 9V6a5 5 0 0 1 5-5z"/><path d="M6.5 13a1.5 1.5 0 0 0 3 0"/></svg>Notifications</div>
-        <div style="margin:4px 10px;height:1px;background:var(--bord)"></div>
-        <div class="atl dz"  id="atl-danger"        onclick="showTab('danger')">       <svg viewBox="0 0 16 16"><polyline points="1,4 3,4 15,4"/><path d="M5 4V2h6v2"/><path d="M13 4l-1 10H4L3 4"/></svg>Danger Zone</div>
-        <div class="atl"     id="atl-legal"         onclick="showTab('legal')">        <svg viewBox="0 0 16 16"><rect x="3" y="1" width="10" height="14" rx="1.5"/><line x1="6" y1="5" x2="10" y2="5"/><line x1="6" y1="8" x2="10" y2="8"/><line x1="6" y1="11" x2="9" y2="11"/></svg>Legal</div>
+      <div class="acct-nav-list">
+        <div class="atl on" id="atl-profile"       onclick="showTab('profile')"><svg viewBox="0 0 16 16"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>Profile</div>
+        <div class="atl"    id="atl-security"      onclick="showTab('security')"><svg viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>Email &amp; Password</div>
+        <div class="atl"    id="atl-subscription"  onclick="showTab('subscription')"><svg viewBox="0 0 16 16"><polygon points="8,1 10,6 15,6 11,9 13,14 8,11 3,14 5,9 1,6 6,6"/></svg>Subscription</div>
+        <div class="atl"    id="atl-billing"       onclick="showTab('billing')"><svg viewBox="0 0 16 16"><rect x="1" y="4" width="14" height="10" rx="1.5"/><line x1="1" y1="8" x2="15" y2="8"/></svg>Billing</div>
+        <div class="atl"    id="atl-notifications" onclick="showTab('notifications')"><svg viewBox="0 0 16 16"><path d="M8 1a5 5 0 0 1 5 5v3l1.5 2H1.5L3 9V6a5 5 0 0 1 5-5z"/><path d="M6.5 13a1.5 1.5 0 0 0 3 0"/></svg>Notifications</div>
+        <div class="atl-divider"></div>
+        <div class="atl dz" id="atl-danger"        onclick="showTab('danger')"><svg viewBox="0 0 16 16"><polyline points="1,4 3,4 15,4"/><path d="M5 4V2h6v2"/><path d="M13 4l-1 10H4L3 4"/></svg>Danger Zone</div>
+        <div class="atl"    id="atl-legal"         onclick="showTab('legal')"><svg viewBox="0 0 16 16"><rect x="3" y="1" width="10" height="14" rx="1.5"/><line x1="6" y1="5" x2="10" y2="5"/><line x1="6" y1="8" x2="10" y2="8"/><line x1="6" y1="11" x2="9" y2="11"/></svg>Legal</div>
       </div>
     </div>
 
-    <!-- RIGHT: TAB PANELS (all static, toggled via CSS) -->
+    <!-- RIGHT PANELS -->
     <div>
 
-      <!-- PROFILE TAB -->
+      <!-- PROFILE -->
       <div class="acct-tab on" id="tab-profile">
-        <div class="crd">
-          <div class="crd-h"><div class="crd-title">Profile</div></div>
-          <div class="crd-b" style="max-width:460px">
-            <!-- PFP -->
-            <div style="display:flex;align-items:center;gap:18px;padding-bottom:20px;margin-bottom:20px;border-bottom:1px solid var(--bord)">
-              <div class="y2kavt" id="pfp-preview" style="width:84px;height:84px;animation:pfpFloat 12s linear infinite"><span style="font-size:26px;letter-spacing:3px" id="pfp-preview-txt">?</span></div>
-              <div style="flex:1">
-                <div id="pf-name-display" style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:#fff;margin-bottom:3px">My Account</div>
-                <div id="pf-user-display" style="font-family:'Orbitron',monospace;font-size:15px;color:rgba(255,255,255,.95);font-weight:600;margin-bottom:12px">No username set</div>
-                <div style="font-family:'Orbitron',monospace;font-size:15px;color:#fff;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px">PFP Letters (max 2)</div>
-                <div style="display:flex;align-items:center;gap:10px">
-                  <input type="text" id="p-initials" maxlength="2" placeholder="TR"
-                    style="width:62px;background:rgba(0,0,0,.5);border:2px solid rgba(0,180,255,.35);border-radius:8px;padding:8px 6px;color:var(--cyan);font-family:'Black Ops One',cursive;font-size:18px;letter-spacing:4px;outline:none;text-align:center;text-transform:uppercase"
-                    oninput="onPfpInput(this)"/>
-                  <div style="font-family:'Orbitron',monospace;font-size:15px;color:rgba(255,255,255,.9);font-weight:600;line-height:1.7">Updates your avatar<br>everywhere in the app</div>
+        <div class="panel-card max-460">
+          <div class="panel-card-head">
+            <div class="panel-card-title">Profile</div>
+            <div class="panel-card-sub">Avatar &middot; display name &middot; username</div>
+          </div>
+
+          <div class="pfp-section">
+            <div class="pfp-preview-large" id="pfp-preview"><span id="pfp-preview-txt">?</span></div>
+            <div class="pfp-info">
+              <div class="display-name" id="pf-name-display">My Account</div>
+              <div class="display-user" id="pf-user-display">No username set</div>
+              <div class="pfp-controls">
+                <div class="pfp-row">
+                  <div class="lbl">Initials</div>
+                  <input class="pfp-letters-input" id="p-initials" maxlength="2" placeholder="TR" oninput="onPfpInput(this)"/>
                 </div>
-                <div style="margin-top:12px">
-                  <div style="font-family:'Orbitron',monospace;font-size:15px;color:#fff;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px">Avatar Color</div>
-                  <div style="display:flex;gap:8px;flex-wrap:wrap">
-                    <div onclick="setPfpColor('pink')"    id="swatch-pink"   title="Pink"   style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#ff88cc,#ff00aa 45%,#77003a);cursor:pointer;border:2px solid transparent;transition:.15s"></div>
-                    <div onclick="setPfpColor('blue')"    id="swatch-blue"   title="Blue"   style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#66ccff,#00b4ff 45%,#003d66);cursor:pointer;border:2px solid transparent;transition:.15s"></div>
-                    <div onclick="setPfpColor('purple')"  id="swatch-purple" title="Purple" style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#cc66ff,#bf00ff 45%,#440066);cursor:pointer;border:2px solid transparent;transition:.15s"></div>
-                    <div onclick="setPfpColor('green')"   id="swatch-green"  title="Green"  style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#66ffaa,#00ff88 45%,#004422);cursor:pointer;border:2px solid transparent;transition:.15s"></div>
-                    <div onclick="setPfpColor('orange')"  id="swatch-orange" title="Orange" style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#ffcc66,#ff6b00 45%,#663300);cursor:pointer;border:2px solid transparent;transition:.15s"></div>
-                    <div onclick="setPfpColor('red')"     id="swatch-red"    title="Red"    style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#ff6688,#ff2255 45%,#660022);cursor:pointer;border:2px solid transparent;transition:.15s"></div>
-                    <div onclick="setPfpColor('yellow')"  id="swatch-yellow" title="Yellow" style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#ffee88,#ffe600 45%,#665500);cursor:pointer;border:2px solid transparent;transition:.15s"></div>
-                    <div onclick="setPfpColor('black')"   id="swatch-black"  title="Black"  style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#555,#111 45%,#000);cursor:pointer;border:2px solid transparent;transition:.15s"></div>
+                <div class="pfp-row">
+                  <div class="lbl">Color</div>
+                  <div class="pfp-swatches">
+                    <div class="swatch chrome on" id="swatch-chrome" onclick="setPfpColor('chrome')" title="Chrome"></div>
+                    <div class="swatch pink"     id="swatch-pink"   onclick="setPfpColor('pink')"   title="Pink"></div>
+                    <div class="swatch blue"     id="swatch-blue"   onclick="setPfpColor('blue')"   title="Blue"></div>
+                    <div class="swatch purple"   id="swatch-purple" onclick="setPfpColor('purple')" title="Purple"></div>
+                    <div class="swatch green"    id="swatch-green"  onclick="setPfpColor('green')"  title="Green"></div>
+                    <div class="swatch orange"   id="swatch-orange" onclick="setPfpColor('orange')" title="Orange"></div>
+                    <div class="swatch red"      id="swatch-red"    onclick="setPfpColor('red')"    title="Red"></div>
+                    <div class="swatch yellow"   id="swatch-yellow" onclick="setPfpColor('yellow')" title="Yellow"></div>
+                    <div class="swatch black"    id="swatch-black"  onclick="setPfpColor('black')"  title="Black"></div>
                   </div>
                 </div>
               </div>
             </div>
-            <!-- FIELDS -->
-            <div class="f-row">
-              <label>Display Name</label>
-              <input type="text" id="p-name" placeholder="Your name"
-                style="width:100%;background:rgba(0,0,0,.4);border:1px solid var(--bord);border-radius:6px;padding:8px 11px;color:#fff;font-family:'Chakra Petch',sans-serif;font-size:15px;outline:none"/>
-            </div>
-            <div class="f-row">
-              <label>Username</label>
-              <div style="display:flex;align-items:center;background:rgba(0,0,0,.4);border:1px solid var(--bord);border-radius:6px;overflow:hidden">
-                <span style="padding:0 8px 0 12px;font-family:'Bebas Neue',sans-serif;font-size:14px;color:rgba(255,255,255,.9);font-weight:600">@</span>
-                <input type="text" id="p-username" placeholder="yourusername"
-                  style="flex:1;background:transparent;border:none;padding:9px 11px 9px 0;color:#fff;font-family:'Chakra Petch',sans-serif;font-size:15px;outline:none"/>
-              </div>
-            </div>
-            <button onclick="saveProfile()" style="width:100%;padding:12px;border-radius:7px;background:linear-gradient(135deg,rgba(0,180,255,.2),rgba(191,0,255,.15));color:var(--cyan);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;cursor:pointer;border:1px solid rgba(0,180,255,.35);margin-top:6px">Save Profile</button>
           </div>
+
+          <div class="f-row">
+            <label>Display Name</label>
+            <input class="f-input" id="p-name" type="text" placeholder="Your name"/>
+          </div>
+          <div class="f-row">
+            <label>Username</label>
+            <div class="f-with-prefix">
+              <span class="prefix">@</span>
+              <input id="p-username" type="text" placeholder="yourusername"/>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="saveProfile()">Save Profile</button>
         </div>
       </div>
 
-      <!-- SECURITY TAB -->
+      <!-- SECURITY -->
       <div class="acct-tab" id="tab-security">
-        <div class="crd">
-          <div class="crd-h"><div class="crd-title">Email &amp; Password</div></div>
-          <div class="crd-b" style="max-width:460px">
-            <div class="f-row"><label>Email Address</label><input type="email" id="s-email" placeholder="your@email.com" style="width:100%;background:rgba(0,0,0,.4);border:1px solid var(--bord);border-radius:6px;padding:8px 11px;color:#fff;font-family:'Chakra Petch',sans-serif;font-size:15px;outline:none"/></div>
-            <div style="height:1px;background:var(--bord);margin:14px 0"></div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:rgba(255,255,255,.95);font-weight:600;margin-bottom:10px">Change Password</div>
-            <div class="f-row"><label>Current Password</label><input type="password" placeholder="Current password" style="width:100%;background:rgba(0,0,0,.4);border:1px solid var(--bord);border-radius:6px;padding:8px 11px;color:#fff;font-family:'Chakra Petch',sans-serif;font-size:15px;outline:none"/></div>
-            <div class="f-row"><label>New Password</label><input type="password" id="s-pass" placeholder="Min 8 characters" style="width:100%;background:rgba(0,0,0,.4);border:1px solid var(--bord);border-radius:6px;padding:8px 11px;color:#fff;font-family:'Chakra Petch',sans-serif;font-size:15px;outline:none"/></div>
-            <div class="f-row"><label>Confirm Password</label><input type="password" id="s-pass2" placeholder="Confirm new password" style="width:100%;background:rgba(0,0,0,.4);border:1px solid var(--bord);border-radius:6px;padding:8px 11px;color:#fff;font-family:'Chakra Petch',sans-serif;font-size:15px;outline:none"/></div>
-            <button onclick="saveSecurity()" style="width:100%;padding:12px;border-radius:7px;background:linear-gradient(135deg,rgba(0,180,255,.2),rgba(191,0,255,.15));color:var(--cyan);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;cursor:pointer;border:1px solid rgba(0,180,255,.35);margin-top:6px">Update Security</button>
+        <div class="panel-card max-460">
+          <div class="panel-card-head">
+            <div class="panel-card-title">Email &amp; Password</div>
+            <div class="panel-card-sub">Login credentials</div>
+          </div>
+
+          <div class="f-row">
+            <label>Email Address</label>
+            <input class="f-input" id="s-email" type="email" placeholder="your@email.com"/>
+          </div>
+
+          <div class="form-divider"></div>
+          <div class="section-lbl">Change Password</div>
+
+          <div class="f-row">
+            <label>Current Password</label>
+            <input class="f-input" type="password" placeholder="Current password"/>
+          </div>
+          <div class="f-row">
+            <label>New Password</label>
+            <input class="f-input" id="s-pass" type="password" placeholder="Min 8 characters"/>
+          </div>
+          <div class="f-row">
+            <label>Confirm Password</label>
+            <input class="f-input" id="s-pass2" type="password" placeholder="Confirm new password"/>
+          </div>
+          <button class="btn-primary" onclick="saveSecurity()">Update Security</button>
+        </div>
+      </div>
+
+      <!-- SUBSCRIPTION (locked — in development) -->
+      <div class="acct-tab locked-tab" id="tab-subscription">
+        <div class="panel-card">
+          <div class="peek-content">
+            <div class="panel-card-head">
+              <div class="panel-card-title">Subscription</div>
+              <div class="panel-card-sub">Your current plan</div>
+            </div>
+            <div class="tier-grid">
+              <div class="tier-card current">
+                <span class="tier-current-badge">Current Plan</span>
+                <div class="tier-name">Free</div>
+                <div class="tier-price">$0<span class="per">/ month</span></div>
+                <ul class="tier-features">
+                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Manual trade logging</li>
+                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>CSV import</li>
+                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Up to 100 trades</li>
+                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Basic analytics</li>
+                </ul>
+                <button class="tier-btn current">Current Plan</button>
+              </div>
+              <div class="tier-card">
+                <div class="tier-name">Pro</div>
+                <div class="tier-price">$19<span class="per">/ month</span></div>
+                <ul class="tier-features">
+                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Unlimited trades</li>
+                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Full analytics suite</li>
+                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Broker sync (when live)</li>
+                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Community access</li>
+                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Priority support</li>
+                </ul>
+                <button class="tier-btn upgrade">Upgrade to Pro</button>
+              </div>
+            </div>
+          </div>
+          <div class="tab-lock">
+            <div class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+            <div class="ttl">Subscription</div>
+            <div class="status"><span class="pulse"></span>In development</div>
+            <div class="desc">Plans and pricing are coming soon. Everything's free for now &mdash; enjoy.</div>
           </div>
         </div>
       </div>
 
-      <!-- SUBSCRIPTION TAB -->
-      <div class="acct-tab" id="tab-subscription">
-        <div style="position:relative;max-width:520px">
-
-          <!-- blurred content -->
-          <div style="filter:blur(5px);pointer-events:none;user-select:none;display:flex;flex-direction:column;gap:14px">
-
-            <div class="crd">
-              <div class="crd-h">
-                <div class="crd-title">Active Subscription</div>
-                <span style="font-family:'Orbitron',monospace;font-size:14px;padding:3px 10px;border-radius:3px;background:rgba(122,106,170,.15);color:rgba(255,255,255,.95);font-weight:600;border:1px solid rgba(122,106,170,.3);letter-spacing:.8px">FREE</span>
-              </div>
-              <div class="crd-b">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-                  <div>
-                    <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:#fff">Free Plan</div>
-                    <div style="font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.95);font-weight:600;margin-top:3px">$0 / month</div>
-                  </div>
-                  <div style="width:56px;height:56px;border-radius:12px;background:rgba(122,106,170,.15);border:1px solid rgba(122,106,170,.3);display:flex;align-items:center;justify-content:center;font-size:24px">🆓</div>
-                </div>
-                <div style="margin-bottom:14px;padding:12px 14px;background:rgba(0,0,0,.2);border-radius:8px;border:1px solid var(--bord)">
-                  <div style="font-family:'Orbitron',monospace;font-size:14px;color:#fff;font-weight:600;line-height:2.2">
-                    ✓ Manual trade logging<br>✓ 50 trade limit<br>✓ Basic analytics<br>✓ Calendar view
-                  </div>
-                </div>
-                <div style="font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.8);margin-bottom:12px">Upgrade to unlock unlimited trades, broker sync, and full analytics.</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                  <button style="padding:12px;border-radius:7px;background:linear-gradient(135deg,rgba(0,180,255,.2),rgba(0,180,255,.1));color:var(--cyan);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;border:1px solid rgba(0,180,255,.4)">Pro — $19/mo</button>
-                  <button style="padding:12px;border-radius:7px;background:linear-gradient(135deg,rgba(191,0,255,.2),rgba(191,0,255,.1));color:var(--purple);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;border:1px solid rgba(191,0,255,.4)">Elite — $39/mo</button>
-                </div>
-              </div>
+      <!-- BILLING (locked — in development) -->
+      <div class="acct-tab locked-tab" id="tab-billing">
+        <div class="panel-card max-460">
+          <div class="peek-content">
+            <div class="panel-card-head">
+              <div class="panel-card-title">Billing</div>
+              <div class="panel-card-sub">Payment method &amp; history</div>
             </div>
-
-            <div class="crd">
-              <div class="crd-h"><div class="crd-title">What You Unlock</div></div>
-              <div class="crd-b">
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                  <div style="padding:10px;background:rgba(0,0,0,.2);border-radius:7px;border:1px solid var(--bord)">
-                    <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:var(--cyan);margin-bottom:4px">Pro — $19/mo</div>
-                    <div style="font-family:'Orbitron',monospace;font-size:13px;color:#fff;font-weight:600;line-height:2">✓ Unlimited trades<br>✓ CSV import<br>✓ Full analytics<br>✓ 1 broker sync</div>
-                  </div>
-                  <div style="padding:10px;background:rgba(0,0,0,.2);border-radius:7px;border:1px solid var(--bord)">
-                    <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:var(--purple);margin-bottom:4px">Elite — $39/mo</div>
-                    <div style="font-family:'Orbitron',monospace;font-size:13px;color:#fff;font-weight:600;line-height:2">✓ Everything in Pro<br>✓ Tradovate live sync<br>✓ TopstepX live sync<br>✓ Copy account tracking</div>
-                  </div>
-                </div>
-              </div>
+            <div class="billing-row">
+              <span class="billing-label">Current Plan</span>
+              <span class="billing-value cool">Free</span>
             </div>
-
-          </div><!-- end blur -->
-
-          <!-- single lock overlay -->
-          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px">
-            <div style="font-size:40px">🔒</div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;color:var(--cyan);text-shadow:0 0 12px var(--cyan)">COMING SOON</div>
+            <div class="billing-row">
+              <span class="billing-label">Payment Method</span>
+              <span class="billing-value">No card on file</span>
+            </div>
+            <div class="billing-row">
+              <span class="billing-label">Next Charge</span>
+              <span class="billing-value">&mdash;</span>
+            </div>
+            <div class="billing-row">
+              <span class="billing-label">Last Invoice</span>
+              <span class="billing-value">&mdash;</span>
+            </div>
+            <div class="form-divider"></div>
+            <button class="btn-primary ghost">Update Payment Method</button>
+            <button class="btn-primary ghost-quiet" style="margin-top:8px">View Invoice History</button>
           </div>
-
+          <div class="tab-lock">
+            <div class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+            <div class="ttl">Billing</div>
+            <div class="status"><span class="pulse"></span>In development</div>
+            <div class="desc">Billing isn't live yet. Will activate alongside paid plans.</div>
+          </div>
         </div>
       </div>
 
-      <!-- BILLING TAB -->
-      <div class="acct-tab" id="tab-billing">
-        <div style="position:relative;max-width:520px">
-
-          <!-- blurred content -->
-          <div style="filter:blur(5px);pointer-events:none;user-select:none;display:flex;flex-direction:column;gap:14px">
-            <div class="crd">
-              <div class="crd-h"><div class="crd-title">Current Plan</div></div>
-              <div class="crd-b" style="display:flex;align-items:center;justify-content:space-between">
-                <div>
-                  <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--cyan)">Free Plan</div>
-                  <div style="font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.6);margin-top:4px">No billing — upgrade to unlock all features</div>
-                </div>
-                <button style="padding:8px 16px;border-radius:6px;background:rgba(0,180,255,.1);color:var(--cyan);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;border:1px solid rgba(0,180,255,.3)">Upgrade</button>
-              </div>
-            </div>
-            <div class="crd">
-              <div class="crd-h"><div class="crd-title">Payment Method</div></div>
-              <div class="crd-b" style="max-width:460px">
-                <div class="f-row"><label>Cardholder Name</label><input type="text" placeholder="Name on card" style="width:100%;background:rgba(0,0,0,.4);border:1px solid var(--bord);border-radius:6px;padding:8px 11px;color:#fff;font-family:'Chakra Petch',sans-serif;font-size:14px;outline:none"/></div>
-                <div class="f-row"><label>Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" style="width:100%;background:rgba(0,0,0,.4);border:1px solid var(--bord);border-radius:6px;padding:8px 11px;color:#fff;font-family:'Chakra Petch',sans-serif;font-size:14px;outline:none"/></div>
-                <div class="f2">
-                  <div class="f-row"><label>Expiry</label><input type="text" placeholder="MM / YY" style="width:100%;background:rgba(0,0,0,.4);border:1px solid var(--bord);border-radius:6px;padding:8px 11px;color:#fff;font-family:'Chakra Petch',sans-serif;font-size:14px;outline:none"/></div>
-                  <div class="f-row"><label>CVV</label><input type="text" placeholder="•••" style="width:100%;background:rgba(0,0,0,.4);border:1px solid var(--bord);border-radius:6px;padding:8px 11px;color:#fff;font-family:'Chakra Petch',sans-serif;font-size:14px;outline:none"/></div>
-                </div>
-                <button style="width:100%;padding:12px;border-radius:7px;background:linear-gradient(135deg,rgba(0,255,136,.12),rgba(0,180,255,.1));color:var(--grn);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;border:1px solid rgba(0,255,136,.3)">Save Payment Method</button>
-              </div>
-            </div>
-            <div class="crd">
-              <div class="crd-h"><div class="crd-title">Billing History</div></div>
-              <div style="padding:20px;text-align:center;font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.6)">No billing history yet</div>
-            </div>
-          </div>
-
-          <!-- lock overlay -->
-          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px">
-            <div style="font-size:40px">🔒</div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;color:var(--cyan);text-shadow:0 0 12px var(--cyan)">COMING SOON</div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- NOTIFICATIONS TAB -->
+      <!-- NOTIFICATIONS -->
       <div class="acct-tab" id="tab-notifications">
-        <div class="crd">
-          <div class="crd-h"><div class="crd-title">Notifications</div></div>
-          <div class="crd-b" style="max-width:500px">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--bord)">
-              <div><div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;color:#fff">Trade Auto-Journaled</div><div style="font-family:'Orbitron',monospace;font-size:15px;color:rgba(255,255,255,.95);font-weight:600;margin-top:3px">Notified when a trade logs via broker sync</div></div>
-              <div class="tog on" onclick="this.classList.toggle('on')"></div>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--bord)">
-              <div><div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;color:#fff">Daily P&amp;L Summary</div><div style="font-family:'Orbitron',monospace;font-size:15px;color:rgba(255,255,255,.95);font-weight:600;margin-top:3px">End of day recap with total P&amp;L and trade count</div></div>
-              <div class="tog on" onclick="this.classList.toggle('on')"></div>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--bord)">
-              <div><div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;color:#fff">Weekly Report</div><div style="font-family:'Orbitron',monospace;font-size:15px;color:rgba(255,255,255,.95);font-weight:600;margin-top:3px">Your week in review every Monday morning</div></div>
-              <div style="display:flex;align-items:center;gap:10px">
-                <button onclick="showWeeklyReport()" style="padding:6px 14px;border-radius:6px;border:1px solid rgba(0,180,255,.35);background:rgba(0,180,255,.1);color:var(--cyan);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer">VIEW →</button>
-                <div class="tog" onclick="this.classList.toggle('on')"></div>
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--bord)">
-              <div><div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;color:#fff">Broker Connection Issues</div><div style="font-family:'Orbitron',monospace;font-size:15px;color:rgba(255,255,255,.95);font-weight:600;margin-top:3px">Alert if Tradovate or TopstepX sync drops</div></div>
-              <div class="tog on" onclick="this.classList.toggle('on')"></div>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--bord)">
-              <div><div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;color:#fff">Win Streak Alerts</div><div style="font-family:'Orbitron',monospace;font-size:15px;color:rgba(255,255,255,.95);font-weight:600;margin-top:3px">Celebrate when you hit a new win streak</div></div>
-              <div class="tog" onclick="this.classList.toggle('on')"></div>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0">
-              <div><div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;color:#fff">Product Updates</div><div style="font-family:'Orbitron',monospace;font-size:15px;color:rgba(255,255,255,.95);font-weight:600;margin-top:3px">New features and improvements</div></div>
-              <div class="tog on" onclick="this.classList.toggle('on')"></div>
-            </div>
-            <button onclick="toast('Preferences saved!')" style="width:100%;padding:12px;border-radius:7px;background:linear-gradient(135deg,rgba(0,180,255,.2),rgba(191,0,255,.15));color:var(--cyan);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;cursor:pointer;border:1px solid rgba(0,180,255,.35);margin-top:16px">Save Preferences</button>
+        <div class="panel-card max-460">
+          <div class="panel-card-head">
+            <div class="panel-card-title">Notifications</div>
+            <div class="panel-card-sub">What you want to hear about</div>
           </div>
+
+          <div class="notif-row">
+            <div class="notif-info">
+              <div class="nm">Trade auto-journaled</div>
+              <div class="desc">Notified when a trade logs via broker sync</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="notif-row">
+            <div class="notif-info">
+              <div class="nm">Daily P&amp;L summary</div>
+              <div class="desc">End-of-day recap with total P&amp;L and trade count</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="notif-row">
+            <div class="notif-info">
+              <div class="nm">Weekly report</div>
+              <div class="desc">Your week in review every Monday morning</div>
+            </div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="notif-row">
+            <div class="notif-info">
+              <div class="nm">Streak alerts</div>
+              <div class="desc">Celebrate (or warn) on a winning or losing streak</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="notif-row">
+            <div class="notif-info">
+              <div class="nm">Community replies</div>
+              <div class="desc">When someone replies to your shared trades</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="notif-row">
+            <div class="notif-info">
+              <div class="nm">Product updates</div>
+              <div class="desc">New features and improvements</div>
+            </div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+
+          <button class="btn-primary" style="margin-top:14px" onclick="toast('Preferences saved!')">Save Preferences</button>
         </div>
       </div>
 
-      <!-- DANGER TAB -->
+      <!-- DANGER ZONE -->
       <div class="acct-tab" id="tab-danger">
-        <div style="display:flex;flex-direction:column;gap:14px">
-          <div class="crd" style="border-color:rgba(0,255,136,.2)">
-            <div class="crd-h"><div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;color:var(--grn)">Export All Data</div></div>
-            <div class="crd-b"><div style="font-family:'Orbitron',monospace;font-size:15px;color:#fff;font-weight:600;line-height:1.8;margin-bottom:12px">Download all trades, journal entries and settings as JSON.</div>
-            <button onclick="exportData()" style="padding:9px 20px;border-radius:6px;background:rgba(0,255,136,.08);color:var(--grn);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(0,255,136,.3)">Export Data</button></div>
+        <div class="panel-card max-460">
+          <div class="panel-card-head">
+            <div class="panel-card-title">Danger Zone</div>
+            <div class="panel-card-sub">Irreversible actions</div>
           </div>
-          <div class="crd" style="border-color:rgba(255,107,0,.2)">
-            <div class="crd-h"><div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;color:var(--orange)">Clear All Trades</div></div>
-            <div class="crd-b"><div style="font-family:'Orbitron',monospace;font-size:15px;color:#fff;font-weight:600;line-height:1.8;margin-bottom:12px">Permanently delete all logged trades. Cannot be undone.</div>
-            <button onclick="if(confirm('Delete ALL trades? Cannot be undone.')){trades=[];save();renderAll();toast('All trades deleted');}" style="padding:9px 20px;border-radius:6px;background:rgba(255,107,0,.08);color:var(--orange);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,107,0,.3)">Clear All Trades</button></div>
+
+          <div class="danger-card info">
+            <div class="ttl">Export All Data</div>
+            <div class="desc">Download all trades, journal entries and settings as a JSON file. Use this for backups or moving to another tool.</div>
+            <button class="btn-danger" style="margin-top:14px;border-color:rgba(95,179,137,0.3);background:rgba(95,179,137,0.08);color:var(--n-profit)" onclick="exportData()">Export Data</button>
           </div>
-          <div class="crd" style="border-color:rgba(255,34,85,.25)">
-            <div class="crd-h"><div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;color:var(--red)">Delete Account</div></div>
-            <div class="crd-b"><div style="font-family:'Orbitron',monospace;font-size:15px;color:#fff;font-weight:600;line-height:1.8;margin-bottom:12px">Permanently delete your account and all data. Irreversible.</div>
-            <button onclick="confirmDeleteAccount()" style="padding:9px 20px;border-radius:6px;background:rgba(255,34,85,.08);color:var(--red);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,34,85,.3)">Delete My Account</button></div>
+
+          <div class="danger-card warn">
+            <div class="ttl">Clear All Trades</div>
+            <div class="desc">Permanently delete every logged trade. Profile, journals, and settings stay. Cannot be undone.</div>
+            <button class="btn-danger" style="margin-top:14px;border-color:rgba(201,158,95,0.3);background:rgba(201,158,95,0.08);color:#c99e5f" onclick="if(confirm('Delete ALL trades? Cannot be undone.')){trades=[];save();renderAll();toast('All trades deleted');}">Clear All Trades</button>
+          </div>
+
+          <div class="danger-card">
+            <div class="ttl">Delete Account</div>
+            <div class="desc">Permanently delete your account and all associated data &mdash; trades, journals, communities, settings, everything. This cannot be undone.</div>
+            <button class="btn-danger" style="margin-top:14px" onclick="confirmDeleteAccount()">Delete My Account</button>
           </div>
         </div>
       </div>
 
-      <!-- LEGAL TAB -->
+      <!-- LEGAL -->
       <div class="acct-tab" id="tab-legal">
-        <div style="display:flex;flex-direction:column;gap:14px;max-width:620px">
-
-          <!-- NFA Disclaimer -->
-          <div class="crd" style="border-color:rgba(255,200,0,.25)">
-            <div class="crd-h"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:rgba(255,200,0,.9)">⚠️ Not Financial Advice</div></div>
-            <div class="crd-b">
-              <div style="font-family:'Orbitron',monospace;font-size:13px;color:rgba(255,255,255,.78);line-height:1.9">
-                TradeRewind is a <strong style="color:#fff">trade journaling and analytics tool only.</strong> Nothing in this application constitutes financial advice, investment advice, trading advice, or any other form of advice. All P&amp;L figures, analytics, and statistics are informational records of past trades you have logged.<br><br>
-                Past performance does not guarantee future results. Trading futures involves substantial risk of loss. Always consult a licensed financial advisor before making any trading or investment decisions.
-              </div>
-            </div>
+        <div class="panel-card max-460">
+          <div class="panel-card-head">
+            <div class="panel-card-title">Legal</div>
+            <div class="panel-card-sub">Terms, privacy &amp; policies</div>
           </div>
-
-          <!-- Prop Firm Disclaimer -->
-          <div class="crd" style="border-color:rgba(0,180,255,.2)">
-            <div class="crd-h"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--cyan)">📋 Prop Firm Data Disclaimer</div></div>
-            <div class="crd-b">
-              <div style="font-family:'Orbitron',monospace;font-size:13px;color:rgba(255,255,255,.78);line-height:1.9">
-                Prop firm pricing, rules, drawdown limits, payout policies, and account details shown in the Prop Firms section are provided <strong style="color:#fff">for informational purposes only.</strong><br><br>
-                Rules and prices change frequently without notice. TradeRewind makes no guarantee that any information shown is current or accurate. <strong style="color:rgba(255,200,0,.9)">Always verify directly with the prop firm before purchasing an evaluation or funded account.</strong><br><br>
-                TradeRewind is not affiliated with, endorsed by, or compensated by any prop firm listed in this application.
-              </div>
-            </div>
+          <div class="legal-list">
+            <a onclick="toast('Terms of Service — coming soon')">Terms of Service<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+            <a onclick="toast('Privacy Policy — coming soon')">Privacy Policy<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+            <a onclick="toast('Data Processing Agreement — coming soon')">Data Processing Agreement<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+            <a onclick="toast('Cookie Policy — see banner at bottom')">Cookie Policy<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+            <a onclick="window.location.href='mailto:cjvaleo@gmail.com?subject=TradeRewind support'">Contact Support<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
           </div>
-
-          <!-- Privacy Policy -->
-          <div class="crd">
-            <div class="crd-h"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--purple)">🔒 Privacy Policy</div></div>
-            <div class="crd-b" style="font-family:'Orbitron',monospace;font-size:13px;color:rgba(255,255,255,.78);line-height:1.9">
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:rgba(255,255,255,.95);margin-bottom:6px">What We Collect</div>
-              We collect your email address, username, display name, and trade data you log. This data is stored securely via <strong style="color:#fff">Supabase</strong> (our third-party data processor and hosting provider) and in your browser's localStorage. Supabase processes data in accordance with their own privacy policy.
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:rgba(255,255,255,.95);margin:14px 0 6px">How We Use It</div>
-              Your data is used solely to operate the TradeRewind journaling service. We do not sell, rent, or share your personal information with third parties for marketing purposes.
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:rgba(255,255,255,.95);margin:14px 0 6px">Your Rights (GDPR / CCPA)</div>
-              You have the right to access, correct, export, or delete your data at any time. Use the Danger Zone tab to export or delete your data. For additional requests, contact us at <span style="color:var(--cyan)">cjvaleo@gmail.com</span>.
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:rgba(255,255,255,.95);margin:14px 0 6px">Cookies</div>
-              We use only essential cookies required for authentication. No advertising or tracking cookies are used.
-            </div>
-          </div>
-
-          <!-- Terms of Service -->
-          <div class="crd">
-            <div class="crd-h"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--grn)">📄 Terms of Service</div></div>
-            <div class="crd-b" style="font-family:'Orbitron',monospace;font-size:13px;color:rgba(255,255,255,.78);line-height:1.9">
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:rgba(255,255,255,.95);margin-bottom:6px">Acceptable Use</div>
-              You agree not to use TradeRewind to post illegal content, harass other users, or misrepresent trading results in the community feed. We reserve the right to remove content or suspend accounts that violate these terms.
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:rgba(255,255,255,.95);margin:14px 0 6px">Data Accuracy</div>
-              You are responsible for the accuracy of trade data you enter. TradeRewind is not liable for decisions made based on incorrectly logged trades or analytics derived from them.
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:rgba(255,255,255,.95);margin:14px 0 6px">Service Availability</div>
-              TradeRewind is provided "as is." We make no guarantees of uptime or data persistence. Always maintain your own backups using the Export Data feature in Danger Zone.
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:rgba(255,255,255,.95);margin:14px 0 6px">Changes to Terms</div>
-              We may update these terms at any time. Continued use of TradeRewind after changes constitutes acceptance of the updated terms.
-              <div style="font-family:'Orbitron',monospace;font-size:11px;color:rgba(255,255,255,.35);margin-top:16px">Last updated: April 2026</div>
-            </div>
-          </div>
-
-          <!-- 18+ Age Requirement -->
-          <div class="crd" style="border-color:rgba(255,107,0,.2)">
-            <div class="crd-h"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--orange)">🔞 Age Requirement</div></div>
-            <div class="crd-b" style="font-family:'Orbitron',monospace;font-size:13px;color:rgba(255,255,255,.78);line-height:1.9">
-              TradeRewind is intended for users who are <strong style="color:#fff">18 years of age or older.</strong> By creating an account and using this service, you confirm that you are at least 18 years old. Users under 18 are not permitted to use TradeRewind. If we become aware that a user is under 18, their account will be suspended and all associated data deleted.
-            </div>
-          </div>
-
-          <!-- Affiliate Disclosure -->
-          <div class="crd" style="border-color:rgba(191,0,255,.2)">
-            <div class="crd-h"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--purple)">🔗 Affiliate &amp; Endorsement Disclosure</div></div>
-            <div class="crd-b" style="font-family:'Orbitron',monospace;font-size:13px;color:rgba(255,255,255,.78);line-height:1.9">
-              Some links in the Prop Firms section — including discount and referral links — may be affiliate links. <strong style="color:#fff">If you click a link and make a purchase, TradeRewind may receive a commission at no extra cost to you.</strong> This does not influence the data or rankings shown. All prop firm information is researched independently. Affiliate relationships are disclosed in compliance with FTC guidelines (16 C.F.R. Part 255).
-            </div>
-          </div>
-
-          <!-- DMCA Policy -->
-          <div class="crd">
-            <div class="crd-h"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:rgba(255,255,255,.7)">📬 DMCA Policy</div></div>
-            <div class="crd-b" style="font-family:'Orbitron',monospace;font-size:13px;color:rgba(255,255,255,.78);line-height:1.9">
-              TradeRewind respects intellectual property rights. If you believe content posted in the Community feed infringes your copyright, you may submit a takedown request by contacting us with the following:<br><br>
-              <div style="padding:12px 16px;background:rgba(0,0,0,.3);border-radius:8px;border:1px solid rgba(255,255,255,.07);line-height:2.3">
-                1. Your name and contact information<br>
-                2. A description of the copyrighted work you believe was infringed<br>
-                3. The specific content you want removed and where it appears<br>
-                4. A statement that you have a good-faith belief the use is not authorized<br>
-                5. A statement under penalty of perjury that the information is accurate and that you are the copyright owner or authorized to act on their behalf
-              </div><br>
-              We will respond to valid DMCA requests promptly and remove infringing content. Repeat infringers will have their accounts terminated.<br><br>📧 Send DMCA requests to: <span style="color:var(--cyan)">cjvaleo@gmail.com</span>
-            </div>
-          </div>
-
-          <!-- Cookie Policy -->
-          <div class="crd" style="border-color:rgba(0,255,136,.15)">
-            <div class="crd-h"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--grn)">🍪 Cookie Policy</div></div>
-            <div class="crd-b" style="font-family:'Orbitron',monospace;font-size:13px;color:rgba(255,255,255,.78);line-height:1.9">
-              TradeRewind uses <strong style="color:#fff">essential cookies only</strong> — specifically, authentication session cookies set by Supabase to keep you signed in. We do not use advertising cookies, tracking pixels, or third-party analytics.<br><br>
-              By signing in and using TradeRewind, you consent to the use of these essential authentication cookies. You can clear them at any time by signing out or clearing your browser cookies, which will end your session.
-              <div style="margin-top:14px;padding:10px 14px;background:rgba(0,255,136,.05);border-radius:7px;border:1px solid rgba(0,255,136,.15);font-size:12px;color:rgba(255,255,255,.5)">
-                Cookie consent status: <span id="cookie-consent-status" style="color:var(--grn)">Accepted</span>
-                &nbsp;·&nbsp;
-                <button onclick="localStorage.removeItem('tr1_cookie_consent');document.getElementById('cookie-consent-status').textContent='Cleared — reload to see banner';document.getElementById('cookie-consent-status').style.color='rgba(255,200,0,.8)'" style="background:none;border:none;color:rgba(255,255,255,.4);font-family:'Orbitron',monospace;font-size:11px;cursor:pointer;text-decoration:underline;padding:0">Reset consent</button>
-              </div>
-            </div>
-          </div>
-
         </div>
       </div>
 
@@ -4808,8 +5197,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   </div>
 </div>
 
-</main>
-</div>
 <!-- SHARE TRADE MODAL -->
 <div id="share-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.78);z-index:9990;overflow-y:auto;padding:40px 20px">
   <div style="max-width:500px;margin:0 auto;background:#0a0520;border:1px solid rgba(0,180,255,.3);border-radius:12px;overflow:hidden">
@@ -9354,15 +9741,22 @@ function refreshAcctUI(){
   acct.initials=init;
   var els=['sb-avatar-txt','ap-avatar-txt','pfp-preview-txt'];
   els.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=init;});
-  /* apply avatar color to all avatar elements */
-  var col=pfpColors[acct.color||'pink'];
+  /* apply avatar color to all avatar elements — default to chrome for the new aesthetic */
+  var colorKey = acct.color && pfpColors[acct.color] ? acct.color : 'chrome';
+  var col=pfpColors[colorKey];
   ['sb-avatar','ap-avatar','pfp-preview'].forEach(function(id){
-    var el=document.getElementById(id);if(el){el.style.background=col.bg;el.style.boxShadow=col.glow;}
+    var el=document.getElementById(id);
+    if(!el) return;
+    el.style.background = col.bg;
+    el.style.boxShadow  = col.glow;
+    el.style.color      = col.fg;
   });
-  /* highlight active swatch */
+  /* highlight active swatch via class (CSS handles the ring) */
   Object.keys(pfpColors).forEach(function(k){
     var sw=document.getElementById('swatch-'+k);
-    if(sw)sw.style.borderColor=(k===(acct.color||'pink'))?'#fff':'transparent';
+    if(!sw) return;
+    sw.classList.toggle('on', k === colorKey);
+    sw.style.borderColor = '';  // strip any legacy inline border
   });
   var n=document.getElementById('sb-name');if(n)n.textContent=acct.name||'My Account';
   var su=document.getElementById('sb-username');if(su)su.textContent=acct.username?'@'+acct.username.replace('@',''):'@username';
@@ -9370,7 +9764,10 @@ function refreshAcctUI(){
   var planTxt=planMap[acct.plan]||'Free Plan';
   var an=document.getElementById('ap-name');if(an)an.textContent=acct.name||'My Account';
   var ae=document.getElementById('ap-email');if(ae)ae.textContent=acct.email||'Not signed in';
-  var ab=document.getElementById('ap-badge');if(ab)ab.textContent=planTxt.toUpperCase();
+  var ab=document.getElementById('ap-badge');if(ab){
+    ab.textContent = planTxt;
+    ab.classList.toggle('pro', acct.plan === 'pro' || acct.plan === 'elite');
+  }
   var scl=document.getElementById('sub-current-lbl');if(scl)scl.textContent='Current: '+(acct.plan.charAt(0).toUpperCase()+acct.plan.slice(1));
   var bpl=document.getElementById('billing-plan-lbl');if(bpl)bpl.textContent=planTxt;
   var bnl=document.getElementById('billing-next-lbl');if(bnl)bnl.textContent=acct.plan==='free'?'No billing — upgrade to unlock features':'Next billing: May 14, 2026';
@@ -9421,25 +9818,37 @@ function memberAvatarStyle(m){
 }
 
 var pfpColors={
-  pink:  {bg:'radial-gradient(circle at 32% 30%,#ff88cc,#ff00aa 45%,#77003a)',glow:'0 0 18px rgba(255,0,170,.7),0 0 36px rgba(255,0,170,.3),inset 0 1px 3px rgba(255,255,255,.35)'},
-  blue:  {bg:'radial-gradient(circle at 32% 30%,#66ccff,#00b4ff 45%,#003d66)', glow:'0 0 18px rgba(0,180,255,.7),0 0 36px rgba(0,180,255,.3),inset 0 1px 3px rgba(255,255,255,.35)'},
-  purple:{bg:'radial-gradient(circle at 32% 30%,#cc66ff,#bf00ff 45%,#440066)', glow:'0 0 18px rgba(191,0,255,.7),0 0 36px rgba(191,0,255,.3),inset 0 1px 3px rgba(255,255,255,.35)'},
-  green: {bg:'radial-gradient(circle at 32% 30%,#66ffaa,#00ff88 45%,#004422)', glow:'0 0 18px rgba(0,255,136,.7),0 0 36px rgba(0,255,136,.3),inset 0 1px 3px rgba(255,255,255,.35)'},
-  orange:{bg:'radial-gradient(circle at 32% 30%,#ffcc66,#ff6b00 45%,#663300)', glow:'0 0 18px rgba(255,107,0,.7),0 0 36px rgba(255,107,0,.3),inset 0 1px 3px rgba(255,255,255,.35)'},
-  red:   {bg:'radial-gradient(circle at 32% 30%,#ff6688,#ff2255 45%,#660022)', glow:'0 0 18px rgba(255,34,85,.7),0 0 36px rgba(255,34,85,.3),inset 0 1px 3px rgba(255,255,255,.35)'},
-  yellow:{bg:'radial-gradient(circle at 32% 30%,#ffee88,#ffe600 45%,#665500)', glow:'0 0 18px rgba(255,230,0,.7),0 0 36px rgba(255,230,0,.3),inset 0 1px 3px rgba(255,255,255,.35)'},
-  black: {bg:'radial-gradient(circle at 32% 30%,#555,#111 45%,#000)',          glow:'0 0 18px rgba(120,120,120,.5),0 0 36px rgba(80,80,80,.2),inset 0 1px 3px rgba(255,255,255,.25)'}
+  // Chrome silver — default for the chrome aesthetic. No glow.
+  chrome:{bg:'linear-gradient(135deg,#e8e8e8 0%,#b8b8b8 50%,#8a8a8a 100%)',     glow:'none', fg:'#0a0a0a'},
+  pink:  {bg:'radial-gradient(circle at 32% 30%,#ff88cc,#bf2288 45%,#5a1745)', glow:'none', fg:'#fff'},
+  blue:  {bg:'radial-gradient(circle at 32% 30%,#66ccff,#3877b8 45%,#1d3a5a)', glow:'none', fg:'#fff'},
+  purple:{bg:'radial-gradient(circle at 32% 30%,#cc66ff,#8842c0 45%,#3a1a52)', glow:'none', fg:'#fff'},
+  green: {bg:'radial-gradient(circle at 32% 30%,#7fdba1,#3f9466 45%,#1d4a32)', glow:'none', fg:'#fff'},
+  orange:{bg:'radial-gradient(circle at 32% 30%,#ffb066,#bd6f2c 45%,#5a3414)', glow:'none', fg:'#fff'},
+  red:   {bg:'radial-gradient(circle at 32% 30%,#ff8888,#c34c4c 45%,#5a1d1d)', glow:'none', fg:'#fff'},
+  yellow:{bg:'radial-gradient(circle at 32% 30%,#fff088,#bba43c 45%,#5a4a14)', glow:'none', fg:'#fff'},
+  black: {bg:'radial-gradient(circle at 32% 30%,#555,#222 45%,#000)',          glow:'none', fg:'#fff'}
 };
 function setPfpColor(color){
+  if(!pfpColors[color]) color = 'chrome';
   acct.color=color;
   var col=pfpColors[color];
   ['sb-avatar','ap-avatar','pfp-preview'].forEach(function(id){
-    var el=document.getElementById(id);if(el){el.style.background=col.bg;el.style.boxShadow=col.glow;}
+    var el=document.getElementById(id);
+    if(!el) return;
+    el.style.background = col.bg;
+    el.style.boxShadow  = col.glow;
+    el.style.color      = col.fg;
   });
   Object.keys(pfpColors).forEach(function(k){
     var sw=document.getElementById('swatch-'+k);
-    if(sw)sw.style.borderColor=(k===color)?'#fff':'transparent';
+    if(!sw) return;
+    sw.classList.toggle('on', k === color);
+    // Strip the legacy inline borderColor toggle so the .swatch.on class can win.
+    sw.style.borderColor = '';
   });
+  // Persist immediately so refreshes don't snap back to the legacy default.
+  if(typeof saveAcct === 'function') saveAcct();
 }
 function _doSaveProfile() {
   var nameEl = document.getElementById('p-name');
