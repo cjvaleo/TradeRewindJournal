@@ -2122,6 +2122,116 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;
   text-transform:uppercase;color:var(--n-text-4);
 }
+
+/* ── EQUITY CURVE REDESIGN ─────────────────────────────── */
+
+#pg-equity.page.on{
+  padding:32px 40px 48px;
+  background:var(--n-bg);
+  position:relative;z-index:1;
+}
+#pg-equity.on > .ph{display:none}
+
+#pg-equity .eq-head{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:22px;flex-wrap:wrap;gap:14px;border:none;padding:0;
+}
+#pg-equity .eq-head .h-title{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:38px;line-height:1;letter-spacing:-0.01em;color:var(--n-text);
+  text-shadow:none;
+}
+#pg-equity .eq-head .h-sub{
+  margin-top:8px;font-family:var(--n-font-mono);font-size:10.5px;
+  letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);
+}
+
+#pg-equity .eq-controls{display:flex;align-items:center;gap:8px}
+#pg-equity .tab-group{
+  display:inline-flex;gap:2px;background:var(--n-surface);
+  border:1px solid var(--n-border);border-radius:7px;padding:4px;
+}
+#pg-equity .tab{
+  font-family:var(--n-font-mono);font-size:10.5px;letter-spacing:0.15em;
+  text-transform:uppercase;padding:6px 12px;border-radius:5px;
+  color:var(--n-text-3);cursor:pointer;transition:.12s;
+  background:transparent;border:none;text-shadow:none;user-select:none;
+}
+#pg-equity .tab.on{background:var(--n-surface-2);color:var(--n-text);text-shadow:none}
+#pg-equity .tab:hover:not(.on){color:var(--n-text-2);background:transparent}
+
+#pg-equity .eq-stats{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px;
+}
+#pg-equity .n-stat-card{padding:14px}
+#pg-equity .n-stat-card .stat-label{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-3);margin-bottom:8px;
+}
+#pg-equity .n-stat-card .stat-value{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:26px;line-height:1;letter-spacing:-0.01em;color:var(--n-text);
+  font-weight:400;
+}
+#pg-equity .n-stat-card .stat-value.pos{color:var(--n-profit)}
+#pg-equity .n-stat-card .stat-value.neg{color:var(--n-loss)}
+#pg-equity .n-stat-card .stat-value.cool{color:var(--n-accent-cool)}
+#pg-equity .n-stat-card .stat-value .cents{font-size:0.65em;opacity:0.7}
+#pg-equity .n-stat-card .stat-value .unit{
+  font-size:0.5em;opacity:0.6;font-family:var(--n-font-mono);
+  font-style:normal;margin-left:4px;letter-spacing:0.05em;
+}
+#pg-equity .stat-sub{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.05em;
+  color:var(--n-text-4);margin-top:5px;text-shadow:none;text-transform:none;
+}
+
+#pg-equity .chart-card{
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:10px;padding:18px 18px 12px;margin-bottom:10px;
+}
+#pg-equity .chart-head{
+  display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;
+}
+#pg-equity .chart-title{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:22px;line-height:1;letter-spacing:-0.01em;
+  color:var(--n-text);text-shadow:none;
+}
+#pg-equity .chart-title.loss{color:var(--n-loss)}
+#pg-equity .chart-meta{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--n-text-3);text-shadow:none;
+}
+
+#pg-equity .chart-legend{
+  display:flex;justify-content:flex-end;gap:18px;
+  padding:12px 4px 2px;border-top:1px solid var(--n-border);margin-top:10px;
+}
+#pg-equity .legend-item{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.12em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+#pg-equity .legend-item .swatch{width:10px;height:2px;border-radius:1px}
+#pg-equity .legend-item .swatch.line{background:var(--n-profit)}
+#pg-equity .legend-item .swatch.fill{
+  background:linear-gradient(90deg,rgba(95,179,137,0.4) 0%,rgba(95,179,137,0.1) 100%);
+  height:8px;border-radius:2px;
+}
+
+/* Tooltip + crosshair (chrome palette) */
+#pg-equity #equity-tooltip{
+  background:var(--n-surface-3)!important;
+  border:1px solid var(--n-border-2)!important;
+  border-radius:5px!important;padding:5px 9px!important;
+  font-family:var(--n-font-mono)!important;font-size:11px!important;
+  color:var(--n-text)!important;letter-spacing:0!important;
+  box-shadow:0 4px 16px rgba(0,0,0,0.6)!important;text-shadow:none!important;
+}
+#pg-equity #equity-crosshair{
+  background:rgba(255,255,255,0.15)!important;
+}
 </style>
 </head>
 <body>
@@ -3109,65 +3219,78 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 </div>
 <!-- EQUITY -->
 <div id="pg-equity" class="page">
-  <div class="ph">
-    <div><div class="ptitle">Equity Curve</div><div class="ptitle-sub">P&L growth over time</div></div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <div class="tfs">
-        <div class="tf on" onclick="setEqTf('1W',this)">1W</div>
-        <div class="tf" onclick="setEqTf('1M',this)">1M</div>
-        <div class="tf" onclick="setEqTf('ALL',this)">All</div>
+
+  <!-- HEADER -->
+  <div class="eq-head">
+    <div>
+      <div class="h-title">Equity Curve</div>
+      <div class="h-sub">P&amp;L growth over time</div>
+    </div>
+    <div class="eq-controls">
+      <div class="tab-group">
+        <div class="tab on" onclick="setEqTf('1W',this)">1W</div>
+        <div class="tab" onclick="setEqTf('1M',this)">1M</div>
+        <div class="tab" onclick="setEqTf('ALL',this)">All</div>
       </div>
-      <div class="tfs">
-        <div class="tf on" onclick="setEqMode('dollar',this)">$</div>
-        <div class="tf" onclick="setEqMode('r',this)">R</div>
+      <div class="tab-group">
+        <div class="tab on" onclick="setEqMode('dollar',this)">$</div>
+        <div class="tab" onclick="setEqMode('r',this)">R</div>
       </div>
     </div>
   </div>
 
-  <!-- CURVE-SPECIFIC STATS ONLY -->
-  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px">
-    <div class="crd"><div class="crd-b" style="text-align:center">
-      <div class="sc-lbl">Net P&L</div>
-      <div class="sc-val" id="es-pnl">—</div>
-    </div></div>
-    <div class="crd"><div class="crd-b" style="text-align:center">
-      <div class="sc-lbl">Peak Equity</div>
-      <div class="sc-val ng" id="es-peak">—</div>
-    </div></div>
-    <div class="crd"><div class="crd-b" style="text-align:center">
-      <div class="sc-lbl">Max Drawdown</div>
-      <div class="sc-val nr" id="es-dd">—</div>
-    </div></div>
-    <div class="crd"><div class="crd-b" style="text-align:center">
-      <div class="sc-lbl">Current DD</div>
-      <div class="sc-val nr" id="es-cdd">—</div>
-    </div></div>
-    <div class="crd"><div class="crd-b" style="text-align:center">
-      <div class="sc-lbl">Recovery Factor</div>
-      <div class="sc-val nc" id="es-rf">—</div>
-      <div style="font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.78);margin-top:3px">net P&L ÷ max DD</div>
-    </div></div>
+  <!-- STATS ROW -->
+  <div class="eq-stats">
+    <div class="n-stat-card">
+      <div class="stat-label">Net P&amp;L</div>
+      <div class="stat-value" id="es-pnl">&mdash;</div>
+    </div>
+    <div class="n-stat-card">
+      <div class="stat-label">Peak Equity</div>
+      <div class="stat-value" id="es-peak">&mdash;</div>
+    </div>
+    <div class="n-stat-card">
+      <div class="stat-label">Max Drawdown</div>
+      <div class="stat-value" id="es-dd">&mdash;</div>
+    </div>
+    <div class="n-stat-card">
+      <div class="stat-label">Current DD</div>
+      <div class="stat-value" id="es-cdd">&mdash;</div>
+    </div>
+    <div class="n-stat-card">
+      <div class="stat-label">Recovery Factor</div>
+      <div class="stat-value" id="es-rf">&mdash;</div>
+      <div class="stat-sub">net P&amp;L &divide; max DD</div>
+    </div>
   </div>
 
-  <!-- MAIN CHART — bigger now -->
-  <div class="crd" style="margin-bottom:10px"><div class="crd-b" style="padding:16px 16px 8px">
-    <div style="position:relative;width:100%;height:520px">
+  <!-- MAIN EQUITY CHART -->
+  <div class="chart-card">
+    <div class="chart-head">
+      <div class="chart-title">Equity</div>
+      <div class="chart-meta" id="es-chart-meta"></div>
+    </div>
+    <div style="position:relative;width:100%;height:380px">
       <canvas id="equity-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
-      <div id="equity-tooltip" style="display:none;position:absolute;pointer-events:none;background:rgba(4,1,14,.95);border:1px solid rgba(0,255,231,.5);border-radius:6px;padding:5px 14px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:#fff;white-space:nowrap;transform:translateX(-50%);box-shadow:0 0 14px rgba(0,255,231,.25)"></div>
-      <div id="equity-crosshair" style="display:none;position:absolute;top:0;bottom:0;width:1px;background:rgba(0,255,231,.45);pointer-events:none"></div>
+      <div id="equity-tooltip" style="display:none;position:absolute;pointer-events:none;white-space:nowrap;transform:translateX(-50%)"></div>
+      <div id="equity-crosshair" style="display:none;position:absolute;top:0;bottom:0;width:1px;pointer-events:none"></div>
     </div>
-  </div></div>
+    <div class="chart-legend">
+      <div class="legend-item"><span class="swatch line"></span>Equity</div>
+      <div class="legend-item"><span class="swatch fill"></span>Profit zone</div>
+    </div>
+  </div>
 
-  <!-- DRAWDOWN SUB-CHART -->
-  <div class="crd"><div class="crd-b" style="padding:12px 16px 10px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:var(--red)">Drawdown</div>
-      <div style="font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.82)">depth below equity peak over time</div>
+  <!-- DRAWDOWN CHART -->
+  <div class="chart-card">
+    <div class="chart-head">
+      <div class="chart-title loss">Drawdown</div>
+      <div class="chart-meta">Depth below equity peak over time</div>
     </div>
-    <div style="position:relative;width:100%;height:120px">
+    <div style="position:relative;width:100%;height:160px">
       <canvas id="dd-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
     </div>
-  </div></div>
+  </div>
 
 </div>
 <!-- ANALYTICS -->
@@ -9434,25 +9557,61 @@ function openDayReview(dateStr, dayTrades) {
 var eqTf = '1W', eqMode = 'dollar';
 function setEqTf(tf, el2) {
   eqTf = tf;
-  el2.parentElement.querySelectorAll('.tf').forEach(function(x){x.classList.remove('on');});
+  el2.parentElement.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on');});
   el2.classList.add('on');
   refreshEquity();
 }
 function setEqMode(m, el2) {
   eqMode = m;
-  el2.parentElement.querySelectorAll('.tf').forEach(function(x){x.classList.remove('on');});
+  el2.parentElement.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on');});
   el2.classList.add('on');
   refreshEquity();
 }
 
 function refreshEquity() {
+  function _setStat(id, html, tone){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = html;
+    el.className = 'stat-value' + (tone ? ' '+tone : '');
+    el.style.color = ''; el.style.textShadow = '';
+  }
+  function _money(v, withCents){
+    var sign = v>0 ? '+' : v<0 ? '−' : '';
+    var abs = Math.abs(v);
+    var int = Math.floor(abs).toLocaleString('en-US');
+    if(!withCents) return sign + '$' + int;
+    var cents = (abs - Math.floor(abs)).toFixed(2).slice(1);
+    return sign + '$' + int + '<span class="cents">' + cents + '</span>';
+  }
+  function _tone(v){return v>0?'pos':v<0?'neg':'';}
+
   if (!trades.length) {
+    _setStat('es-pnl','&mdash;','');
+    _setStat('es-peak','&mdash;','');
+    _setStat('es-dd','&mdash;','');
+    _setStat('es-cdd','&mdash;','');
+    _setStat('es-rf','&mdash;','');
+    var meta=document.getElementById('es-chart-meta'); if(meta) meta.textContent='';
     var ec2=document.getElementById('equity-canvas');
-    if(ec2){var p2=ec2.parentElement;ec2.width=p2?p2.clientWidth:900;ec2.height=p2?p2.clientHeight:460;if(!ec2.width)ec2.width=900;if(!ec2.height)ec2.height=460;var ctx0=ec2.getContext('2d');ctx0.clearRect(0,0,ec2.width,ec2.height);ctx0.fillStyle='rgba(255,255,255,.3)';ctx0.font='bold 13px Orbitron,monospace';ctx0.textAlign='center';ctx0.fillText('LOG TRADES TO SEE EQUITY CURVE',ec2.width/2,ec2.height/2);}
+    if(ec2){
+      var p2=ec2.parentElement;
+      ec2.width=p2?p2.clientWidth:900; ec2.height=p2?p2.clientHeight:380;
+      if(!ec2.width)ec2.width=900; if(!ec2.height)ec2.height=380;
+      var dpr=window.devicePixelRatio||1;
+      ec2.width=ec2.width*dpr; ec2.height=ec2.height*dpr;
+      var ctx0=ec2.getContext('2d'); ctx0.scale(dpr,dpr);
+      ctx0.clearRect(0,0,ec2.width,ec2.height);
+      ctx0.fillStyle='#6b6b6b';
+      ctx0.font='10px "Geist Mono",monospace';
+      ctx0.textAlign='center';
+      ctx0.fillText('LOG TRADES TO SEE EQUITY CURVE', (ec2.width/dpr)/2, (ec2.height/dpr)/2);
+    }
+    var dd2=document.getElementById('dd-canvas');
+    if(dd2){var dctx=dd2.getContext('2d');dd2.width=dd2.parentElement?dd2.parentElement.clientWidth:900;dd2.height=160;dctx.clearRect(0,0,dd2.width,dd2.height);}
     return;
   }
   var sorted = trades.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
-  // filter by timeframe
   var now = new Date(), cutoff;
   if (eqTf === '1W') cutoff = new Date(now - 7*864e5);
   else if (eqTf === '1M') cutoff = new Date(now - 30*864e5);
@@ -9465,106 +9624,110 @@ function refreshEquity() {
   pnls.forEach(function(p){running+=p;cum.push(running);});
 
   var netPnl = running;
-  var peak = Math.max.apply(null, cum);
-  var wins = pnls.filter(function(p){return p>0;});
-  var losses = pnls.filter(function(p){return p<0;});
-  var wr = pnls.length>0?Math.round(wins.length/pnls.length*100):0;
-  var avgW = wins.length>0?wins.reduce(function(a,b){return a+b;},0)/wins.length:0;
-  var avgL = losses.length>0?Math.abs(losses.reduce(function(a,b){return a+b;},0)/losses.length):0;
-  var pf = avgL>0?((wins.reduce(function(a,b){return a+b;},0))/Math.abs(losses.reduce(function(a,b){return a+b;},0))):0;
-  var exp = avgW*(wr/100) - avgL*((100-wr)/100);
-
-  // drawdown
+  var peak = Math.max.apply(null, cum.concat([0]));
   var maxDD = 0, curDD = 0, runningPeak = 0;
   cum.forEach(function(v){if(v>runningPeak)runningPeak=v;var dd=runningPeak-v;if(dd>maxDD)maxDD=dd;curDD=runningPeak-v;});
+  var rf = maxDD>0 ? Math.abs(netPnl/maxDD) : 0;
 
-  // best/worst day
-  var byDay2={};
-  filtered.forEach(function(t){var d=t.date?t.date.slice(0,10):'';if(d){if(!byDay2[d])byDay2[d]=0;byDay2[d]+=(t.pnl||0);}});
-  var dayVals=Object.values(byDay2);
-  var bestDay=dayVals.length?Math.max.apply(null,dayVals):0;
-  var worstDay=dayVals.length?Math.min.apply(null,dayVals):0;
-  var avgDay=dayVals.length?dayVals.reduce(function(a,b){return a+b;},0)/dayVals.length:0;
+  _setStat('es-pnl',  _money(netPnl, true), _tone(netPnl));
+  _setStat('es-peak', _money(peak, true), peak>0 ? 'pos' : '');
+  _setStat('es-dd',   _money(-maxDD, true), maxDD>0 ? 'neg' : '');
+  _setStat('es-cdd',  _money(-curDD, true), curDD>0 ? 'neg' : '');
+  _setStat('es-rf',   maxDD>0 ? rf.toFixed(2)+'<span class="unit">x</span>' : '&mdash;', maxDD>0 ? 'cool' : '');
 
-  // consistency (% of profitable days)
-  var profDays=dayVals.filter(function(v){return v>0;}).length;
-  var cons=dayVals.length?Math.round(profDays/dayVals.length*100):0;
+  var meta = document.getElementById('es-chart-meta');
+  if(meta){
+    var cents = (Math.abs(netPnl) - Math.floor(Math.abs(netPnl))).toFixed(2).slice(1);
+    var sign = netPnl>0 ? '+' : netPnl<0 ? '−' : '';
+    meta.textContent = sign + '$' + Math.floor(Math.abs(netPnl)).toLocaleString('en-US') + cents + ' · ' + filtered.length + ' trades';
+  }
 
-  function sp(id,v){var e=document.getElementById(id);if(!e)return;e.textContent=(v>=0?'+':'')+fmtPnl(v);e.className='sc-val '+(v>0?'ng':v<0?'nr':'nm');}
-  function st(id,t){var e=document.getElementById(id);if(e)e.textContent=t;}
-  sp('es-pnl',netPnl); sp('es-peak',peak); sp('es-dd',-maxDD); sp('es-cdd',-curDD);
-  var rf=maxDD>0?Math.abs(netPnl/maxDD):0;var rfEl=document.getElementById('es-rf');if(rfEl){rfEl.textContent=rf.toFixed(2);rfEl.className='sc-val '+(rf>=2?'ng':rf>=1?'nc':'nr');}
-
-  // Draw high-quality equity curve
   var ec = document.getElementById('equity-canvas');
   if(ec){
-    var par=ec.parentElement;
-    ec.width  = par?par.clientWidth:900;
-    ec.height = par?par.clientHeight:460;
-    if(!ec.width)ec.width=900; if(!ec.height)ec.height=460;
     drawHQEquity(ec,[0].concat(cum));
   }
   drawEqDD(cum);
 }
 
 function drawEqDD(cum){
-  var canvas=document.getElementById('dd-canvas');if(!canvas)return;
-  var par=canvas.parentElement;
-  canvas.width=par?par.clientWidth:900;canvas.height=par?par.clientHeight:120;
-  if(!canvas.width)canvas.width=900;if(!canvas.height)canvas.height=120;
-  var ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
-  var pL=52,pR=12,pT=6,pB=24;
+  var canvas = document.getElementById('dd-canvas');
+  if(!canvas) return;
+  var par = canvas.parentElement;
+  var cssW = par ? par.clientWidth : 900;
+  var cssH = par ? par.clientHeight : 160;
+  if(!cssW) cssW = 900;
+  if(!cssH) cssH = 160;
+  var dpr = window.devicePixelRatio || 1;
+  canvas.width  = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+  var ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  var W = cssW, H = cssH;
+  var pL = 56, pR = 16, pT = 14, pB = 14;
+
   ctx.clearRect(0,0,W,H);
-  if(!cum||cum.length<2)return;
+  if(!cum || cum.length < 2) return;
 
-  // Build DD series
-  var dds=[],pk=0;
-  cum.forEach(function(v){if(v>pk)pk=v;dds.push(pk-v);});// positive values = depth below peak
-  var maxDD=Math.max.apply(null,dds)||1;
-  var cW=W-pL-pR,cH=H-pT-pB;
-  var tx=function(i){return pL+(i/(dds.length-1))*cW;};
-  var ty=function(v){return pT+((v/maxDD)*cH);};// 0 at top, maxDD at bottom
+  // Build drawdown series — positive numbers = depth below running peak
+  var dds = [], pk = 0;
+  cum.forEach(function(v){if(v > pk) pk = v; dds.push(pk - v);});
+  var maxDD = Math.max.apply(null, dds) || 1;
+  var cW = W-pL-pR, cH = H-pT-pB;
+  function tx(i){return pL + (i/(dds.length-1))*cW;}
+  function ty(v){return pT + (v/maxDD)*cH;}  // 0 at top, maxDD at bottom
 
-  // Grid lines (2)
-  [0.5,1].forEach(function(f){
-    var yy=ty(maxDD*f);
-    ctx.beginPath();ctx.moveTo(pL,yy);ctx.lineTo(W-pR,yy);
-    ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;ctx.setLineDash([4,6]);ctx.stroke();ctx.setLineDash([]);
-    var lbl='-'+(Math.abs(maxDD*f)>=1000?'$'+(maxDD*f/1000).toFixed(1)+'k':'$'+Math.round(maxDD*f));
-    ctx.textAlign='right';ctx.fillStyle='rgba(255,100,100,.5)';ctx.font='bold 9px Orbitron,monospace';
-    ctx.fillText(lbl,pL-4,yy+3);
-  });
-
-  // Zero line label
-  ctx.textAlign='right';ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='bold 9px Orbitron,monospace';
-  ctx.fillText('$0',pL-4,pT+4);
-
-  // Fill
-  var grd=ctx.createLinearGradient(0,pT,0,H-pB);
-  grd.addColorStop(0,'rgba(255,34,85,.45)');
-  grd.addColorStop(1,'rgba(255,34,85,.04)');
-  ctx.beginPath();ctx.moveTo(tx(0),ty(0));
-  dds.forEach(function(v,i){ctx.lineTo(tx(i),ty(v));});
-  ctx.lineTo(tx(dds.length-1),ty(0));ctx.closePath();ctx.fillStyle=grd;ctx.fill();
-
-  // Line
-  ctx.beginPath();ctx.moveTo(tx(0),ty(dds[0]));
-  dds.forEach(function(v,i){if(i>0)ctx.lineTo(tx(i),ty(v));});
-  ctx.strokeStyle='rgba(255,34,85,.85)';ctx.lineWidth=1.5;ctx.stroke();
-
-  // X-axis trade count labels
-  var step=Math.max(1,Math.floor(dds.length/6));
-  for(var i=0;i<dds.length;i+=step){
-    var xx=tx(i);
-    ctx.textAlign='center';ctx.fillStyle='rgba(255,255,255,.25)';ctx.font='8px Orbitron,monospace';
-    ctx.fillText('#'+i,xx,H-4);
-    ctx.beginPath();ctx.moveTo(xx,H-pB);ctx.lineTo(xx,H-pB+3);
-    ctx.strokeStyle='rgba(255,255,255,.15)';ctx.lineWidth=1;ctx.stroke();
+  function _ddLabel(v){
+    if(v === 0) return '$0';
+    var abs = Math.abs(v);
+    if(abs >= 1000) return '−$' + (abs/1000).toFixed(abs>=10000?0:1) + 'k';
+    return '−$' + Math.round(abs);
   }
 
-  // Axes
-  ctx.beginPath();ctx.moveTo(pL,pT);ctx.lineTo(pL,H-pB);ctx.lineTo(W-pR,H-pB);
-  ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=1;ctx.stroke();
+  // Top reference line at zero drawdown + bottom marker
+  ctx.lineWidth = 1;
+  [0, 0.5, 1].forEach(function(f){
+    var v  = maxDD*f;
+    var yy = ty(v);
+    if(f === 0){
+      ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+    } else {
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    }
+    ctx.beginPath();
+    ctx.moveTo(pL, yy); ctx.lineTo(W-pR, yy);
+    ctx.stroke();
+    ctx.fillStyle = '#6b6b6b';
+    ctx.font = '10px "Geist Mono",monospace';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(_ddLabel(v), pL-8, yy);
+  });
+
+  // Gradient fill — top transparent, bottom rose
+  var grd = ctx.createLinearGradient(0, pT, 0, H-pB);
+  grd.addColorStop(0, 'rgba(201,95,95,0)');
+  grd.addColorStop(1, 'rgba(201,95,95,0.30)');
+  ctx.beginPath();
+  ctx.moveTo(tx(0), ty(0));
+  dds.forEach(function(v,i){ctx.lineTo(tx(i), ty(v));});
+  ctx.lineTo(tx(dds.length-1), ty(0));
+  ctx.closePath();
+  ctx.fillStyle = grd;
+  ctx.fill();
+
+  // Drawdown line — rose
+  ctx.beginPath();
+  for(var i=0; i<dds.length; i++){
+    if(i===0) ctx.moveTo(tx(i), ty(dds[i]));
+    else      ctx.lineTo(tx(i), ty(dds[i]));
+  }
+  ctx.strokeStyle = '#c95f5f';
+  ctx.globalAlpha = 0.9;
+  ctx.lineWidth = 1.4;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.stroke();
+  ctx.globalAlpha = 1;
 }
 
 function drawEquityChart(id, trades2, cum, mode) {
@@ -9661,131 +9824,155 @@ function drawRCurve(id, trades2) {
 }
 
 function drawHQEquity(canvas, data) {
-  var ctx=canvas.getContext('2d');
-  var W=canvas.width, H=canvas.height;
-  var pL=76, pR=20, pT=20, pB=56;
+  // Resize canvas to its CSS box, accounting for device pixel ratio,
+  // so 1.8px lines render crisp on both retina and non-retina displays.
+  var par = canvas.parentElement;
+  var cssW = par ? par.clientWidth : 900;
+  var cssH = par ? par.clientHeight : 380;
+  if(!cssW) cssW = 900;
+  if(!cssH) cssH = 380;
+  var dpr = window.devicePixelRatio || 1;
+  canvas.width  = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+  var ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  var W = cssW, H = cssH;
+  var pL = 56, pR = 16, pT = 18, pB = 28;
+
   ctx.clearRect(0,0,W,H);
-  if(!data||data.length<2){
-    ctx.fillStyle='rgba(255,255,255,.35)';ctx.font='bold 13px Orbitron,monospace';ctx.textAlign='center';
-    ctx.fillText('LOG TRADES TO SEE EQUITY CURVE',W/2,H/2);return;
+  if(!data || data.length < 2){
+    ctx.fillStyle = '#6b6b6b';
+    ctx.font = '10px "Geist Mono",monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('LOG TRADES TO SEE EQUITY CURVE', W/2, H/2);
+    return;
   }
-  var mn=Math.min.apply(null,data), mx=Math.max.apply(null,data), range=mx-mn||1;
-  mn-=range*0.06; mx+=range*0.06; range=mx-mn;
-  var cW=W-pL-pR, cH=H-pT-pB;
-  var tx=function(i){return pL+(i/(data.length-1))*cW;};
-  var ty=function(v){return pT+cH-((v-mn)/range)*cH;};
-  var steps=8;
-  for(var i=0;i<=steps;i++){
-    var yv=mn+(range/steps)*i, yy=ty(yv);
-    ctx.beginPath();ctx.moveTo(pL,yy);ctx.lineTo(W-pR,yy);
-    ctx.strokeStyle=i===0||i===steps?'rgba(255,255,255,.14)':'rgba(255,255,255,.06)';
-    ctx.lineWidth=1;ctx.setLineDash([4,6]);ctx.stroke();ctx.setLineDash([]);
-    var ylbl=(yv>=0?'+':'-')+(Math.abs(yv)>=1000?'$'+(Math.abs(yv)/1000).toFixed(1)+'k':'$'+Math.abs(yv).toFixed(0));
-    ctx.textAlign='right';ctx.fillStyle='#ffffff';ctx.font='bold 11px Orbitron,monospace';
-    ctx.fillText(ylbl,pL-8,yy+4);
+
+  // ── Y RANGE — pad 6% so the line never touches the top/bottom edges
+  var mn = Math.min.apply(null,data),
+      mx = Math.max.apply(null,data),
+      range = mx-mn || 1;
+  var pad = range*0.08;
+  mn -= pad; mx += pad; range = mx-mn;
+  var cW = W-pL-pR, cH = H-pT-pB;
+  function tx(i){return pL + (i/(data.length-1))*cW;}
+  function ty(v){return pT + cH - ((v-mn)/range)*cH;}
+  function _yLabel(v){
+    var sign = v<0 ? '−' : '';
+    var abs = Math.abs(v);
+    if(abs >= 1000) return sign + '$' + (abs/1000).toFixed(abs>=10000?0:1) + 'k';
+    return sign + '$' + Math.round(abs);
   }
-  if(mn<0&&mx>0){var zy=ty(0);ctx.beginPath();ctx.moveTo(pL,zy);ctx.lineTo(W-pR,zy);ctx.strokeStyle='rgba(255,255,255,.28)';ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.stroke();ctx.setLineDash([]);}
-  var xstep=Math.max(1,Math.floor(data.length/8));
-  for(var j=0;j<data.length;j+=xstep){
-    var xx=tx(j);
-    ctx.textAlign='center';ctx.fillStyle='#ffffff';ctx.font='bold 10px Orbitron,monospace';
-    ctx.fillText('#'+j,xx,H-pB+18);
-    ctx.beginPath();ctx.moveTo(xx,H-pB);ctx.lineTo(xx,H-pB+5);
-    ctx.strokeStyle='rgba(255,255,255,.25)';ctx.lineWidth=1;ctx.stroke();
+
+  // ── HORIZONTAL GRID — 5 hairlines at 0.06 alpha
+  ctx.lineWidth = 1;
+  var steps = 4;
+  for(var i=0; i<=steps; i++){
+    var yv = mn + (range/steps)*i;
+    var yy = ty(yv);
+    ctx.beginPath();
+    ctx.moveTo(pL, yy);
+    ctx.lineTo(W-pR, yy);
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.stroke();
+    ctx.fillStyle = '#6b6b6b';
+    ctx.font = '10px "Geist Mono",monospace';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(_yLabel(yv), pL-8, yy);
   }
-  ctx.save();ctx.translate(14,pT+cH/2);ctx.rotate(-Math.PI/2);
-  ctx.textAlign='center';ctx.fillStyle='#ffffff';ctx.font='bold 11px Orbitron,monospace';
-  ctx.fillText('CUMULATIVE P&L',0,0);ctx.restore();
-  ctx.textAlign='center';ctx.fillStyle='#ffffff';ctx.font='bold 11px Orbitron,monospace';
-  ctx.fillText('TRADE NUMBER',pL+cW/2,H-4);
-  ctx.beginPath();ctx.moveTo(pL,pT);ctx.lineTo(pL,H-pB);ctx.lineTo(W-pR,H-pB);
-  ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=1.5;ctx.stroke();
-  var grd=ctx.createLinearGradient(0,pT,0,H-pB);
-  grd.addColorStop(0,'rgba(0,255,231,.18)');grd.addColorStop(0.65,'rgba(0,180,255,.05)');grd.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.beginPath();ctx.moveTo(tx(0),H-pB);
-  for(var k=0;k<data.length;k++)ctx.lineTo(tx(k),ty(data[k]));
-  ctx.lineTo(tx(data.length-1),H-pB);ctx.closePath();ctx.fillStyle=grd;ctx.fill();
-  var lg=ctx.createLinearGradient(pL,0,W-pR,0);
-  lg.addColorStop(0,'#ff00aa');lg.addColorStop(0.5,'#00b4ff');lg.addColorStop(1,'#00ffe7');
+
+  // Subtle zero line — only if it sits inside the Y range
+  if(mn < 0 && mx > 0){
+    var zy = ty(0);
+    ctx.beginPath();
+    ctx.moveTo(pL,zy); ctx.lineTo(W-pR,zy);
+    ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+    ctx.stroke();
+  }
+
+  // ── X-AXIS LABELS — trade index marks
+  var xstep = Math.max(1, Math.floor((data.length-1)/6));
+  ctx.fillStyle = '#6b6b6b';
+  ctx.font = '10px "Geist Mono",monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  for(var j=0; j<data.length; j+=xstep){
+    var xx = tx(j);
+    ctx.fillText('#'+j, xx, H-pB+8);
+  }
+
+  // ── GRADIENT FILL — sage 0.28 → 0.05 → 0
+  var grd = ctx.createLinearGradient(0, pT, 0, H-pB);
+  grd.addColorStop(0,    'rgba(95,179,137,0.28)');
+  grd.addColorStop(0.60, 'rgba(95,179,137,0.05)');
+  grd.addColorStop(1,    'rgba(95,179,137,0)');
+  // Clamp the fill to the zero line if the chart crosses zero —
+  // otherwise the "profit zone" gradient bleeds into negative territory.
+  var fillBaseY = (mn < 0 && mx > 0) ? ty(0) : (H-pB);
   ctx.beginPath();
-  for(var m=0;m<data.length;m++)m===0?ctx.moveTo(tx(m),ty(data[m])):ctx.lineTo(tx(m),ty(data[m]));
-  ctx.strokeStyle=lg;ctx.lineWidth=3;ctx.shadowColor='#00ffe7';ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;
+  ctx.moveTo(tx(0), fillBaseY);
+  for(var k=0; k<data.length; k++) ctx.lineTo(tx(k), ty(data[k]));
+  ctx.lineTo(tx(data.length-1), fillBaseY);
+  ctx.closePath();
+  ctx.fillStyle = grd;
+  ctx.fill();
 
-  // ── MOVING AVERAGES (EMA) ──
-  function calcEMA(arr, period) {
-    var k = 2/(period+1), result=[];
-    var ema = null;
-    arr.forEach(function(v){
-      if(ema===null){ ema=v; result.push(ema); }
-      else{ ema = v*k + ema*(1-k); result.push(ema); }
-    });
-    // null out the warm-up period so line starts after enough data
-    for(var i=0;i<period-1;i++) result[i]=null;
-    return result;
+  // ── EQUITY LINE — solid sage
+  ctx.beginPath();
+  for(var m=0; m<data.length; m++){
+    if(m===0) ctx.moveTo(tx(m), ty(data[m]));
+    else      ctx.lineTo(tx(m), ty(data[m]));
   }
-  var ema5  = calcEMA(data, 5);
-  var ema20 = calcEMA(data, 20);
+  ctx.strokeStyle = '#5fb389';
+  ctx.lineWidth = 1.8;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.stroke();
 
-  // Draw EMA helper
-  function drawMA(arr, color, dash, lw){
-    ctx.beginPath(); ctx.setLineDash(dash||[]);
-    var started=false;
-    arr.forEach(function(v,i){
-      if(v===null)return;
-      var x=tx(i),y=ty(v);
-      if(!started){ctx.moveTo(x,y);started=true;}else ctx.lineTo(x,y);
-    });
-    ctx.strokeStyle=color; ctx.lineWidth=lw||1.8; ctx.globalAlpha=0.9; ctx.stroke();
-    ctx.setLineDash([]); ctx.globalAlpha=1;
-  }
+  // ── END DOT — filled core + faint ring
+  var ex = tx(data.length-1), ey = ty(data[data.length-1]);
+  ctx.beginPath();
+  ctx.arc(ex, ey, 3.5, 0, Math.PI*2);
+  ctx.fillStyle = '#5fb389';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(ex, ey, 6, 0, Math.PI*2);
+  ctx.strokeStyle = 'rgba(95,179,137,0.4)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
 
-  if(data.length>=5)  drawMA(ema5,  '#f59e0b', [5,3], 2);    // amber — Fast EMA 5
-  if(data.length>=20) drawMA(ema20, '#a855f7', [8,4], 1.8);  // purple — Slow EMA 20
-
-  // ── LEGEND ──
-  var lx=W-pR-10, ly=pT+14;
-  ctx.setLineDash([]); ctx.globalAlpha=1;
-  // Equity
-  ctx.beginPath();ctx.moveTo(lx-60,ly);ctx.lineTo(lx-40,ly);
-  ctx.strokeStyle='#00ffe7';ctx.lineWidth=3;ctx.stroke();
-  ctx.textAlign='right';ctx.fillStyle='#fff';ctx.font='bold 10px Orbitron,monospace';
-  ctx.fillText('EQUITY',lx,ly+4); ly+=18;
-  // EMA 5
-  if(data.length>=5){
-    ctx.beginPath();ctx.moveTo(lx-60,ly);ctx.lineTo(lx-40,ly);
-    ctx.strokeStyle='#f59e0b';ctx.lineWidth=2;ctx.setLineDash([5,3]);ctx.globalAlpha=0.9;ctx.stroke();
-    ctx.setLineDash([]);ctx.globalAlpha=1;
-    ctx.textAlign='right';ctx.fillStyle='#f59e0b';ctx.font='bold 10px Orbitron,monospace';
-    ctx.fillText('EMA 5',lx,ly+4); ly+=18;
-  }
-  // EMA 20
-  if(data.length>=20){
-    ctx.beginPath();ctx.moveTo(lx-60,ly);ctx.lineTo(lx-40,ly);
-    ctx.strokeStyle='#a855f7';ctx.lineWidth=1.8;ctx.setLineDash([8,4]);ctx.globalAlpha=0.9;ctx.stroke();
-    ctx.setLineDash([]);ctx.globalAlpha=1;
-    ctx.textAlign='right';ctx.fillStyle='#a855f7';ctx.font='bold 10px Orbitron,monospace';
-    ctx.fillText('EMA 20',lx,ly+4);
-  }
-  ctx.setLineDash([]); ctx.globalAlpha=1;
-
-  var ex=tx(data.length-1),ey=ty(data[data.length-1]);
-  ctx.beginPath();ctx.arc(ex,ey,6,0,Math.PI*2);
-  ctx.fillStyle='#00ffe7';ctx.shadowColor='#00ffe7';ctx.shadowBlur=14;ctx.fill();ctx.shadowBlur=0;
-  var pts=data.map(function(v,i){return{x:tx(i),y:ty(v),v:v};});
-  var tip=document.getElementById('equity-tooltip');
-  var xhair=document.getElementById('equity-crosshair');
-  canvas.onmousemove=function(e){
-    var r=canvas.getBoundingClientRect();
-    var mx2=(e.clientX-r.left)*(W/r.width);
-    if(mx2<pL||mx2>W-pR){if(tip)tip.style.display='none';if(xhair)xhair.style.display='none';return;}
-    var cl=pts[0],md=Infinity;
-    pts.forEach(function(p){var d=Math.abs(p.x-mx2);if(d<md){md=d;cl=p;}});
-    var col=cl.v>=0?'#00ffe7':'#ff2255';
-    var lbl=(cl.v>=0?'+':'-')+'$'+Math.abs(cl.v).toFixed(2);
-    if(tip){tip.style.display='block';tip.style.left=cl.x+'px';tip.style.top=(cl.y-46)+'px';tip.style.color=col;tip.style.borderColor=col+'99';tip.textContent=lbl;}
-    if(xhair){xhair.style.display='block';xhair.style.left=cl.x+'px';xhair.style.background=col+'55';}
+  // ── HOVER — chrome tooltip + 1px crosshair
+  var pts = data.map(function(v,i){return {x:tx(i), y:ty(v), v:v};});
+  var tip = document.getElementById('equity-tooltip');
+  var xhair = document.getElementById('equity-crosshair');
+  canvas.onmousemove = function(e){
+    var r = canvas.getBoundingClientRect();
+    var mx2 = (e.clientX - r.left) * (W / r.width);
+    if(mx2 < pL || mx2 > W - pR){
+      if(tip) tip.style.display='none';
+      if(xhair) xhair.style.display='none';
+      return;
+    }
+    var cl = pts[0], md = Infinity;
+    pts.forEach(function(p){var d = Math.abs(p.x - mx2); if(d < md){md = d; cl = p;}});
+    var sign = cl.v>0 ? '+' : cl.v<0 ? '−' : '';
+    var lbl = sign + '$' + Math.abs(cl.v).toFixed(2);
+    if(tip){
+      tip.style.display = 'block';
+      tip.style.left = cl.x + 'px';
+      tip.style.top = (cl.y - 32) + 'px';
+      tip.textContent = lbl;
+    }
+    if(xhair){
+      xhair.style.display = 'block';
+      xhair.style.left = cl.x + 'px';
+    }
   };
-  canvas.onmouseleave=function(){if(tip)tip.style.display='none';if(xhair)xhair.style.display='none';};
+  canvas.onmouseleave = function(){
+    if(tip) tip.style.display='none';
+    if(xhair) xhair.style.display='none';
+  };
 }
 
 /* ═══════════════════════════════════════════════════════
