@@ -2923,27 +2923,16 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 #pg-account .max-460{max-width:460px}
 
-/* PFP section */
-#pg-account .pfp-section{
-  display:flex;gap:20px;align-items:flex-start;
-  padding-bottom:22px;margin-bottom:22px;border-bottom:1px solid var(--n-border);
-}
-#pg-account .pfp-preview-large,
+/* PFP preview ID hook — keep .av base + .av.<finish> winning. The
+   old synthwave override (background:none/border:none/180px) was
+   stripping the gradient and killing layout. */
 #pg-account #pfp-preview{
-  width:88px!important;height:88px!important;border-radius:50%!important;
-  background:var(--n-chrome)!important;
-  border:1px solid var(--n-border-2)!important;
-  display:flex!important;align-items:center;justify-content:center;
-  font-family:var(--n-font-mono)!important;font-size:24px!important;
-  font-weight:600!important;color:var(--n-bg)!important;
-  letter-spacing:2px!important;flex-shrink:0;
-  animation:none!important;box-shadow:none!important;
+  flex-shrink:0;border:none!important;
 }
-#pg-account #pfp-preview{width:180px!important;height:180px!important;font-size:60px!important;background:none!important;border:none!important}
 #pg-account #pfp-preview > span#pfp-preview-txt{
-  font-family:var(--n-font-mono)!important;font-size:60px!important;
-  font-weight:600!important;letter-spacing:2px!important;
-  text-shadow:none!important;color:inherit!important;position:relative;z-index:1;
+  font-family:var(--n-font-mono);font-weight:600;
+  letter-spacing:0.02em;text-shadow:none;color:inherit;
+  position:relative;z-index:1;
 }
 
 /* Avatar picker (account → profile tab) */
@@ -2989,14 +2978,23 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   text-transform:uppercase;color:var(--n-text-3);margin-bottom:12px;
 }
 #pg-account .av-palette{
-  display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:28px;
+  display:grid!important;
+  grid-template-columns:repeat(5,1fr)!important;
+  gap:12px!important;margin-bottom:28px;
 }
 #pg-account .av-palette .swatch{
-  aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:8px;padding:12px 4px;background:var(--n-surface);
-  border:1px solid var(--n-border);border-radius:11px;cursor:pointer;
-  transition:border-color .2s,transform .25s,background .15s;position:relative;
-  width:auto;height:auto;
+  aspect-ratio:1!important;
+  width:auto!important;height:auto!important;
+  border-radius:10px!important;
+  display:flex!important;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;padding:12px 6px 10px;background:var(--n-surface)!important;
+  border:1px solid var(--n-border)!important;cursor:pointer;
+  transition:border-color .2s,transform .25s,background .15s;
+  position:relative;float:none!important;box-shadow:none!important;
+}
+#pg-account .av-palette .swatch-name{
+  position:static!important;float:none!important;
+  white-space:nowrap;
 }
 #pg-account .av-palette .swatch:hover{
   border-color:var(--n-border-2);background:var(--n-surface-2);transform:translateY(-2px);
@@ -3105,28 +3103,9 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-account #p-initials:focus{
   border-color:var(--n-text-3)!important;background:var(--n-surface-3)!important;
 }
-#pg-account .pfp-swatches{display:flex;gap:6px;flex-wrap:wrap}
-#pg-account .swatch{
-  width:24px!important;height:24px!important;border-radius:50%!important;
-  cursor:pointer;border:2px solid transparent!important;transition:.12s;
-  position:relative;box-shadow:none!important;
-}
-#pg-account .swatch.on{
-  border-color:var(--n-text)!important;
-  box-shadow:0 0 0 1px var(--n-bg)!important;
-}
-#pg-account .swatch:hover{transform:scale(1.08)}
-#pg-account .swatch.chrome{
-  background:var(--n-chrome)!important;
-}
-#pg-account .swatch.pink{background:radial-gradient(circle at 32% 30%,#ff88cc,#bf2288 45%,#5a1745)!important}
-#pg-account .swatch.blue{background:radial-gradient(circle at 32% 30%,#66ccff,#3877b8 45%,#1d3a5a)!important}
-#pg-account .swatch.purple{background:radial-gradient(circle at 32% 30%,#cc66ff,#8842c0 45%,#3a1a52)!important}
-#pg-account .swatch.green{background:radial-gradient(circle at 32% 30%,#7fdba1,#3f9466 45%,#1d4a32)!important}
-#pg-account .swatch.orange{background:radial-gradient(circle at 32% 30%,#ffb066,#bd6f2c 45%,#5a3414)!important}
-#pg-account .swatch.red{background:radial-gradient(circle at 32% 30%,#ff8888,#c34c4c 45%,#5a1d1d)!important}
-#pg-account .swatch.yellow{background:radial-gradient(circle at 32% 30%,#fff088,#bba43c 45%,#5a4a14)!important}
-#pg-account .swatch.black{background:radial-gradient(circle at 32% 30%,#555,#222 45%,#000)!important}
+/* Legacy synthwave .pfp-swatches / #pg-account .swatch rules removed
+   — they were forcing 24×24 circles with !important and breaking the
+   new 5×2 grid. The new picker uses #pg-account .av-palette .swatch. */
 
 /* Form fields */
 #pg-account .f-row{margin-bottom:14px}
@@ -8548,9 +8527,18 @@ async function uploadGroupAvatarImage(file, communityId){
   var ext = ((file && file.name) ? file.name.split('.').pop() : 'jpg').toLowerCase();
   if(['jpg','jpeg','png','webp'].indexOf(ext) === -1) ext = 'jpg';
   var path = communityId + '/' + Date.now() + '.' + ext;
+  console.log('[group avatar upload] path:', path, 'type:', file.type, 'size:', file.size);
   var r = await _sb.storage.from('group-avatars').upload(path, file, {
     upsert:true, contentType:file.type || 'image/jpeg', cacheControl:'3600'
   });
+  if(r.error){
+    console.error('[group avatar upload] failed:', {
+      message: r.error.message,
+      statusCode: r.error.statusCode,
+      error: r.error.error,
+      raw: r.error
+    });
+  }
   if(r.error) throw new Error(r.error.message);
   var pub = _sb.storage.from('group-avatars').getPublicUrl(path);
   return pub.data.publicUrl + '?v=' + Date.now();
@@ -11977,10 +11965,19 @@ async function uploadAvatarImage(file){
   var ext = ((file && file.name) ? file.name.split('.').pop() : 'jpg').toLowerCase();
   if(['jpg','jpeg','png','webp'].indexOf(ext) === -1) ext = 'jpg';
   var path = currentUser.id + '/' + Date.now() + '.' + ext;
+  console.log('[avatar upload] path:', path, 'type:', file.type, 'size:', file.size);
   var r = await _sb.storage.from('avatars').upload(path, file, {
     upsert: true, contentType: file.type || 'image/jpeg', cacheControl: '3600'
   });
-  if(r.error) throw new Error(r.error.message);
+  if(r.error){
+    console.error('[avatar upload] failed:', {
+      message: r.error.message,
+      statusCode: r.error.statusCode,
+      error: r.error.error,
+      raw: r.error
+    });
+    throw new Error(r.error.message);
+  }
   var pub = _sb.storage.from('avatars').getPublicUrl(path);
   return pub.data.publicUrl;
 }

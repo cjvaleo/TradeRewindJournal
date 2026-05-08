@@ -61,6 +61,13 @@ update public.communities
   where icon_initials is null;
 
 -- ─────────────────────────────────────────────────────────────────
+-- VERIFY (run before/after to confirm both buckets exist + are public):
+--   SELECT id, name, public FROM storage.buckets
+--   WHERE id IN ('avatars', 'group-avatars');
+-- Both rows should come back with public=true.
+-- ─────────────────────────────────────────────────────────────────
+
+-- ─────────────────────────────────────────────────────────────────
 -- 3. Storage buckets — public, 2MB cap, image MIME whitelist
 -- If your role can't INSERT into storage.buckets directly (managed
 -- Supabase often blocks it), create both buckets via the dashboard:
