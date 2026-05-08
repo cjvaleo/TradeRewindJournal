@@ -71,7 +71,10 @@
   box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 0 rgba(0,0,0,0.28);
   transition:transform .25s, box-shadow .25s;
 }
-.av::after{
+/* Shimmer is opt-in via .shimmer — large hero avatars freeze weirdly
+   without it, and constant shimmer in feed/leaderboard is distracting.
+   Add `shimmer` to small swatches where the effect lands cleanly. */
+.av.shimmer::after{
   content:'';position:absolute;inset:0;
   background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,0.42) 50%,transparent 62%);
   background-size:280% 100%;background-position:280% 0;
@@ -2945,31 +2948,34 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
 /* Avatar picker (account → profile tab) */
 #pg-account .av-picker{margin-bottom:22px}
-#pg-account .av-hero{
-  position:relative;height:280px;display:flex;align-items:center;justify-content:center;
-  border:1px solid var(--n-border);border-radius:14px;
-  background:radial-gradient(ellipse at center,var(--n-surface) 0%,var(--n-bg) 75%);
-  overflow:hidden;margin-bottom:24px;
+#pg-account .av-hero-card{
+  margin:14px 0 24px;display:flex;align-items:center;
+  justify-content:flex-start;gap:18px;padding:22px 24px;
+  border:1px solid var(--n-border);border-radius:12px;
+  background:radial-gradient(ellipse at 30% 20%,var(--n-surface-2) 0%,var(--n-bg) 80%);
 }
-#pg-account .av-hero::after{
-  content:'';position:absolute;bottom:34px;left:50%;transform:translateX(-50%);
-  width:170px;height:22px;
-  background:radial-gradient(ellipse,rgba(0,0,0,0.55) 0%,transparent 65%);
-  filter:blur(5px);animation:av-shadow-bob 5s ease-in-out infinite;z-index:0;
-}
-@keyframes av-shadow-bob{0%,100%{transform:translateX(-50%) scale(1);opacity:0.55}50%{transform:translateX(-50%) scale(0.85);opacity:0.35}}
 #pg-account .av.hero-pfp{
-  animation:av-hero-float 5s ease-in-out infinite;
-  filter:drop-shadow(0 22px 28px rgba(0,0,0,0.6));z-index:1;
+  width:96px!important;height:96px!important;font-size:32px!important;
+  animation:av-hero-bob 5s ease-in-out infinite;
+  filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));
 }
-@keyframes av-hero-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
-#pg-account .av-hero-meta{position:absolute;top:18px;left:24px;display:flex;flex-direction:column;gap:3px;z-index:2}
-#pg-account .av-hero-meta-label{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--n-text-4)}
-#pg-account .av-hero-meta-val{font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.08em;color:var(--n-text-2);text-transform:uppercase}
-#pg-account .av-initials-input{position:absolute;top:18px;right:24px;display:flex;align-items:center;gap:8px;z-index:2}
-#pg-account .av-initials-label{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-4)}
+@keyframes av-hero-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+#pg-account .av-hero-info{flex:1;min-width:0}
+#pg-account .av-hero-label{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--n-text-4);
+}
+#pg-account .av-hero-finish{
+  font-family:var(--n-font-display);font-style:italic;font-size:24px;
+  color:var(--n-text);line-height:1.1;margin-top:4px;text-transform:capitalize;
+}
+#pg-account .av-hero-initials{display:flex;align-items:center;gap:8px;margin-top:12px}
+#pg-account .av-hero-initials-label{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
 #pg-account .av-initials-field,
-#pg-account .av-initials-input #p-initials{
+#pg-account .av-hero-initials #p-initials{
   width:54px!important;padding:6px 8px!important;
   background:var(--n-surface)!important;
   border:1px solid var(--n-border-2)!important;border-radius:6px!important;
@@ -2978,14 +2984,12 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   letter-spacing:0.08em!important;
   color:var(--n-text)!important;text-transform:uppercase!important;outline:none!important;
 }
-#pg-account .av-palette-label{
+#pg-account .av-section-label{
   font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.2em;
-  text-transform:uppercase;color:var(--n-text-3);
-  margin:8px 0 14px;display:flex;align-items:center;justify-content:space-between;
+  text-transform:uppercase;color:var(--n-text-3);margin-bottom:12px;
 }
-#pg-account .av-palette-hint{color:var(--n-text-4);font-size:9px}
 #pg-account .av-palette{
-  display:grid;grid-template-columns:repeat(9,1fr);gap:12px;margin-bottom:20px;
+  display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:28px;
 }
 #pg-account .av-palette .swatch{
   aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -3021,16 +3025,53 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 #pg-account .av-palette .swatch.upload:hover .av{border-color:var(--n-text-3)}
 #pg-account .av-palette .swatch.upload:hover .av svg{color:var(--n-text-2)}
-#pg-account .av-sync-note{
-  margin-top:18px;padding:14px 16px;background:var(--n-surface);
-  border:1px solid var(--n-border);border-left:2px solid var(--n-accent-cool);
-  border-radius:8px;display:flex;align-items:flex-start;gap:12px;
-  font-size:12.5px;color:var(--n-text-2);line-height:1.55;
+
+/* Display name + username — 2-col grid with @ prefix on username */
+#pg-account .av-form-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;
 }
-#pg-account .av-sync-note svg{
-  width:16px;height:16px;color:var(--n-accent-cool);flex-shrink:0;margin-top:1px;
+#pg-account .av-field{display:flex;flex-direction:column;gap:6px}
+#pg-account .av-field-label{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-3);
 }
-#pg-account .av-sync-note b{color:var(--n-text);font-weight:500}
+#pg-account .av-field-input{
+  padding:11px 12px!important;background:var(--n-surface)!important;
+  border:1px solid var(--n-border)!important;color:var(--n-text)!important;
+  font-family:var(--n-font-sans)!important;font-size:13px!important;
+  border-radius:7px!important;transition:.15s!important;width:100%;outline:none;
+}
+#pg-account .av-field-input:focus{border-color:var(--n-border-3)!important;background:var(--n-surface-2)!important}
+#pg-account .av-field-wrap{position:relative}
+#pg-account .av-field-at{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  font-family:var(--n-font-mono);font-size:13px;color:var(--n-text-3);
+  pointer-events:none;z-index:1;
+}
+#pg-account .av-field-input-username{padding-left:30px!important}
+
+/* Actions row — right-aligned cancel + primary save */
+#pg-account .av-actions{
+  display:flex;justify-content:flex-end;gap:10px;margin-top:8px;
+}
+#pg-account .av-actions .btn-prim{
+  padding:11px 24px;border-radius:7px;
+  background:var(--n-text);color:#0a0a0a;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;
+  text-transform:uppercase;border:none;cursor:pointer;font-weight:500;
+  transition:.2s;
+}
+#pg-account .av-actions .btn-prim:hover{background:#fff;transform:translateY(-1px)}
+#pg-account .av-actions .btn-sec{
+  padding:11px 24px;border-radius:7px;background:transparent;
+  color:var(--n-text-2);font-family:var(--n-font-mono);font-size:10px;
+  letter-spacing:0.16em;text-transform:uppercase;
+  border:1px solid var(--n-border-2);cursor:pointer;font-weight:500;
+  transition:.2s;
+}
+#pg-account .av-actions .btn-sec:hover{
+  color:var(--n-text);border-color:var(--n-border-3);background:var(--n-surface);
+}
 #pg-account .pfp-info{flex:1}
 #pg-account .pfp-info .display-name,
 #pg-account #pf-name-display{
@@ -6445,64 +6486,57 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
             <div class="panel-card-sub">Avatar &middot; display name &middot; username</div>
           </div>
 
-          <!-- Avatar picker — hero + 9-tile palette + sync note -->
+          <!-- Avatar picker (v5) — compact hero + 5-col grid -->
           <div class="av-picker">
-            <div class="av-hero">
-              <div class="av-hero-meta">
-                <div class="av-hero-meta-label">Selected</div>
-                <div class="av-hero-meta-val" id="av-finish-label">Chrome</div>
+            <div class="av-hero-card">
+              <div class="av hero-pfp chrome" id="pfp-preview"><span id="pfp-preview-txt">?</span></div>
+              <div class="av-hero-info">
+                <div class="av-hero-label">Selected Finish</div>
+                <div class="av-hero-finish" id="av-finish-label">Chrome</div>
+                <div class="av-hero-initials">
+                  <span class="av-hero-initials-label">Initials</span>
+                  <input class="av-initials-field" id="p-initials" maxlength="2" placeholder="TR" oninput="onPfpInput(this)"/>
+                </div>
               </div>
-              <div class="av-initials-input">
-                <span class="av-initials-label">Initials</span>
-                <input class="av-initials-field" id="p-initials" maxlength="2" placeholder="TR" oninput="onPfpInput(this)"/>
-              </div>
-              <div class="av hero-pfp xl chrome" id="pfp-preview"><span id="pfp-preview-txt">?</span></div>
               <div class="display-name" id="pf-name-display" style="display:none">My Account</div>
               <div class="display-user" id="pf-user-display" style="display:none">No username set</div>
             </div>
 
-            <div class="av-palette-label">
-              <span>Pick a finish · 8 + custom</span>
-              <span class="av-palette-hint">tints your community posts</span>
-            </div>
+            <div class="av-section-label">Finish · Tints your community posts</div>
             <div class="av-palette">
-              <div class="swatch" id="swatch-chrome"   onclick="setPfpColor('chrome')"   title="Chrome"  ><div class="av lg chrome"  ></div><span class="swatch-name">Chrome</span></div>
-              <div class="swatch" id="swatch-gold"     onclick="setPfpColor('gold')"     title="Gold"    ><div class="av lg gold"    ></div><span class="swatch-name">Gold</span></div>
-              <div class="swatch" id="swatch-rosegold" onclick="setPfpColor('rosegold')" title="Rose Gold"><div class="av lg rosegold"></div><span class="swatch-name">Rose Gold</span></div>
-              <div class="swatch" id="swatch-gunmetal" onclick="setPfpColor('gunmetal')" title="Gunmetal"><div class="av lg gunmetal"></div><span class="swatch-name">Gunmetal</span></div>
-              <div class="swatch" id="swatch-sapphire" onclick="setPfpColor('sapphire')" title="Sapphire"><div class="av lg sapphire"></div><span class="swatch-name">Sapphire</span></div>
-              <div class="swatch" id="swatch-emerald"  onclick="setPfpColor('emerald')"  title="Emerald" ><div class="av lg emerald" ></div><span class="swatch-name">Emerald</span></div>
-              <div class="swatch" id="swatch-amethyst" onclick="setPfpColor('amethyst')" title="Amethyst"><div class="av lg amethyst"></div><span class="swatch-name">Amethyst</span></div>
-              <div class="swatch" id="swatch-slate"    onclick="setPfpColor('slate')"    title="Slate"   ><div class="av lg slate"   ></div><span class="swatch-name">Slate</span></div>
+              <div class="swatch" id="swatch-chrome"   onclick="setPfpColor('chrome')"   title="Chrome"  ><div class="av lg chrome shimmer"  ></div><span class="swatch-name">Chrome</span></div>
+              <div class="swatch" id="swatch-gold"     onclick="setPfpColor('gold')"     title="Gold"    ><div class="av lg gold shimmer"    ></div><span class="swatch-name">Gold</span></div>
+              <div class="swatch" id="swatch-rosegold" onclick="setPfpColor('rosegold')" title="Rose Gold"><div class="av lg rosegold shimmer"></div><span class="swatch-name">Rose Gold</span></div>
+              <div class="swatch" id="swatch-gunmetal" onclick="setPfpColor('gunmetal')" title="Gunmetal"><div class="av lg gunmetal shimmer"></div><span class="swatch-name">Gunmetal</span></div>
+              <div class="swatch" id="swatch-sapphire" onclick="setPfpColor('sapphire')" title="Sapphire"><div class="av lg sapphire shimmer"></div><span class="swatch-name">Sapphire</span></div>
+              <div class="swatch" id="swatch-emerald"  onclick="setPfpColor('emerald')"  title="Emerald" ><div class="av lg emerald shimmer" ></div><span class="swatch-name">Emerald</span></div>
+              <div class="swatch" id="swatch-amethyst" onclick="setPfpColor('amethyst')" title="Amethyst"><div class="av lg amethyst shimmer"></div><span class="swatch-name">Amethyst</span></div>
+              <div class="swatch" id="swatch-slate"    onclick="setPfpColor('slate')"    title="Slate"   ><div class="av lg slate shimmer"   ></div><span class="swatch-name">Slate</span></div>
               <div class="swatch upload" id="swatch-upload" onclick="document.getElementById('av-file-input').click()" title="Upload">
-                <div class="av lg">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-                </div>
+                <div class="av lg"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></div>
                 <span class="swatch-name">Upload</span>
               </div>
               <input type="file" id="av-file-input" accept="image/*" style="display:none" onchange="handleAvatarFile(this.files&&this.files[0])"/>
             </div>
+          </div>
 
-            <div class="av-sync-note">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path d="M21 12a9 9 0 0 1-9 9m0 0a9 9 0 0 1-9-9m9 9V3m9 9H3"/></svg>
-              <div>
-                <b>Syncs everywhere.</b> Your finish updates your sidebar, community posts, leaderboard, and replies — and tints every post you've shared. Custom uploads still keep your finish for the tint accent.
+          <div class="av-form-grid">
+            <div class="av-field">
+              <span class="av-field-label">Display Name</span>
+              <input class="av-field-input f-input" id="p-name" type="text" placeholder="Your name"/>
+            </div>
+            <div class="av-field">
+              <span class="av-field-label">Username</span>
+              <div class="av-field-wrap">
+                <span class="av-field-at">@</span>
+                <input class="av-field-input av-field-input-username" id="p-username" type="text" placeholder="yourusername"/>
               </div>
             </div>
           </div>
-
-          <div class="f-row">
-            <label>Display Name</label>
-            <input class="f-input" id="p-name" type="text" placeholder="Your name"/>
+          <div class="av-actions">
+            <button class="btn-sec" onclick="cancelProfileEdit()">Cancel</button>
+            <button class="btn-prim" onclick="saveProfile()">Save Profile</button>
           </div>
-          <div class="f-row">
-            <label>Username</label>
-            <div class="f-with-prefix">
-              <span class="prefix">@</span>
-              <input id="p-username" type="text" placeholder="yourusername"/>
-            </div>
-          </div>
-          <button class="btn-primary" onclick="saveProfile()">Save Profile</button>
         </div>
       </div>
 
@@ -11968,21 +12002,14 @@ async function uploadAvatarImage(blob){
 }
 
 function saveProfile() {
-  var btn = document.querySelector('[onclick="saveProfile()"]');
-  if (!btn) { _doSaveProfile(); toast('Profile saved!'); return; }
-  // Switch to confirm state
-  btn.textContent = 'Confirm Save?';
-  btn.style.background   = 'rgba(0,255,136,.18)';
-  btn.style.borderColor  = 'rgba(0,255,136,.5)';
-  btn.style.color        = 'var(--grn)';
-  btn.setAttribute('onclick', 'confirmSaveProfile()');
-  btn._revertTimer = setTimeout(function() {
-    if (btn.textContent === 'Confirm Save?') {
-      btn.textContent = 'Save Profile';
-      btn.style.background = ''; btn.style.borderColor = ''; btn.style.color = 'var(--cyan)';
-      btn.setAttribute('onclick', 'saveProfile()');
-    }
-  }, 4000);
+  _doSaveProfile();
+  toast('Profile saved!');
+}
+function cancelProfileEdit(){
+  // Revert form fields + any pending image to the persisted acct state.
+  acct._pendingImage = null;
+  refreshAcctUI();
+  toast('Changes discarded');
 }
 
 function confirmSaveProfile() {
