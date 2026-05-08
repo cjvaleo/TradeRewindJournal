@@ -3864,39 +3864,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     0 1px 12px -4px rgba(110,168,255,0.15);
 }
 
-/* ── COMPOSER ── */
-#pg-community .composer{
-  display:flex;align-items:center;gap:12px;padding:14px;
-  background:var(--n-surface);border:1px solid var(--n-border);
-  border-radius:9px;margin-bottom:24px;
-  transition:border-color .2s, background .15s;
-}
-#pg-community .composer:hover{border-color:var(--n-border-2);background:var(--n-surface-2)}
-#pg-community .composer-av{
-  width:30px;height:30px;border-radius:50%;background:var(--n-chrome);
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--n-font-mono);font-size:10px;font-weight:600;
-  color:#1a1a1a;letter-spacing:0;text-shadow:none;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),inset 0 -1px 0 rgba(0,0,0,0.2);
-  flex-shrink:0;
-}
-#pg-community .composer-input{
-  flex:1;font-family:var(--n-font-sans);font-size:12.5px;
-  color:var(--n-text-3);text-shadow:none;
-}
-#pg-community .composer-share{
-  padding:7px 14px;border-radius:6px;background:transparent;
-  border:1px solid var(--n-border-2);color:var(--n-text-2);
-  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;
-  text-transform:uppercase;cursor:pointer;transition:.2s;
-  display:flex;align-items:center;gap:6px;text-shadow:none;
-}
-#pg-community .composer-share:hover{
-  border-color:var(--n-border-3);color:var(--n-text);
-  background:var(--n-surface-2);transform:translateY(-1px);
-}
-#pg-community .composer-share svg{width:11px;height:11px;stroke-width:2;stroke:currentColor;fill:none}
-
 /* ── POSTS — chrome card with hover lift + finish-tinted left border ── */
 #pg-community .post{
   border:1px solid var(--n-border);border-radius:10px;
@@ -3978,6 +3945,44 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   border-radius:7px;cursor:pointer;display:block;
   border:1px solid var(--n-border);
 }
+
+/* Inline trade-screenshot thumb in the trade-card row */
+.post-thumb{
+  width:40px;height:40px;object-fit:cover;
+  border-radius:6px;border:1px solid var(--n-border-2);
+  cursor:zoom-in;flex-shrink:0;
+  background:var(--n-surface-2);
+  transition:transform .2s, box-shadow .2s, border-color .2s;
+}
+.post-thumb:hover{
+  transform:scale(1.1);border-color:var(--n-border-3);
+  box-shadow:0 0 0 1px var(--n-border-3),
+             0 6px 16px -4px rgba(0,0,0,0.6);
+}
+
+/* Fullscreen lightbox — click anywhere or Esc to close */
+.lightbox-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.92);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  z-index:9999;display:flex;align-items:center;justify-content:center;
+  cursor:zoom-out;animation:lb-fade .2s ease;
+}
+@keyframes lb-fade{from{opacity:0}to{opacity:1}}
+.lightbox-img{
+  max-width:90vw;max-height:90vh;border-radius:8px;
+  box-shadow:0 24px 64px -8px rgba(0,0,0,0.8);
+}
+.lightbox-close{
+  position:absolute;top:24px;right:24px;
+  width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,0.06);
+  border:1px solid var(--n-border-2);
+  color:var(--n-text);font-size:22px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+.lightbox-close:hover{background:rgba(255,255,255,0.12)}
 #pg-community .post-actions{
   display:flex;align-items:center;gap:18px;margin-top:14px;
   padding-top:14px;border-top:1px solid var(--n-border);
@@ -5982,15 +5987,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
           <button class="fchip" data-filter="mine" onclick="applyFeedFilter('mine',this)">Mine</button>
         </div>
 
-        <div class="composer">
-          <div class="composer-av" id="comm-composer-av">??</div>
-          <div class="composer-input">Share a recent trade with the group&hellip;</div>
-          <button class="composer-share" onclick="openShareModal()">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-            Share Trade
-          </button>
-        </div>
-
         <div id="comm-feed-posts"></div>
       </div>
 
@@ -7253,9 +7249,6 @@ function openCommFeed(gid){
     editBtn.style.display='';
     editBtn.title = (currentUser&&g.owner_id===currentUser.id) ? 'Edit group' : 'Group info';
   }
-  // Sync the composer avatar's initials with the active user
-  var compAv=document.getElementById('comm-composer-av');
-  if(compAv) compAv.textContent = (acct && acct.initials) || (acct && acct.name ? acct.name.slice(0,2).toUpperCase() : '??');
   renderFeedPosts(g);renderFeedLeaderboard(g);renderFeedMembers(g);
   // Legacy renderers (renderSentInvites/renderMemberCalendars/renderCommunityWidgets/
   // renderDailyChallenge/renderGroupActivity) target IDs not present in the v3
@@ -7428,11 +7421,19 @@ function openPinTrade() {
   modal.style.display = 'flex';
 }
 
-function openImgLightbox(src){
-  var lb=document.getElementById('img-lightbox');
-  if(!lb){lb=document.createElement('div');lb.id='img-lightbox';lb.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer';lb.onclick=function(){lb.style.display='none';};var img=document.createElement('img');img.style.cssText='max-width:90vw;max-height:90vh;border-radius:8px;border:1px solid rgba(255,255,255,.15)';lb.appendChild(img);document.body.appendChild(lb);}
-  lb.querySelector('img').src=src;lb.style.display='flex';
-}
+function openImgLightbox(src){ openScreenshotLightbox(src); }
+window.openScreenshotLightbox = function(url){
+  var lb = document.createElement('div');
+  lb.className = 'lightbox-overlay';
+  lb.innerHTML =
+    '<img src="'+url+'" class="lightbox-img" alt="Trade screenshot">'
+    + '<button class="lightbox-close" aria-label="Close">×</button>';
+  document.body.appendChild(lb);
+  function close(){ lb.remove(); document.removeEventListener('keydown', esc); }
+  function esc(e){ if(e.key === 'Escape') close(); }
+  lb.addEventListener('click', close);
+  document.addEventListener('keydown', esc);
+};
 
 function renderCommunityWidgets(g) {
   renderCheckinStrip();
@@ -7695,8 +7696,9 @@ function renderFeedPosts(g){
     var sessTxt = t.session ? safeText(String(t.session).toUpperCase()) : '';
 
     var hasImg = t.images && t.images[0];
-    var imgHtml = hasImg
-      ? '<img class="post-img" src="' + safeURL(t.images[0]) + '" onclick="openImgLightbox(this.src)">'
+    var imgUrl = hasImg ? safeURL(t.images[0]) : '';
+    var thumbHtml = hasImg
+      ? '<img class="post-thumb" src="'+imgUrl+'" alt="Trade screenshot" onclick="openScreenshotLightbox(\''+imgUrl+'\')">'
       : '';
 
     var pAvInner = p.avatar_image_url
@@ -7722,11 +7724,11 @@ function renderFeedPosts(g){
       +     '<span class="tc-pl-val '+pnlTone+'">'+_shortMoney(pnl)+'</span>'
       +     rrHoldHtml
       +   '</div>'
+      +   thumbHtml
       +   (dateStr || sessTxt
             ? '<div class="tc-meta">'+safeText(dateStr)+(sessTxt && dateStr ? '<br>' : '')+sessTxt+'</div>'
             : '')
       + '</div>'
-      + imgHtml
       + (t.notes ? '<div class="post-note">'+commEsc(t.notes)+'</div>' : '')
       + '<div class="post-actions">'
       +   '<button class="pa'+(youLiked?' liked':'')+'" onclick="feedLike(this)" data-id="'+safePid+'"'+(youLiked?' data-liked="1"':'')+'>'
@@ -12253,21 +12255,8 @@ function refreshCalendarStats() {
   }
 }
 
-function openImgLightbox(src){
-  var lb=document.getElementById('img-lightbox');
-  if(!lb){
-    lb=document.createElement('div');
-    lb.id='img-lightbox';
-    lb.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer';
-    lb.onclick=function(){lb.style.display='none';};
-    var img=document.createElement('img');
-    img.style.cssText='max-width:90vw;max-height:90vh;border-radius:8px;border:1px solid rgba(255,255,255,.15)';
-    lb.appendChild(img);
-    document.body.appendChild(lb);
-  }
-  lb.querySelector('img').src=src;
-  lb.style.display='flex';
-}
+/* Legacy alias — defer to the chrome lightbox above. */
+function openImgLightbox(src){ openScreenshotLightbox(src); }
 
 function showWeekSummary(y,m,dayStart){
   var wStart=new Date(y,m,dayStart);

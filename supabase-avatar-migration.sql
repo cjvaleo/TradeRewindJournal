@@ -6,20 +6,31 @@
 
 -- ─────────────────────────────────────────────────────────────────
 -- 1. Profiles — personal avatar fields
+--
+-- The ACTUAL table is `profiles` (not user_profiles). FK column is
+-- `id` matching auth.users.id (verify with the SELECT below).
+--
+-- Verify columns BEFORE running:
+--   SELECT column_name FROM information_schema.columns
+--   WHERE table_name='profiles' AND column_name IN ('id','user_id');
 -- ─────────────────────────────────────────────────────────────────
 alter table public.profiles
   add column if not exists avatar_finish    text default 'chrome',
-  add column if not exists avatar_image_url text,
-  add column if not exists avatar_initials  text;
+  add column if not exists avatar_initials  text,
+  add column if not exists avatar_image_url text;
 
+-- Drop both old name variants for idempotency.
 alter table public.profiles
   drop constraint if exists profiles_avatar_finish_chk;
 alter table public.profiles
-  add constraint profiles_avatar_finish_chk check (
+  drop constraint if exists profiles_avatar_finish_check;
+alter table public.profiles
+  add constraint profiles_avatar_finish_check check (
     avatar_finish in ('chrome','gold','rosegold','gunmetal',
                       'sapphire','emerald','amethyst','slate')
   );
 
+-- Backfill from legacy `color` where the value is already a finish.
 update public.profiles
   set avatar_finish = case
     when color in ('chrome','gold','rosegold','gunmetal',
@@ -32,11 +43,8 @@ update public.profiles
   set avatar_initials = upper(substring(coalesce(initials,'??') from 1 for 2))
   where avatar_initials is null;
 
--- RLS — users can read/update/insert only their own row.
--- This is the most common cause of "save succeeds but persistence fails":
--- the profiles table has RLS enabled but no UPDATE policy, so writes return
--- 0 rows updated without raising an error. .select() on the update reveals
--- this; the JS is wired to surface it.
+-- RLS — public read (so community feeds can show other users' finishes)
+-- but write only your own row. Codebase keys on `id` = auth.uid().
 alter table public.profiles enable row level security;
 
 drop policy if exists "users_read_own_profile"   on public.profiles;
@@ -46,10 +54,9 @@ drop policy if exists "Profiles read"            on public.profiles;
 drop policy if exists "Profiles update"          on public.profiles;
 drop policy if exists "Profiles insert"          on public.profiles;
 
--- Note: this codebase uses `id` (not `user_id`) as the FK to auth.users.
 create policy "users_read_own_profile"
   on public.profiles for select
-  using (auth.uid() = id);
+  using (true);
 create policy "users_update_own_profile"
   on public.profiles for update
   using (auth.uid() = id)
@@ -61,8 +68,9 @@ create policy "users_insert_own_profile"
 -- Verify after running:
 --   SELECT column_name, data_type, column_default
 --   FROM information_schema.columns
---   WHERE table_name = 'profiles' AND column_name LIKE 'avatar%';
---   SELECT policyname, cmd FROM pg_policies WHERE tablename = 'profiles';
+--   WHERE table_name='profiles' AND column_name LIKE 'avatar%';
+--   -- Expect 3 rows: avatar_finish, avatar_initials, avatar_image_url
+--   SELECT policyname, cmd FROM pg_policies WHERE tablename='profiles';
 
 -- ─────────────────────────────────────────────────────────────────
 -- 2. Communities — group avatar fields
