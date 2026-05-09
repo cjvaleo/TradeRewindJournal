@@ -10822,12 +10822,26 @@ function renderFeedLeaderboard(g){
     };
   });
 
-  var rows = Object.keys(byUser).map(function(k){
-    var r = byUser[k];
-    r.wr = r.count ? Math.round(r.wins/r.count*100) : 0;
-    r.isMe = !!(myUid && r.user_id === myUid);
-    return r;
+  // Belt-and-suspenders: drop any aggregated user whose id isn't in
+  // the current member roster. Prevents a kicked user's stale post
+  // (race condition between membership UPDATE and post DELETE, or
+  // a post-share that beats a not-yet-applied kick) from showing
+  // on the leaderboard.
+  var memberIdSet = {};
+  (g.members||[]).forEach(function(m){
+    var mid = m && (m.id || m.user_id);
+    if(mid) memberIdSet[mid] = true;
   });
+  if(myUid) memberIdSet[myUid] = true;
+
+  var rows = Object.keys(byUser)
+    .filter(function(k){ return memberIdSet[k]; })
+    .map(function(k){
+      var r = byUser[k];
+      r.wr = r.count ? Math.round(r.wins/r.count*100) : 0;
+      r.isMe = !!(myUid && r.user_id === myUid);
+      return r;
+    });
 
   if(_lbFilter==='wr') rows.sort(function(a,b){return b.wr-a.wr;});
   else if(_lbFilter==='aplus') rows.sort(function(a,b){return b.aplus-a.aplus;});
@@ -11499,9 +11513,45 @@ async function removeMember(memberId){
       await _sb.from('invites').update({ status: 'removed' })
         .eq('community_id', _comm.id).eq('to_id', memberId);
     } catch(e){ console.warn('[removeMember] invite flag failed:', e && e.message); }
+
+    // 4. CASCADE DELETE — kicked user's posts in this community.
+    //    Requires the community_posts DELETE policy to allow community
+    //    owners (not just the post author). See supabase migration:
+    //
+    //      USING ( auth.uid() = user_id OR auth.uid() IN (
+    //        SELECT owner_id FROM communities WHERE id = community_id ))
+    //
+    //    If that policy isn't in place, deleteErr surfaces and the
+    //    user gets a "couldn't clean posts" warning instead of a lie.
+    var deletedCount = 0, deleteErr;
+    try {
+      var dr = await _sb.from('community_posts')
+        .delete({ count: 'exact' })
+        .eq('community_id', _comm.id)
+        .eq('user_id', memberId);
+      deletedCount = (dr && dr.count) || 0;
+      deleteErr = dr && dr.error;
+    } catch(e){ deleteErr = e; }
+    if(deleteErr){
+      console.warn('[removeMember] post cleanup failed:', deleteErr);
+      showToast(
+        'Removed @' + (member.username||'member') +
+        ' — posts kept (RLS blocked: ' + (deleteErr.message||'?') + ')',
+        'warning'
+      );
+    } else {
+      console.log('[removeMember] deleted', deletedCount, 'posts from @' + (member.username||memberId));
+    }
+
+    // Drop the kicked user's rows from the in-memory _remotePosts cache
+    // so the feed + leaderboard don't show stale posts before the next
+    // sync. syncAndLoadCommFeed below also re-pulls from DB.
+    if(typeof _remotePosts !== 'undefined' && Array.isArray(_remotePosts)){
+      _remotePosts = _remotePosts.filter(function(p){ return p.user_id !== memberId; });
+    }
   }
 
-  // 4. Local mirror — keep the hydrated object array intact, just drop
+  // 5. Local mirror — keep the hydrated object array intact, just drop
   //    the kicked entry. We do NOT replace _comm.members with the raw
   //    UUID array from the DB response (would lose username/finish/etc.
   //    profile data we already JOIN-fetched on community load).
@@ -11512,17 +11562,34 @@ async function removeMember(memberId){
   // fields (last_modified, etc.) that the schema may set.
   try { localStorage.setItem('tr1_comms', JSON.stringify(_comms)); } catch(e){}
 
-  // 5. Force re-renders so every member-dependent surface updates.
+  // 6. Force re-renders so every member-dependent surface updates.
+  //    syncAndLoadCommFeed re-pulls posts from DB so the feed reflects
+  //    the cascade delete (in case our local _remotePosts filter missed
+  //    anything). The leaderboard + members + sidebar re-render on
+  //    fresh data.
+  if(typeof renderFeedPosts==='function') renderFeedPosts(_comm);
   if(typeof renderFeedMembers==='function') renderFeedMembers(_comm);
   if(typeof renderFeedLeaderboard==='function') renderFeedLeaderboard(_comm);
+  if(typeof renderHeroPnl==='function') renderHeroPnl(_comm, _commPeriod);
+  if(typeof renderTOTD==='function') renderTOTD(_comm);
   if(typeof renderCommSidebar==='function') renderCommSidebar();
   if(typeof renderEditMembersList==='function') renderEditMembersList();
   var amModal = document.getElementById('all-members-modal');
   if(amModal && amModal.style.display !== 'none' && typeof openAllMembersModal==='function'){
     openAllMembersModal();
   }
+  // Re-pull from DB to settle any drift between local _remotePosts and
+  // server (defensive — covers the case where the DELETE removed rows
+  // we hadn't loaded into the cache yet).
+  if(typeof syncAndLoadCommFeed==='function'){
+    syncAndLoadCommFeed(_comm);
+  }
 
-  showToast('Removed @' + (member.username||'member'), 'success');
+  showToast(
+    'Removed @' + (member.username||'member') +
+    (deletedCount ? ' · ' + deletedCount + ' post' + (deletedCount===1?'':'s') + ' cleaned' : ''),
+    'success'
+  );
 }
 window.removeMember = removeMember;
 
