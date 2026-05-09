@@ -4791,6 +4791,104 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   background:var(--n-text)!important;border:none!important;cursor:pointer!important;
 }
 
+/* ── LEGAL PAGE — Terms + Privacy ─────────────────────── */
+#pg-legal .crumb{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-4);margin-bottom:8px;
+}
+#pg-legal .ftitle{
+  font-family:var(--n-font-display);font-style:italic;font-size:42px;
+  color:var(--n-text);line-height:1.05;letter-spacing:-0.01em;
+}
+#pg-legal .fsub{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--n-text-3);margin-top:6px;
+}
+#pg-legal .legal-meta{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;
+  margin:28px 0 8px;padding:18px 20px;
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:9px;font-size:13px;color:var(--n-text-2);
+}
+#pg-legal .legal-meta > div{display:flex;flex-direction:column;gap:2px}
+#pg-legal .legal-meta-label{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-4);
+}
+#pg-legal .legal-meta a{
+  color:var(--n-accent-cool);text-decoration:none;
+  border-bottom:1px solid rgba(110,168,255,0.3);
+}
+#pg-legal .legal-tabs{
+  display:flex;gap:2px;background:var(--n-surface);
+  border:1px solid var(--n-border);border-radius:8px;padding:3px;
+  margin:28px 0 24px;width:fit-content;
+}
+#pg-legal .legal-tab{
+  padding:7px 18px;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--n-text-3);
+  background:transparent;border:none;border-radius:5px;cursor:pointer;
+  transition:.15s;
+}
+#pg-legal .legal-tab.on{background:var(--n-surface-3);color:var(--n-text)}
+#pg-legal .legal-tab:hover:not(.on){color:var(--n-text-2)}
+#pg-legal .legal-content{
+  color:var(--n-text-2);font-size:14px;line-height:1.7;
+}
+#pg-legal .legal-content h1{
+  font-family:var(--n-font-display);font-style:italic;font-size:32px;
+  color:var(--n-text);margin:32px 0 8px;line-height:1.1;letter-spacing:-0.01em;
+}
+#pg-legal .legal-content h1:first-child{margin-top:0}
+#pg-legal .legal-content h2{
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--n-text);margin:28px 0 10px;
+}
+#pg-legal .legal-content h3{
+  font-family:var(--n-font-sans);font-size:14px;color:var(--n-text);
+  font-weight:600;margin:18px 0 6px;
+}
+#pg-legal .legal-content p{margin-bottom:12px}
+#pg-legal .legal-content ul,
+#pg-legal .legal-content ol{margin:8px 0 16px 20px}
+#pg-legal .legal-content li{margin-bottom:6px}
+#pg-legal .legal-content strong{color:var(--n-text);font-weight:500}
+#pg-legal .legal-content a{
+  color:var(--n-accent-cool);text-decoration:none;
+  border-bottom:1px solid rgba(110,168,255,0.3);
+}
+#pg-legal .legal-content a:hover{border-bottom-color:var(--n-accent-cool)}
+#pg-legal .legal-content hr{
+  border:none;border-top:1px solid var(--n-border);margin:40px 0;
+}
+#pg-legal .legal-content em{
+  color:var(--n-text-3);font-family:var(--n-font-display);font-style:italic;
+}
+#pg-legal .legal-footnote{
+  margin-top:48px;padding-top:24px;border-top:1px solid var(--n-border);
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--n-text-3);text-align:center;
+}
+@media (max-width: 768px){
+  #pg-legal > div{padding:24px 16px!important}
+  #pg-legal .legal-meta{grid-template-columns:1fr}
+  #pg-legal .ftitle{font-size:32px}
+  #pg-legal .legal-content h1{font-size:24px}
+}
+
+/* Auth-screen Terms/Privacy footer link */
+.n-auth-legal{
+  margin-top:24px;text-align:center;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;
+  color:var(--n-text-4);line-height:1.6;
+}
+.n-auth-legal a{
+  color:var(--n-text-3);text-decoration:none;
+  border-bottom:1px solid var(--n-border-2);cursor:pointer;
+}
+.n-auth-legal a:hover{color:var(--n-text-2);border-bottom-color:var(--n-border-3)}
+
 /* ═══════════════════════════════════════════════════════════════
    MOBILE RESPONSIVE — Plan B (critical flows + degraded heavy pages)
    Breakpoints: mobile <768px / tablet 768–1024px / desktop >1024px
@@ -5164,6 +5262,14 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       <div class="n-card-foot">
         <span class="n-status-dot"></span>
         <span>Encrypted · Private</span>
+      </div>
+
+      <!-- Terms / Privacy links — accessible without an account -->
+      <div class="n-auth-legal">
+        By signing up, you agree to the
+        <a onclick="_legalFromAuth('terms');return false">Terms</a>
+        and
+        <a onclick="_legalFromAuth('privacy');return false">Privacy Policy</a>
       </div>
 
     </div>
@@ -7197,16 +7303,213 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
             <div class="panel-card-sub">Terms, privacy &amp; policies</div>
           </div>
           <div class="legal-list">
-            <a onclick="toast('Terms of Service — coming soon')">Terms of Service<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
-            <a onclick="toast('Privacy Policy — coming soon')">Privacy Policy<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
-            <a onclick="toast('Data Processing Agreement — coming soon')">Data Processing Agreement<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
-            <a onclick="toast('Cookie Policy — see banner at bottom')">Cookie Policy<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+            <a onclick="showLegal('terms')">Terms of Service<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+            <a onclick="showLegal('privacy')">Privacy Policy<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
             <a onclick="window.location.href='mailto:cjvaleo@gmail.com?subject=TradeRewind support'">Contact Support<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
           </div>
         </div>
       </div>
 
     </div><!-- end right -->
+  </div>
+</div>
+
+<!-- LEGAL PAGE — Terms of Service + Privacy Policy -->
+<div id="pg-legal" class="page">
+  <div style="max-width:780px;margin:0 auto;padding:48px 32px">
+    <a id="legal-back-to-auth" onclick="document.getElementById('pg-legal').classList.remove('on');document.getElementById('auth-screen').style.display='flex';return false" style="display:none;font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);text-decoration:none;cursor:pointer;margin-bottom:20px;display:none;align-items:center;gap:6px">← Back to sign in</a>
+    <div class="crumb">Legal</div>
+    <h1 class="ftitle">Legal</h1>
+    <div class="fsub">Terms · Privacy · Contact</div>
+
+    <div class="legal-meta">
+      <div><span class="legal-meta-label">Operator</span><span>Christian Valeo (individual)</span></div>
+      <div><span class="legal-meta-label">Service</span><span>traderewindjournal.com</span></div>
+      <div><span class="legal-meta-label">Contact</span><a href="mailto:cjvaleo@gmail.com">cjvaleo@gmail.com</a></div>
+      <div><span class="legal-meta-label">Last updated</span><span>May 9, 2026</span></div>
+    </div>
+
+    <div class="legal-tabs">
+      <button class="legal-tab on" data-tab="terms" onclick="switchLegalTab('terms')">Terms of Service</button>
+      <button class="legal-tab" data-tab="privacy" onclick="switchLegalTab('privacy')">Privacy Policy</button>
+    </div>
+
+    <div id="legal-content-terms" class="legal-content">
+      <h1>Terms of Service</h1>
+
+      <h2>1. The deal</h2>
+      <p>TradeRewind is a personal trading journal service operated by Christian Valeo as an individual ("we", "us", "the service"). By creating an account or using anything at traderewindjournal.com, you agree to these terms. If you don't agree, don't use it.</p>
+
+      <h2>2. What TradeRewind is</h2>
+      <p>TradeRewind helps you log, review, and analyze your own trading activity. We provide tools — you provide the trades, notes, and screenshots. We do not execute trades, hold funds, or connect to your brokerage account (unless you explicitly enable a broker sync feature in the future).</p>
+
+      <h2>3. NOT financial advice</h2>
+      <p><strong>This is the most important section. Read it.</strong></p>
+      <p>Nothing in TradeRewind is financial, investment, tax, accounting, or legal advice. This includes:</p>
+      <ul>
+        <li>Your own stats, equity curves, win rates, or analytics</li>
+        <li>Posts from other users in community features</li>
+        <li>Leaderboards, "Trade of the Day," group P&amp;L, or any social/comparison element</li>
+        <li>Anything we write in the UI, tooltips, marketing, or anywhere else</li>
+      </ul>
+      <p>Trading involves substantial risk of loss. You can lose more than you invest. Past performance does not predict future results. <strong>You are 100% responsible for your own trading decisions.</strong> Don't trade based on what other users post, share, or claim. We are not licensed financial advisors and we don't pretend to be.</p>
+
+      <h2>4. Your account</h2>
+      <ul>
+        <li>You must be 18 years or older to use TradeRewind.</li>
+        <li>You must provide an accurate email and keep your password secure.</li>
+        <li>One account per person. No sharing, reselling, or automating account creation.</li>
+        <li>You are responsible for everything that happens on your account.</li>
+      </ul>
+
+      <h2>5. Your content</h2>
+      <ul>
+        <li>Trade data, notes, screenshots, and avatars you upload are yours. We don't claim ownership.</li>
+        <li>You grant us a limited license to display your content within the service so the app can function (e.g., showing your trades to communities you've joined).</li>
+        <li>Don't post anything illegal, harassing, defamatory, infringing on someone's IP, or sexually explicit.</li>
+        <li>Don't impersonate other people or claim affiliations you don't have.</li>
+        <li>We can remove content or restrict your account if you violate these rules.</li>
+      </ul>
+
+      <h2>6. Community features</h2>
+      <p>If you join a community group, you opt in to having other members of that group see the trades you share to the feed. Be respectful. Don't dox, harass, or scam other members. We can remove content, revoke community access, or terminate accounts for violations.</p>
+
+      <h2>7. Service availability</h2>
+      <p>We aim to keep TradeRewind running but we don't guarantee uptime. We may need to do maintenance, fix bugs, change or remove features, or take the service offline temporarily. Things sometimes break. We're working on it.</p>
+
+      <h2>8. Pricing and changes</h2>
+      <p>TradeRewind is currently free. If we introduce paid plans, we'll give existing users notice before any features they're already using become paid. We may update these terms — if we make significant changes, we'll notify you by email or in-app, and continued use after that means you accept the changes.</p>
+
+      <h2>9. Termination</h2>
+      <ul>
+        <li>You can delete your account anytime (Settings → Danger Zone). Deletion removes your data from our active database.</li>
+        <li>We can suspend or terminate accounts for terms violations, illegal use, or extended inactivity.</li>
+        <li>We may give notice before termination unless the situation requires immediate action.</li>
+      </ul>
+
+      <h2>10. Limitation of liability</h2>
+      <p>TradeRewind is provided "as is" and "as available" without warranties of any kind. To the maximum extent allowed by law:</p>
+      <ul>
+        <li>We are not liable for any trading losses, missed opportunities, lost data, downtime, or other damages connected to your use of the service.</li>
+        <li>Our total liability for any claim is limited to whatever you've paid us in the prior 12 months (which is $0 if you're on the free plan).</li>
+      </ul>
+
+      <h2>11. Indemnification</h2>
+      <p>You agree to defend and indemnify TradeRewind against any claims arising from your use of the service, your content, or your violation of these terms.</p>
+
+      <h2>12. Governing law and disputes</h2>
+      <p>These terms are governed by the laws of the State of New Jersey, USA. Any dispute will be resolved through binding arbitration in New Jersey rather than in court, except for small-claims matters or injunctive relief for IP violations.</p>
+
+      <h2>13. Contact</h2>
+      <p>Questions about these terms? Email <strong><a href="mailto:cjvaleo@gmail.com">cjvaleo@gmail.com</a></strong>.</p>
+    </div>
+
+    <div id="legal-content-privacy" class="legal-content" style="display:none">
+      <h1>Privacy Policy</h1>
+
+      <h2>TL;DR</h2>
+      <ul>
+        <li>We collect what's needed to run the app: your email, the trades you log, screenshots you upload, and profile settings.</li>
+        <li>We don't sell your data. Ever.</li>
+        <li>We don't run advertising or third-party tracking.</li>
+        <li>We use Supabase as our backend to store everything.</li>
+        <li>You can delete your account and all your data anytime.</li>
+      </ul>
+
+      <h2>What we collect</h2>
+
+      <h3>Account info</h3>
+      <ul>
+        <li>Email address</li>
+        <li>Hashed password (we never see your actual password)</li>
+        <li>Display name and username</li>
+        <li>Avatar settings (color finish, optional uploaded photo, initials)</li>
+      </ul>
+
+      <h3>Trading data</h3>
+      <ul>
+        <li>Symbols, sides (long/short), entry/exit prices, quantities, P&amp;L, dates</li>
+        <li>R-multiples, notes, tags, session info — whatever you log</li>
+        <li>Screenshots you upload to trades</li>
+      </ul>
+
+      <h3>Community activity (only if you join a community)</h3>
+      <ul>
+        <li>Posts you share to a group</li>
+        <li>Replies and likes</li>
+        <li>Communities you've joined</li>
+      </ul>
+
+      <h3>Technical info</h3>
+      <ul>
+        <li>Basic browser user-agent string</li>
+        <li>IP address (used for authentication only, not tracked or stored long-term)</li>
+      </ul>
+
+      <h2>What we DON'T collect</h2>
+      <ul>
+        <li>We do NOT connect to your real brokerage account or hold any funds.</li>
+        <li>We do NOT track you across other websites.</li>
+        <li>We do NOT run third-party analytics or fingerprinting.</li>
+        <li>We do NOT sell, rent, or share your data with advertisers.</li>
+      </ul>
+
+      <h2>Where it's stored</h2>
+      <p>All data is stored using Supabase (<a href="https://supabase.com" target="_blank" rel="noopener">supabase.com</a>), a backend platform that hosts our database and file storage. Supabase encrypts data in transit and at rest. We do not move your data to any other third party for marketing or processing.</p>
+
+      <h2>Who can see what</h2>
+      <ul>
+        <li><strong>Default:</strong> your trades, notes, and screenshots are private to you.</li>
+        <li><strong>Communities:</strong> if you share a trade to a community group, members of that community can see it. You control what gets shared.</li>
+        <li><strong>Public profile fields:</strong> your display name, username, and avatar are readable by other authenticated users of the service so community features can identify you. Your email and trade data are NOT public.</li>
+      </ul>
+
+      <h2>Cookies and storage</h2>
+      <p>We use:</p>
+      <ul>
+        <li>One auth session token (so you stay signed in across visits)</li>
+        <li>LocalStorage for some UI preferences (sidebar collapsed state, etc.)</li>
+      </ul>
+      <p>We do NOT use:</p>
+      <ul>
+        <li>Tracking cookies</li>
+        <li>Advertising pixels</li>
+        <li>Cross-site identifiers</li>
+      </ul>
+
+      <h2>Your rights</h2>
+      <ul>
+        <li><strong>Delete your account:</strong> Settings → Danger Zone → Delete. This removes your account and all associated data.</li>
+        <li><strong>Export your data:</strong> email <a href="mailto:cjvaleo@gmail.com">cjvaleo@gmail.com</a> to request a copy of your data. We'll send it within 30 days.</li>
+        <li><strong>Correct your data:</strong> edit your profile, trades, and notes directly in the app.</li>
+        <li><strong>Stop using the service:</strong> just stop. We don't lock you in.</li>
+      </ul>
+
+      <h2>Children</h2>
+      <p>TradeRewind is not intended for anyone under 18. If you are under 18, do not use the service. If we learn we've collected data from someone under 18, we'll delete it.</p>
+
+      <h2>Security</h2>
+      <p>We follow reasonable security practices but no online service is 100% secure. If we discover a breach affecting your data, we'll notify you promptly.</p>
+
+      <h2>Third-party services we use</h2>
+      <ul>
+        <li><strong>Supabase</strong> — backend database and file storage (their privacy policy at <a href="https://supabase.com/privacy" target="_blank" rel="noopener">supabase.com/privacy</a>)</li>
+        <li><strong>Vercel</strong> — hosting (their privacy policy at <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener">vercel.com/legal/privacy-policy</a>)</li>
+      </ul>
+      <p>That's it. We don't use other third parties to process your data.</p>
+
+      <h2>Changes to this policy</h2>
+      <p>We may update this policy. If we change anything significant, we'll notify you by email or in-app banner. Continued use after changes means you accept the updated policy.</p>
+
+      <h2>Contact</h2>
+      <p>Privacy questions? Data requests? Email <strong><a href="mailto:cjvaleo@gmail.com">cjvaleo@gmail.com</a></strong>.</p>
+
+      <hr>
+
+      <p><em>TradeRewind is operated by Christian Valeo as an individual, based in New Jersey, USA.</em></p>
+    </div>
+
+    <div class="legal-footnote">Last Updated · May 9, 2026 · cjvaleo@gmail.com</div>
   </div>
 </div>
 
@@ -9559,6 +9862,40 @@ function goTo(pg){
   if(pg==='dashboard'){renderDashboard();setTimeout(drawMiniChart,80);}
   if(pg==='history')renderHistory();if(pg==='propfirms')pfRender();if(pg==='calendar')renderCalPage();if(pg==='analytics')renderAnalytics();if(pg==='community')renderCommunity();if(pg==='rules')renderRules();if(pg==='goals')renderGoals();
   if(pg==='equity'){requestAnimationFrame(function(){requestAnimationFrame(function(){renderEquity();});});}
+}
+
+/* Open the Legal page on a specific tab. Used by sidebar links + the
+   auth-screen footer + the existing Account → Legal list. */
+function showLegal(tab){
+  goTo('legal');
+  switchLegalTab(tab || 'terms');
+  // If we got here from the auth screen, hide the "← Back to sign in"
+  // helper unless the auth flow specifically opted in via _legalFromAuth.
+  var back = document.getElementById('legal-back-to-auth');
+  if(back && !window._legalFromAuthFlag) back.style.display = 'none';
+  window._legalFromAuthFlag = false;
+}
+/* Auth-screen → Legal handoff. Hides auth, shows legal, and reveals
+   the "Back to sign in" link so the unauthenticated user has a way home. */
+function _legalFromAuth(tab){
+  window._legalFromAuthFlag = true;
+  document.getElementById('auth-screen').style.display = 'none';
+  showLegal(tab);
+  var back = document.getElementById('legal-back-to-auth');
+  if(back) back.style.display = 'inline-flex';
+}
+function switchLegalTab(tab){
+  document.querySelectorAll('#pg-legal .legal-tab').forEach(function(b){
+    b.classList.toggle('on', b.dataset.tab === tab);
+  });
+  var t = document.getElementById('legal-content-terms');
+  var p = document.getElementById('legal-content-privacy');
+  if(t) t.style.display = (tab === 'terms') ? '' : 'none';
+  if(p) p.style.display = (tab === 'privacy') ? '' : 'none';
+  var pg = document.getElementById('pg-legal');
+  if(pg) pg.scrollTop = 0;
+  var main = document.querySelector('.main');
+  if(main) main.scrollTop = 0;
 }
 
 function setPeriod(p,el){
