@@ -2572,6 +2572,29 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 #pg-log .lt-emo-pill.on .lbl{color:var(--n-text)}
 
+/* GRADE / EMOTION ROW WRAPPERS — animated bottom progress bars
+   driven by --grade-pct/--grade-color and --emotion-pct/--emotion-color */
+#pg-log .grade-row,
+#pg-log .emotion-row-wrap{
+  position:relative;padding-bottom:6px;overflow:hidden;border-radius:12px;
+}
+#pg-log .grade-row::before{
+  content:'';position:absolute;bottom:0;left:0;
+  height:2px;width:var(--grade-pct, 80%);
+  background:var(--grade-color, var(--n-text-3));
+  box-shadow:0 0 8px var(--grade-color, transparent);
+  transition:width .4s ease, background .3s ease, box-shadow .3s ease;
+  border-radius:1px;
+}
+#pg-log .emotion-row-wrap::before{
+  content:'';position:absolute;bottom:0;left:0;
+  height:2px;width:var(--emotion-pct, 60%);
+  background:var(--emotion-color, var(--n-text-3));
+  box-shadow:0 0 8px var(--emotion-color, transparent);
+  transition:width .4s ease, background .3s ease, box-shadow .3s ease;
+  border-radius:1px;
+}
+
 /* CONFIDENCE DOTS — animated bottom progress bar + centered dot fill */
 #pg-log .lt-confidence-row{
   display:flex;align-items:center;gap:14px;
@@ -6632,24 +6655,28 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
           <div class="lt-field">
             <div class="lt-field-l">Setup Grade</div>
-            <div class="lt-grade-pills">
-              <div class="lt-grade-pill grade-A" data-grade="A" onclick="setGradePill('A')">A</div>
-              <div class="lt-grade-pill grade-B on" data-grade="B" onclick="setGradePill('B')">B</div>
-              <div class="lt-grade-pill grade-C" data-grade="C" onclick="setGradePill('C')">C</div>
-              <div class="lt-grade-pill grade-D" data-grade="D" onclick="setGradePill('D')">D</div>
-              <div class="lt-grade-pill grade-F" data-grade="F" onclick="setGradePill('F')">F</div>
+            <div class="grade-row">
+              <div class="lt-grade-pills">
+                <div class="lt-grade-pill grade-A" data-grade="A" onclick="setGradePill('A')">A</div>
+                <div class="lt-grade-pill grade-B on" data-grade="B" onclick="setGradePill('B')">B</div>
+                <div class="lt-grade-pill grade-C" data-grade="C" onclick="setGradePill('C')">C</div>
+                <div class="lt-grade-pill grade-D" data-grade="D" onclick="setGradePill('D')">D</div>
+                <div class="lt-grade-pill grade-F" data-grade="F" onclick="setGradePill('F')">F</div>
+              </div>
             </div>
             <input type="hidden" id="lg-grade" value="3"/>
           </div>
 
           <div class="lt-field">
             <div class="lt-field-l">Emotion</div>
-            <div class="lt-emo-row">
-              <div class="lt-emo-pill" data-emo="1" onclick="setEmotionPill(1)"><span class="emj">&#128552;</span><span class="lbl">Anxious</span></div>
-              <div class="lt-emo-pill" data-emo="2" onclick="setEmotionPill(2)"><span class="emj">&#128543;</span><span class="lbl">Off</span></div>
-              <div class="lt-emo-pill on" data-emo="3" onclick="setEmotionPill(3)"><span class="emj">&#128528;</span><span class="lbl">Neutral</span></div>
-              <div class="lt-emo-pill" data-emo="4" onclick="setEmotionPill(4)"><span class="emj">&#128578;</span><span class="lbl">Confident</span></div>
-              <div class="lt-emo-pill" data-emo="5" onclick="setEmotionPill(5)"><span class="emj">&#128526;</span><span class="lbl">In Zone</span></div>
+            <div class="emotion-row-wrap">
+              <div class="lt-emo-row">
+                <div class="lt-emo-pill" data-emo="1" onclick="setEmotionPill(1)"><span class="emj">&#128552;</span><span class="lbl">Anxious</span></div>
+                <div class="lt-emo-pill" data-emo="2" onclick="setEmotionPill(2)"><span class="emj">&#128543;</span><span class="lbl">Off</span></div>
+                <div class="lt-emo-pill on" data-emo="3" onclick="setEmotionPill(3)"><span class="emj">&#128528;</span><span class="lbl">Neutral</span></div>
+                <div class="lt-emo-pill" data-emo="4" onclick="setEmotionPill(4)"><span class="emj">&#128578;</span><span class="lbl">Confident</span></div>
+                <div class="lt-emo-pill" data-emo="5" onclick="setEmotionPill(5)"><span class="emj">&#128526;</span><span class="lbl">In Zone</span></div>
+              </div>
             </div>
             <input type="hidden" id="lg-emotion" value="3"/>
           </div>
@@ -12164,12 +12191,23 @@ function setLgType(t){
 let _pnlManual=false, _rrManual=false;
 const _GRADE_TO_IDX={F:0,D:1,C:2,B:3,A:4}; // existing GRADES is 0=F..5=A+; A+ unused in pill UI
 
+// Reflection-bar palettes (shared by manual + CSV minis)
+const GRADE_COLORS={A:'#5fb389',B:'#e0e0e0',C:'#888',D:'#d49a6a',F:'#c95f5f'};
+const GRADE_PCTS  ={A:100,B:80,C:60,D:40,F:20};
+const EMOTION_COLORS={1:'#c95f5f',2:'#d49a6a',3:'#888',4:'#a8d8a8',5:'#5fb389'};
+
 function setGradePill(letter){
   document.querySelectorAll('#pg-log .lt-grade-pill').forEach(function(p){ p.classList.remove('on'); });
   var pill=document.querySelector('#pg-log .lt-grade-pill[data-grade="'+letter+'"]');
   if(pill) pill.classList.add('on');
   var hidden=document.getElementById('lg-grade');
   if(hidden) hidden.value = (_GRADE_TO_IDX[letter] != null ? _GRADE_TO_IDX[letter] : 3);
+  // Drive the row's bottom-bar fill + color
+  var row=document.querySelector('#pg-log .grade-row');
+  if(row){
+    row.style.setProperty('--grade-color', GRADE_COLORS[letter] || GRADE_COLORS.B);
+    row.style.setProperty('--grade-pct',  (GRADE_PCTS[letter]  || GRADE_PCTS.B)+'%');
+  }
   if(typeof updateGrade==='function'){ try{ updateGrade(hidden && hidden.value); }catch(e){} }
   updateLogPreview();
 }
@@ -12180,8 +12218,25 @@ function setEmotionPill(n){
   if(pill) pill.classList.add('on');
   var hidden=document.getElementById('lg-emotion');
   if(hidden) hidden.value=String(n);
+  // Drive the row's bottom-bar fill + color (1=red, 5=green)
+  var row=document.querySelector('#pg-log .emotion-row-wrap');
+  if(row){
+    var lvl = parseInt(n)||3;
+    row.style.setProperty('--emotion-color', EMOTION_COLORS[lvl] || EMOTION_COLORS[3]);
+    row.style.setProperty('--emotion-pct',  (lvl*20)+'%');
+  }
   if(typeof updateEmotion==='function'){ try{ updateEmotion(n); }catch(e){} }
   updateLogPreview();
+}
+
+// Set initial bar states on page load + after every reset.
+function initReflectionBars(){
+  var g=document.querySelector('#pg-log .grade-row');
+  if(g){ g.style.setProperty('--grade-color', GRADE_COLORS.B); g.style.setProperty('--grade-pct', '80%'); }
+  var em=document.querySelector('#pg-log .emotion-row-wrap');
+  if(em){ em.style.setProperty('--emotion-color', EMOTION_COLORS[3]); em.style.setProperty('--emotion-pct', '60%'); }
+  var c=document.querySelector('#pg-log .lt-confidence-row');
+  if(c){ c.style.setProperty('--conf-pct', '60%'); }
 }
 
 const CONF_LABELS=['','No Conviction','Low','Medium','High','Max Conviction'];
@@ -13154,7 +13209,10 @@ function updateConf(v){
 }
 
 // Init sliders on load
-document.addEventListener('DOMContentLoaded',function(){updateGrade(3);updateEmotion(3);});
+document.addEventListener('DOMContentLoaded',function(){
+  updateGrade(3); updateEmotion(3);
+  if(typeof initReflectionBars==='function') initReflectionBars();
+});
 
 function handleAiDrop(e){
   e.preventDefault();
