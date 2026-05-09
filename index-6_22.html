@@ -5725,6 +5725,15 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
             <div class="slider-marks"><span>None</span><span style="opacity:0">.</span><span style="opacity:0">.</span><span style="opacity:0">.</span><span>Max</span></div>
           </div>
 
+          <!-- SHARE-TO-COMMUNITY (only renders when user has groups) -->
+          <div class="field" id="share-comm-field" style="display:none;margin-top:12px">
+            <div class="field-l" style="font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);margin-bottom:6px">Share to community</div>
+            <select id="share-comm-select" class="field-input"
+              style="width:100%;padding:10px 12px;background:var(--n-surface-2);border:1px solid var(--n-border);color:var(--n-text);font-family:var(--n-font-sans);font-size:13px;border-radius:7px;outline:none">
+              <option value="">Don't share</option>
+            </select>
+          </div>
+
           <!-- SUBMIT -->
           <button class="lg-submit" onclick="confirmLog()">+ Log Trade</button>
           <button class="lg-reset" onclick="resetLogForm()">&#8634; Reset Form</button>
@@ -8412,52 +8421,69 @@ async function syncAndLoadCommFeed(g){
   if(!_sb||!currentUser||!g) return;
   var myId=currentUser.id;
 
-  // Get member user IDs (everyone except me)
-  var memberIds=(g.members||[]).map(function(m){return m.id;}).filter(function(id){
-    return id && id!==myId && id!=='me';
-  });
-
-  if(!memberIds.length){
-    // No other members yet
-    _remotePosts=[];
-    renderFeedPosts(g);
-    return;
+  // Source of truth for the feed is the community_posts table — every
+  // row is an explicit share by a member. (Daily check-ins also live
+  // here; we filter those out client-side because they have a parsed
+  // {checkin:...} content shape.) Switched from the previous
+  // `trades.in('user_id',memberIds)` query so trades are NOT auto-shared
+  // — users opt-in via the Share-to-Community dropdown on Log Trade.
+  var r = await _sb.from('community_posts')
+    .select('*')
+    .eq('community_id', g.id)
+    .order('created_at', {ascending:false})
+    .limit(200);
+  if(r.error){
+    console.warn('[renderFeed] error:', r.error.message, r.error.details);
+    _remotePosts=[]; renderFeedPosts(g); return;
   }
+  console.log('[renderFeed] loaded', (r.data||[]).length, 'posts for', g.name);
 
-  // Fetch other members' trades directly from trades table
-  var r=await _sb.from('trades').select('*').in('user_id',memberIds).order('created_at',{ascending:false}).limit(200);
-  if(r.error){ console.warn('Feed fetch error:',r.error.message,r.error.details); _remotePosts=[]; renderFeedPosts(g); return; }
-
-  // Live profile lookup — owner's CURRENT avatar_finish/initials/image,
-  // not the cached community_members snapshot. This is what makes finish
-  // changes propagate across every group.
-  var profMap={};
-  try{
-    var pf=await _sb.from('profiles').select('id,username,initials,color,avatar_finish,avatar_image_url,avatar_initials,last_seen_at').in('id',memberIds);
-    if(pf.data) pf.data.forEach(function(p){ profMap[p.id]=p; });
-  }catch(e){ console.warn('Profile fetch skipped:',e.message); }
+  // Profile JOIN for every poster + every group member (so the rail's
+  // finishes stay fresh even for members who haven't posted yet).
+  var posterIds = (r.data||[]).map(function(row){return row.user_id;}).filter(Boolean);
+  var memberIds = (g.members||[]).map(function(m){return m.id;}).filter(function(id){return id && id!=='me';});
+  var idsToFetch = Array.from(new Set(posterIds.concat(memberIds)));
+  var profMap = {};
+  if(idsToFetch.length){
+    try{
+      var pf = await _sb.from('profiles')
+        .select('id,username,initials,color,avatar_finish,avatar_image_url,avatar_initials,last_seen_at')
+        .in('id', idsToFetch);
+      if(pf.data) pf.data.forEach(function(p){ profMap[p.id] = p; });
+    }catch(e){ console.warn('Profile fetch skipped:', e.message); }
+  }
 
   var memberLookup={};
   (g.members||[]).forEach(function(m){ memberLookup[m.id]=m; });
 
-  // Convert to _remotePosts format - trade data is stored in trade_data JSON column
-  _remotePosts=(r.data||[]).map(function(row){
-    var t={}; try{ t=JSON.parse(row.trade_data||'{}'); }catch(e){}
-    var m=memberLookup[row.user_id]||{};
-    var p=profMap[row.user_id]||{};
-    return {
-      id: String(row.id)+'_'+row.user_id,
-      user_id: row.user_id,
-      username: p.username || m.username || 'Trader',
-      initials: p.avatar_initials || p.initials || m.initials || (p.username||m.username||'??').slice(0,2).toUpperCase(),
-      avatar_finish: p.avatar_finish || p.color || m.color || m.avatar_color || 'chrome',
-      avatar_image_url: p.avatar_image_url || null,
-      avatar_color: p.avatar_finish || p.color || m.color || m.avatar_color || 'chrome',
-      pnl_today: t.pnl||0,
-      content: row.trade_data,
-      created_at: t.date||row.created_at||''
-    };
-  });
+  // Map community_posts rows → _remotePosts shape that renderFeedPosts
+  // already expects. `content` is parsed as JSON to recover the trade
+  // payload (sym/type/pnl/images/etc) — that's the format fullLog inserts.
+  // Rows whose parsed content has a `checkin` key are skipped (they're
+  // daily mood updates, not trades).
+  _remotePosts = (r.data||[])
+    .map(function(row){
+      var t = {};
+      try { t = row.content ? JSON.parse(row.content) : {}; } catch(e){ t = {}; }
+      if(t && t.checkin) return null; // skip check-in rows
+      var m = memberLookup[row.user_id] || {};
+      var p = profMap[row.user_id] || {};
+      return {
+        id: String(row.id),
+        user_id: row.user_id,
+        username: row.username || p.username || m.username || 'Trader',
+        initials: p.avatar_initials || p.initials || row.initials || m.initials
+                  || (p.username || row.username || m.username || '??').slice(0,2).toUpperCase(),
+        avatar_finish: p.avatar_finish || p.color || row.avatar_color || m.color || m.avatar_color || 'chrome',
+        avatar_image_url: p.avatar_image_url || null,
+        avatar_color: p.avatar_finish || p.color || row.avatar_color || m.color || m.avatar_color || 'chrome',
+        pnl_today: Number(row.pnl_today || t.pnl || 0),
+        content: row.content,                     // raw JSON for renderFeedPosts to re-parse
+        text_content: typeof row.content === 'string' && !t.sym ? row.content : '',
+        created_at: t.date || row.created_at || ''
+      };
+    })
+    .filter(Boolean);
 
   // Also patch g.members with live profile data so renderFeedMembers and
   // renderFeedLeaderboard reflect current finishes.
@@ -8504,34 +8530,26 @@ function renderFeedPosts(g){
   var myFinish=(acct&&(acct.avatar_finish||acct.color))||'chrome';
   var myImgUrl=(acct&&acct.avatar_image_url)||null;
 
-  trades.slice().forEach(function(t){
-    if(!feedFilterDate([{date:t.date||''}]).length) return;
-    combined.push({
-      isMe:true, trade:t, pnl:t.pnl||0,
-      date:t.date||'', username:myName, initials:myInit,
-      user_id: myId, color: myFinish,
-      avatar_finish: myFinish, avatar_image_url: myImgUrl
-    });
-  });
-  // Diagnostic — verify edited screenshots are flowing through to the feed.
-  // Remove after the propagation bug is fully validated as fixed.
-  if(typeof window!=='undefined' && window._debugFeed){
-    console.log('[feed] own posts trade.images:',
-      trades.map(function(t){return {id:t.id, date:t.date, images:t.images};}));
-  }
-
+  // Feed source is community_posts (loaded into _remotePosts). The
+  // previous "always include local trades" branch is gone — trades are
+  // private until the user explicitly shares via the Log Trade dropdown,
+  // which lands them here as a community_posts row that this loop picks
+  // up on the next refresh.
   _remotePosts.forEach(function(row){
-    var rt={};try{rt=JSON.parse(row.content||'{}');}catch(e){}
+    var rt={}; try{ rt=JSON.parse(row.content||'{}'); } catch(e){}
+    var rowIsMe = !!(myId && row.user_id === myId);
     var rp={
-      isMe:false, trade:rt, pnl:row.pnl_today||0,
-      date:rt.date||row.created_at||'',
-      username:row.username||'Trader',
-      initials:row.initials||'??',
+      isMe: rowIsMe,
+      trade: rt,
+      pnl: row.pnl_today || rt.pnl || 0,
+      date: rt.date || row.created_at || '',
+      username: rowIsMe ? myName : (row.username||'Trader'),
+      initials: rowIsMe ? myInit : (row.initials||'??'),
       user_id: row.user_id || null,
-      color: row.avatar_finish || row.avatar_color || 'chrome',
-      avatar_finish: row.avatar_finish || row.avatar_color || 'chrome',
-      avatar_image_url: row.avatar_image_url || null,
-      row:row
+      color: rowIsMe ? myFinish : (row.avatar_finish || row.avatar_color || 'chrome'),
+      avatar_finish: rowIsMe ? myFinish : (row.avatar_finish || row.avatar_color || 'chrome'),
+      avatar_image_url: rowIsMe ? myImgUrl : (row.avatar_image_url || null),
+      row: row
     };
     if(feedFilterDate([{date:rp.date}]).length) combined.push(rp);
   });
@@ -10122,6 +10140,7 @@ function goTo(pg){
   if(pg==='account'){refreshAcctUI();showTab('profile');return;}
   if(pg==='dashboard'){renderDashboard();setTimeout(drawMiniChart,80);}
   if(pg==='history')renderHistory();if(pg==='propfirms')pfRender();if(pg==='calendar')renderCalPage();if(pg==='analytics')renderAnalytics();if(pg==='community')renderCommunity();if(pg==='rules')renderRules();if(pg==='goals')renderGoals();
+  if(pg==='log' && typeof populateShareCommunities==='function') populateShareCommunities();
   if(pg==='equity'){requestAnimationFrame(function(){requestAnimationFrame(function(){renderEquity();});});}
 }
 
@@ -10875,6 +10894,95 @@ function renderEquity(){refreshEquity();}
 function setMode(m,el){document.querySelectorAll('.mode-tab').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.mode-panel').forEach(x=>x.classList.remove('on'));if(el)el.classList.add('on');document.getElementById('mode-'+m).classList.add('on');}
 function setLgType(t){lgType=t;document.getElementById('lg-long').classList.toggle('on',t==='long');document.getElementById('lg-short').classList.toggle('on',t==='short');}
 
+/* Populate the Share-to-Community <select> on the Log Trade page.
+   Pulls every community where the current user is owner OR a member
+   (matches the OR query the loader uses, so only joinable groups). */
+async function populateShareCommunities(){
+  var sel = document.getElementById('share-comm-select');
+  if(!sel) return;
+  if(!_sb || !currentUser){
+    sel.innerHTML = '<option value="">Don\'t share</option>';
+    var wrap0 = document.getElementById('share-comm-field');
+    if(wrap0) wrap0.style.display = 'none';
+    return;
+  }
+  try {
+    var r = await _sb.from('communities').select('id, name')
+      .or('owner_id.eq.'+currentUser.id+',members.cs.{'+currentUser.id+'}');
+    var comms = (r && r.data) || [];
+    sel.innerHTML = '<option value="">Don\'t share</option>'
+      + comms.map(function(c){
+          return '<option value="'+safeText(c.id)+'">'+safeText(c.name||'Community')+'</option>';
+        }).join('');
+    var wrap = document.getElementById('share-comm-field');
+    if(wrap) wrap.style.display = comms.length ? '' : 'none';
+  } catch(e){
+    console.warn('[populateShareCommunities]', e && e.message);
+  }
+}
+
+/* Insert a community_posts row when the user picks a community from
+   the Share dropdown. JSON-stringifies the trade into `content` so the
+   feed renderer's existing parser keeps working (sym/type/pnl/images). */
+async function shareTradeToCommunity(trade){
+  if(!_sb || !currentUser || !trade) return;
+  var sel = document.getElementById('share-comm-select');
+  var shareCommId = sel && sel.value;
+  if(!shareCommId) return;
+
+  try {
+    // Pull profile fields once for username/initials/avatar tagging.
+    var prof = await _sb.from('profiles')
+      .select('username,avatar_finish,avatar_initials,initials,color')
+      .eq('id', currentUser.id).maybeSingle();
+    var p = (prof && prof.data) || {};
+    var username = p.username || (acct && acct.username) || 'trader';
+    var initials = p.avatar_initials || p.initials
+                || (acct && (acct.avatar_initials||acct.initials))
+                || username.slice(0,2).toUpperCase();
+    var avatar_color = p.avatar_finish || p.color
+                || (acct && (acct.avatar_finish||acct.color)) || 'chrome';
+
+    var payload = {
+      id: 'trade_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
+      community_id: shareCommId,
+      user_id: currentUser.id,
+      username: username,
+      initials: initials,
+      avatar_color: avatar_color,
+      // Stringify the full trade so the feed renderer parses the same
+      // shape it does for any other community post.
+      content: JSON.stringify(trade),
+      pnl_today: Number(trade.pnl)||0
+    };
+
+    var r = await _sb.from('community_posts').insert(payload);
+    if(r && r.error){
+      // Some columns may not exist in the user's schema yet (e.g.
+      // initials/avatar_color are convenience denormalizations).
+      // Retry with the minimum-shape payload before giving up.
+      if(/column .* does not exist/i.test(r.error.message||'') ||
+         /could not find the .* column/i.test(r.error.message||'')){
+        var minimal = { id: payload.id, community_id: shareCommId, user_id: currentUser.id,
+                        username: username, content: payload.content, pnl_today: payload.pnl_today };
+        var r2 = await _sb.from('community_posts').insert(minimal);
+        if(r2 && r2.error) throw r2.error;
+        showToast('Trade shared to community', 'success');
+        return;
+      }
+      throw r.error;
+    }
+    showToast('Trade shared to community', 'success');
+    // If the user is currently looking at that community, refresh the feed.
+    if(_comm && _comm.id === shareCommId && typeof syncAndLoadCommFeed==='function'){
+      syncAndLoadCommFeed(_comm);
+    }
+  } catch(e){
+    console.error('[shareTradeToCommunity]', e);
+    showToast('Trade saved, share failed: '+(e.message||'check console'), 'error');
+  }
+}
+
 function fullLog(){
   const sym=document.getElementById('lg-sym').value.trim().toUpperCase();
   const entry=parseFloat(document.getElementById('lg-entry').value),exit=parseFloat(document.getElementById('lg-exit').value);
@@ -10893,8 +11001,12 @@ function fullLog(){
   const pnl=lgType==='long'?(exit-entry)*totalQty*ptVal:(entry-exit)*totalQty*ptVal;
   const risk=stop?stop*totalQty*ptVal:null;
   const calcRR=risk&&risk>0?Math.abs(pnl)/risk:null;
-  trades.unshift({id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,pnl,rr:calcRR,grade,emotion,confidence,images:[...noteImages],created_at:new Date().toISOString()});
+  var newTrade = {id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,pnl,rr:calcRR,grade,emotion,confidence,images:[...noteImages],created_at:new Date().toISOString()};
+  trades.unshift(newTrade);
   save();renderAll();
+  // Optional: share this trade to a community. The Share dropdown
+  // appears only when the user is in at least one community.
+  shareTradeToCommunity(newTrade);
   ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('lg-qty').value='1';
   if(document.getElementById('lg-accounts'))document.getElementById('lg-accounts').value='1';
@@ -10907,6 +11019,10 @@ function fullLog(){
   updateGrade(3);updateEmotion(3);
   const lc=document.getElementById('live-calc');if(lc)lc.style.display='none';
   noteImages=[];renderNoteImages();
+  // Reset the Share-to-Community dropdown so the next trade doesn't
+  // accidentally re-share to the same group.
+  var _shareSel=document.getElementById('share-comm-select');
+  if(_shareSel) _shareSel.value='';
   toast('Trade logged', 'success');setTimeout(drawMiniChart,100);
 }
 
