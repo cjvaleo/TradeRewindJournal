@@ -9623,6 +9623,11 @@ function setCommPeriod(period, btn){
   else wire();
 })();
 
+/* Membership lives as a UUID array on `communities.members` — there is
+   no separate community_members table in this schema. To kick a user
+   we update the array (RLS gates write-access to the owner). We also
+   flip any matching invite rows to 'removed' so the user can't auto-
+   rejoin via a stale accepted invite. */
 async function removeMember(memberId){
   if(!_comm || !currentUser){ return; }
   if(_comm.owner_id !== currentUser.id){
@@ -9637,36 +9642,33 @@ async function removeMember(memberId){
     return;
   }
 
-  if(_sb){
-    try{
-      // Delete from community_members (the canonical membership table).
-      var del1 = await _sb.from('community_members').delete()
-        .eq('community_id', _comm.id).eq('user_id', memberId);
-      // Older invite-based memberships also live in invites — flip
-      // their status to 'removed' so the user can't auto-rejoin.
-      var del2 = await _sb.from('invites').update({status:'removed'})
-        .eq('community_id', _comm.id).eq('to_id', memberId);
-      if(del1 && del1.error && !/relation .* does not exist/i.test(del1.error.message||'')){
-        throw del1.error;
-      }
-      if(del2 && del2.error){ console.warn('[removeMember] invites flag failed:', del2.error.message); }
-    }catch(e){
+  if(_sb && _comm.id){
+    var newMemberIds = (_comm.members||[])
+      .filter(function(m){ return m.id !== memberId; })
+      .map(function(m){ return m.id; })
+      .filter(function(id){ return id && id !== 'me'; });
+
+    try {
+      var r = await _sb.from('communities')
+        .update({ members: newMemberIds })
+        .eq('id', _comm.id);
+      if(r && r.error) throw r.error;
+    } catch(e){
       console.error('[removeMember]', e);
       showToast('Failed to remove: '+(e.message||'try again'), 'error');
       return;
     }
+
+    // Best-effort: flip any 'accepted' invite to 'removed' so the user
+    // can't auto-rejoin. Failure here is non-fatal.
+    try {
+      await _sb.from('invites').update({ status: 'removed' })
+        .eq('community_id', _comm.id).eq('to_id', memberId);
+    } catch(e){ console.warn('[removeMember] invite flag failed:', e && e.message); }
   }
 
-  // Update local state + persist to comm_data so the row matches.
+  // Local mirror.
   _comm.members = (_comm.members||[]).filter(function(m){return m.id!==memberId;});
-  if(_sb && _comm.id){
-    try{
-      await _sb.from('communities').update({
-        comm_data: JSON.stringify(_comm),
-        members: _comm.members.map(function(m){return m.id;}).filter(function(id){return id && id!=='me';})
-      }).eq('id', _comm.id);
-    }catch(e){ /* row may not include comm_data column — ignore */ }
-  }
   saveComm();
 
   // Targeted re-renders — avoid a full renderCommunity which would
@@ -9674,10 +9676,10 @@ async function removeMember(memberId){
   if(typeof renderFeedMembers==='function') renderFeedMembers(_comm);
   if(typeof renderFeedLeaderboard==='function') renderFeedLeaderboard(_comm);
   if(typeof renderCommSidebar==='function') renderCommSidebar();
-  // Refresh the edit-group-modal members list (this is where the user
-  // clicked the remove button) so the row vanishes immediately.
+  // Refresh the edit-group-modal members list (where the click came from)
+  // so the row vanishes immediately without closing the modal.
   if(typeof renderEditMembersList==='function') renderEditMembersList();
-  // Refresh the all-members modal if it's open.
+  // Refresh the all-members modal if it's currently open.
   var amModal = document.getElementById('all-members-modal');
   if(amModal && amModal.style.display !== 'none' && typeof openAllMembersModal==='function'){
     openAllMembersModal();

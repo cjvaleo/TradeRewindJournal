@@ -276,19 +276,23 @@ do $$ begin
     execute 'alter table public.communities enable row level security';
   end if;
 end $$;
-drop policy if exists "communities_read_member"     on public.communities;
-drop policy if exists "communities_write_owner"    on public.communities;
-drop policy if exists "communities_insert_anyone"  on public.communities;
-drop policy if exists "communities_delete_owner"   on public.communities;
+drop policy if exists "communities_read_member"      on public.communities;
+drop policy if exists "communities_write_owner"      on public.communities;
+drop policy if exists "communities_update_by_owner"  on public.communities;
+drop policy if exists "communities_insert_anyone"    on public.communities;
+drop policy if exists "communities_delete_owner"     on public.communities;
+-- Read: owner OR a user listed in the communities.members UUID array.
+-- (Membership lives on this column, not in a separate community_members
+-- table — older versions of this migration referenced one that doesn't
+-- exist in this project.)
 create policy "communities_read_member" on public.communities
   for select using (
     auth.uid() = owner_id
-    or exists (
-      select 1 from public.community_members
-      where community_id = communities.id and user_id = auth.uid()
-    )
+    or auth.uid() = ANY (members)
   );
-create policy "communities_write_owner" on public.communities
+-- Update: owner. THIS is what `removeMember()` needs in order to write
+-- a new members array into the row.
+create policy "communities_update_by_owner" on public.communities
   for update using (auth.uid() = owner_id) with check (auth.uid() = owner_id);
 create policy "communities_insert_anyone" on public.communities
   for insert with check (auth.uid() = owner_id);
