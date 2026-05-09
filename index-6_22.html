@@ -12252,28 +12252,47 @@ function fullLog(){
   const emotion=parseInt(document.getElementById('lg-emotion')?.value??3);
   const confidence=parseInt(document.getElementById('lg-conf')?.value??3);
   if(!sym||isNaN(entry)||isNaN(exit)){toast('Fill Symbol, Entry & Exit');return;}
+
+  // Compute the auto-derived values, then prefer user-typed overrides
+  // from the visible lg-pnl / lg-rr inputs (v2 form). The override flags
+  // keep us honest about which path produced the saved number.
   const ptVal=PTS[sym]||1;
-  const pnl=lgType==='long'?(exit-entry)*totalQty*ptVal:(entry-exit)*totalQty*ptVal;
+  const autoPnl=lgType==='long'?(exit-entry)*totalQty*ptVal:(entry-exit)*totalQty*ptVal;
   const risk=stop?stop*totalQty*ptVal:null;
-  const calcRR=risk&&risk>0?Math.abs(pnl)/risk:null;
-  var newTrade = {id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,pnl,rr:calcRR,grade,emotion,confidence,images:[...noteImages],created_at:new Date().toISOString()};
+  const autoRR=risk&&risk>0?Math.abs(autoPnl)/risk:null;
+
+  let pnl=autoPnl, rr=autoRR;
+  const pnlOverride=parseFloat((document.getElementById('lg-pnl')||{}).value);
+  if(_pnlManual && !isNaN(pnlOverride)) pnl=pnlOverride;
+  const rrOverride=parseFloat((document.getElementById('lg-rr')||{}).value);
+  if(_rrManual && !isNaN(rrOverride)) rr=rrOverride;
+  // If pnl was manually overridden but rr was not, recompute rr from the
+  // override so the saved rr matches the saved pnl.
+  if(_pnlManual && !_rrManual && risk && risk>0) rr = pnl/risk;
+
+  var newTrade = {id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,pnl,rr,grade,emotion,confidence,images:[...noteImages],created_at:new Date().toISOString()};
   trades.unshift(newTrade);
   save();renderAll();
-  // Optional: share this trade to a community. The Share dropdown
-  // appears only when the user is in at least one community.
   shareTradeToCommunity(newTrade);
-  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes'].forEach(id=>document.getElementById(id).value='');
+
+  // Reset form for the next trade
+  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-pnl','lg-rr'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('lg-qty').value='1';
   if(document.getElementById('lg-accounts'))document.getElementById('lg-accounts').value='1';
   document.getElementById('lg-date').value=_localDate(new Date());
   if(document.getElementById('lg-session'))document.getElementById('lg-session').value='';
+  var sessSel=document.getElementById('lg-session-sel'); if(sessSel) sessSel.value='';
   _selSession='';
   document.querySelectorAll('.sess-btn').forEach(b=>b.style.boxShadow='none');
   if(document.getElementById('lg-grade'))document.getElementById('lg-grade').value=3;
   if(document.getElementById('lg-emotion'))document.getElementById('lg-emotion').value=3;
+  if(typeof setGradePill==='function') setGradePill('B');
+  if(typeof setEmotionPill==='function') setEmotionPill(3);
+  if(typeof _resetLtAutoFlags==='function') _resetLtAutoFlags();
   updateGrade(3);updateEmotion(3);
   const lc=document.getElementById('live-calc');if(lc)lc.style.display='none';
   noteImages=[];renderNoteImages();
+  if(typeof updateLogPreview==='function') updateLogPreview();
   toast('Trade logged', 'success');setTimeout(drawMiniChart,100);
 }
 
@@ -12328,7 +12347,7 @@ function confirmLogFinal(){
 }
 
 function resetLogForm(){
-  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-pnl','lg-rr'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('lg-qty').value='1';
   if(document.getElementById('lg-accounts'))document.getElementById('lg-accounts').value='1';
   document.getElementById('lg-date').value=_localDate(new Date());
@@ -12336,11 +12355,17 @@ function resetLogForm(){
   if(document.getElementById('lg-emotion')){document.getElementById('lg-emotion').value=3;updateEmotion(3);}
   if(document.getElementById('lg-conf')){document.getElementById('lg-conf').value=3;updateConf(3);}
   if(document.getElementById('lg-session'))document.getElementById('lg-session').value='';
+  var sessSel=document.getElementById('lg-session-sel'); if(sessSel) sessSel.value='';
   _selSession='';
   document.querySelectorAll('.sess-btn').forEach(b=>b.style.boxShadow='none');
+  if(typeof setGradePill==='function') setGradePill('B');
+  if(typeof setEmotionPill==='function') setEmotionPill(3);
+  if(typeof _resetLtAutoFlags==='function') _resetLtAutoFlags();
   const lc=document.getElementById('live-calc');if(lc)lc.style.display='none';
+  var note=document.getElementById('lt-acct-note'); if(note) note.style.display='none';
   noteImages=[];renderNoteImages();
   setLgType('long');
+  if(typeof updateLogPreview==='function') updateLogPreview();
   toast('Form cleared');
 }
 
@@ -12358,19 +12383,32 @@ function quickFillLastTrade(){
   if(qty&&last.qty){qty.value=last.qty;}
   // Direction
   if(last.type){setLgType(last.type);}
-  // Session
+  // Session — write hidden value + the v2 select
   if(last.session){
+    var sessHidden=document.getElementById('lg-session');
+    if(sessHidden) sessHidden.value=last.session;
+    var sessSel=document.getElementById('lg-session-sel');
+    if(sessSel){
+      var opts=Array.prototype.slice.call(sessSel.options);
+      var match=opts.find(function(o){return o.value && o.value.toUpperCase()===last.session.toUpperCase();});
+      if(match) sessSel.value=match.value;
+    }
+    // legacy session buttons (no-op if removed)
     document.querySelectorAll('.sess-btn').forEach(function(b){b.style.boxShadow='none';});
     document.querySelectorAll('.sess-btn').forEach(function(b){
       var nameDiv=b.querySelector('div>div:first-child');
-      if(nameDiv&&nameDiv.textContent.trim().toUpperCase()===last.session.toUpperCase()){
-        b.click();
-      }
+      if(nameDiv&&nameDiv.textContent.trim().toUpperCase()===last.session.toUpperCase()){ b.click(); }
     });
+  }
+  // Accounts
+  if(last.accounts && document.getElementById('lg-accounts')){
+    document.getElementById('lg-accounts').value=last.accounts;
   }
   // Today's date
   document.getElementById('lg-date').value=_localDate(new Date());
+  if(typeof _resetLtAutoFlags==='function') _resetLtAutoFlags();
   calcLivePnl();
+  if(typeof updateLogPreview==='function') updateLogPreview();
   toast('⚡ Filled from last '+( last.sym||'trade'));
 }
 
