@@ -4790,6 +4790,221 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   width:14px!important;height:14px!important;border-radius:50%!important;
   background:var(--n-text)!important;border:none!important;cursor:pointer!important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — Plan B (critical flows + degraded heavy pages)
+   Breakpoints: mobile <768px / tablet 768–1024px / desktop >1024px
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Topbar + drawer scaffolding (hidden on desktop) */
+.mobile-topbar{display:none}
+.drawer{display:none}
+.drawer-backdrop{display:none}
+.desktop-rec-banner{display:none}
+
+@media (min-width: 769px){
+  .mobile-topbar{display:none!important}
+  .drawer{display:none!important}
+  .drawer-backdrop{display:none!important}
+}
+
+/* ─── Desktop-recommended banner (≤1024px) ───────────────── */
+@media (max-width: 1024px){
+  .desktop-rec-banner{
+    display:flex;margin:14px 16px;padding:14px 16px;
+    background:rgba(110,168,255,0.04);
+    border:1px solid rgba(110,168,255,0.14);
+    border-left:2px solid var(--n-accent-cool);
+    border-radius:8px;
+    align-items:flex-start;gap:11px;
+    font-size:12px;color:var(--n-text-2);line-height:1.5;
+  }
+  .desktop-rec-banner.dismissed{display:none}
+  .desktop-rec-banner svg{
+    width:16px;height:16px;color:var(--n-accent-cool);
+    flex-shrink:0;margin-top:1px;stroke-width:1.8;stroke:currentColor;fill:none;
+  }
+  .desktop-rec-banner b{color:var(--n-text);font-weight:500}
+  .desktop-rec-banner .drb-dismiss{
+    margin-left:auto;background:transparent;border:none;
+    color:var(--n-text-3);font-family:var(--n-font-mono);font-size:9.5px;
+    letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;
+    padding:4px 8px;border-radius:5px;flex-shrink:0;
+  }
+  .desktop-rec-banner .drb-dismiss:hover{
+    color:var(--n-text);background:rgba(255,255,255,0.04);
+  }
+}
+
+/* ─── ≤768px — full mobile layout ───────────────────────── */
+@media (max-width: 768px){
+  /* Topbar — replace the fixed left sidebar */
+  .mobile-topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    position:sticky;top:0;z-index:100;
+    height:54px;padding:0 14px;
+    background:var(--n-bg);
+    border-bottom:1px solid var(--n-border);
+  }
+  .mobile-topbar .mt-burger,
+  .mobile-topbar .mt-avatar{
+    width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+    background:transparent;border:1px solid var(--n-border);border-radius:8px;
+    color:var(--n-text-2);cursor:pointer;flex-shrink:0;
+  }
+  .mobile-topbar .mt-avatar{padding:0;overflow:hidden;border:none}
+  .mobile-topbar .mt-avatar .av{width:32px;height:32px;font-size:10.5px}
+  .mobile-topbar .mt-burger svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+  .mobile-topbar .mt-brand{
+    font-family:var(--n-font-display);font-style:italic;font-size:22px;
+    color:var(--n-text);letter-spacing:-0.01em;
+  }
+
+  /* Drawer (slides in from left) */
+  .drawer{
+    display:block;position:fixed;top:0;left:0;bottom:0;width:280px;
+    background:var(--n-bg);
+    border-right:1px solid var(--n-border);
+    z-index:1001;transform:translateX(-100%);
+    transition:transform .25s cubic-bezier(0.4,0,0.2,1);
+    overflow-y:auto;padding:18px 12px;
+  }
+  .drawer.open{transform:translateX(0)}
+  .drawer-close{
+    position:absolute;top:14px;right:14px;
+    width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+    background:transparent;border:1px solid var(--n-border);
+    border-radius:6px;color:var(--n-text-3);cursor:pointer;
+  }
+  .drawer-backdrop{
+    display:block;position:fixed;inset:0;background:rgba(0,0,0,0.55);
+    backdrop-filter:blur(2px);z-index:1000;opacity:0;pointer-events:none;
+    transition:opacity .25s;
+  }
+  .drawer-backdrop.show{opacity:1;pointer-events:auto}
+  /* Re-show the .sb's contents inside the drawer by cloning into it
+     via JS, so we don't have to maintain two nav lists. */
+
+  /* Page-level layout shifts */
+  body{overflow-x:hidden}
+  .wrap{flex-direction:column}
+  .main{width:100%;padding:14px 12px 80px}
+
+  /* DASHBOARD */
+  #pg-dashboard .hero-pnl-value{font-size:54px}
+  #pg-dashboard .stats-row{grid-template-columns:1fr 1fr!important;gap:8px}
+  #pg-dashboard .lower-grid,
+  #pg-dashboard .dash-main{grid-template-columns:1fr!important;gap:16px}
+  #pg-dashboard .period-tabs,
+  #pg-dashboard .dash-tabs{width:100%}
+  #pg-dashboard .period-tab,
+  #pg-dashboard .dash-tab{flex:1;text-align:center}
+  #pg-dashboard .dash-head-row{flex-wrap:wrap;gap:10px}
+  #pg-dashboard .h-title{font-size:28px}
+
+  /* LOG TRADE */
+  #pg-log .form-grid,
+  #pg-log .lg-grid,
+  #pg-log .dir-tog{grid-template-columns:1fr!important}
+  #pg-log .dir-tog{display:grid;grid-template-columns:1fr 1fr!important;gap:6px}
+  #pg-log .field-input,
+  #pg-log .f-input,
+  #pg-log input[type="text"],
+  #pg-log input[type="number"],
+  #pg-log input[type="date"],
+  #pg-log textarea,
+  #pg-log select{
+    padding:14px 12px!important;font-size:15px!important;width:100%!important;
+  }
+  #pg-log .cta-prim,
+  #pg-log .big-submit,
+  #pg-log button[type="submit"]{
+    width:100%;padding:16px;font-size:11px;letter-spacing:0.18em;
+  }
+  /* Mode tabs (Manual / CSV Import) full-width 2-col */
+  #pg-log .mode-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+
+  /* HISTORY — stack rows, hide secondary columns */
+  #pg-history table{font-size:12px}
+  #pg-history th:nth-child(n+5),
+  #pg-history td:nth-child(n+5){display:none}
+  #pg-history .h-filters{flex-wrap:wrap;gap:6px}
+
+  /* CALENDAR — collapsible side panel + tighter month grid */
+  #pg-calendar.page.on{padding:14px 10px 60px}
+  #pg-calendar .cal-head{flex-direction:column;gap:10px;align-items:flex-start}
+  #big-cal{grid-template-columns:repeat(7,1fr);gap:2px}
+  #big-cal .cc{min-height:48px;font-size:11px}
+
+  /* COMMUNITY — degrade gracefully */
+  #pg-community.on{flex-direction:column!important;height:auto!important}
+  #pg-community .csb{
+    width:100%!important;height:auto!important;
+    flex-direction:row!important;overflow-x:auto;overflow-y:hidden;
+    padding:12px 14px!important;border-right:none!important;
+    border-bottom:1px solid var(--n-border)!important;
+    position:static!important;flex-shrink:0;gap:8px;
+  }
+  #pg-community .csb-head,
+  #pg-community .csb-tabs,
+  #pg-community .csb-create,
+  #pg-community .csb-collapse-btn{display:none!important}
+  #pg-community .gitem{flex-shrink:0;padding:6px 8px}
+  #pg-community .gitem .gname,
+  #pg-community .gitem .gsub,
+  #pg-community .gitem .gmeta{display:none!important}
+  #pg-community .rail{display:none!important}
+  #pg-community #comm-main{padding:14px 12px}
+  #pg-community .feed-title{font-size:24px}
+  #pg-community .hero-pnl{padding:20px 16px;margin:14px 0 18px}
+  #pg-community .hero-pnl-value{font-size:42px}
+  #pg-community .hero-pnl-stats{flex-wrap:wrap;gap:14px;justify-content:flex-start}
+  #pg-community .fhead-right{flex-wrap:wrap;width:100%}
+  #pg-community .period-tabs{flex:1;width:100%}
+  #pg-community .period-tab{flex:1}
+  #pg-community .post{padding:14px}
+  #pg-community .trade-card{flex-wrap:wrap;gap:10px}
+
+  /* ACCOUNT — picker stacks */
+  #pg-account .av-hero-card{flex-direction:column;align-items:flex-start;text-align:left}
+  #pg-account .av-palette{grid-template-columns:repeat(4,1fr)!important}
+  #pg-account .av-form-grid{grid-template-columns:1fr!important}
+  #pg-account .av-actions{flex-direction:column-reverse}
+  #pg-account .av-actions .btn-prim,
+  #pg-account .av-actions .btn-sec{width:100%}
+  #pg-account .acct-tabs{flex-wrap:wrap}
+
+  /* EQUITY / ANALYTICS — banner-only, tighter grids */
+  #pg-equity .crd,
+  #pg-analytics .crd{padding:14px}
+
+  /* MODALS — full-screen */
+  [id$="-modal"] > div,
+  .eg-modal,
+  .modal{
+    width:100%!important;max-width:100%!important;
+    height:100vh;max-height:100vh;
+    border-radius:0!important;
+    margin:0!important;
+  }
+  [id$="-modal"]{padding:0!important;align-items:stretch!important}
+  .modal-body,
+  .eg-body{padding:16px}
+  .modal-foot,
+  .eg-foot{
+    position:sticky;bottom:0;background:var(--n-surface);
+    padding:14px 16px!important;border-top:1px solid var(--n-border);
+  }
+
+  /* Generic form/grid normalization */
+  .form-grid{grid-template-columns:1fr!important}
+  div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+  div[style*="grid-template-columns:repeat(3"]{grid-template-columns:1fr 1fr!important}
+
+  /* Toasts — slide in from bottom on mobile */
+  #toast-container{right:12px;left:12px;bottom:12px;align-items:stretch}
+  #toast-container .toast{max-width:100%}
+}
 </style>
 </head>
 <body>
@@ -4959,6 +5174,24 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 <div class="bg-grid" style="pointer-events:none"><div class="bg-grid-inner" style="pointer-events:none"></div></div>
 <div class="bg-horizon" style="pointer-events:none"></div>
 <div class="bg-horizon2" style="pointer-events:none"></div>
+
+<!-- MOBILE: hamburger topbar + slide-in drawer (≤768px). Hidden on desktop. -->
+<div class="mobile-topbar">
+  <button class="mt-burger" id="mt-burger" aria-label="Open navigation">
+    <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+  <div class="mt-brand">Rewind</div>
+  <button class="mt-avatar" id="mt-avatar" aria-label="Account" onclick="goTo('account')">
+    <div class="av chrome" id="mt-avatar-icon"><span style="position:relative;z-index:1" id="mt-avatar-txt">?</span></div>
+  </button>
+</div>
+<aside class="drawer" id="mobile-drawer" aria-hidden="true">
+  <button class="drawer-close" id="drawer-close" aria-label="Close">
+    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  <div id="drawer-nav-mount"><!-- sidebar nav cloned here on first open --></div>
+</aside>
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
 
 <div class="wrap" style="display:flex">
 <nav class="sb">
@@ -5713,6 +5946,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
 <!-- CALENDAR -->
 <div id="pg-calendar" class="page">
+  <div class="desktop-rec-banner" data-banner-page="calendar"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span><b>Best on desktop.</b> This view is designed for a wider screen — some panels are hidden or simplified on mobile.</span><button class="drb-dismiss" onclick="dismissDesktopBanner()">Got it</button></div>
 
   <!-- HEADER -->
   <div class="cal-head">
@@ -5779,6 +6013,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 </div>
 <!-- EQUITY -->
 <div id="pg-equity" class="page">
+  <div class="desktop-rec-banner" data-banner-page="equity"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span><b>Best on desktop.</b> This view is designed for a wider screen — some panels are hidden or simplified on mobile.</span><button class="drb-dismiss" onclick="dismissDesktopBanner()">Got it</button></div>
 
   <!-- HEADER -->
   <div class="eq-head">
@@ -5855,6 +6090,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 </div>
 <!-- ANALYTICS -->
 <div id="pg-analytics" class="page">
+  <div class="desktop-rec-banner" data-banner-page="analytics"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span><b>Best on desktop.</b> This view is designed for a wider screen — some panels are hidden or simplified on mobile.</span><button class="drb-dismiss" onclick="dismissDesktopBanner()">Got it</button></div>
 
   <!-- HEADER -->
   <div class="an-head">
@@ -6141,6 +6377,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
 <!-- COMMUNITY -->
 <div id="pg-community" class="page">
+  <div class="desktop-rec-banner" data-banner-page="community"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span><b>Best on desktop.</b> This view is designed for a wider screen — some panels are hidden or simplified on mobile.</span><button class="drb-dismiss" onclick="dismissDesktopBanner()">Got it</button></div>
 
   <!-- LEFT COMMUNITIES SUB-SIDEBAR -->
   <aside class="csb">
@@ -6663,6 +6900,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
 <!-- ACCOUNT PAGE -->
 <div id="pg-account" class="page">
+  <div class="desktop-rec-banner" data-banner-page="account"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span><b>Best on desktop.</b> This view is designed for a wider screen — some panels are hidden or simplified on mobile.</span><button class="drb-dismiss" onclick="dismissDesktopBanner()">Got it</button></div>
 
   <!-- HEADER -->
   <div class="acct-head">
@@ -14809,11 +15047,84 @@ function tryInitSupabase() {
 /* Also remove any old initSupabase references */
 window.initSupabase = tryInitSupabase;
 
+/* ── MOBILE — hamburger drawer + banner dismiss ─────────── */
+function _wireMobileShell(){
+  var burger   = document.getElementById('mt-burger');
+  var drawer   = document.getElementById('mobile-drawer');
+  var backdrop = document.getElementById('drawer-backdrop');
+  var closeBtn = document.getElementById('drawer-close');
+  if(!burger || !drawer || !backdrop) return;
+
+  function openDrawer(){
+    // Lazy-clone the desktop sidebar's nav into the drawer the first
+    // time the user opens it. Cloning means we don't have to maintain
+    // two parallel nav lists or worry about ID collisions for hidden
+    // copies on desktop.
+    var mount = document.getElementById('drawer-nav-mount');
+    if(mount && !mount.children.length){
+      var sb = document.querySelector('nav.sb');
+      if(sb){
+        var clone = sb.cloneNode(true);
+        // Strip IDs to avoid duplicates with the desktop sidebar.
+        clone.querySelectorAll('[id]').forEach(function(el){ el.removeAttribute('id'); });
+        // Make .ni clicks also close the drawer after navigation.
+        clone.querySelectorAll('.ni, [onclick*="goTo("]').forEach(function(el){
+          el.addEventListener('click', function(){ closeDrawer(); });
+        });
+        mount.appendChild(clone);
+      }
+    }
+    drawer.classList.add('open');
+    backdrop.classList.add('show');
+    drawer.setAttribute('aria-hidden','false');
+  }
+  function closeDrawer(){
+    drawer.classList.remove('open');
+    backdrop.classList.remove('show');
+    drawer.setAttribute('aria-hidden','true');
+  }
+  burger.addEventListener('click', openDrawer);
+  if(closeBtn) closeBtn.addEventListener('click', closeDrawer);
+  backdrop.addEventListener('click', closeDrawer);
+
+  // Sync mobile-topbar avatar with the user's current finish + initials.
+  function syncMobileAvatar(){
+    var icon = document.getElementById('mt-avatar-icon');
+    var txt  = document.getElementById('mt-avatar-txt');
+    if(!icon || !txt || typeof acct === 'undefined') return;
+    var f = (typeof normalizeFinish === 'function')
+      ? normalizeFinish(acct.avatar_finish || acct.color)
+      : (acct.avatar_finish || 'chrome');
+    icon.className = 'av ' + f;
+    txt.textContent = acct.avatar_initials || acct.initials || '?';
+  }
+  syncMobileAvatar();
+  // Re-sync after profile changes — refreshAcctUI runs on every save.
+  var origRefresh = window.refreshAcctUI;
+  if (typeof origRefresh === 'function') {
+    window.refreshAcctUI = function(){ origRefresh.apply(this, arguments); syncMobileAvatar(); };
+  }
+}
+
+/* Banner dismiss — persists across reloads. */
+function dismissDesktopBanner(){
+  try{ localStorage.setItem('tr1_desktop_banner_dismissed','1'); }catch(e){}
+  document.querySelectorAll('.desktop-rec-banner').forEach(function(b){ b.classList.add('dismissed'); });
+}
+function _applyBannerDismissed(){
+  try{
+    if(localStorage.getItem('tr1_desktop_banner_dismissed') === '1'){
+      document.querySelectorAll('.desktop-rec-banner').forEach(function(b){ b.classList.add('dismissed'); });
+    }
+  }catch(e){}
+}
+
 /* Start polling when DOM is ready */
+function _bootShell(){ _wireMobileShell(); _applyBannerDismissed(); tryInitSupabase(); }
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', tryInitSupabase);
+  document.addEventListener('DOMContentLoaded', _bootShell);
 } else {
-  tryInitSupabase();
+  _bootShell();
 }
 
 </script>
