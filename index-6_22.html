@@ -850,10 +850,6 @@
   font-family:var(--n-font-mono);letter-spacing:0.05em;
 }
 
-.dash-main{
-  display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px;
-  margin-bottom:24px;
-}
 .n-card{
   background:var(--n-surface);border:1px solid var(--n-border);
   border-radius:10px;padding:24px;
@@ -874,8 +870,6 @@
 }
 .n-card-link:hover{color:var(--n-text);background:var(--n-surface-3)}
 
-.n-chart-wrap{height:200px;position:relative}
-.n-chart-wrap canvas{width:100%;height:100%;display:block}
 
 .n-trade-row{
   display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px;
@@ -975,33 +969,6 @@
   padding:24px 0;text-align:center;
 }
 
-#pg-dashboard .goal-card{
-  padding:16px 20px;background:var(--n-surface);
-  border:1px solid var(--n-border);border-radius:11px;
-  margin-bottom:24px;
-}
-#pg-dashboard .goal-row{
-  display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;
-}
-#pg-dashboard .goal-l{
-  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;
-  text-transform:uppercase;color:var(--n-text-3);
-}
-#pg-dashboard .goal-v{
-  font-family:var(--n-font-mono);font-size:13px;color:var(--n-text);font-weight:500;
-}
-#pg-dashboard .goal-v .target{color:var(--n-text-4)}
-#pg-dashboard .goal-bar{
-  position:relative;height:6px;background:var(--n-surface-3);
-  border-radius:3px;overflow:hidden;
-}
-#pg-dashboard .goal-fill{
-  position:absolute;top:0;left:0;height:100%;
-  background:linear-gradient(90deg, var(--n-profit) 0%, #7ed4a8 100%);
-  border-radius:3px;box-shadow:0 0 8px rgba(95,179,137,0.4);
-  transition:width .4s ease-out;
-}
-
 #pg-dashboard .section-h{
   display:flex;justify-content:space-between;align-items:baseline;
   margin:30px 0 14px;
@@ -1057,39 +1024,6 @@
   font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.14em;
   color:var(--n-text-4);text-transform:uppercase;
 }
-
-#pg-dashboard .tod-card{
-  padding:18px 20px;
-  background:linear-gradient(180deg, var(--n-surface-2) 0%, var(--n-surface) 100%);
-  border:1px solid var(--n-border);border-radius:12px;
-  margin-top:14px;
-}
-#pg-dashboard .tod-bars{
-  display:flex;align-items:flex-end;gap:3px;height:80px;margin-bottom:10px;
-}
-#pg-dashboard .tod-bar{
-  flex:1;
-  background:linear-gradient(180deg, rgba(95,179,137,0.6) 0%, rgba(95,179,137,0.3) 100%);
-  border-radius:2px 2px 0 0;min-height:2px;
-}
-#pg-dashboard .tod-bar.loss{
-  background:linear-gradient(180deg, rgba(201,95,95,0.6) 0%, rgba(201,95,95,0.3) 100%);
-}
-#pg-dashboard .tod-bar.zero{background:var(--n-surface-3);height:2px !important}
-#pg-dashboard .tod-bar.peak{
-  background:linear-gradient(180deg, var(--n-profit) 0%, rgba(95,179,137,0.7) 100%);
-  box-shadow:0 0 8px rgba(95,179,137,0.4);
-}
-#pg-dashboard .tod-labels{
-  display:flex;justify-content:space-between;
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;color:var(--n-text-4);
-}
-#pg-dashboard .tod-summary{
-  display:flex;justify-content:space-between;align-items:baseline;
-  margin-top:14px;padding-top:14px;border-top:1px solid var(--n-border);
-  font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-2);
-}
-#pg-dashboard .tod-summary .v{color:var(--n-profit);font-weight:500}
 
 .bottom-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:24px}
 
@@ -6177,8 +6111,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   #pg-dashboard .hero-pnl{padding:30px 18px 24px}
   #pg-dashboard .hero-amount{font-size:64px}
   #pg-dashboard .stats-row{grid-template-columns:1fr 1fr!important;gap:8px}
-  #pg-dashboard .lower-grid,
-  #pg-dashboard .dash-main{grid-template-columns:1fr!important;gap:16px}
+  #pg-dashboard .lower-grid{grid-template-columns:1fr!important;gap:16px}
   #pg-dashboard .dash-grid,
   #pg-dashboard .recent-grid{grid-template-columns:1fr!important}
   #pg-dashboard .streak-num{font-size:48px}
@@ -6374,10 +6307,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   #pg-dashboard .n-stat-card .stat-value{font-size:24px}
   #pg-dashboard .hero-pnl{padding:30px 18px 24px}
   #pg-dashboard .hero-amount{font-size:54px}
-  #pg-dashboard .n-chart-wrap{height:200px}
-  #pg-dashboard .n-chart-wrap canvas{max-height:200px}
-  #pg-dashboard .tod-bars{height:64px}
-
   /* Log Trade — extra grid normalisation the existing block missed */
   #pg-log .lt-actions{flex-direction:column-reverse;gap:8px}
   #pg-log .lt-submit,
@@ -6755,50 +6684,12 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     </div>
   </div>
 
-  <!-- GOAL PROGRESS -->
-  <div class="goal-card">
-    <div class="goal-row">
-      <span class="goal-l">Weekly Goal Progress</span>
-      <span class="goal-v" id="goal-v">+$0 <span class="target">/ $25K</span></span>
-    </div>
-    <div class="goal-bar">
-      <div class="goal-fill" id="goal-fill" style="width:0%"></div>
-    </div>
-  </div>
-
-  <!-- MAIN: equity chart (full width) -->
-  <div class="dash-main" style="grid-template-columns:1fr">
-    <div class="n-card">
-      <div class="n-card-head">
-        <div class="n-card-title">Equity Curve</div>
-        <div class="n-card-meta">
-          <span id="eq-total"></span>
-          <button class="n-card-link" onclick="goTo('equity')">Full View</button>
-        </div>
-      </div>
-      <div class="n-chart-wrap" style="position:relative">
-        <canvas id="mini-eq-canvas"></canvas>
-        <div id="mini-eq-tooltip" style="display:none;position:absolute;pointer-events:none;background:var(--n-surface-3);border:1px solid var(--n-border-2);border-radius:4px;padding:5px 9px;font-family:var(--n-font-mono);font-size:11px;color:var(--n-text);white-space:nowrap;transform:translateX(-50%)"></div>
-        <div id="mini-eq-crosshair" style="display:none;position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.15);pointer-events:none"></div>
-      </div>
-      <div class="chart-labels" id="eq-labels" style="display:none"></div>
-    </div>
-  </div>
-
   <!-- RECENT TRADES (designed cards) -->
   <div class="section-h">
     <div class="section-h-l">Recent Trades</div>
     <span class="section-h-a" onclick="goTo('history')">View All &rarr;</span>
   </div>
   <div class="recent-grid" id="recent-grid"></div>
-
-  <!-- P&L BY HOUR · TODAY -->
-  <div class="tod-card">
-    <div class="dc-h">P&amp;L by Hour &middot; Today</div>
-    <div class="tod-bars" id="tod-bars"></div>
-    <div class="tod-labels"><span>6AM</span><span>8</span><span>10</span><span>12PM</span><span>2</span><span>4PM</span><span>6PM</span></div>
-    <div class="tod-summary" id="tod-summary"></div>
-  </div>
 
   <!-- BOTTOM: win rate + best/worst + calendar -->
   <div class="bottom-row">
@@ -11831,27 +11722,6 @@ function renderHighlightCard(){
     '<div class="hl-prompt">'+prompt+'</div>';
 }
 
-function renderGoalProgress(){
-  var vEl=document.getElementById('goal-v');
-  var fEl=document.getElementById('goal-fill');
-  if(!vEl||!fEl) return;
-  var goal=(typeof acct==='object'&&acct&&Number(acct.weekly_goal))||25000;
-  // Sunday = start of week (local)
-  var weekStart=new Date(); weekStart.setHours(0,0,0,0);
-  weekStart.setDate(weekStart.getDate()-weekStart.getDay());
-  var weekStartStr=_localDate(weekStart);
-  var weekPnl=trades.reduce(function(sum,t){
-    if(!t.date) return sum;
-    return (t.date>=weekStartStr)? sum+Number(t.pnl||0) : sum;
-  },0);
-  var pct=Math.max(0, Math.min(100, (weekPnl/goal)*100));
-  var sign=weekPnl>=0?'+':'−';
-  var pnlStr=sign+'$'+Math.abs(Math.round(weekPnl)).toLocaleString();
-  var goalStr='$'+(goal>=1000?(goal/1000).toFixed(0)+'K':goal);
-  vEl.innerHTML=pnlStr+' <span class="target">/ '+goalStr+'</span>';
-  fEl.style.width=pct+'%';
-}
-
 function renderRecentTrades(){
   var grid=document.getElementById('recent-grid');
   if(!grid) return;
@@ -11882,52 +11752,6 @@ function renderRecentTrades(){
       (meta?'<div class="rc-meta">'+safeText(meta)+'</div>':'')+
     '</div>';
   }).join('');
-}
-
-function renderTodayHours(){
-  var bars=document.getElementById('tod-bars');
-  var summary=document.getElementById('tod-summary');
-  if(!bars||!summary) return;
-  var todayStr=_localDate(new Date());
-  var todayTrades=trades.filter(function(t){return t.date===todayStr;});
-  // 13 hourly buckets from 6AM -> 6PM
-  var hours=new Array(13).fill(0);
-  var wins=0, losses=0;
-  todayTrades.forEach(function(t){
-    var ts=t.created_at||t.exit_time||t.time||null;
-    var hr;
-    if(ts){
-      var d=new Date(ts);
-      if(!isNaN(d)) hr=d.getHours();
-    }
-    if(hr==null) hr=new Date().getHours();
-    var idx=hr-6;
-    if(idx>=0 && idx<13){
-      var p=Number(t.pnl||0);
-      hours[idx]+=p;
-      if(p>=0) wins++; else losses++;
-    }
-  });
-  var max=Math.max.apply(null, hours.map(Math.abs).concat([1]));
-  var peakVal=Math.max.apply(null, hours);
-  var peakIdx=hours.indexOf(peakVal);
-  bars.innerHTML=hours.map(function(h,i){
-    if(h===0) return '<div class="tod-bar zero"></div>';
-    var heightPx=Math.max(2, Math.abs(h)/max*78);
-    var cls = h<0 ? 'loss' : (i===peakIdx && h>0 ? 'peak' : '');
-    return '<div class="tod-bar '+cls+'" style="height:'+heightPx+'px"></div>';
-  }).join('');
-  if(!todayTrades.length){
-    summary.innerHTML='<span style="color:var(--n-text-4)">No trades today yet</span>';
-  } else {
-    var peakHr=peakIdx+6;
-    var peakStr = peakHr===12 ? '12 PM' : (peakHr>12 ? (peakHr-12)+' PM' : peakHr+' AM');
-    var pv=hours[peakIdx];
-    var peakPnl = (pv>=0?'+':'−')+'$'+(Math.abs(pv)>=1000?(Math.abs(pv)/1000).toFixed(1)+'K':Math.abs(Math.round(pv)).toLocaleString());
-    summary.innerHTML=
-      '<span>Best hour <span class="v">'+peakStr+' · '+peakPnl+'</span></span>'+
-      '<span style="color:var(--n-text-3)">'+wins+' wins · '+losses+' losses</span>';
-  }
 }
 
 function renderDashboard(){
@@ -12025,15 +11849,6 @@ function renderDashboard(){
       '<div class="stat-sub">'+(ft.length?'gross win / gross loss':'no data yet')+'</div>'+
     '</div>';
 
-  // EQUITY card header total
-  const tot2=trades.reduce((a,t)=>a+t.pnl,0);
-  const eqEl=document.getElementById('eq-total');
-  if(eqEl){
-    const sign=tot2>=0?'+':'-';
-    eqEl.textContent=sign+'$'+Math.abs(tot2).toFixed(2);
-    eqEl.style.color=tot2>=0?'var(--n-profit)':'var(--n-loss)';
-  }
-
   // WIN RATE breakdown
   document.getElementById('wr-wins').textContent=wins||'\u2014';
   document.getElementById('wr-loss').textContent=losses||'\u2014';
@@ -12060,13 +11875,11 @@ function renderDashboard(){
     document.getElementById('worst-val').textContent='-$'+Math.abs(Math.round(worst.pnl));
     document.getElementById('worst-sub').textContent=worst.sym+' \u00b7 '+(worst.date||'\u2014');
   }
-  renderDashCal();renderRecentList();setTimeout(drawMiniChart,80);
+  renderDashCal();renderRecentList();
   // v2 cards
   try{ renderStreakCard(); }catch(e){console.warn('streak',e);}
   try{ renderHighlightCard(); }catch(e){console.warn('highlight',e);}
-  try{ renderGoalProgress(); }catch(e){console.warn('goal',e);}
   try{ renderRecentTrades(); }catch(e){console.warn('recent-grid',e);}
-  try{ renderTodayHours(); }catch(e){console.warn('tod',e);}
 }
 
 function renderRecentList(){
