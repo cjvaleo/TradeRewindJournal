@@ -4109,13 +4109,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   white-space:pre-wrap;
 }
 
-/* Free-form post body (compose-box posts, id prefix `post_`) */
-#pg-community .freeform-content{
-  font-size:14px;line-height:1.6;color:var(--n-text);
-  white-space:pre-wrap;word-wrap:break-word;
-  margin-bottom:11px;padding-left:2px;
-}
-
 /* META CHIPS — grade / R-multiple / session under the trade body */
 #pg-community .post-chips{
   display:flex;flex-wrap:wrap;gap:5px;
@@ -4150,42 +4143,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   background:rgba(201,95,95,0.04);
 }
 
-/* COMPOSE BOX — free-form post above the feed */
-#pg-community .compose-box{
-  background:linear-gradient(180deg,var(--n-surface-2) 0%,var(--n-surface) 100%);
-  border:1px solid var(--n-border);border-radius:12px;
-  padding:14px 16px;margin-bottom:18px;
-  transition:border-color .15s;
-}
-#pg-community .compose-box:focus-within{border-color:var(--n-border-2)}
-#pg-community .compose-head{
-  display:flex;gap:11px;align-items:flex-start;
-}
-#pg-community .compose-head .av{width:32px;height:32px;font-size:11px}
-#pg-community #compose-input{
-  flex:1;background:transparent;border:none;color:var(--n-text);
-  font-family:var(--n-font-sans);font-size:14px;line-height:1.55;
-  resize:none;outline:none;padding:6px 0;
-  min-height:24px;max-height:200px;
-}
-#pg-community #compose-input::placeholder{color:var(--n-text-3)}
-#pg-community .compose-foot{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-top:10px;padding-top:10px;border-top:1px solid var(--n-border);
-}
-#pg-community .compose-hint{
-  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;
-  color:var(--n-text-4);
-}
-#pg-community .compose-btn{
-  padding:7px 16px;background:var(--n-text);color:var(--n-bg);
-  border:none;border-radius:6px;
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;
-  text-transform:uppercase;font-weight:500;
-  cursor:pointer;transition:opacity .15s;
-}
-#pg-community .compose-btn:disabled{opacity:0.3;cursor:not-allowed}
-#pg-community .compose-btn:hover:not(:disabled){opacity:0.85}
 
 /* Trade-screenshot block in community feed — compact 280×160 thumb
    with hover lift + zoom-out chip overlay. Click to fullscreen. */
@@ -6770,18 +6727,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
           </div>
         </div>
 
-        <!-- COMPOSE BOX — free-form post above the feed -->
-        <div class="compose-box" id="compose-box">
-          <div class="compose-head">
-            <div class="av sapphire" id="compose-avatar" style="width:32px;height:32px;font-size:11px">??</div>
-            <textarea id="compose-input" placeholder="Share an update with the community…" rows="1" maxlength="600" oninput="autoGrowCompose(this)"></textarea>
-          </div>
-          <div class="compose-foot">
-            <span class="compose-hint" id="compose-counter">0 / 500</span>
-            <button class="compose-btn" id="compose-btn" disabled onclick="submitCompose()">Post</button>
-          </div>
-        </div>
-
         <!-- FILTER CHIPS -->
         <div class="filters">
           <button class="fchip on" data-filter="latest" onclick="applyFeedFilter('latest',this)">Latest</button>
@@ -8341,7 +8286,6 @@ function openCommFeed(gid){
     editBtn.title = (currentUser&&g.owner_id===currentUser.id) ? 'Edit group' : 'Group info';
   }
   renderFeedPosts(g);renderFeedLeaderboard(g);renderFeedMembers(g);renderTOTD(g);renderHeroPnl(g,_commPeriod);
-  if(typeof syncComposeAvatar==='function') syncComposeAvatar();
   // Legacy renderers (renderSentInvites/renderMemberCalendars/renderCommunityWidgets/
   // renderDailyChallenge/renderGroupActivity) target IDs not present in the v3
   // chrome layout, so they no-op via their getElementById guards.
@@ -8577,9 +8521,13 @@ async function syncAndLoadCommFeed(g){
   // {checkin:...} content shape.) Switched from the previous
   // `trades.in('user_id',memberIds)` query so trades are NOT auto-shared
   // — users opt-in via the Share-to-Community dropdown on Log Trade.
+  // Trade-share posts only — id prefix 'trade_' (auto-share format
+  // from shareTradeToCommunity). Excludes daily check-ins
+  // ('checkin_*') and any legacy free-form posts ('post_*').
   var r = await _sb.from('community_posts')
     .select('*')
     .eq('community_id', g.id)
+    .like('id', 'trade_%')
     .order('created_at', {ascending:false})
     .limit(200);
   if(r.error){
@@ -8844,29 +8792,21 @@ function renderFeedPosts(g){
       bodyPnl  = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toLocaleString();
       bodyNotes = t.notes || '';
     }
-    // Free-form posts (id starts with 'post_') skip the trade pill
-    // and render their content as a plain paragraph. They also DON'T
-    // get the profit/loss accent bar since they have no P&L.
-    var rawId = p.id || (p.row && p.row.id) || '';
-    var isFreeFormPost = String(rawId).indexOf('post_') === 0;
+    // Trade-share posts only — feed loader already filters to
+    // id LIKE 'trade_%', so every post here is a structured trade.
     var sideClass = /short/i.test(bodySide) ? 'short' : 'long';
     var pnlClass  = pnl < 0 ? 'loss' : 'profit';
-    var cardClass = isFreeFormPost ? '' : (pnl < 0 ? 'loss' : 'profit');
-    var bodyHtml;
-    if(isFreeFormPost){
-      bodyHtml = '<div class="freeform-content">'+commEsc(p.text || (typeof p.content==='string' ? p.content : ''))+'</div>';
-    } else {
-      bodyHtml = '<div class="trade-body">'
-        + (bodySym  ? '<span class="trade-sym">'+safeText(bodySym)+'</span>' : '')
-        + (bodySide ? '<span class="trade-side '+sideClass+'">'+safeText(bodySide)+'</span>' : '')
-        + (bodyPnl  ? '<span class="trade-pnl '+pnlClass+'">'+safeText(bodyPnl)+'</span>' : '')
-        + '</div>'
-        + (bodyNotes ? '<div class="trade-notes">'+commEsc(bodyNotes)+'</div>' : '');
-    }
+    var cardClass = pnl < 0 ? 'loss' : 'profit';
+    var bodyHtml = '<div class="trade-body">'
+      + (bodySym  ? '<span class="trade-sym">'+safeText(bodySym)+'</span>' : '')
+      + (bodySide ? '<span class="trade-side '+sideClass+'">'+safeText(bodySide)+'</span>' : '')
+      + (bodyPnl  ? '<span class="trade-pnl '+pnlClass+'">'+safeText(bodyPnl)+'</span>' : '')
+      + '</div>'
+      + (bodyNotes ? '<div class="trade-notes">'+commEsc(bodyNotes)+'</div>' : '');
 
-    // Metadata chips (grade / R-multiple / session). Trade posts only.
+    // Metadata chips (grade / R-multiple / session).
     var chipsHtml = '';
-    if(!isFreeFormPost && p.metadata){
+    if(p.metadata){
       var m = (typeof p.metadata === 'string')
         ? (function(){ try{return JSON.parse(p.metadata);}catch(e){return {};} })()
         : p.metadata;
@@ -11237,108 +11177,6 @@ function _extractTradeScreenshot(t){
       || (Array.isArray(inline.screenshots) && inline.screenshots[0])
       || (Array.isArray(td.screenshots) && td.screenshots[0])
       || null;
-}
-
-/* ── COMPOSE BOX (free-form posts) ──────────────────────── */
-
-/* Auto-grow the textarea up to 200px and gate the Post button + the
-   counter color on length. */
-function autoGrowCompose(el){
-  if(!el) return;
-  el.style.height='auto';
-  el.style.height = Math.min(el.scrollHeight, 200) + 'px';
-  var len = el.value.length;
-  var counter = document.getElementById('compose-counter');
-  var btn = document.getElementById('compose-btn');
-  if(counter) counter.textContent = len + ' / 500';
-  if(btn) btn.disabled = (len === 0 || len > 500);
-  if(counter){
-    counter.style.color = len > 500 ? 'var(--n-loss)'
-      : len > 450 ? 'var(--n-text-2)' : 'var(--n-text-4)';
-  }
-}
-
-/* Post the compose-box text to the active community as a
-   community_posts row with id prefix `post_` (so the renderer's
-   freeform branch picks it up and skips the trade-body pill). */
-async function submitCompose(){
-  var input = document.getElementById('compose-input');
-  var text = input && input.value && input.value.trim();
-  if(!text || !_comm || !currentUser || !_sb) return;
-
-  var btn = document.getElementById('compose-btn');
-  if(btn){ btn.disabled = true; btn.textContent = 'Posting…'; }
-
-  try {
-    var prof = await _sb.from('profiles')
-      .select('username,avatar_finish,avatar_initials,initials,color')
-      .eq('id', currentUser.id).maybeSingle();
-    var p = (prof && prof.data) || {};
-    var username = p.username || (acct && acct.username) || 'trader';
-    var initials = p.avatar_initials || p.initials
-                || (acct && (acct.avatar_initials||acct.initials))
-                || username.slice(0,2).toUpperCase();
-    var avatar_color = p.avatar_finish || p.color
-                || (acct && (acct.avatar_finish||acct.color)) || 'chrome';
-
-    var payload = {
-      id: 'post_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
-      community_id: _comm.id,
-      user_id: currentUser.id,
-      username: username,
-      initials: initials,
-      avatar_color: avatar_color,
-      content: text,
-      pnl_today: 0,
-      image_url: null,
-      metadata: {},
-      likes_count: 0,
-      liked_by: []
-    };
-
-    var r = await _sb.from('community_posts').insert(payload);
-    if(r && r.error && (/column .* does not exist/i.test(r.error.message||'')
-                     || /could not find the .* column/i.test(r.error.message||''))){
-      // Fallback: minimum shape that every community_posts table has.
-      var minimal = {
-        id: payload.id, community_id: _comm.id, user_id: currentUser.id,
-        username: username, content: text, pnl_today: 0
-      };
-      var r2 = await _sb.from('community_posts').insert(minimal);
-      if(r2 && r2.error) throw r2.error;
-    } else if(r && r.error){
-      throw r.error;
-    }
-
-    if(input){ input.value = ''; autoGrowCompose(input); }
-    showToast('Posted', 'success');
-    if(typeof syncAndLoadCommFeed==='function') syncAndLoadCommFeed(_comm);
-  } catch(e){
-    console.error('[compose]', e);
-    showToast('Post failed: '+(e.message||'try again'), 'error');
-  } finally {
-    if(btn){ btn.disabled = false; btn.textContent = 'Post'; }
-  }
-}
-
-/* Sync the compose-box avatar with the current user. Called when the
-   community page mounts and when the user's profile finish changes. */
-function syncComposeAvatar(){
-  var el = document.getElementById('compose-avatar');
-  if(!el || typeof acct === 'undefined') return;
-  var FINISHES=['chrome','gold','rosegold','gunmetal','sapphire','emerald','amethyst','slate','custom'];
-  FINISHES.forEach(function(f){ el.classList.remove(f); });
-  var finish = (typeof normalizeFinish==='function')
-    ? normalizeFinish(acct.avatar_finish || acct.color)
-    : (acct.avatar_finish || 'chrome');
-  el.classList.add(finish);
-  var init = acct.avatar_initials || acct.initials;
-  if(!init || init === '?'){
-    var name = acct.name || acct.username || '';
-    var clean = String(name).replace(/[^a-zA-Z]/g,'');
-    init = clean ? clean.slice(0,2).toUpperCase() : '??';
-  }
-  el.textContent = init;
 }
 
 /* Auto-share a trade to every community the user belongs to (owner or
