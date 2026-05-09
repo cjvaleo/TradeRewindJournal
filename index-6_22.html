@@ -2377,6 +2377,320 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* ── LOG TRADE V2 ─────────────────────────────────── */
+#pg-log .lt-grid{
+  display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:36px;align-items:flex-start;
+}
+#pg-log .lt-form{min-width:0;display:flex;flex-direction:column;gap:24px}
+#pg-log .lt-preview{position:sticky;top:24px}
+
+#pg-log .lt-section{
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:12px;padding:22px 24px;
+}
+#pg-log .lt-section + .lt-section{margin-top:0}
+#pg-log .lt-section-h{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--n-text-2);margin-bottom:18px;
+}
+#pg-log .lt-section-num{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;
+  color:var(--n-text-4);background:var(--n-surface-3);
+  padding:3px 7px;border-radius:4px;border:1px solid var(--n-border);
+}
+
+#pg-log .lt-field{display:flex;flex-direction:column;gap:7px;min-width:0}
+#pg-log .lt-field-l{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+#pg-log .lt-hint{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.14em;
+  color:var(--n-text-4);text-transform:lowercase;margin-left:6px;font-weight:400;
+}
+#pg-log .lt-hint.hint-auto{color:var(--n-accent-cool);opacity:.85}
+#pg-log .lt-hint.hint-manual{color:var(--n-text-3)}
+
+#pg-log .lt-input{
+  appearance:none;-webkit-appearance:none;
+  background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:7px;padding:10px 12px;
+  font-family:var(--n-font-sans);font-size:13.5px;color:var(--n-text);
+  outline:none;transition:.15s;width:100%;
+}
+#pg-log .lt-input:focus{
+  border-color:var(--n-text-3);background:var(--n-surface-3);
+}
+#pg-log .lt-input::placeholder{color:var(--n-text-4)}
+#pg-log select.lt-input{
+  background-image:url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%23818c98' stroke-width='1.5'%3e%3cpath d='M2 2l4 4 4-4'/%3e%3c/svg%3e");
+  background-repeat:no-repeat;background-position:right 10px center;
+  padding-right:30px;cursor:pointer;
+}
+#pg-log .lt-textarea{min-height:90px;resize:vertical;font-family:var(--n-font-sans);line-height:1.55}
+
+#pg-log .lt-dual{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+#pg-log .lt-triple{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px}
+#pg-log .lt-section .lt-field:first-of-type,
+#pg-log .lt-section > .lt-dual:first-of-type,
+#pg-log .lt-section > .lt-triple:first-of-type{margin-top:0}
+#pg-log .lt-section .lt-field + .lt-field,
+#pg-log .lt-section .lt-field + .lt-dual,
+#pg-log .lt-section .lt-field + .lt-triple,
+#pg-log .lt-section .lt-dual + .lt-field,
+#pg-log .lt-section .lt-triple + .lt-field{margin-top:14px}
+
+/* SIDE CARDS */
+#pg-log .lt-side-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#pg-log .lt-side-card{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 18px;border:1px solid var(--n-border);border-radius:10px;
+  background:var(--n-surface-2);cursor:pointer;
+  transition:.15s;user-select:none;
+}
+#pg-log .lt-side-card:hover{background:var(--n-surface-3);border-color:var(--n-border-2)}
+#pg-log .lt-side-card .lt-side-arrow{
+  font-size:24px;line-height:1;color:var(--n-text-3);transition:.15s;
+}
+#pg-log .lt-side-card .lt-side-name{
+  font-family:var(--n-font-mono);font-size:12px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-2);
+}
+#pg-log .lt-side-card.long.on{
+  background:rgba(95,179,137,0.08);border-color:rgba(95,179,137,0.40);
+}
+#pg-log .lt-side-card.long.on .lt-side-arrow,
+#pg-log .lt-side-card.long.on .lt-side-name{color:var(--n-profit)}
+#pg-log .lt-side-card.short.on{
+  background:rgba(201,95,95,0.07);border-color:rgba(201,95,95,0.40);
+}
+#pg-log .lt-side-card.short.on .lt-side-arrow,
+#pg-log .lt-side-card.short.on .lt-side-name{color:var(--n-loss)}
+
+/* R help blurb */
+#pg-log .lt-rr-help-wrap{display:flex;align-items:flex-end;min-height:0}
+#pg-log .lt-rr-help{
+  padding:11px 14px;
+  background:rgba(110,168,255,0.04);
+  border:1px solid rgba(110,168,255,0.15);
+  border-radius:8px;
+  font-size:11.5px;color:var(--n-text-2);line-height:1.5;width:100%;
+}
+#pg-log .lt-rr-help strong{color:var(--n-accent-cool);font-weight:600}
+
+/* multi-account note */
+#pg-log .lt-acct-note{
+  margin-top:12px;padding:10px 12px;
+  background:rgba(110,168,255,0.05);border:1px solid rgba(110,168,255,0.18);
+  border-radius:7px;
+  font-family:var(--n-font-mono);font-size:10.5px;letter-spacing:0.08em;
+  color:var(--n-accent-cool);
+}
+
+/* GRADE PILLS */
+#pg-log .lt-grade-pills{display:flex;gap:8px}
+#pg-log .lt-grade-pill{
+  flex:1;padding:11px 0;text-align:center;
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:22px;color:var(--n-text-3);
+  background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:8px;cursor:pointer;transition:.15s;user-select:none;
+}
+#pg-log .lt-grade-pill:hover{background:var(--n-surface-3);color:var(--n-text-2)}
+#pg-log .lt-grade-pill.on{
+  background:var(--n-surface-3);color:var(--n-text);
+  border-color:var(--n-border-2);
+  box-shadow:0 0 0 1px var(--n-border-2) inset;
+}
+#pg-log .lt-grade-pill.on.grade-A{
+  color:#5fb389;border-color:rgba(95,179,137,0.45);
+  background:rgba(95,179,137,0.07);
+  box-shadow:0 0 14px rgba(95,179,137,0.18);
+}
+#pg-log .lt-grade-pill.on.grade-F{
+  color:#c95f5f;border-color:rgba(201,95,95,0.45);
+  background:rgba(201,95,95,0.06);
+}
+
+/* EMOTION PILLS */
+#pg-log .lt-emo-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+#pg-log .lt-emo-pill{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  padding:11px 6px;border:1px solid var(--n-border);border-radius:9px;
+  background:var(--n-surface-2);cursor:pointer;transition:.15s;
+  user-select:none;
+}
+#pg-log .lt-emo-pill .emj{font-size:22px;line-height:1}
+#pg-log .lt-emo-pill .lbl{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+#pg-log .lt-emo-pill:hover{background:var(--n-surface-3);border-color:var(--n-border-2)}
+#pg-log .lt-emo-pill.on{
+  background:var(--n-surface-3);border-color:var(--n-text-3);
+  box-shadow:0 0 0 1px var(--n-text-3) inset;
+}
+#pg-log .lt-emo-pill.on .lbl{color:var(--n-text)}
+
+/* DROPZONE */
+#pg-log .lt-dropzone{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;padding:30px 20px;
+  border:1.5px dashed var(--n-border-2);border-radius:10px;
+  background:var(--n-surface-2);color:var(--n-text-3);cursor:pointer;
+  transition:.15s;text-align:center;
+}
+#pg-log .lt-dropzone:hover,
+#pg-log .lt-dropzone.drag-over{
+  background:var(--n-surface-3);border-color:var(--n-text-3);color:var(--n-text-2);
+}
+#pg-log .lt-dropzone svg{width:28px;height:28px}
+#pg-log .lt-dropzone .dz-h{
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-2);
+}
+#pg-log .lt-dropzone .dz-sub{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;
+  color:var(--n-text-4);text-transform:uppercase;
+}
+
+/* ACTIONS */
+#pg-log .lt-actions{
+  display:flex;gap:10px;align-items:center;margin-top:6px;
+}
+#pg-log .lt-submit{
+  flex:1;padding:14px 20px;
+  background:var(--n-text);color:var(--n-bg);border:none;border-radius:9px;
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.22em;
+  text-transform:uppercase;font-weight:600;cursor:pointer;transition:.15s;
+}
+#pg-log .lt-submit:hover{background:#fff}
+#pg-log .lt-reset{
+  padding:14px 18px;
+  background:transparent;color:var(--n-text-3);
+  border:1px solid var(--n-border);border-radius:9px;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;
+  text-transform:uppercase;cursor:pointer;transition:.15s;
+}
+#pg-log .lt-reset:hover{color:var(--n-text);border-color:var(--n-border-2)}
+
+/* LIVE PREVIEW PANE */
+#pg-log .lt-preview-h{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--n-text-3);margin-bottom:10px;
+}
+#pg-log .lt-preview-h .dot{
+  width:6px;height:6px;border-radius:50%;background:var(--n-profit);
+  box-shadow:0 0 6px rgba(95,179,137,0.55);
+  animation:status-pulse 2.4s ease-in-out infinite;
+}
+#pg-log .lt-preview-card{
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:11px;padding:16px 18px;
+  display:flex;flex-direction:column;gap:10px;
+  transition:.18s;
+}
+#pg-log .lt-preview-card.profit{border-left:3px solid rgba(95,179,137,0.45)}
+#pg-log .lt-preview-card.loss{border-left:3px solid rgba(201,95,95,0.45)}
+#pg-log .lt-preview-card.empty{
+  align-items:center;justify-content:center;
+  min-height:160px;color:var(--n-text-4);
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;
+  text-transform:uppercase;
+}
+#pg-log .lt-preview-empty{text-align:center;padding:18px}
+
+#pg-log .pc-head{display:flex;align-items:center;gap:10px}
+#pg-log .pc-head .av{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.08em;
+  color:var(--n-bg);font-weight:600;flex-shrink:0;
+  background:linear-gradient(135deg,#cbd5dd,#8a96a3);
+}
+#pg-log .pc-head .av.gold{background:linear-gradient(135deg,#f5d77c,#c79f4e)}
+#pg-log .pc-head .av.rosegold{background:linear-gradient(135deg,#e9b8a5,#b48676)}
+#pg-log .pc-head .av.gunmetal{background:linear-gradient(135deg,#7a8189,#3d4348);color:#e8eaed}
+#pg-log .pc-head .av.sapphire{background:linear-gradient(135deg,#6ea8ff,#2c5fb8);color:#e8eaed}
+#pg-log .pc-head .av.emerald{background:linear-gradient(135deg,#5fb389,#2f7656);color:#e8eaed}
+#pg-log .pc-head .av.amethyst{background:linear-gradient(135deg,#a878d4,#6d4798);color:#e8eaed}
+#pg-log .pc-head .av.slate{background:linear-gradient(135deg,#959aa3,#4f535c);color:#e8eaed}
+#pg-log .pc-author{flex:1;min-width:0}
+#pg-log .pc-name{
+  font-family:var(--n-font-sans);font-size:12.5px;color:var(--n-text);font-weight:600;
+}
+#pg-log .pc-handle{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.10em;color:var(--n-text-4);
+}
+#pg-log .pc-time{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.14em;
+  color:var(--n-text-4);text-transform:uppercase;
+}
+
+#pg-log .pc-trade-body{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:10px 12px;background:var(--n-surface-2);
+  border:1px solid var(--n-border);border-radius:8px;
+}
+#pg-log .pc-sym{
+  font-family:var(--n-font-mono);font-size:12.5px;color:var(--n-text);font-weight:600;
+}
+#pg-log .pc-side{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  text-transform:uppercase;padding:3px 8px;border-radius:4px;
+}
+#pg-log .pc-side.long{
+  color:var(--n-profit);background:rgba(95,179,137,0.10);
+  border:1px solid rgba(95,179,137,0.20);
+}
+#pg-log .pc-side.short{
+  color:var(--n-loss);background:rgba(201,95,95,0.08);
+  border:1px solid rgba(201,95,95,0.20);
+}
+#pg-log .pc-pnl{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:18px;line-height:1;margin-left:auto;
+}
+#pg-log .pc-pnl.profit{color:var(--n-profit)}
+#pg-log .pc-pnl.loss{color:var(--n-loss)}
+
+#pg-log .pc-notes{
+  font-size:12.5px;color:var(--n-text-2);line-height:1.55;
+  white-space:pre-wrap;word-break:break-word;
+}
+#pg-log .pc-chips{display:flex;gap:6px;flex-wrap:wrap}
+#pg-log .pc-chip{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.14em;
+  text-transform:uppercase;padding:3px 8px;border-radius:4px;
+  background:var(--n-surface-3);color:var(--n-text-3);
+  border:1px solid var(--n-border);
+}
+#pg-log .pc-chip.grade-a{
+  color:#5fb389;border-color:rgba(95,179,137,0.30);background:rgba(95,179,137,0.08);
+}
+#pg-log .pc-chip.rr{
+  color:var(--n-accent-cool);border-color:rgba(110,168,255,0.25);
+  background:rgba(110,168,255,0.06);
+}
+#pg-log .pc-chip.multi-acct{
+  color:#f5d77c;border-color:rgba(245,215,124,0.30);background:rgba(245,215,124,0.06);
+}
+
+#pg-log .lt-preview-note{
+  margin-top:10px;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-4);text-align:center;
+}
+
+@media (max-width:1100px){
+  #pg-log .lt-grid{grid-template-columns:1fr;gap:20px}
+  #pg-log .lt-preview{position:static}
+  #pg-log .lt-rr-help-wrap{display:none}
+  #pg-log .lt-triple{grid-template-columns:1fr 1fr}
+}
+
 /* ── HISTORY REDESIGN ─────────────────────────────── */
 
 #pg-history.page.on{
@@ -5389,6 +5703,15 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   #pg-log .lg-grid,
   #pg-log .dir-tog{grid-template-columns:1fr!important}
   #pg-log .dir-tog{display:grid;grid-template-columns:1fr 1fr!important;gap:6px}
+  #pg-log .lt-dual,
+  #pg-log .lt-triple{grid-template-columns:1fr!important;gap:10px!important}
+  #pg-log .lt-section{padding:18px 14px}
+  #pg-log .lt-grade-pills{gap:5px}
+  #pg-log .lt-grade-pill{font-size:18px;padding:9px 0}
+  #pg-log .lt-emo-row{gap:5px}
+  #pg-log .lt-emo-pill{padding:9px 4px}
+  #pg-log .lt-emo-pill .emj{font-size:18px}
+  #pg-log .lt-emo-pill .lbl{font-size:7.5px}
   #pg-log .field-input,
   #pg-log .f-input,
   #pg-log input[type="text"],
@@ -5916,181 +6239,180 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
   <!-- MANUAL MODE -->
   <div id="mode-manual" class="mode-panel on">
-    <div class="lg-card">
+    <div class="lt-grid">
+      <div class="lt-form">
 
-      <!-- DIRECTION -->
-      <div class="dir-tog">
-        <button class="dir-b long on" id="lg-long" onclick="setLgType('long')">Long</button>
-        <button class="dir-b short" id="lg-short" onclick="setLgType('short')">Short</button>
+        <!-- 01 SETUP -->
+        <div class="lt-section">
+          <div class="lt-section-h"><span class="lt-section-num">01</span><span>Setup</span></div>
+
+          <div class="lt-field">
+            <div class="lt-field-l">Side</div>
+            <div class="lt-side-cards">
+              <div class="lt-side-card long on" id="lg-long" onclick="setLgType('long')">
+                <div class="lt-side-arrow">&#x2197;</div>
+                <div class="lt-side-name">Long</div>
+              </div>
+              <div class="lt-side-card short" id="lg-short" onclick="setLgType('short')">
+                <div class="lt-side-arrow">&#x2198;</div>
+                <div class="lt-side-name">Short</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="lt-dual">
+            <div class="lt-field" style="position:relative">
+              <div class="lt-field-l">Symbol</div>
+              <input type="text" id="lg-sym" class="lt-input" placeholder="Type to search&hellip;" autocomplete="off"
+                oninput="filterSymbols();calcLivePnl()" onfocus="filterSymbols()" onkeydown="symKeyNav(event)"/>
+              <div id="sym-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;z-index:200;margin-top:-1px"></div>
+            </div>
+            <div class="lt-field">
+              <div class="lt-field-l">Market</div>
+              <select id="lg-mkt" class="lt-input" onchange="onMarketChange()">
+                <option>Futures</option><option>Stocks</option><option>Crypto</option><option>Options</option><option>Forex</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="lt-dual">
+            <div class="lt-field">
+              <div class="lt-field-l">Date</div>
+              <input type="date" id="lg-date" class="lt-input" oninput="updateLogPreview()"/>
+            </div>
+            <div class="lt-field">
+              <div class="lt-field-l">Session</div>
+              <select id="lg-session-sel" class="lt-input" onchange="onLtSessionChange(this.value)">
+                <option value="">&mdash;</option>
+                <option>Asia</option>
+                <option>London</option>
+                <option>NY AM</option>
+                <option>NY Lunch</option>
+                <option>NY PM</option>
+                <option>Other</option>
+              </select>
+              <input type="hidden" id="lg-session" value=""/>
+            </div>
+          </div>
+        </div>
+
+        <!-- 02 EXECUTION -->
+        <div class="lt-section">
+          <div class="lt-section-h"><span class="lt-section-num">02</span><span>Execution</span></div>
+
+          <div class="lt-triple">
+            <div class="lt-field">
+              <div class="lt-field-l">Entry</div>
+              <input class="lt-input" id="lg-entry" type="number" step="any" placeholder="0.00" oninput="calcLivePnl()"/>
+            </div>
+            <div class="lt-field">
+              <div class="lt-field-l">Exit</div>
+              <input class="lt-input" id="lg-exit" type="number" step="any" placeholder="0.00" oninput="calcLivePnl()"/>
+            </div>
+            <div class="lt-field">
+              <div class="lt-field-l">Stop <span class="lt-hint">optional</span></div>
+              <input class="lt-input" id="lg-stop" type="number" step="any" placeholder="points" oninput="calcLivePnl()"/>
+            </div>
+          </div>
+
+          <div class="lt-triple">
+            <div class="lt-field">
+              <div class="lt-field-l">Qty <span class="lt-hint">per account</span></div>
+              <input class="lt-input" id="lg-qty" type="number" step="any" min="1" value="1" oninput="calcLivePnl()"/>
+            </div>
+            <div class="lt-field">
+              <div class="lt-field-l">Accounts <span class="lt-hint">copies</span></div>
+              <input class="lt-input" id="lg-accounts" type="number" min="1" value="1" oninput="calcLivePnl()"/>
+            </div>
+            <div class="lt-field">
+              <div class="lt-field-l">P&amp;L $ <span class="lt-hint hint-auto" id="lt-pnl-hint">auto</span></div>
+              <input class="lt-input" id="lg-pnl" type="number" step="any" placeholder="auto-calc" oninput="onPnlInput()"/>
+            </div>
+          </div>
+
+          <div class="lt-dual">
+            <div class="lt-field">
+              <div class="lt-field-l">R Multiple <span class="lt-hint hint-auto" id="lt-rr-hint">from stop</span></div>
+              <input class="lt-input" id="lg-rr" type="number" step="0.1" placeholder="auto" oninput="onRrInput()"/>
+            </div>
+            <div class="lt-field lt-rr-help-wrap">
+              <div class="lt-rr-help">
+                <strong>R</strong> = profit &divide; risk. Risked $100, made $300 = +3R.
+              </div>
+            </div>
+          </div>
+
+          <div id="lt-acct-note" class="lt-acct-note" style="display:none"></div>
+        </div>
+
+        <!-- 03 REFLECTION -->
+        <div class="lt-section">
+          <div class="lt-section-h"><span class="lt-section-num">03</span><span>Reflection</span></div>
+
+          <div class="lt-field">
+            <div class="lt-field-l">Setup Grade</div>
+            <div class="lt-grade-pills">
+              <div class="lt-grade-pill grade-A" data-grade="A" onclick="setGradePill('A')">A</div>
+              <div class="lt-grade-pill grade-B on" data-grade="B" onclick="setGradePill('B')">B</div>
+              <div class="lt-grade-pill grade-C" data-grade="C" onclick="setGradePill('C')">C</div>
+              <div class="lt-grade-pill grade-D" data-grade="D" onclick="setGradePill('D')">D</div>
+              <div class="lt-grade-pill grade-F" data-grade="F" onclick="setGradePill('F')">F</div>
+            </div>
+            <input type="hidden" id="lg-grade" value="3"/>
+          </div>
+
+          <div class="lt-field">
+            <div class="lt-field-l">Emotion</div>
+            <div class="lt-emo-row">
+              <div class="lt-emo-pill" data-emo="1" onclick="setEmotionPill(1)"><span class="emj">&#128552;</span><span class="lbl">Anxious</span></div>
+              <div class="lt-emo-pill" data-emo="2" onclick="setEmotionPill(2)"><span class="emj">&#128543;</span><span class="lbl">Off</span></div>
+              <div class="lt-emo-pill on" data-emo="3" onclick="setEmotionPill(3)"><span class="emj">&#128528;</span><span class="lbl">Neutral</span></div>
+              <div class="lt-emo-pill" data-emo="4" onclick="setEmotionPill(4)"><span class="emj">&#128578;</span><span class="lbl">Confident</span></div>
+              <div class="lt-emo-pill" data-emo="5" onclick="setEmotionPill(5)"><span class="emj">&#128526;</span><span class="lbl">In Zone</span></div>
+            </div>
+            <input type="hidden" id="lg-emotion" value="3"/>
+          </div>
+
+          <div class="lt-field">
+            <div class="lt-field-l">Notes</div>
+            <textarea id="lg-notes" class="lt-input lt-textarea" placeholder="Setup, what worked, what didn't, lessons&hellip;" oninput="updateLogPreview()"></textarea>
+          </div>
+
+          <div class="lt-field">
+            <div class="lt-field-l">Screenshot</div>
+            <div id="img-drop-zone" class="lt-dropzone"
+              onclick="document.getElementById('img-file-input').click()"
+              ondragover="event.preventDefault();this.classList.add('drag-over')"
+              ondragleave="this.classList.remove('drag-over')"
+              ondrop="handleImgDrop(event);this.classList.remove('drag-over')">
+              <input type="file" id="img-file-input" accept="image/*" multiple style="display:none" onchange="handleImgFiles(this.files)"/>
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
+              <div class="dz-h">Drop screenshot here</div>
+              <div class="dz-sub">or click to browse</div>
+            </div>
+            <div id="note-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+          </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="lt-actions">
+          <button class="lt-submit" onclick="confirmLog()">+ Log Trade</button>
+          <button class="lt-reset" onclick="resetLogForm()">&#8634; Reset</button>
+        </div>
+
+        <!-- compat hidden — confidence dropped from UI; default 3 keeps fullLog intact -->
+        <input type="hidden" id="lg-conf" value="3"/>
       </div>
 
-      <!-- 3 COL LAYOUT -->
-      <div class="lg-grid">
-
-        <!-- COL 1: Trade Info -->
-        <div class="lg-col">
-          <div class="col-head">Trade Info</div>
-
-          <div class="f-row">
-            <label>Market</label>
-            <select id="lg-mkt" class="f-input" onchange="onMarketChange()">
-              <option>Futures</option><option>Stocks</option><option>Crypto</option><option>Options</option><option>Forex</option>
-            </select>
-          </div>
-
-          <div class="f-row" style="position:relative">
-            <label>Symbol</label>
-            <input type="text" id="lg-sym" class="f-input" placeholder="Type to search&hellip;" autocomplete="off"
-              oninput="filterSymbols()" onfocus="filterSymbols()" onkeydown="symKeyNav(event)"/>
-            <div id="sym-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;z-index:200;margin-top:-1px"></div>
-          </div>
-
-          <div class="f-row">
-            <label>Date</label>
-            <input type="date" id="lg-date" class="f-input"/>
-          </div>
-
-          <div class="f-row">
-            <label>Entry Price</label>
-            <input type="number" id="lg-entry" class="f-input" placeholder="0.00" step="0.01" oninput="calcLivePnl()"/>
-          </div>
-
-          <div class="f-row">
-            <label>Exit Price</label>
-            <input type="number" id="lg-exit" class="f-input" placeholder="0.00" step="0.01" oninput="calcLivePnl()"/>
-          </div>
-
-          <div class="f-row">
-            <label>Stop Loss Points <span class="opt">(optional)</span></label>
-            <input type="number" id="lg-stop" class="f-input" placeholder="e.g. 4" step="0.01" oninput="calcLivePnl()"/>
-          </div>
-
-          <div class="f-row">
-            <label>Contracts / Qty</label>
-            <div class="qty-row">
-              <input type="number" id="lg-qty" class="f-input" placeholder="1" step="1" min="1" oninput="calcLivePnl()" value="1"/>
-              <div class="x">&times;</div>
-              <div class="acct-wrap">
-                <input type="number" id="lg-accounts" class="f-input" placeholder="1" step="1" min="1" oninput="calcLivePnl()" value="1"/>
-                <div class="acct-lbl">Accounts</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- LIVE CALC -->
-          <div id="live-calc" class="live-calc" style="display:none">
-            <div class="calc-cell">
-              <div class="lbl">P&amp;L</div>
-              <div class="val" id="calc-pnl">&mdash;</div>
-              <div class="acct-note" id="calc-acct-note"></div>
-            </div>
-            <div class="calc-cell">
-              <div class="lbl">Risk $</div>
-              <div class="val" id="calc-risk">&mdash;</div>
-            </div>
-            <div class="calc-cell">
-              <div class="lbl">R : R</div>
-              <div class="val" id="calc-rr-disp">&mdash;</div>
-            </div>
-          </div>
+      <!-- LIVE COMMUNITY PREVIEW -->
+      <div class="lt-preview">
+        <div class="lt-preview-h"><span class="dot"></span><span>Community Preview &middot; Live</span></div>
+        <div id="lt-preview-card" class="lt-preview-card empty">
+          <div class="lt-preview-empty">Fill in symbol &amp; entry to see preview</div>
         </div>
-
-        <!-- COL 2: Session + Notes -->
-        <div class="lg-col">
-          <div class="col-head">Session &amp; Notes</div>
-
-          <div class="f-row">
-            <label>Session</label>
-            <div class="sess-grid">
-              <div class="sess-btn" onclick="selectSession(this,'Asia','20:00–00:00 ET')">
-                <div class="dot"></div>
-                <div class="info"><div class="nm">Asia</div><div class="tm">8PM &ndash; 12AM ET</div></div>
-              </div>
-              <div class="sess-btn" onclick="selectSession(this,'London','02:00–05:00 ET')">
-                <div class="dot"></div>
-                <div class="info"><div class="nm">London</div><div class="tm">2AM &ndash; 5AM ET</div></div>
-              </div>
-              <div class="sess-btn" onclick="selectSession(this,'NY AM','09:30–11:00 ET')">
-                <div class="dot"></div>
-                <div class="info"><div class="nm">NY AM</div><div class="tm">9:30 &ndash; 11AM ET</div></div>
-              </div>
-              <div class="sess-btn" onclick="selectSession(this,'NY Lunch','12:00–13:00 ET')">
-                <div class="dot"></div>
-                <div class="info"><div class="nm">NY Lunch</div><div class="tm">12 &ndash; 1PM ET</div></div>
-              </div>
-              <div class="sess-btn" onclick="selectSession(this,'NY PM','13:30–16:00 ET')">
-                <div class="dot"></div>
-                <div class="info"><div class="nm">NY PM</div><div class="tm">1:30 &ndash; 4PM ET</div></div>
-              </div>
-              <div class="sess-btn" onclick="selectSession(this,'Other','')">
-                <div class="dot"></div>
-                <div class="info"><div class="nm">Other</div><div class="tm">Custom</div></div>
-              </div>
-            </div>
-            <input type="hidden" id="lg-session" value=""/>
-          </div>
-
-          <div class="f-row">
-            <label>Notes &middot; Setup</label>
-            <textarea id="lg-notes" class="notes-area" placeholder="Setup rationale, emotions, lessons learned&hellip;"></textarea>
-          </div>
-
-          <div id="note-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
-          <div id="img-drop-zone" class="img-drop"
-            onclick="document.getElementById('img-file-input').click()"
-            ondragover="event.preventDefault();this.style.borderColor='var(--n-text)';this.style.background='var(--n-surface-3)'"
-            ondragleave="this.style.borderColor='var(--n-border-3)';this.style.background='var(--n-surface-2)'"
-            ondrop="handleImgDrop(event)">
-            <input type="file" id="img-file-input" accept="image/*" multiple style="display:none" onchange="handleImgFiles(this.files)"/>
-            <div class="icn">+</div>
-            <div class="txt">Drop chart screenshots</div>
-          </div>
-        </div>
-
-        <!-- COL 3: Trade Rating + Submit -->
-        <div class="lg-col">
-          <div class="col-head">Trade Rating</div>
-
-          <!-- TRADE GRADE -->
-          <div class="slider-group">
-            <div class="slider-head"><div class="lbl">Trade Grade</div></div>
-            <div class="slider-display">
-              <div class="val" id="grade-label">B</div>
-              <div class="desc-r" id="grade-desc">Good trade</div>
-            </div>
-            <input type="range" id="lg-grade" min="0" max="5" value="3" step="1" oninput="updateGrade(this.value)"/>
-            <div class="slider-marks"><span>F</span><span>D</span><span>C</span><span>B</span><span>A</span><span>A+</span></div>
-          </div>
-
-          <!-- EMOTION SCORE -->
-          <div class="slider-group">
-            <div class="slider-head"><div class="lbl">Emotion Score</div></div>
-            <div class="slider-display">
-              <div class="val" id="emotion-label">3</div>
-              <div class="desc-r" id="emotion-desc">Moderately emotional</div>
-            </div>
-            <input type="range" id="lg-emotion" min="1" max="5" value="3" step="1" oninput="updateEmotion(this.value)"/>
-            <div class="slider-marks"><span>Calm</span><span style="opacity:0">.</span><span style="opacity:0">.</span><span style="opacity:0">.</span><span>Max</span></div>
-          </div>
-
-          <!-- CONFIDENCE -->
-          <div class="slider-group">
-            <div class="slider-head"><div class="lbl">Confidence</div></div>
-            <div class="slider-display">
-              <div class="val" id="lg-conf-label">3</div>
-              <div class="desc-r" id="lg-conf-desc">Moderate confidence</div>
-            </div>
-            <input type="range" id="lg-conf" min="1" max="5" value="3" step="1" oninput="updateConf(this.value)"/>
-            <div class="slider-marks"><span>None</span><span style="opacity:0">.</span><span style="opacity:0">.</span><span style="opacity:0">.</span><span>Max</span></div>
-          </div>
-
-          <!-- SUBMIT -->
-          <button class="lg-submit" onclick="confirmLog()">+ Log Trade</button>
-          <button class="lg-reset" onclick="resetLogForm()">&#8634; Reset Form</button>
-        </div>
-
-      </div><!-- /lg-grid -->
-    </div><!-- /lg-card -->
+        <div class="lt-preview-note">Auto-shares to all your communities on submit.</div>
+      </div>
+    </div>
 
     <!-- CONFIRM OVERLAY -->
     <div id="log-confirm">
