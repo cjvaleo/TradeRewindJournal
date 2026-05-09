@@ -9554,6 +9554,18 @@ async function acceptCommInvite(invId) {
       await window._sb.from('invites').update({status:'accepted'}).eq('id', invId);
     } catch(e){ console.warn('[acceptCommInvite] invite flag failed:', e && e.message); }
 
+    // Backfill the user's existing trades as community_posts so they
+    // show up in the feed / leaderboard / group P&L immediately,
+    // not just from the next trade onward. Idempotent (deterministic
+    // post id) so a re-join just upserts the same rows.
+    var backfilled = 0;
+    if (typeof backfillTradesToCommunity === 'function') {
+      try {
+        var bf = await backfillTradesToCommunity(communityId);
+        backfilled = (bf && bf.count) || 0;
+      } catch(e){ console.warn('[acceptCommInvite] backfill failed:', e && e.message); }
+    }
+
     // Local state.
     inv.accepted = true; inv.read = true;
     try { localStorage.setItem('tr1_notifs', JSON.stringify(_notifications)); } catch(e) {}
@@ -9571,7 +9583,10 @@ async function acceptCommInvite(invId) {
     renderCommInvites();
     if (typeof renderCommSidebar === 'function') renderCommSidebar();
     if (typeof renderCommunity === 'function') renderCommunity();
-    showToast('Joined ' + (commRow.data.name || inv.groupName || 'community'), 'success');
+    var commName = commRow.data.name || inv.groupName || 'community';
+    var msg = 'Joined ' + commName;
+    if (backfilled > 0) msg += ' · shared ' + backfilled + ' trade' + (backfilled === 1 ? '' : 's');
+    showToast(msg, 'success');
 
   } catch(err) {
     console.error('acceptCommInvite error:', err);
@@ -13460,6 +13475,93 @@ async function shareTradeToCommunity(trade){
     console.error('[auto-share] failed:', e);
   }
 }
+
+/* Backfill every trade in the local `trades` array as community_posts
+   in the just-joined community. Uses the same deterministic post id
+   (`trade_<tradeId>_<commIdSlice>`) as shareTradeToCommunity, so the
+   upsert is idempotent — re-joining or re-running this is safe. */
+async function backfillTradesToCommunity(communityId){
+  if(!_sb || !currentUser || !communityId) return {count:0};
+  if(!Array.isArray(trades) || !trades.length){
+    console.log('[backfill] no trades to share');
+    return {count:0};
+  }
+
+  // Profile fields for the denormalised post columns.
+  var prof = {};
+  try {
+    var pr = await _sb.from('profiles')
+      .select('username,avatar_finish,avatar_initials,initials,color')
+      .eq('id', currentUser.id).maybeSingle();
+    prof = (pr && pr.data) || {};
+  } catch(e){ /* fall through to acct */ }
+  var username = prof.username || (acct && acct.username) || 'trader';
+  var initials = prof.avatar_initials || prof.initials
+              || (acct && (acct.avatar_initials||acct.initials))
+              || username.slice(0,2).toUpperCase();
+  var avatar_color = prof.avatar_finish || prof.color
+              || (acct && (acct.avatar_finish||acct.color)) || 'chrome';
+
+  var commIdSlice = String(communityId).slice(0,8);
+  var rows = trades.map(function(t){
+    var sym = t.sym || t.symbol || t.ticker || 'Trade';
+    var sideRaw = String(t.type || t.side || '').toLowerCase();
+    var sideTxt = sideRaw === 'short' ? '↘ Short' : sideRaw === 'long' ? '↗ Long' : '';
+    var pnlNum  = Number(t.pnl) || 0;
+    var pnlStr  = (pnlNum >= 0 ? '+' : '') + '$' + Math.abs(pnlNum).toLocaleString();
+    var parts = [sym]; if(sideTxt) parts.push(sideTxt); parts.push(pnlStr);
+    var contentStr = parts.join(' · ') + (t.notes ? '\n' + t.notes : '');
+    var screenshot = (typeof _extractTradeScreenshot === 'function')
+      ? _extractTradeScreenshot(t)
+      : (Array.isArray(t.images) ? t.images[0] : null);
+
+    var meta = {
+      grade:      t.grade != null ? t.grade : null,
+      rr:         t.rr != null ? t.rr : null,
+      session:    t.session || null,
+      market:     t.market || null,
+      emotion:    t.emotion != null ? t.emotion : null,
+      confidence: t.confidence != null ? t.confidence : null,
+      entry:      t.entry != null ? t.entry : null,
+      exit:       t.exit != null ? t.exit : null,
+      qty:        t.qty != null ? t.qty : null,
+      accounts:   (t.accounts != null && t.accounts > 1) ? t.accounts : null
+    };
+
+    return {
+      id: 'trade_' + t.id + '_' + commIdSlice,
+      community_id: communityId,
+      user_id: currentUser.id,
+      username: username,
+      initials: initials,
+      avatar_color: avatar_color,
+      content: contentStr,
+      pnl_today: pnlNum,
+      image_url: screenshot,
+      metadata: meta,
+      likes_count: 0,
+      liked_by: [],
+      // Anchor created_at to the trade's own date so the post sorts
+      // chronologically with the user's history, not as if it were
+      // posted today. Falls back to now if t.date is missing.
+      created_at: t.date ? (t.date + 'T12:00:00Z') : (t.created_at || new Date().toISOString())
+    };
+  });
+
+  try {
+    var ins = await _sb.from('community_posts').upsert(rows, { onConflict: 'id' });
+    if(ins && ins.error){
+      console.error('[backfill] upsert failed:', ins.error);
+      return {count:0, error: ins.error};
+    }
+    console.log('[backfill] shared', rows.length, 'trades to community', communityId);
+    return {count: rows.length};
+  } catch(e){
+    console.error('[backfill] exception:', e);
+    return {count:0, error: e};
+  }
+}
+window.backfillTradesToCommunity = backfillTradesToCommunity;
 
 function fullLog(){
   const sym=document.getElementById('lg-sym').value.trim().toUpperCase();
