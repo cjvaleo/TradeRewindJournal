@@ -2715,6 +2715,37 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 
 /* ── CSV IMPORT V2 (compact rows) ─────────────────── */
+#pg-log .csv-bulk-fields{
+  display:flex;align-items:center;gap:10px;
+  margin:14px 0 10px;padding:10px 16px;
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:8px;
+}
+#pg-log .csv-bulk-fields .csv-bulk-l{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-3);flex-shrink:0;
+}
+#pg-log .csv-bulk-fields .field-input.field-sm{
+  flex:1;
+  background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:6px;padding:8px 10px;font-size:12px;
+  color:var(--n-text);outline:none;transition:.15s;
+}
+#pg-log .csv-bulk-fields .field-input.field-sm:focus{
+  border-color:var(--n-text-3);background:var(--n-surface-3);
+}
+
+#pg-log .csv-col-headers{
+  display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;
+  gap:6px;padding:0 16px;margin:6px 0 4px;
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--n-text-4);
+}
+/* The header column is offset by the head row's sym + side + pnl + remove
+   block. Push the 5 column labels rightward so they sit over the body grid. */
+#pg-log .csv-col-headers{padding-left:16px;padding-right:16px}
+#pg-log .csv-col-headers .csv-col-h{padding-left:2px}
+
 #pg-log .csv-rows-list{display:flex;flex-direction:column;gap:8px;margin:14px 0 18px}
 #pg-log .csv-rows-empty{
   padding:24px;text-align:center;
@@ -2795,9 +2826,42 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-log .csv-edit-row .csv-pnl-input{font-family:var(--n-font-mono)}
 
 #pg-log .csv-edit-row .csv-row-extras{
-  display:flex;gap:10px;align-items:center;
+  display:grid;grid-template-columns:auto auto 1fr;gap:8px;align-items:center;
 }
 #pg-log .csv-edit-row .grade-pills-mini{display:flex;gap:3px;flex-shrink:0}
+
+/* SCREENSHOT ZONE — empty button or 56×32 thumb */
+#pg-log .csv-edit-row .csv-screenshot{flex-shrink:0;cursor:pointer;position:relative}
+#pg-log .csv-edit-row .csv-ss-empty{
+  display:flex;align-items:center;gap:5px;
+  padding:6px 9px;
+  background:var(--n-surface);border:1px dashed var(--n-border-2);
+  border-radius:5px;
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-3);transition:.15s;
+}
+#pg-log .csv-edit-row .csv-ss-empty:hover{
+  border-color:var(--n-text-3);color:var(--n-text-2);background:var(--n-surface-2);
+}
+#pg-log .csv-edit-row .csv-ss-empty svg{color:var(--n-text-4);width:14px;height:14px}
+#pg-log .csv-edit-row .csv-screenshot.uploading .csv-ss-empty{
+  opacity:0.6;border-color:var(--n-accent-cool);color:var(--n-accent-cool);
+}
+#pg-log .csv-edit-row .csv-ss-thumb{
+  position:relative;width:56px;height:32px;
+  border-radius:5px;overflow:hidden;
+  border:1px solid var(--n-border-2);
+}
+#pg-log .csv-edit-row .csv-ss-thumb img{
+  width:100%;height:100%;object-fit:cover;display:block;
+}
+#pg-log .csv-edit-row .csv-ss-remove{
+  position:absolute;top:2px;right:2px;
+  width:16px;height:16px;
+  background:rgba(0,0,0,0.7);border:none;color:#fff;
+  border-radius:3px;cursor:pointer;font-size:12px;line-height:1;padding:0;
+}
+#pg-log .csv-edit-row .csv-ss-remove:hover{background:rgba(201,95,95,0.7)}
 #pg-log .csv-edit-row .grade-pill-mini{
   width:24px;height:24px;
   background:var(--n-surface);border:1px solid var(--n-border);
@@ -6611,6 +6675,21 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
             <span>Trades detected &middot; enrich &amp; import</span>
           </div>
           <span id="csv-count"></span>
+        </div>
+
+        <!-- BULK FIELDS — applies to every row -->
+        <div class="csv-bulk-fields">
+          <span class="csv-bulk-l">Apply to all:</span>
+          <input class="field-input field-sm" id="csv-bulk-session" placeholder="Session (optional)" oninput="onCsvBulkSessionChange(this.value)"/>
+        </div>
+
+        <!-- COLUMN HEADERS — align with .csv-row-body grid -->
+        <div class="csv-col-headers" aria-hidden="true">
+          <span class="csv-col-h">Entry</span>
+          <span class="csv-col-h">Exit</span>
+          <span class="csv-col-h">Qty</span>
+          <span class="csv-col-h">Accounts</span>
+          <span class="csv-col-h">P&amp;L</span>
         </div>
 
         <!-- TRADE LIST (v2) -->
@@ -12513,6 +12592,9 @@ function csvInitEnrichment() {
   csvCurrentIdx = 0;
   csvEnrichment = csvParsedTrades.map(() => ({notes:'', session:'', grade:'B', emotion:3, confidence:3, accounts:1, pnlManual:false, images:[]}));
   csvCurrentImgs = [];
+  _csvBulkSession = '';
+  var bulkEl = document.getElementById('csv-bulk-session');
+  if(bulkEl) bulkEl.value = '';
   csvRenderAllRows();
 }
 
@@ -12631,7 +12713,90 @@ document.addEventListener('click', function(e){
     if(!isNaN(idx) && csvEnrichment[idx]) csvEnrichment[idx].grade = gradeEl.dataset.grade;
     return;
   }
+
+  // Screenshot remove (×). Check this BEFORE the screenshot-zone trigger
+  // so the click on the × doesn't also re-open the file picker.
+  var rmSs = e.target.closest('.csv-ss-remove');
+  if(rmSs){
+    var wrap = rmSs.closest('.csv-screenshot');
+    if(wrap){
+      wrap.querySelector('.csv-ss-empty').style.display = '';
+      var thumb = wrap.querySelector('.csv-ss-thumb');
+      thumb.style.display = 'none';
+      var img = thumb.querySelector('img'); if(img) img.src = '';
+      delete wrap.dataset.imageUrl;
+      if(!isNaN(idx) && csvEnrichment[idx]) csvEnrichment[idx].images = [];
+    }
+    e.stopPropagation();
+    return;
+  }
+
+  // Screenshot zone — open file picker
+  var ssWrap = e.target.closest('.csv-screenshot');
+  if(ssWrap){
+    var input = ssWrap.querySelector('.csv-ss-input');
+    if(input) input.click();
+    return;
+  }
 });
+
+// Per-row screenshot upload — handles both the local preview and the
+// Supabase upload, then writes the URL into csvEnrichment[idx].images
+// so it survives a re-render (e.g. if the user deletes another row).
+document.addEventListener('change', async function(e){
+  if(!e.target || !e.target.classList || !e.target.classList.contains('csv-ss-input')) return;
+  var file = e.target.files && e.target.files[0];
+  if(!file) return;
+  var wrap = e.target.closest('.csv-screenshot');
+  var row  = e.target.closest('.csv-edit-row');
+  if(!wrap || !row) return;
+  var idx = parseInt(row.dataset.idx);
+
+  // Local preview goes up immediately so the UI feels instant.
+  try {
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      var img = wrap.querySelector('.csv-ss-thumb img');
+      if(img) img.src = ev.target.result;
+      wrap.querySelector('.csv-ss-empty').style.display = 'none';
+      wrap.querySelector('.csv-ss-thumb').style.display = '';
+    };
+    reader.readAsDataURL(file);
+  } catch(err){ console.warn('csv ss preview', err); }
+
+  wrap.classList.add('uploading');
+  try {
+    var url = (typeof uploadTradeImage === 'function') ? await uploadTradeImage(file) : null;
+    if(url){
+      wrap.dataset.imageUrl = url;
+      if(!isNaN(idx) && csvEnrichment[idx]){
+        csvEnrichment[idx].images = [url];
+      }
+      // Swap the local data: URL for the public URL once it's uploaded.
+      var img = wrap.querySelector('.csv-ss-thumb img');
+      if(img) img.src = url;
+    } else {
+      // Upload helper showed its own toast already; revert UI.
+      wrap.querySelector('.csv-ss-empty').style.display = '';
+      wrap.querySelector('.csv-ss-thumb').style.display = 'none';
+    }
+  } catch(err){
+    console.warn('csv ss upload', err);
+    if(typeof toast === 'function') toast('Screenshot upload failed');
+    wrap.querySelector('.csv-ss-empty').style.display = '';
+    wrap.querySelector('.csv-ss-thumb').style.display = 'none';
+  } finally {
+    wrap.classList.remove('uploading');
+    // Clear the input so the SAME file can be re-selected (change event
+    // doesn't fire on identical re-pick otherwise).
+    e.target.value = '';
+  }
+});
+
+// Bulk session — applies to every row at import time. Writes to a
+// global so a re-render of #csv-rows-list doesn't clobber state.
+var _csvBulkSession = '';
+function onCsvBulkSessionChange(v){ _csvBulkSession = (v||'').trim(); }
 
 // v2 list-of-rows renderer — replaces the per-trade carousel.
 function csvRenderAllRows(){
@@ -12658,6 +12823,10 @@ function csvRenderAllRows(){
     var gradePillsHtml = ['A','B','C','D','F'].map(function(g){
       return '<div class="grade-pill-mini '+g+(grade===g?' on':'')+'" data-grade="'+g+'">'+g+'</div>';
     }).join('');
+    var imgUrl = (Array.isArray(e.images) && e.images[0]) ? e.images[0] : '';
+    var ssEmptyDisp = imgUrl ? 'none' : '';
+    var ssThumbDisp = imgUrl ? '' : 'none';
+    var safeImg = imgUrl ? _safeText(imgUrl) : '';
     return '<div class="csv-edit-row '+(isWin?'profit':'loss')+'" data-idx="'+i+'"'+(e.pnlManual?' data-pnl-manual="1"':'')+'>'+
       '<div class="csv-row-head">'+
         '<input class="csv-sym" data-field="sym" value="'+_safeText(sym)+'" placeholder="Sym"/>'+
@@ -12677,6 +12846,17 @@ function csvRenderAllRows(){
       '</div>'+
       '<div class="csv-row-extras">'+
         '<div class="grade-pills-mini">'+gradePillsHtml+'</div>'+
+        '<div class="csv-screenshot" data-row-screenshot>'+
+          '<input type="file" accept="image/*" hidden class="csv-ss-input"/>'+
+          '<div class="csv-ss-empty" style="display:'+ssEmptyDisp+'">'+
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>'+
+            '<span>Screenshot</span>'+
+          '</div>'+
+          '<div class="csv-ss-thumb" style="display:'+ssThumbDisp+'">'+
+            '<img src="'+safeImg+'" alt=""/>'+
+            '<button class="csv-ss-remove" type="button" title="Remove">×</button>'+
+          '</div>'+
+        '</div>'+
         '<input class="field-input field-sm csv-notes" data-field="notes" placeholder="Notes (optional)" value="'+_safeText(notes)+'"/>'+
       '</div>'+
     '</div>';
@@ -13050,6 +13230,11 @@ function importCsvTrades(){
     var eRisk=eStop?eStop*totalQty*ePtVal:null;
     var eRR=eRisk&&eRisk>0?Math.abs(t.pnl)/eRisk:null;
 
+    // Bulk session applies to every row that doesn't already have one
+    // (per-row session field doesn't exist in the v2 row UI, but a future
+    // upgrade could add it — this keeps the precedence right).
+    var rowSession = e.session || _csvBulkSession || '';
+
     var newTrade = {
       id: tradeId,
       sym: t.sym,
@@ -13058,7 +13243,7 @@ function importCsvTrades(){
       accounts: accounts > 1 ? accounts : undefined,
       date: t.date, market: t.market,
       notes: e.notes || t.notes || '',
-      session: e.session || '',
+      session: rowSession,
       grade: e.grade || 'B',
       emotion: e.emotion || 3,
       confidence: e.confidence || 3,
@@ -13075,7 +13260,7 @@ function importCsvTrades(){
     const pnlStr=(t.pnl>=0?'+':'-')+'$'+Math.abs(t.pnl).toFixed(2);
     const gradeStr=e.grade||'B';
     const emotionStr=e.emotion||3;
-    const sessionStr=e.session?` · ${e.session}`:'';
+    const sessionStr=rowSession?` · ${rowSession}`:'';
     const acctStr=accounts>1?` · ×${accounts} accts`:'';
     const notesStr=e.notes?`\n\nNotes: ${e.notes}`:'';
     const dirStr=(newTrade.type||'long').toUpperCase();
