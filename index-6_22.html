@@ -11439,19 +11439,57 @@ async function removeMember(memberId){
   }
 
   if(_sb && _comm.id){
-    var newMemberIds = (_comm.members||[])
-      .filter(function(m){ return m.id !== memberId; })
-      .map(function(m){ return m.id; })
-      .filter(function(id){ return id && id !== 'me'; });
-
+    // 1. Re-FETCH the latest community row before computing the new
+    //    members array. Avoids a stale write if another tab / device
+    //    has changed membership since this page loaded.
+    var fresh, fetchErr;
     try {
-      var r = await _sb.from('communities')
+      var fr = await _sb.from('communities').select('*').eq('id', _comm.id).single();
+      fresh = fr && fr.data;
+      fetchErr = fr && fr.error;
+    } catch(e){ fetchErr = e; }
+    if(fetchErr || !fresh){
+      console.error('[removeMember] fetch fresh community failed', fetchErr);
+      showToast('Could not reach community — try again', 'error');
+      return;
+    }
+    // Refuse if the fetched row's owner is no longer me (RLS would have
+    // blocked the write anyway; this gives a clearer error).
+    if(fresh.owner_id !== currentUser.id){
+      showToast('Only the owner can remove members', 'error');
+      return;
+    }
+    // 2. Build the new UUID list from the FRESH server-side array,
+    //    not the in-memory hydrated object array. Members can be either
+    //    raw UUIDs (jsonb text[]) or denorm objects depending on path.
+    var freshMembers = Array.isArray(fresh.members) ? fresh.members : [];
+    var newMemberIds = freshMembers
+      .map(function(m){ return (typeof m === 'string') ? m : (m && (m.id || m.user_id)); })
+      .filter(function(id){ return id && id !== 'me' && id !== memberId; });
+
+    // 3. UPDATE with explicit owner_id check (RLS belt + suspenders) and
+    //    .select().single() so we know whether the write actually hit
+    //    a row. If RLS silently filters us out, .data === null and we
+    //    surface that to the user instead of pretending success.
+    var updated, updateErr;
+    try {
+      var ur = await _sb.from('communities')
         .update({ members: newMemberIds })
-        .eq('id', _comm.id);
-      if(r && r.error) throw r.error;
-    } catch(e){
-      console.error('[removeMember]', e);
-      showToast('Failed to remove: '+(e.message||'try again'), 'error');
+        .eq('id', _comm.id)
+        .eq('owner_id', currentUser.id)
+        .select()
+        .single();
+      updated = ur && ur.data;
+      updateErr = ur && ur.error;
+    } catch(e){ updateErr = e; }
+    if(updateErr){
+      console.error('[removeMember] update failed', updateErr);
+      showToast('Failed to remove: ' + (updateErr.message || 'try again'), 'error');
+      return;
+    }
+    if(!updated){
+      console.error('[removeMember] update returned no row — RLS silently blocked write');
+      showToast('Update blocked — RLS check failed', 'error');
       return;
     }
 
@@ -11463,19 +11501,22 @@ async function removeMember(memberId){
     } catch(e){ console.warn('[removeMember] invite flag failed:', e && e.message); }
   }
 
-  // Local mirror.
+  // 4. Local mirror — keep the hydrated object array intact, just drop
+  //    the kicked entry. We do NOT replace _comm.members with the raw
+  //    UUID array from the DB response (would lose username/finish/etc.
+  //    profile data we already JOIN-fetched on community load).
   _comm.members = (_comm.members||[]).filter(function(m){return m.id!==memberId;});
-  saveComm();
+  // Persist the updated _comm to localStorage. We deliberately DO NOT
+  // call saveCommunityToDB here — the UPDATE above is the canonical
+  // write; a follow-up upsert risks racing or clobbering server-side
+  // fields (last_modified, etc.) that the schema may set.
+  try { localStorage.setItem('tr1_comms', JSON.stringify(_comms)); } catch(e){}
 
-  // Targeted re-renders — avoid a full renderCommunity which would
-  // reset the active group and feed scroll position.
+  // 5. Force re-renders so every member-dependent surface updates.
   if(typeof renderFeedMembers==='function') renderFeedMembers(_comm);
   if(typeof renderFeedLeaderboard==='function') renderFeedLeaderboard(_comm);
   if(typeof renderCommSidebar==='function') renderCommSidebar();
-  // Refresh the edit-group-modal members list (where the click came from)
-  // so the row vanishes immediately without closing the modal.
   if(typeof renderEditMembersList==='function') renderEditMembersList();
-  // Refresh the all-members modal if it's currently open.
   var amModal = document.getElementById('all-members-modal');
   if(amModal && amModal.style.display !== 'none' && typeof openAllMembersModal==='function'){
     openAllMembersModal();
@@ -11483,6 +11524,7 @@ async function removeMember(memberId){
 
   showToast('Removed @' + (member.username||'member'), 'success');
 }
+window.removeMember = removeMember;
 
 var _editGroupFinish='chrome';
 
