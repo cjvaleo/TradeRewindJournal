@@ -4106,17 +4106,17 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   border:1px solid var(--n-border);
 }
 
-/* Trade-screenshot block in community feed — full-width image
-   between the post body and the actions row. Click anywhere on the
-   card to zoom via the shared lightbox. */
+/* Trade-screenshot block in community feed — compact 280×160 thumb
+   between the post body and the actions row. Click to zoom fullscreen
+   via the shared lightbox. */
 #pg-community .post-image{
-  margin-top:10px;border-radius:8px;overflow:hidden;
+  margin-top:10px;border-radius:6px;overflow:hidden;
   border:1px solid var(--n-border);background:var(--n-bg);
   cursor:zoom-in;
+  max-width:280px;width:fit-content;
 }
 #pg-community .post-image img{
-  display:block;width:100%;height:auto;
-  max-height:360px;object-fit:cover;
+  display:block;width:280px;height:160px;object-fit:cover;
   transition:opacity .15s;
 }
 #pg-community .post-image:hover img{opacity:0.93}
