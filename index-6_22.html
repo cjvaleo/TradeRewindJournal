@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="google-site-verification" content="HPdAv5ljrR6uTqkRlOemmhaV80fYvKyZLD8T5QYWl8g">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzBhMDAxNSIvPgo8dGV4dCB4PSI1IiB5PSIyNCIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc3R5bGU9Iml0YWxpYyIgZm9udC13ZWlnaHQ9IjkwMCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI2ZmZiI+VDwvdGV4dD4KPHRleHQgeD0iMTciIHk9IjI0IiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zdHlsZT0iaXRhbGljIiBmb250LXdlaWdodD0iOTAwIiBmb250LXNpemU9IjI0IiBmaWxsPSIjMDBmZmU3Ij5SPC90ZXh0Pgo8cmVjdCB4PSI0IiB5PSIyNyIgd2lkdGg9IjI0IiBoZWlnaHQ9IjIuNSIgcng9IjEiIGZpbGw9IiNmZjAwYWEiIG9wYWNpdHk9IjAuOSIvPgo8cmVjdCB4PSI0IiB5PSIzMCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjEiIHJ4PSIwLjUiIGZpbGw9IiMwMGZmZTciIG9wYWNpdHk9IjAuNyIvPgo8L3N2Zz4=">
 <title>Rewind — Trading Journal</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -6303,6 +6303,159 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   /* Toasts — slide in from bottom on mobile */
   #toast-container{right:12px;left:12px;bottom:12px;align-items:stretch}
   #toast-container .toast{max-width:100%}
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   MOBILE PASS — comprehensive tightening on top of the existing
+   responsive system (kept at the end of the stylesheet so these
+   rules win cascade ties). Selectors target the classes that
+   actually live in this file (.sb, .ni, .dash-grid, .lt-*, .csv-*,
+   .cal-stats, .toast, etc.) — NOT the generic names .sidebar /
+   .modal-overlay / .kpi-grid which don't exist here.
+   ═════════════════════════════════════════════════════════════════ */
+
+/* iOS zoom-on-focus is triggered by inputs whose font-size is < 16px.
+   The existing 768px block uses 15px on .field-input, which still
+   triggers zoom. Bump anything that takes user input to 16px. */
+@media (max-width:768px){
+  body{ -webkit-text-size-adjust:100% }
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  select,
+  .f-input,
+  .field-input,
+  #pg-log .lt-input,
+  #pg-log .csv-edit-row .field-input.field-sm,
+  #pg-log .csv-edit-row .csv-sym{
+    font-size:16px !important;
+  }
+  /* Touch targets — minimum 40px tap height for primary actions */
+  #pg-log .lt-submit,
+  #pg-log .lt-reset,
+  .lt-submit,
+  .lt-reset,
+  .lg-submit,
+  .lg-reset,
+  .csv-import,
+  .csv-discard{
+    min-height:44px;
+  }
+}
+
+/* Tablet (≤1100px): grids that still read on mobile-portrait phones */
+@media (max-width:1100px){
+  /* Calendar stat row was 5-col, will overflow on tablet */
+  #pg-calendar .cal-stats{grid-template-columns:repeat(3,1fr)!important;gap:10px}
+  /* Dashboard bottom-row was 3-col winrate/best-worst/cal */
+  #pg-dashboard .bottom-row{grid-template-columns:1fr 1fr!important}
+}
+
+/* Phone (≤768px): full collapse */
+@media (max-width:768px){
+  /* Ensure no horizontal scroll anywhere */
+  html,body{overflow-x:hidden}
+
+  /* Calendar stat row → 2-col on phone */
+  #pg-calendar .cal-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px}
+  #pg-calendar .cal-stats .stat-value{font-size:22px!important}
+  #pg-calendar .cal-grid-wrap{grid-template-columns:1fr!important;gap:14px}
+
+  /* Dashboard sections that the existing rules missed */
+  #pg-dashboard .bottom-row{grid-template-columns:1fr!important;gap:12px;margin-top:16px}
+  #pg-dashboard .stats-row{grid-template-columns:repeat(2,1fr)!important;gap:8px}
+  #pg-dashboard .n-stat-card{padding:14px 16px}
+  #pg-dashboard .n-stat-card .stat-value{font-size:24px}
+  #pg-dashboard .hero-pnl{padding:30px 18px 24px}
+  #pg-dashboard .hero-amount{font-size:54px}
+  #pg-dashboard .n-chart-wrap{height:200px}
+  #pg-dashboard .n-chart-wrap canvas{max-height:200px}
+  #pg-dashboard .tod-bars{height:64px}
+
+  /* Log Trade — extra grid normalisation the existing block missed */
+  #pg-log .lt-actions{flex-direction:column-reverse;gap:8px}
+  #pg-log .lt-submit,
+  #pg-log .lt-reset{width:100%}
+  #pg-log .grade-row .lt-grade-pills{gap:5px}
+  #pg-log .emotion-row{flex-wrap:wrap;gap:10px}
+  #pg-log .em-label{
+    width:100%;margin-left:0;text-align:center;margin-top:4px;
+  }
+  #pg-log .lt-confidence-row{flex-wrap:wrap;gap:10px}
+  #pg-log .lt-conf-label{
+    width:100%;margin-left:0;text-align:center;margin-top:4px;
+  }
+
+  /* CSV row — body to 2-col, hide column header bar (labels live
+     on each cell now), stack extras */
+  #pg-log .csv-col-headers{display:none!important}
+  #pg-log .csv-edit-row .csv-row-body{
+    grid-template-columns:1fr 1fr!important;gap:6px!important;
+  }
+  #pg-log .csv-edit-row .csv-row-extras{
+    display:flex!important;flex-direction:column!important;
+    gap:12px!important;align-items:stretch;
+  }
+  #pg-log .csv-edit-row .csv-cell{width:100%}
+  #pg-log .csv-edit-row .csv-row-head{flex-wrap:wrap}
+  #pg-log .csv-edit-row .csv-sym{flex:1 1 100%!important;width:100%!important}
+  #pg-log .csv-edit-row .csv-row-pnl{font-size:18px!important}
+  #pg-log .csv-bulk-fields{flex-direction:column;align-items:stretch;gap:6px}
+
+  /* Community feed — already 1-col via the legacy 1636 rule. Add
+     post-image cap so it doesn't dominate phone viewports. */
+  #pg-community .post-image img{height:200px!important}
+  #pg-community .pc-trade-body,
+  #pg-community .post .trade-body{flex-wrap:wrap}
+  #pg-community .filters{flex-wrap:wrap;gap:6px}
+
+  /* Calendar heatmap — let the grid scroll horizontally with a
+     usable min-width instead of squashing to 320px wide. The
+     6M view at 26 weeks needs ~520px; 1Y/52w needs ~720px. */
+  #pg-calendar .heatmap-card{padding:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  #pg-calendar .weeks-grid{gap:2px;min-width:540px}
+  #pg-calendar .week-col{gap:2px}
+  #pg-calendar .cal-hm-grid{grid-template-columns:28px 1fr;gap:8px}
+  #pg-calendar .cal-view-tabs{display:flex;width:100%}
+  #pg-calendar .cal-view-tab{flex:1;text-align:center;padding:9px 8px}
+  #pg-calendar .view-toggle{flex-shrink:0}
+
+  /* Generic inline-styled modals (most of this app's modals are
+     <div style="display:none;position:fixed;inset:0;..."> blocks).
+     Tighten their inner padding so they don't waste screen real
+     estate on small phones. */
+  div[id$="-modal"][style*="position:fixed"][style*="inset:0"]{padding:0!important}
+  /* The known direct-children modal cards */
+  .lg-confirm-card,
+  .eg-modal{
+    width:100%!important;max-width:100%!important;
+    border-radius:18px 18px 0 0!important;
+    margin:auto 0 0 0!important;
+    max-height:90vh;
+  }
+  /* Toasts: lift above the mobile-nav (which is 56px tall) */
+  #toast-container{bottom:72px!important}
+  .toast{bottom:72px!important}
+}
+
+/* Small phone (≤480px) — final tightening */
+@media (max-width:480px){
+  #pg-dashboard .stats-row{grid-template-columns:1fr!important;gap:8px}
+  #pg-dashboard .hero-amount{font-size:44px}
+  #pg-calendar .cal-stats{grid-template-columns:1fr!important;gap:8px}
+  #pg-log .csv-edit-row .csv-row-body{grid-template-columns:1fr!important}
+  #pg-log .lt-section{padding:16px 12px}
+  #pg-log .lt-section-h{font-size:10px;letter-spacing:0.18em}
+  #pg-log .lt-grade-pill{font-size:20px;padding:11px 0}
+  #pg-community .post-image img{height:160px!important}
+  /* Heatmap: shrink min-width so 3M view fits without huge scroll */
+  #pg-calendar .weeks-grid{min-width:420px}
 }
 </style>
 </head>
