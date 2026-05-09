@@ -337,6 +337,7 @@ end $$;
 drop policy if exists "members_read_same_community" on public.community_members;
 drop policy if exists "members_join_self"           on public.community_members;
 drop policy if exists "members_leave_self"          on public.community_members;
+drop policy if exists "members_remove_by_owner"     on public.community_members;
 create policy "members_read_same_community" on public.community_members
   for select using (
     exists (
@@ -347,8 +348,16 @@ create policy "members_read_same_community" on public.community_members
   );
 create policy "members_join_self" on public.community_members
   for insert with check (auth.uid() = user_id);
-create policy "members_leave_self" on public.community_members
-  for delete using (auth.uid() = user_id);
+-- DELETE: members can leave themselves OR the community owner can kick.
+create policy "members_remove_by_owner" on public.community_members
+  for delete using (
+    auth.uid() = user_id
+    or exists (
+      select 1 from public.communities
+      where id = community_members.community_id
+        and owner_id = auth.uid()
+    )
+  );
 
 -- COMMUNITY_POST_LIKES — read same as posts; write only own row.
 do $$ begin

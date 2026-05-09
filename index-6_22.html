@@ -4269,6 +4269,33 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   background:var(--n-profit);box-shadow:0 0 6px rgba(95,179,137,0.45);
 }
 
+/* Owner-only remove (×) — appears on hover, hidden otherwise */
+#pg-community .mem-item{position:relative}
+#pg-community .mem-remove,
+#all-members-modal .mem-remove{
+  width:22px;height:22px;background:transparent;
+  border:1px solid var(--n-border-2);color:var(--n-text-3);
+  border-radius:5px;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .15s, color .15s, border-color .15s, background .15s;
+  margin-left:6px;
+}
+#pg-community .mem-item:hover .mem-remove,
+#all-members-modal .mem-item:hover .mem-remove{opacity:1}
+#pg-community .mem-remove:hover,
+#all-members-modal .mem-remove:hover{
+  color:var(--n-loss);
+  border-color:rgba(201,95,95,0.35);
+  background:rgba(201,95,95,0.08);
+}
+#pg-community .mem-remove svg,
+#all-members-modal .mem-remove svg{width:11px;height:11px}
+/* Touch devices have no hover — keep the button visible at low opacity */
+@media (hover: none){
+  #pg-community .mem-remove,
+  #all-members-modal .mem-remove{opacity:0.5}
+}
+
 /* View All button */
 #pg-community .view-all{
   display:flex;align-items:center;justify-content:center;gap:6px;
@@ -9226,6 +9253,12 @@ function renderFeedMembers(g){
       name: m.username || ''
     }, 'sm');
     var online = _isOnline(m.last_seen_at);
+    var canRemove = currentUser && _comm && _comm.owner_id === currentUser.id && m.id !== currentUser.id;
+    var removeBtn = canRemove
+      ? '<button class="mem-remove" onclick="event.stopPropagation();removeMember(\''+safeMid+'\')" title="Remove from group">'
+        +   '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path d="M18 6L6 18M6 6l12 12"/></svg>'
+        + '</button>'
+      : '';
     return '<div class="mem-item" data-mid="'+safeMid+'" data-uname="'+safeUname+'" onclick="openMemberProfile(this.dataset.mid,this.dataset.uname)">'
       + avHtml
       + '<div class="mem-info">'
@@ -9233,6 +9266,7 @@ function renderFeedMembers(g){
       +   '<div class="mem-handle">@'+safeText((m.username||'trader').replace(/^@/,''))+'</div>'
       + '</div>'
       + '<div class="mem-status'+(online?' online':'')+'" title="'+(online?'Online':'Offline')+'"></div>'
+      + removeBtn
       + '</div>';
   }).join('');
 }
@@ -9280,6 +9314,12 @@ function openAllMembersModal(){
       name: m.username || ''
     }, 'md');
     var online = _isOnline(m.last_seen_at);
+    var canRemove = currentUser && _comm && _comm.owner_id === currentUser.id && m.id !== currentUser.id;
+    var removeBtn = canRemove
+      ? '<button class="mem-remove" onclick="event.stopPropagation();removeMember(\''+safeMid+'\')" title="Remove from group">'
+        +   '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path d="M18 6L6 18M6 6l12 12"/></svg>'
+        + '</button>'
+      : '';
     return '<div class="mem-item" data-mid="'+safeMid+'" data-uname="'+safeUname+'" onclick="document.getElementById(\'all-members-modal\').style.display=\'none\';openMemberProfile(this.dataset.mid,this.dataset.uname)">'
       + avHtml
       + '<div style="flex:1;min-width:0">'
@@ -9287,6 +9327,7 @@ function openAllMembersModal(){
       +   '<div class="mem-handle">@'+safeText((m.username||'trader').replace(/^@/,''))+'</div>'
       + '</div>'
       + '<div class="mem-status'+(online?' online':'')+'" title="'+(online?'Online':'Offline')+'"></div>'
+      + removeBtn
       + '</div>';
   }).join('') || '<div style="font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-3);text-align:center;padding:20px">No members yet</div>';
   modal.style.display = 'flex';
@@ -9553,12 +9594,64 @@ function setCommPeriod(period, btn){
   else wire();
 })();
 
-function removeMember(id){
-  if(!_comm)return;
-  var m=_comm.members.find(function(x){return x.id===id;});
-  _comm.members=_comm.members.filter(function(x){return x.id!==id;});
-  saveComm();renderCommunity();
-  toast((m?'@'+m.username:' Member')+' removed from group');
+async function removeMember(memberId){
+  if(!_comm || !currentUser){ return; }
+  if(_comm.owner_id !== currentUser.id){
+    showToast('Only the owner can remove members', 'error'); return;
+  }
+  if(memberId === currentUser.id){
+    showToast('Use Leave Group to remove yourself', 'error'); return;
+  }
+  var member = (_comm.members||[]).find(function(m){return m.id===memberId;});
+  if(!member){ return; }
+  if(!confirm('Remove @' + (member.username||'member') + ' from ' + (_comm.name||'this group') + '?')){
+    return;
+  }
+
+  if(_sb){
+    try{
+      // Delete from community_members (the canonical membership table).
+      var del1 = await _sb.from('community_members').delete()
+        .eq('community_id', _comm.id).eq('user_id', memberId);
+      // Older invite-based memberships also live in invites — flip
+      // their status to 'removed' so the user can't auto-rejoin.
+      var del2 = await _sb.from('invites').update({status:'removed'})
+        .eq('community_id', _comm.id).eq('to_id', memberId);
+      if(del1 && del1.error && !/relation .* does not exist/i.test(del1.error.message||'')){
+        throw del1.error;
+      }
+      if(del2 && del2.error){ console.warn('[removeMember] invites flag failed:', del2.error.message); }
+    }catch(e){
+      console.error('[removeMember]', e);
+      showToast('Failed to remove: '+(e.message||'try again'), 'error');
+      return;
+    }
+  }
+
+  // Update local state + persist to comm_data so the row matches.
+  _comm.members = (_comm.members||[]).filter(function(m){return m.id!==memberId;});
+  if(_sb && _comm.id){
+    try{
+      await _sb.from('communities').update({
+        comm_data: JSON.stringify(_comm),
+        members: _comm.members.map(function(m){return m.id;}).filter(function(id){return id && id!=='me';})
+      }).eq('id', _comm.id);
+    }catch(e){ /* row may not include comm_data column — ignore */ }
+  }
+  saveComm();
+
+  // Targeted re-renders — avoid a full renderCommunity which would
+  // reset the active group and feed scroll position.
+  if(typeof renderFeedMembers==='function') renderFeedMembers(_comm);
+  if(typeof renderFeedLeaderboard==='function') renderFeedLeaderboard(_comm);
+  if(typeof renderCommSidebar==='function') renderCommSidebar();
+  // Refresh the all-members modal if it's open.
+  var amModal = document.getElementById('all-members-modal');
+  if(amModal && amModal.style.display !== 'none' && typeof openAllMembersModal==='function'){
+    openAllMembersModal();
+  }
+
+  showToast('Removed @' + (member.username||'member'), 'success');
 }
 
 var _editGroupFinish='chrome';
