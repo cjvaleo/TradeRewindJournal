@@ -726,7 +726,8 @@
 /* ── DASHBOARD COMPONENTS ─────────────────────────────── */
 
 #pg-dashboard.page.on{
-  padding:32px 40px 48px;
+  width:100%;max-width:none;
+  padding:36px 48px 60px;
   background:var(--n-bg);
   position:relative;z-index:1;
 }
@@ -784,13 +785,16 @@
 
 .hero-pnl{
   position:relative;
-  background:var(--n-surface);border:1px solid var(--n-border);
-  border-radius:14px;padding:48px 40px 40px;text-align:center;
-  margin-bottom:24px;overflow:hidden;
+  background:radial-gradient(ellipse at top center, var(--n-surface-2) 0%, var(--n-bg) 75%);
+  border:1px solid var(--n-border);
+  border-radius:16px;padding:42px 28px 32px;text-align:center;
+  margin:0 auto 18px;max-width:1100px;overflow:hidden;
 }
 .hero-pnl::before{
-  content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;
-  background:linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 30%);
+  content:"";position:absolute;
+  top:-1px;left:50%;transform:translateX(-50%);
+  width:55%;height:1px;pointer-events:none;
+  background:linear-gradient(90deg, transparent, rgba(95,179,137,0.45), transparent);
 }
 .hero-label{
   font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.22em;
@@ -896,7 +900,198 @@
 .n-trade-row .t-pnl.neg{color:var(--n-loss)}
 .n-trade-empty{padding:24px;text-align:center;font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-3);letter-spacing:0.1em;text-transform:uppercase}
 
-.bottom-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+/* ── DASHBOARD V2 ENHANCEMENTS ─────────────────────────── */
+#pg-dashboard .dash-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;
+}
+#pg-dashboard .dash-card{
+  padding:18px 20px;
+  background:linear-gradient(180deg, var(--n-surface-2) 0%, var(--n-surface) 100%);
+  border:1px solid var(--n-border);border-radius:12px;
+  position:relative;overflow:hidden;
+}
+#pg-dashboard .dash-card.streak::after{
+  content:'';position:absolute;
+  top:-1px;left:50%;transform:translateX(-50%);
+  width:50%;height:1px;
+  background:linear-gradient(90deg, transparent, rgba(245,215,124,0.45), transparent);
+}
+#pg-dashboard .dc-h{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--n-text-3);
+  margin-bottom:14px;display:flex;align-items:center;gap:6px;
+}
+#pg-dashboard .dc-h .star{color:#f5d77c}
+#pg-dashboard .streak-num{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:64px;line-height:1;color:#f5d77c;letter-spacing:-0.02em;
+  filter:drop-shadow(0 4px 12px rgba(245,215,124,0.20));
+}
+#pg-dashboard .streak-num .unit{font-size:0.32em;opacity:0.75;margin-left:4px}
+#pg-dashboard .streak-sub{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-3);margin-top:8px;
+}
+#pg-dashboard .streak-bar{display:flex;gap:3px;margin-top:14px}
+#pg-dashboard .streak-day{
+  flex:1;height:5px;border-radius:2px;background:var(--n-surface-3);
+}
+#pg-dashboard .streak-day.on{
+  background:#f5d77c;box-shadow:0 0 6px rgba(245,215,124,0.4);
+}
+
+#pg-dashboard .dash-card.highlight.win{ border-left:3px solid rgba(95,179,137,0.45) }
+#pg-dashboard .dash-card.highlight.loss{ border-left:3px solid rgba(201,95,95,0.45) }
+#pg-dashboard .hl-trade{
+  display:flex;align-items:center;gap:11px;margin-bottom:10px;
+}
+#pg-dashboard .hl-trade .trade-sym{
+  font-family:var(--n-font-mono);font-size:13px;color:var(--n-text);font-weight:600;
+}
+#pg-dashboard .hl-trade .trade-side{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.16em;
+  text-transform:uppercase;padding:3px 9px;border-radius:5px;
+}
+#pg-dashboard .hl-trade .trade-side.long{
+  color:var(--n-profit);background:rgba(95,179,137,0.12);
+  border:1px solid rgba(95,179,137,0.20);
+}
+#pg-dashboard .hl-trade .trade-side.short{
+  color:var(--n-loss);background:rgba(201,95,95,0.10);
+  border:1px solid rgba(201,95,95,0.20);
+}
+#pg-dashboard .hl-pnl{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:34px;line-height:1;letter-spacing:-0.01em;margin-bottom:8px;
+}
+#pg-dashboard .hl-pnl.profit{color:var(--n-profit)}
+#pg-dashboard .hl-pnl.loss{color:var(--n-loss)}
+#pg-dashboard .hl-prompt{
+  font-size:12px;color:var(--n-text-3);line-height:1.55;font-style:italic;
+}
+#pg-dashboard .hl-empty{
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.14em;
+  color:var(--n-text-4);text-transform:uppercase;
+  padding:24px 0;text-align:center;
+}
+
+#pg-dashboard .goal-card{
+  padding:16px 20px;background:var(--n-surface);
+  border:1px solid var(--n-border);border-radius:11px;
+  margin-bottom:24px;
+}
+#pg-dashboard .goal-row{
+  display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;
+}
+#pg-dashboard .goal-l{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+#pg-dashboard .goal-v{
+  font-family:var(--n-font-mono);font-size:13px;color:var(--n-text);font-weight:500;
+}
+#pg-dashboard .goal-v .target{color:var(--n-text-4)}
+#pg-dashboard .goal-bar{
+  position:relative;height:6px;background:var(--n-surface-3);
+  border-radius:3px;overflow:hidden;
+}
+#pg-dashboard .goal-fill{
+  position:absolute;top:0;left:0;height:100%;
+  background:linear-gradient(90deg, var(--n-profit) 0%, #7ed4a8 100%);
+  border-radius:3px;box-shadow:0 0 8px rgba(95,179,137,0.4);
+  transition:width .4s ease-out;
+}
+
+#pg-dashboard .section-h{
+  display:flex;justify-content:space-between;align-items:baseline;
+  margin:30px 0 14px;
+}
+#pg-dashboard .section-h-l{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+#pg-dashboard .section-h-a{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;
+  color:var(--n-text-4);cursor:pointer;
+}
+#pg-dashboard .section-h-a:hover{color:var(--n-text-2)}
+#pg-dashboard .recent-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+#pg-dashboard .recent-card{
+  padding:13px 15px;
+  background:linear-gradient(180deg, var(--n-surface-2) 0%, var(--n-surface) 100%);
+  border:1px solid var(--n-border);border-radius:10px;
+  cursor:pointer;transition:.15s;
+}
+#pg-dashboard .recent-card:hover{
+  border-color:var(--n-border-2);transform:translateY(-1px);
+}
+#pg-dashboard .recent-card.profit{border-left:3px solid rgba(95,179,137,0.45)}
+#pg-dashboard .recent-card.loss{border-left:3px solid rgba(201,95,95,0.45)}
+#pg-dashboard .rc-row{
+  display:flex;align-items:center;gap:9px;margin-bottom:7px;
+}
+#pg-dashboard .rc-sym{
+  font-family:var(--n-font-mono);font-size:12px;color:var(--n-text);font-weight:600;
+}
+#pg-dashboard .rc-side{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.18em;
+  text-transform:uppercase;padding:2px 7px;border-radius:4px;
+}
+#pg-dashboard .rc-side.long{
+  color:var(--n-profit);background:rgba(95,179,137,0.10);
+  border:1px solid rgba(95,179,137,0.18);
+}
+#pg-dashboard .rc-side.short{
+  color:var(--n-loss);background:rgba(201,95,95,0.08);
+  border:1px solid rgba(201,95,95,0.18);
+}
+#pg-dashboard .rc-pnl{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:18px;line-height:1;margin-left:auto;
+}
+#pg-dashboard .rc-pnl.profit{color:var(--n-profit)}
+#pg-dashboard .rc-pnl.loss{color:var(--n-loss)}
+#pg-dashboard .rc-meta{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.14em;
+  color:var(--n-text-4);text-transform:uppercase;
+}
+
+#pg-dashboard .tod-card{
+  padding:18px 20px;
+  background:linear-gradient(180deg, var(--n-surface-2) 0%, var(--n-surface) 100%);
+  border:1px solid var(--n-border);border-radius:12px;
+  margin-top:14px;
+}
+#pg-dashboard .tod-bars{
+  display:flex;align-items:flex-end;gap:3px;height:80px;margin-bottom:10px;
+}
+#pg-dashboard .tod-bar{
+  flex:1;
+  background:linear-gradient(180deg, rgba(95,179,137,0.6) 0%, rgba(95,179,137,0.3) 100%);
+  border-radius:2px 2px 0 0;min-height:2px;
+}
+#pg-dashboard .tod-bar.loss{
+  background:linear-gradient(180deg, rgba(201,95,95,0.6) 0%, rgba(201,95,95,0.3) 100%);
+}
+#pg-dashboard .tod-bar.zero{background:var(--n-surface-3);height:2px !important}
+#pg-dashboard .tod-bar.peak{
+  background:linear-gradient(180deg, var(--n-profit) 0%, rgba(95,179,137,0.7) 100%);
+  box-shadow:0 0 8px rgba(95,179,137,0.4);
+}
+#pg-dashboard .tod-labels{
+  display:flex;justify-content:space-between;
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;color:var(--n-text-4);
+}
+#pg-dashboard .tod-summary{
+  display:flex;justify-content:space-between;align-items:baseline;
+  margin-top:14px;padding-top:14px;border-top:1px solid var(--n-border);
+  font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-2);
+}
+#pg-dashboard .tod-summary .v{color:var(--n-profit);font-weight:500}
+
+.bottom-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:24px}
 
 .n-winrate-display{display:flex;align-items:center;gap:24px;padding:8px 0}
 .n-wr-circle-wrap{position:relative;width:88px;height:88px;flex-shrink:0}
@@ -5171,10 +5366,17 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   .main{width:100%;padding:14px 12px 80px}
 
   /* DASHBOARD */
+  #pg-dashboard.page.on{padding:18px 14px 60px}
   #pg-dashboard .hero-pnl-value{font-size:54px}
+  #pg-dashboard .hero-pnl{padding:30px 18px 24px}
+  #pg-dashboard .hero-amount{font-size:64px}
   #pg-dashboard .stats-row{grid-template-columns:1fr 1fr!important;gap:8px}
   #pg-dashboard .lower-grid,
   #pg-dashboard .dash-main{grid-template-columns:1fr!important;gap:16px}
+  #pg-dashboard .dash-grid,
+  #pg-dashboard .recent-grid{grid-template-columns:1fr!important}
+  #pg-dashboard .streak-num{font-size:48px}
+  #pg-dashboard .hl-pnl{font-size:30px}
   #pg-dashboard .period-tabs,
   #pg-dashboard .dash-tabs{width:100%}
   #pg-dashboard .period-tab,
@@ -5567,8 +5769,35 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   <!-- STATS GRID -->
   <div class="stats-row" id="dash-stats"></div>
 
-  <!-- MAIN: equity chart + recent trades -->
-  <div class="dash-main">
+  <!-- DASH-GRID: Streak + Today's Highlight -->
+  <div class="dash-grid">
+    <div class="dash-card streak">
+      <div class="dc-h"><span class="star">&#9733;</span> Journaling Streak</div>
+      <div class="streak-num" id="streak-num">0<span class="unit">days</span></div>
+      <div class="streak-sub" id="streak-sub">Personal Best &middot; 0 days</div>
+      <div class="streak-bar" id="streak-bar"></div>
+    </div>
+    <div class="dash-card highlight" id="highlight-card">
+      <div class="dc-h">Today's Highlight</div>
+      <div id="highlight-content">
+        <div class="hl-empty">No trades today yet</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GOAL PROGRESS -->
+  <div class="goal-card">
+    <div class="goal-row">
+      <span class="goal-l">Weekly Goal Progress</span>
+      <span class="goal-v" id="goal-v">+$0 <span class="target">/ $25K</span></span>
+    </div>
+    <div class="goal-bar">
+      <div class="goal-fill" id="goal-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- MAIN: equity chart (full width) -->
+  <div class="dash-main" style="grid-template-columns:1fr">
     <div class="n-card">
       <div class="n-card-head">
         <div class="n-card-title">Equity Curve</div>
@@ -5584,14 +5813,21 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       </div>
       <div class="chart-labels" id="eq-labels" style="display:none"></div>
     </div>
+  </div>
 
-    <div class="n-card">
-      <div class="n-card-head">
-        <div class="n-card-title">Recent Trades</div>
-        <button class="n-card-link" onclick="goTo('history')">All</button>
-      </div>
-      <div id="recent-list"></div>
-    </div>
+  <!-- RECENT TRADES (designed cards) -->
+  <div class="section-h">
+    <div class="section-h-l">Recent Trades</div>
+    <span class="section-h-a" onclick="goTo('history')">View All &rarr;</span>
+  </div>
+  <div class="recent-grid" id="recent-grid"></div>
+
+  <!-- P&L BY HOUR · TODAY -->
+  <div class="tod-card">
+    <div class="dc-h">P&amp;L by Hour &middot; Today</div>
+    <div class="tod-bars" id="tod-bars"></div>
+    <div class="tod-labels"><span>6AM</span><span>8</span><span>10</span><span>12PM</span><span>2</span><span>4PM</span><span>6PM</span></div>
+    <div class="tod-summary" id="tod-summary"></div>
   </div>
 
   <!-- BOTTOM: win rate + best/worst + calendar -->
@@ -10551,6 +10787,185 @@ updateSessionBadge();
 if(_sessionCountdownInterval) clearInterval(_sessionCountdownInterval);
 _sessionCountdownInterval=setInterval(updateSessionBadge,60000);
 
+// ── DASHBOARD V2 RENDER HELPERS ─────────────────────────
+function renderStreakCard(){
+  var numEl=document.getElementById('streak-num');
+  var subEl=document.getElementById('streak-sub');
+  var barEl=document.getElementById('streak-bar');
+  if(!numEl||!subEl||!barEl) return;
+  if(!trades.length){
+    numEl.innerHTML='0<span class="unit">days</span>';
+    subEl.textContent='Start journaling today';
+    barEl.innerHTML='';
+    return;
+  }
+  var dayMap={};
+  trades.forEach(function(t){ if(t.date) dayMap[t.date]=true; });
+  var tradeDays=Object.keys(dayMap).sort();
+
+  // Current streak — consecutive days back from today (local TZ)
+  var streak=0, cursor=new Date();
+  for(var i=0;i<365;i++){
+    var ds=_localDate(cursor);
+    if(dayMap[ds]) streak++;
+    else if(streak>0) break;
+    cursor.setDate(cursor.getDate()-1);
+  }
+  numEl.innerHTML=streak+'<span class="unit">'+(streak===1?'day':'days')+'</span>';
+
+  // Personal best — longest run of consecutive calendar days
+  var best=0, cur=0, prev=null;
+  tradeDays.forEach(function(d){
+    if(prev){
+      var diff=(new Date(d+'T00:00:00')-new Date(prev+'T00:00:00'))/86400000;
+      if(diff===1) cur++; else cur=1;
+    } else cur=1;
+    if(cur>best) best=cur;
+    prev=d;
+  });
+  subEl.textContent='Personal Best · '+best+(best===1?' day':' days');
+
+  // Last 14 days visualization
+  barEl.innerHTML='';
+  for(var j=13;j>=0;j--){
+    var d=new Date(); d.setDate(d.getDate()-j);
+    var dot=document.createElement('div');
+    dot.className='streak-day'+(dayMap[_localDate(d)]?' on':'');
+    barEl.appendChild(dot);
+  }
+}
+
+function renderHighlightCard(){
+  var card=document.getElementById('highlight-card');
+  var content=document.getElementById('highlight-content');
+  if(!card||!content) return;
+  var todayStr=_localDate(new Date());
+  var todayTrades=trades.filter(function(t){return t.date===todayStr;});
+  if(!todayTrades.length){
+    card.classList.remove('win','loss');
+    content.innerHTML='<div class="hl-empty">No trades today yet</div>';
+    return;
+  }
+  // Biggest absolute swing
+  var top=todayTrades.slice().sort(function(a,b){
+    return Math.abs(Number(b.pnl||0))-Math.abs(Number(a.pnl||0));
+  })[0];
+  var pnl=Number(top.pnl||0), isWin=pnl>=0;
+  card.classList.toggle('win', isWin);
+  card.classList.toggle('loss', !isWin);
+  var pnlStr=(isWin?'+':'−')+'$'+Math.abs(pnl).toLocaleString(undefined,{maximumFractionDigits:0});
+  var sideClass=top.type==='short'?'short':'long';
+  var sideText=top.type==='short'?'↘ Short':'↗ Long';
+  var prompt=isWin
+    ? '"What made this setup work? Add a reflection note →"'
+    : '"What would you do differently next time? →"';
+  content.innerHTML=
+    '<div class="hl-trade">'+
+      '<span class="trade-sym">'+safeText(top.sym||'—')+'</span>'+
+      '<span class="trade-side '+sideClass+'">'+sideText+'</span>'+
+    '</div>'+
+    '<div class="hl-pnl '+(isWin?'profit':'loss')+'">'+pnlStr+'</div>'+
+    '<div class="hl-prompt">'+prompt+'</div>';
+}
+
+function renderGoalProgress(){
+  var vEl=document.getElementById('goal-v');
+  var fEl=document.getElementById('goal-fill');
+  if(!vEl||!fEl) return;
+  var goal=(typeof acct==='object'&&acct&&Number(acct.weekly_goal))||25000;
+  // Sunday = start of week (local)
+  var weekStart=new Date(); weekStart.setHours(0,0,0,0);
+  weekStart.setDate(weekStart.getDate()-weekStart.getDay());
+  var weekStartStr=_localDate(weekStart);
+  var weekPnl=trades.reduce(function(sum,t){
+    if(!t.date) return sum;
+    return (t.date>=weekStartStr)? sum+Number(t.pnl||0) : sum;
+  },0);
+  var pct=Math.max(0, Math.min(100, (weekPnl/goal)*100));
+  var sign=weekPnl>=0?'+':'−';
+  var pnlStr=sign+'$'+Math.abs(Math.round(weekPnl)).toLocaleString();
+  var goalStr='$'+(goal>=1000?(goal/1000).toFixed(0)+'K':goal);
+  vEl.innerHTML=pnlStr+' <span class="target">/ '+goalStr+'</span>';
+  fEl.style.width=pct+'%';
+}
+
+function renderRecentTrades(){
+  var grid=document.getElementById('recent-grid');
+  if(!grid) return;
+  var r=trades.slice().sort(function(a,b){
+    return new Date(b.date||0)-new Date(a.date||0);
+  }).slice(0,6);
+  if(!r.length){
+    grid.innerHTML='<div style="grid-column:1/-1;padding:32px;text-align:center;color:var(--n-text-3);font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.14em;text-transform:uppercase">No trades yet · Log your first one →</div>';
+    return;
+  }
+  grid.innerHTML=r.map(function(t){
+    var pnl=Number(t.pnl||0), isWin=pnl>=0;
+    var cls=isWin?'profit':'loss';
+    var sideClass=t.type==='short'?'short':'long';
+    var sideText=t.type==='short'?'↘ Short':'↗ Long';
+    var abs=Math.abs(pnl);
+    var pnlStr=(isWin?'+':'−')+'$'+(abs>=1000?(abs/1000).toFixed(1)+'K':abs.toLocaleString(undefined,{maximumFractionDigits:0}));
+    var grade=t.grade?(t.grade+' SETUP'):'';
+    var rr=(t.rr!=null&&t.rr!=='')?((t.rr>0?'+':'')+t.rr+'R'):'';
+    var meta=[grade,rr].filter(Boolean).join(' · ');
+    return '<div class="recent-card '+cls+'" onclick="openCalEdit('+JSON.stringify(t.id)+')">'+
+      '<div class="rc-row">'+
+        '<span class="rc-sym">'+safeText(t.sym||'—')+'</span>'+
+        '<span class="rc-side '+sideClass+'">'+sideText+'</span>'+
+        '<span class="rc-pnl '+cls+'">'+pnlStr+'</span>'+
+      '</div>'+
+      (meta?'<div class="rc-meta">'+safeText(meta)+'</div>':'')+
+    '</div>';
+  }).join('');
+}
+
+function renderTodayHours(){
+  var bars=document.getElementById('tod-bars');
+  var summary=document.getElementById('tod-summary');
+  if(!bars||!summary) return;
+  var todayStr=_localDate(new Date());
+  var todayTrades=trades.filter(function(t){return t.date===todayStr;});
+  // 13 hourly buckets from 6AM -> 6PM
+  var hours=new Array(13).fill(0);
+  var wins=0, losses=0;
+  todayTrades.forEach(function(t){
+    var ts=t.created_at||t.exit_time||t.time||null;
+    var hr;
+    if(ts){
+      var d=new Date(ts);
+      if(!isNaN(d)) hr=d.getHours();
+    }
+    if(hr==null) hr=new Date().getHours();
+    var idx=hr-6;
+    if(idx>=0 && idx<13){
+      var p=Number(t.pnl||0);
+      hours[idx]+=p;
+      if(p>=0) wins++; else losses++;
+    }
+  });
+  var max=Math.max.apply(null, hours.map(Math.abs).concat([1]));
+  var peakVal=Math.max.apply(null, hours);
+  var peakIdx=hours.indexOf(peakVal);
+  bars.innerHTML=hours.map(function(h,i){
+    if(h===0) return '<div class="tod-bar zero"></div>';
+    var heightPx=Math.max(2, Math.abs(h)/max*78);
+    var cls = h<0 ? 'loss' : (i===peakIdx && h>0 ? 'peak' : '');
+    return '<div class="tod-bar '+cls+'" style="height:'+heightPx+'px"></div>';
+  }).join('');
+  if(!todayTrades.length){
+    summary.innerHTML='<span style="color:var(--n-text-4)">No trades today yet</span>';
+  } else {
+    var peakHr=peakIdx+6;
+    var peakStr = peakHr===12 ? '12 PM' : (peakHr>12 ? (peakHr-12)+' PM' : peakHr+' AM');
+    var pv=hours[peakIdx];
+    var peakPnl = (pv>=0?'+':'−')+'$'+(Math.abs(pv)>=1000?(Math.abs(pv)/1000).toFixed(1)+'K':Math.abs(Math.round(pv)).toLocaleString());
+    summary.innerHTML=
+      '<span>Best hour <span class="v">'+peakStr+' · '+peakPnl+'</span></span>'+
+      '<span style="color:var(--n-text-3)">'+wins+' wins · '+losses+' losses</span>';
+  }
+}
+
 function renderDashboard(){
   const ft=filterByPeriod(trades,dashPeriod),n=ft.length;
   const wins=ft.filter(t=>t.pnl>0).length;
@@ -10682,10 +11097,17 @@ function renderDashboard(){
     document.getElementById('worst-sub').textContent=worst.sym+' \u00b7 '+(worst.date||'\u2014');
   }
   renderDashCal();renderRecentList();setTimeout(drawMiniChart,80);
+  // v2 cards
+  try{ renderStreakCard(); }catch(e){console.warn('streak',e);}
+  try{ renderHighlightCard(); }catch(e){console.warn('highlight',e);}
+  try{ renderGoalProgress(); }catch(e){console.warn('goal',e);}
+  try{ renderRecentTrades(); }catch(e){console.warn('recent-grid',e);}
+  try{ renderTodayHours(); }catch(e){console.warn('tod',e);}
 }
 
 function renderRecentList(){
   const r=trades.slice(0,5),el=document.getElementById('recent-list');
+  if(!el) return; // legacy node — superseded by renderRecentTrades()
   if(!r.length){el.innerHTML='<div class="n-trade-empty">No trades yet</div>';return;}
   el.innerHTML=r.map(t=>{
     const pnlCls=t.pnl>=0?'pos':'neg';
