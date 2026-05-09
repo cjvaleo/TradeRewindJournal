@@ -7314,6 +7314,33 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   </div>
 </div>
 
+<!-- INVITE MODAL — search by @username, send a community invite -->
+<div id="invite-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(3px);z-index:9990;align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--n-surface);border:1px solid var(--n-border-2);border-radius:14px;width:100%;max-width:440px;max-height:calc(100vh - 100px);overflow-y:auto;box-shadow:0 32px 80px -16px rgba(0,0,0,0.85)">
+    <div style="padding:22px 26px;border-bottom:1px solid var(--n-border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+      <div>
+        <div style="font-family:var(--n-font-display);font-style:italic;font-size:24px;color:var(--n-text);line-height:1.1;letter-spacing:-0.01em">Invite a member</div>
+        <div id="invite-modal-sub" style="font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);margin-top:6px"></div>
+      </div>
+      <button onclick="closeInviteModal()" style="width:30px;height:30px;border-radius:6px;border:1px solid var(--n-border);background:transparent;color:var(--n-text-3);cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+
+    <div style="padding:22px 26px">
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+        <span style="font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3)">Search by username</span>
+        <input id="invite-search" type="text" placeholder="@username" oninput="searchTrader()"
+          style="padding:11px 12px;background:var(--n-surface-2);border:1px solid var(--n-border);color:var(--n-text);font-family:var(--n-font-sans);font-size:14px;border-radius:7px;outline:none"/>
+      </div>
+      <div id="search-results" style="display:flex;flex-direction:column;gap:4px;max-height:240px;overflow-y:auto"></div>
+    </div>
+
+    <div style="padding:14px 26px;border-top:1px solid var(--n-border);display:flex;justify-content:flex-end;gap:8px">
+      <button onclick="closeInviteModal()" style="padding:10px 22px;border-radius:7px;background:transparent;color:var(--n-text-2);font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;border:1px solid var(--n-border-2);cursor:pointer;font-weight:500">Cancel</button>
+      <button onclick="sendInvite();closeInviteModal()" style="padding:10px 22px;border-radius:7px;background:var(--n-text);color:#0a0a0a;font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;border:none;cursor:pointer;font-weight:500">Send invite</button>
+    </div>
+  </div>
+</div>
+
 <!-- LEGAL PAGE — Terms of Service + Privacy Policy -->
 <div id="pg-legal" class="page">
   <div style="max-width:780px;margin:0 auto;padding:48px 32px">
@@ -9706,6 +9733,35 @@ function updateLeaveDeleteBtn(){
   // Edit button — only visible to owner
   var editBtn=document.getElementById('feed-edit-btn');
   if(editBtn) editBtn.style.display=isOwner?'':'none';
+}
+
+/* Open the invite modal. Wired to the iconbtn at the top of the
+   community feed header. Bails with a toast if the user isn't in a
+   community yet, since invites are scoped to the active group. */
+function openInviteFlow(){
+  if(!_comm){ toast('Open a community first', 'error'); return; }
+  if(_comm.members && _comm.members.length >= 25){
+    toast('Group is full (25 max)', 'error'); return;
+  }
+  if(currentUser && _comm.owner_id !== currentUser.id){
+    // Non-owners can still send invites — Supabase RLS doesn't gate
+    // invites by ownership. If you want owner-only invites, add the
+    // gate here with a toast.
+  }
+  var modal = document.getElementById('invite-modal');
+  if(!modal){ console.warn('[invite] modal markup missing'); return; }
+  // Reset state on open
+  _selectedUser = null;
+  var inp = document.getElementById('invite-search'); if(inp) inp.value = '';
+  var res = document.getElementById('search-results'); if(res) res.innerHTML = '';
+  var sub = document.getElementById('invite-modal-sub');
+  if(sub) sub.textContent = (_comm.name || 'Group') + ' · ' + ((_comm.members||[]).length) + ' / 25 members';
+  modal.style.display = 'flex';
+  setTimeout(function(){ if(inp) inp.focus(); }, 50);
+}
+function closeInviteModal(){
+  var modal = document.getElementById('invite-modal');
+  if(modal) modal.style.display = 'none';
 }
 
 function searchTrader(){
