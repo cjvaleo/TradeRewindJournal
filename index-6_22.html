@@ -12674,19 +12674,20 @@ async function loadSentInvitesFromDB(user){
   }
 }
 
-/* ── SECURITY: clear all per-user cache before loading a new user.
-   Without this, localStorage retains the previous user's trades /
-   community / profile, and load functions fall back to the cache
-   when their DB read returns empty — the new user sees the old data.
+/* ── SECURITY: clear per-user app cache before loading a new user.
+   ONLY removes `tr1_*` prefixed keys — must NEVER touch `sb-*-auth-token`
+   or Supabase will lose the session it just established. The previous
+   "allowlist" version (keep theme/csbCollapsed, drop everything else)
+   was wiping the auth token milliseconds after sign-in, producing the
+   "logged in but no session" zombie state.
 
-   We keep ONLY pure UI prefs (theme, sidebar collapsed state). Anything
-   user-specific gets nuked. Also resets in-memory globals so a stale
-   render before the first DB load can't show old data either. */
+   Also resets in-memory globals so a stale render between cache clear
+   and the first DB load can't show old data. */
 function clearUserCache(){
-  var keep = ['theme', 'csbCollapsed'];
   try {
-    var keys = Object.keys(localStorage);
-    keys.forEach(function(k){ if(keep.indexOf(k) === -1) localStorage.removeItem(k); });
+    Object.keys(localStorage).forEach(function(k){
+      if (k && k.indexOf('tr1_') === 0) localStorage.removeItem(k);
+    });
   } catch(e){}
   if (typeof trades !== 'undefined') trades = [];
   if (typeof jEntries !== 'undefined') jEntries = [];
@@ -12701,7 +12702,7 @@ function clearUserCache(){
   if (typeof _likeCounts !== 'undefined') _likeCounts = {};
   if (typeof _myLikes !== 'undefined') _myLikes = {};
   if (typeof _replies !== 'undefined') _replies = {};
-  console.log('[auth] cache cleared');
+  console.log('[auth] tr1_* cache cleared (sb-* tokens preserved)');
 }
 
 async function onSignedIn(user) {
