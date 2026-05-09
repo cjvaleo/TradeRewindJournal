@@ -11931,7 +11931,158 @@ function drawEquityMini(){drawChart('equity-canvas',buildEquityData(),260);}
 function renderEquity(){refreshEquity();}
 
 function setMode(m,el){document.querySelectorAll('.mode-tab').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.mode-panel').forEach(x=>x.classList.remove('on'));if(el)el.classList.add('on');document.getElementById('mode-'+m).classList.add('on');}
-function setLgType(t){lgType=t;document.getElementById('lg-long').classList.toggle('on',t==='long');document.getElementById('lg-short').classList.toggle('on',t==='short');}
+function setLgType(t){
+  lgType=t;
+  var l=document.getElementById('lg-long'),s=document.getElementById('lg-short');
+  if(l) l.classList.toggle('on',t==='long');
+  if(s) s.classList.toggle('on',t==='short');
+  // Direction change invalidates any auto-filled PnL — only respect a true manual override
+  _pnlManual = false;
+  var hint=document.getElementById('lt-pnl-hint');
+  if(hint){ hint.textContent='auto'; hint.classList.add('hint-auto'); hint.classList.remove('hint-manual'); }
+  if(typeof calcLivePnl==='function') calcLivePnl();
+}
+
+// ── LOG TRADE V2 — pill handlers, manual-override flags, live preview ──
+let _pnlManual=false, _rrManual=false;
+const _GRADE_TO_IDX={F:0,D:1,C:2,B:3,A:4}; // existing GRADES is 0=F..5=A+; A+ unused in pill UI
+
+function setGradePill(letter){
+  document.querySelectorAll('#pg-log .lt-grade-pill').forEach(function(p){ p.classList.remove('on'); });
+  var pill=document.querySelector('#pg-log .lt-grade-pill[data-grade="'+letter+'"]');
+  if(pill) pill.classList.add('on');
+  var hidden=document.getElementById('lg-grade');
+  if(hidden) hidden.value = (_GRADE_TO_IDX[letter] != null ? _GRADE_TO_IDX[letter] : 3);
+  if(typeof updateGrade==='function'){ try{ updateGrade(hidden && hidden.value); }catch(e){} }
+  updateLogPreview();
+}
+
+function setEmotionPill(n){
+  document.querySelectorAll('#pg-log .lt-emo-pill').forEach(function(p){ p.classList.remove('on'); });
+  var pill=document.querySelector('#pg-log .lt-emo-pill[data-emo="'+n+'"]');
+  if(pill) pill.classList.add('on');
+  var hidden=document.getElementById('lg-emotion');
+  if(hidden) hidden.value=String(n);
+  if(typeof updateEmotion==='function'){ try{ updateEmotion(n); }catch(e){} }
+  updateLogPreview();
+}
+
+function onPnlInput(){
+  _pnlManual = true;
+  var hint=document.getElementById('lt-pnl-hint');
+  if(hint){ hint.textContent='manual'; hint.classList.remove('hint-auto'); hint.classList.add('hint-manual'); }
+  // Recompute rr from manual pnl + existing risk (if rr not also manual)
+  if(typeof calcLivePnl==='function') calcLivePnl();
+}
+
+function onRrInput(){
+  _rrManual = true;
+  var hint=document.getElementById('lt-rr-hint');
+  if(hint){ hint.textContent='manual'; hint.classList.remove('hint-auto'); hint.classList.add('hint-manual'); }
+  updateLogPreview();
+}
+
+function onLtSessionChange(v){
+  var hidden=document.getElementById('lg-session');
+  if(hidden) hidden.value = v || '';
+  updateLogPreview();
+}
+
+function _resetLtAutoFlags(){
+  _pnlManual = false;
+  _rrManual = false;
+  ['lt-pnl-hint','lt-rr-hint'].forEach(function(id){
+    var h=document.getElementById(id);
+    if(!h) return;
+    h.classList.add('hint-auto');
+    h.classList.remove('hint-manual');
+    h.textContent = (id==='lt-pnl-hint' ? 'auto' : 'from stop');
+  });
+}
+
+function _safeText(s){
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function updateLogPreview(){
+  var card=document.getElementById('lt-preview-card');
+  if(!card) return;
+
+  var symRaw=(document.getElementById('lg-sym')||{}).value||'';
+  var sym=symRaw.trim().toUpperCase();
+  var entry=parseFloat((document.getElementById('lg-entry')||{}).value);
+  var pnl=parseFloat((document.getElementById('lg-pnl')||{}).value);
+  var rr=parseFloat((document.getElementById('lg-rr')||{}).value);
+  var notes=((document.getElementById('lg-notes')||{}).value||'').trim();
+  var accts=parseInt((document.getElementById('lg-accounts')||{}).value)||1;
+  var session=(document.getElementById('lg-session')||{}).value||'';
+  var gradePillEl=document.querySelector('#pg-log .lt-grade-pill.on');
+  var grade = gradePillEl ? gradePillEl.dataset.grade : null;
+
+  // Empty state — until they've entered a symbol AND an entry price
+  if(!sym || isNaN(entry)){
+    card.className = 'lt-preview-card empty';
+    card.innerHTML = '<div class="lt-preview-empty">Fill in symbol &amp; entry to see preview</div>';
+    return;
+  }
+
+  var sideRaw = (typeof lgType==='string'?lgType:'long');
+  var sideClass = sideRaw === 'short' ? 'short' : 'long';
+  var sideText = sideRaw === 'short' ? '↘ Short' : '↗ Long';
+  var hasPnl = !isNaN(pnl);
+  var isWin = hasPnl ? pnl>=0 : true;
+  var pnlClass = hasPnl ? (isWin ? 'profit' : 'loss') : '';
+  var pnlStr = hasPnl
+    ? ((isWin?'+':'−')+'$'+Math.abs(pnl).toLocaleString(undefined,{maximumFractionDigits:2}))
+    : '—';
+
+  // Avatar — 8-finish convention used elsewhere; pull from acct profile
+  var profile = (typeof acct==='object' && acct) ? acct : {};
+  var username = profile.username || profile.handle || 'you';
+  var initials = profile.avatar_initials || profile.initials
+              || (typeof username==='string' ? username.slice(0,2).toUpperCase() : 'YO');
+  var finish   = profile.avatar_finish || profile.color || 'sapphire';
+
+  var chips = [];
+  if(grade){
+    var cls = grade==='A' ? 'pc-chip grade-a' : 'pc-chip';
+    chips.push('<span class="'+cls+'">'+_safeText(grade)+' Setup</span>');
+  }
+  if(!isNaN(rr) && rr!==0){
+    chips.push('<span class="pc-chip rr">'+(rr>0?'+':'')+rr+'R</span>');
+  }
+  if(session){
+    chips.push('<span class="pc-chip">'+_safeText(session)+'</span>');
+  }
+  if(accts>1){
+    chips.push('<span class="pc-chip multi-acct">×'+accts+' accts</span>');
+  }
+
+  card.className = 'lt-preview-card' + (hasPnl ? (isWin ? ' profit' : ' loss') : '');
+  card.innerHTML =
+    '<div class="pc-head">'+
+      '<div class="av '+_safeText(finish)+'">'+_safeText(initials)+'</div>'+
+      '<div class="pc-author">'+
+        '<div class="pc-name">'+_safeText(username)+'</div>'+
+        '<div class="pc-handle">@'+_safeText(username)+'</div>'+
+      '</div>'+
+      '<span class="pc-time">Just now</span>'+
+    '</div>'+
+    '<div class="pc-trade-body">'+
+      '<span class="pc-sym">'+_safeText(sym)+'</span>'+
+      '<span class="pc-side '+sideClass+'">'+sideText+'</span>'+
+      '<span class="pc-pnl '+pnlClass+'">'+pnlStr+'</span>'+
+    '</div>'+
+    (notes?'<div class="pc-notes">'+_safeText(notes)+'</div>':'')+
+    (chips.length?'<div class="pc-chips">'+chips.join('')+'</div>':'');
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  // Initial preview render once acct + DOM are ready (defer one tick).
+  setTimeout(function(){ try{ updateLogPreview(); }catch(e){} }, 60);
+});
 
 /* Populate the Share-to-Community <select> on the Log Trade page.
    Pulls every community where the current user is owner OR a member
@@ -14027,7 +14178,12 @@ const SYMBOLS={
     {sym:'AMD',name:'AMD'},{sym:'AMZN',name:'Amazon'},{sym:'META',name:'Meta'},
   ]
 };
-const PTS={'NQ1!':20,'MNQ1!':2,'ES1!':50,'MES1!':5,'YM1!':5,'MYM1!':0.5,'RTY1!':50,'M2K1!':5,'GC1!':100,'MGC1!':10,'SI1!':5000,'CL1!':1000,'QM1!':500,'NG1!':10000,'ZB1!':1000,'ZN1!':1000,'ZF1!':1000,'6E1!':125000,'6J1!':12500000,'6B1!':62500,'6A1!':100000,'ZC1!':50,'ZS1!':50,'ZW1!':50};
+const PTS={'NQ1!':20,'MNQ1!':2,'ES1!':50,'MES1!':5,'YM1!':5,'MYM1!':0.5,'RTY1!':50,'M2K1!':5,'GC1!':100,'MGC1!':10,'SI1!':5000,'CL1!':1000,'QM1!':500,'NG1!':10000,'ZB1!':1000,'ZN1!':1000,'ZF1!':1000,'6E1!':125000,'6J1!':12500000,'6B1!':62500,'6A1!':100000,'ZC1!':50,'ZS1!':50,'ZW1!':50,
+  // bare-symbol forms (no `1!` suffix)
+  'NQ':20,'MNQ':2,'ES':50,'MES':5,'YM':5,'MYM':0.5,'RTY':50,'M2K':5,
+  'GC':100,'MGC':10,'SI':5000,'CL':1000,'MCL':100,'QM':500,'NG':10000,
+  'ZB':1000,'ZN':1000,'ZF':1000,
+  'BTC':5,'MBT':0.1,'ETH':50,'MET':0.1};
 let symDropIdx=-1,noteImages=[];
 
 function onMarketChange(){document.getElementById('lg-sym').value='';document.getElementById('sym-dropdown').style.display='none';calcLivePnl();}
@@ -14066,35 +14222,80 @@ function calcLivePnl(){
   const qty=parseFloat(document.getElementById('lg-qty').value)||1;
   const accts=parseFloat(document.getElementById('lg-accounts')?.value)||1;
   const totalQty=qty*accts;
-  const sym=document.getElementById('lg-sym').value.trim().toUpperCase();
+  const sym=(document.getElementById('lg-sym').value||'').trim().toUpperCase();
+
+  // multi-account note (visible whenever accounts > 1, irrespective of fill)
+  const note=document.getElementById('lt-acct-note');
+  if(note){
+    if(accts>1){
+      note.style.display='block';
+      note.textContent='Logging '+qty+' ct × '+accts+' accts = '+totalQty+' total contracts';
+    } else {
+      note.style.display='none';
+    }
+  }
+
+  const haveCore = !isNaN(entry) && !isNaN(exit) && entry!==0;
+  let pnl=null, risk=null, rr=null;
+  if(haveCore){
+    const ptVal=PTS[sym]||1;
+    pnl=(lgType==='long'?exit-entry:entry-exit)*totalQty*ptVal;
+    if(!isNaN(stop) && stop>0){
+      risk=stop*totalQty*ptVal;
+      rr = risk>0 ? Math.abs(pnl)/risk : null;
+    }
+  }
+
+  // Auto-fill the visible lg-pnl input unless the user typed their own value.
+  const pnlInput=document.getElementById('lg-pnl');
+  if(pnlInput && !_pnlManual){
+    pnlInput.value = pnl!=null ? (Math.round(pnl*100)/100) : '';
+  }
+
+  // Auto-fill lg-rr from stop. If user manually edited rr we leave it alone.
+  // Manually-edited PnL still feeds rr (so rr reflects the user's number).
+  const rrInput=document.getElementById('lg-rr');
+  if(rrInput && !_rrManual){
+    if(haveCore && risk!=null){
+      const userPnl = parseFloat(pnlInput && pnlInput.value);
+      const refPnl  = !isNaN(userPnl) ? userPnl : pnl;
+      const r = risk>0 ? refPnl/risk : null;
+      rrInput.value = r!=null ? (Math.round(r*10)/10) : '';
+    } else {
+      rrInput.value = '';
+    }
+  }
+
+  // Legacy live-calc panel (still rendered if some path adds it back)
   const lc=document.getElementById('live-calc');
-  if(!lc)return;
-  if(isNaN(entry)||isNaN(exit)||entry===0){lc.style.display='none';return;}
-  const ptVal=PTS[sym]||1;
-  const pnl=(lgType==='long'?exit-entry:entry-exit)*totalQty*ptVal;
-  function _setVal(id, txt, tone){
-    const el=document.getElementById(id);
-    if(!el) return;
-    el.innerHTML = txt;
-    el.className = 'val' + (tone ? ' '+tone : '');
-    el.style.color = '';
-    el.style.textShadow = '';
+  if(lc){
+    function _setVal(id, txt, tone){
+      const el=document.getElementById(id);
+      if(!el) return;
+      el.innerHTML = txt;
+      el.className = 'val' + (tone ? ' '+tone : '');
+      el.style.color = '';
+      el.style.textShadow = '';
+    }
+    if(!haveCore){
+      lc.style.display='none';
+    } else {
+      const sign = pnl>0?'+':pnl<0?'−':'';
+      _setVal('calc-pnl', sign+'$'+Math.round(Math.abs(pnl)).toLocaleString('en-US'), pnl>=0?'pos':'neg');
+      const acctNote=document.getElementById('calc-acct-note');
+      if(acctNote) acctNote.textContent = accts>1 ? (qty+' ct × '+accts+' accts') : (totalQty+' acct'+(totalQty>1?'s':''));
+      if(risk!=null){
+        _setVal('calc-risk', '$'+Math.round(risk).toLocaleString('en-US'), 'neg');
+        _setVal('calc-rr-disp', rr!=null ? rr.toFixed(1)+'<span class="unit">R</span>' : '—', rr!=null?'cool':'');
+      } else {
+        _setVal('calc-risk', '—', '');
+        _setVal('calc-rr-disp', '—', '');
+      }
+      lc.style.display='grid';
+    }
   }
-  const pnlSign = pnl>0 ? '+' : pnl<0 ? '−' : '';
-  const pnlInt  = Math.round(Math.abs(pnl)).toLocaleString('en-US');
-  _setVal('calc-pnl', pnlSign + '$' + pnlInt, pnl>=0 ? 'pos' : 'neg');
-  const acctNote=document.getElementById('calc-acct-note');
-  if(acctNote) acctNote.textContent = accts>1 ? (qty+' ct × '+accts+' accts') : (totalQty+' acct'+(totalQty>1?'s':''));
-  if(!isNaN(stop)&&stop>0){
-    const risk=stop*totalQty*ptVal;
-    const rr=risk>0?Math.abs(pnl)/risk:null;
-    _setVal('calc-risk', '$' + Math.round(risk).toLocaleString('en-US'), 'neg');
-    _setVal('calc-rr-disp', rr!=null ? rr.toFixed(1)+'<span class="unit">R</span>' : '—', rr!=null ? 'cool' : '');
-  } else {
-    _setVal('calc-risk', '—', '');
-    _setVal('calc-rr-disp', '—', '');
-  }
-  lc.style.display='grid';
+
+  if(typeof updateLogPreview === 'function') updateLogPreview();
 }
 
 function handleImgDrop(e){
