@@ -2908,8 +2908,18 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-log .csv-edit-row .csv-pnl-input{font-family:var(--n-font-mono)}
 
 #pg-log .csv-edit-row .csv-row-extras{
-  display:grid;grid-template-columns:auto auto auto auto 1fr;gap:8px;align-items:center;
+  display:grid;grid-template-columns:auto auto auto auto 1fr;
+  gap:12px;align-items:flex-end;
 }
+#pg-log .csv-edit-row .csv-cell{
+  display:flex;flex-direction:column;gap:4px;min-width:0;
+}
+#pg-log .csv-edit-row .csv-cell-h{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-4);line-height:1;
+}
+#pg-log .csv-edit-row .csv-cell-notes{min-width:0}
+#pg-log .csv-edit-row .csv-cell-notes .csv-notes{width:100%}
 #pg-log .csv-edit-row .grade-pills-mini{display:flex;gap:3px;flex-shrink:0}
 
 /* Mini wrappers shared by grade / emotion / conf — animated bottom bar
@@ -13097,27 +13107,42 @@ function csvRenderAllRows(){
         '<input class="field-input field-sm csv-pnl-input" data-field="pnl" placeholder="P&amp;L (auto)" type="number" step="any" value="'+(pnl||'')+'"/>'+
       '</div>'+
       '<div class="csv-row-extras">'+
-        '<div class="csv-mini-wrap grade-mini-row" style="--mini-color:'+gColor+';--mini-pct:'+gPct+'%">'+
-          '<div class="grade-pills-mini">'+gradePillsHtml+'</div>'+
-        '</div>'+
-        '<div class="csv-mini-wrap emotion-mini-row" style="--mini-color:'+emColor+';--mini-pct:'+emPct+'%;--em-color:'+emColor+'">'+
-          '<div class="em-mini-row" data-csv-emotion="'+emo+'">'+emoMiniHtml+'</div>'+
-        '</div>'+
-        '<div class="csv-mini-wrap conf-mini-row" style="--mini-pct:'+cPct+'%">'+
-          '<div class="conf-mini">'+confMiniHtml+'</div>'+
-        '</div>'+
-        '<div class="csv-screenshot" data-row-screenshot>'+
-          '<input type="file" accept="image/*" hidden class="csv-ss-input"/>'+
-          '<div class="csv-ss-empty" style="display:'+ssEmptyDisp+'">'+
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>'+
-            '<span>Screenshot</span>'+
-          '</div>'+
-          '<div class="csv-ss-thumb" style="display:'+ssThumbDisp+'">'+
-            '<img src="'+safeImg+'" alt=""/>'+
-            '<button class="csv-ss-remove" type="button" title="Remove">×</button>'+
+        '<div class="csv-cell">'+
+          '<span class="csv-cell-h">Grade</span>'+
+          '<div class="csv-mini-wrap grade-mini-row" style="--mini-color:'+gColor+';--mini-pct:'+gPct+'%">'+
+            '<div class="grade-pills-mini">'+gradePillsHtml+'</div>'+
           '</div>'+
         '</div>'+
-        '<input class="field-input field-sm csv-notes" data-field="notes" placeholder="Notes (optional)" value="'+_safeText(notes)+'"/>'+
+        '<div class="csv-cell">'+
+          '<span class="csv-cell-h">Emotion</span>'+
+          '<div class="csv-mini-wrap emotion-mini-row" style="--mini-color:'+emColor+';--mini-pct:'+emPct+'%;--em-color:'+emColor+'">'+
+            '<div class="em-mini-row" data-csv-emotion="'+emo+'">'+emoMiniHtml+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="csv-cell">'+
+          '<span class="csv-cell-h">Confidence</span>'+
+          '<div class="csv-mini-wrap conf-mini-row" style="--mini-pct:'+cPct+'%">'+
+            '<div class="conf-mini">'+confMiniHtml+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="csv-cell">'+
+          '<span class="csv-cell-h">Screenshot</span>'+
+          '<div class="csv-screenshot" data-row-screenshot>'+
+            '<input type="file" accept="image/*" hidden class="csv-ss-input"/>'+
+            '<div class="csv-ss-empty" style="display:'+ssEmptyDisp+'">'+
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>'+
+              '<span>Upload</span>'+
+            '</div>'+
+            '<div class="csv-ss-thumb" style="display:'+ssThumbDisp+'">'+
+              '<img src="'+safeImg+'" alt=""/>'+
+              '<button class="csv-ss-remove" type="button" title="Remove">×</button>'+
+            '</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="csv-cell csv-cell-notes">'+
+          '<span class="csv-cell-h">Notes</span>'+
+          '<input class="field-input field-sm csv-notes" data-field="notes" placeholder="Optional" value="'+_safeText(notes)+'"/>'+
+        '</div>'+
       '</div>'+
     '</div>';
   }).join('');
