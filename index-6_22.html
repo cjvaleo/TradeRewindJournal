@@ -6539,6 +6539,65 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   #pg-account .acct-head .h-title{font-size:24px}
   #pg-account .av-hero-card .av{width:64px!important;height:64px!important;font-size:20px!important}
 }
+
+/* ── COMMUNITY MOBILE LAYOUT FIX ──────────────────────
+   The desktop rule #pg-community.page.on locks the page into
+   display:flex;flex-direction:row;height:100vh;overflow:hidden
+   with !important. The legacy mobile override at #pg-community.on
+   (specificity 0,1,1) loses the cascade to .page.on (0,2,1) and
+   never applies — so on phones the .csb sidebar (width:260px) ate
+   most of the viewport and the feed got clipped to ~115px wide
+   and 0px tall (overflow:hidden). Match specificity here to win. */
+@media (max-width:768px){
+  #pg-community.page.on{
+    display:flex!important;
+    flex-direction:column!important;
+    height:auto!important;
+    max-height:none!important;
+    overflow:visible!important;
+    padding:0!important;
+  }
+  /* Sidebar becomes a horizontal scroll-strip across the top.
+     Override width + flex-direction explicitly. */
+  #pg-community .csb{
+    width:100%!important;max-width:100%!important;
+    height:auto!important;max-height:84px;
+    flex-direction:row!important;align-items:center;gap:8px;
+    padding:10px 12px!important;
+    border-right:none!important;
+    border-bottom:1px solid var(--n-border)!important;
+    overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    flex-shrink:0;
+  }
+  #pg-community .csb-list{
+    display:flex!important;flex-direction:row!important;
+    gap:6px;flex:1 1 auto;min-width:0;
+    overflow-x:auto;overflow-y:hidden;padding:0;
+  }
+  #pg-community .csb-tabs{flex-shrink:0;gap:6px}
+  #pg-community .csb-create{flex-shrink:0;margin-top:0;padding:8px 12px}
+  /* Main feed area: full width, allow internal scroll, breathe. */
+  #pg-community #comm-main{
+    width:100%!important;max-width:100%!important;
+    height:auto!important;
+    flex:1 1 auto!important;min-height:0;
+    overflow-y:visible!important;
+    padding:14px 12px 80px!important;
+  }
+  /* The .feed wrapper sometimes has internal max-height/overflow.
+     Let it expand naturally on phones. */
+  #pg-community .feed,
+  #pg-community #comm-feed-view{
+    height:auto!important;max-height:none!important;
+    overflow:visible!important;
+  }
+  /* Force the feed-view itself to flex-column when shown so its
+     children (header, hero, tabs, posts) stack correctly. */
+  #pg-community #comm-feed-view[style*="display:none"]{display:none!important}
+  /* Empty-state takes full viewport height instead of being squashed */
+  #pg-community #comm-empty-state{padding:32px 16px!important}
+}
 </style>
 </head>
 <body>
