@@ -278,25 +278,32 @@ do $$ begin
 end $$;
 drop policy if exists "communities_read_member"      on public.communities;
 drop policy if exists "communities_write_owner"      on public.communities;
+drop policy if exists "communities_select_visible"   on public.communities;
+drop policy if exists "communities_select_own"       on public.communities;
 drop policy if exists "communities_update_by_owner"  on public.communities;
 drop policy if exists "communities_insert_anyone"    on public.communities;
+drop policy if exists "communities_insert_own"       on public.communities;
 drop policy if exists "communities_delete_owner"     on public.communities;
--- Read: owner OR a user listed in the communities.members UUID array.
--- (Membership lives on this column, not in a separate community_members
--- table — older versions of this migration referenced one that doesn't
--- exist in this project.)
-create policy "communities_read_member" on public.communities
+drop policy if exists "communities_delete_by_owner"  on public.communities;
+drop policy if exists "Enable read access for all users" on public.communities;
+-- SELECT: owner OR member (UUID listed in communities.members array).
+-- This is the policy that lets joined users actually see the groups
+-- they're members of.
+create policy "communities_select_visible" on public.communities
   for select using (
     auth.uid() = owner_id
     or auth.uid() = ANY (members)
   );
--- Update: owner. THIS is what `removeMember()` needs in order to write
--- a new members array into the row.
+-- INSERT: only the owner (auth.uid()) can create a community for
+-- themselves — the row's owner_id must match.
+create policy "communities_insert_own" on public.communities
+  for insert with check (auth.uid() = owner_id);
+-- UPDATE: owner. Required by removeMember() to push a new members
+-- array. WITH CHECK keeps owner_id immutable.
 create policy "communities_update_by_owner" on public.communities
   for update using (auth.uid() = owner_id) with check (auth.uid() = owner_id);
-create policy "communities_insert_anyone" on public.communities
-  for insert with check (auth.uid() = owner_id);
-create policy "communities_delete_owner" on public.communities
+-- DELETE: owner.
+create policy "communities_delete_by_owner" on public.communities
   for delete using (auth.uid() = owner_id);
 
 -- COMMUNITY_POSTS — members can read, only post author can write/delete.

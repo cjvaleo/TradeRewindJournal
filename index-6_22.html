@@ -7810,81 +7810,72 @@ function saveCommunityToDB(){
 
 async function loadCommunityFromDB(user){
   if(!window._sb||!user)return;
-  // Wipe community cache FIRST before anything - prevents stale data from ever coming back
+  // Wipe community cache FIRST — prevents prior-user data from leaking.
   try{ localStorage.removeItem('tr1_comms'); localStorage.removeItem('tr1_comm'); }catch(e){}
   _comms=[];
   var myId=(currentUser&&currentUser.id)?currentUser.id:'me';
 
-  // 1. Load communities this user OWNS
-  var owned=await window._sb.from('communities').select('*').eq('owner_id',user.id);
-  if(!owned.error&&owned.data){
-    for(var i=0;i<owned.data.length;i++){
-      var row=owned.data[i];
-      if(!row.comm_data) continue;
-      try{
-        var g=JSON.parse(row.comm_data);
-        // Merge live group avatar fields from the row (source of truth).
-        if(row.avatar_finish)    g.avatar_finish    = row.avatar_finish;
-        if(row.avatar_image_url) g.avatar_image_url = row.avatar_image_url;
-        if(row.icon_initials)    g.icon_initials    = row.icon_initials;
-        if(row.created_at)       g.created_at       = row.created_at;
-        if(row.is_public != null)g.is_public        = row.is_public;
-        // Merge accepted members from invites
-        var acc=await window._sb.from('invites').select('to_id,to_username,from_username').eq('community_id',g.id).eq('status','accepted');
-        if(!acc.error&&acc.data){
-          if(!g.members) g.members=[];
-          acc.data.forEach(function(r2){
-            // Skip if this member ID is already in the list (avoids duplicates)
-            if(!g.members.find(function(m){return m.id===r2.to_id;})){
-              g.members.push({id:r2.to_id,username:r2.to_username||r2.from_username||'Member',isMe:false});
-            }
-          });
-          // Mark owner as isMe, deduplicate
-          var seen={};
-          g.members=g.members.filter(function(m){
-            if(seen[m.id]) return false;
-            seen[m.id]=true;
-            m.isMe=(m.id===myId);
-            m.isOwner=(m.id===g.owner_id);
-            return true;
-          });
-          window._sb.from('communities').update({comm_data:JSON.stringify(g),members:g.members.map(function(m){return m.id;}).filter(function(id){return id&&id!=='me';})}).eq('id',g.id).then(function(){});
-        }
-        _comms.push(g);
-      }catch(e){}
+  // Single query covers BOTH cases: communities I own + communities I'm
+  // a member of. The previous version did owner-only + an invites-join
+  // pass — the second pass missed any member whose accepted invite was
+  // later flipped to 'removed' (or never had one to begin with), so the
+  // canonical source of truth is the communities.members[] UUID array.
+  var rows = [];
+  try {
+    var r = await window._sb.from('communities').select('*')
+      .or('owner_id.eq.'+user.id+',members.cs.{'+user.id+'}');
+    if(r && !r.error && r.data) rows = r.data;
+    else if(r && r.error) console.warn('[loadCommunityFromDB]', r.error.message);
+  } catch(e){ console.warn('[loadCommunityFromDB] fetch failed:', e && e.message); }
+
+  for (var i=0; i<rows.length; i++) {
+    var row = rows[i];
+    var g;
+    try { g = row.comm_data ? JSON.parse(row.comm_data) : {}; } catch(e){ g = {}; }
+    // Hydrate top-level fields from the row (source of truth) so the
+    // parsed comm_data JSON doesn't silently shadow them.
+    g.id = row.id;
+    g.name = g.name || row.name;
+    g.owner_id = row.owner_id;
+    if(row.avatar_finish)    g.avatar_finish    = row.avatar_finish;
+    if(row.avatar_image_url) g.avatar_image_url = row.avatar_image_url;
+    if(row.icon_initials)    g.icon_initials    = row.icon_initials;
+    if(row.created_at)       g.created_at       = row.created_at;
+    if(row.is_public != null)g.is_public        = row.is_public;
+
+    // Build the local g.members[] objects from the row's UUID array,
+    // preserving any cached usernames already in g.members.
+    var memberIds = Array.isArray(row.members) ? row.members.slice() : [];
+    var existingByid = {};
+    (g.members||[]).forEach(function(m){ if(m && m.id) existingByid[m.id] = m; });
+
+    var memberObjs = memberIds.map(function(uid){
+      var prev = existingByid[uid] || {};
+      return {
+        id: uid,
+        username: prev.username || '',
+        isMe: uid === myId,
+        isOwner: uid === g.owner_id
+      };
+    });
+    // Always include the owner if they're not already in the array.
+    if(g.owner_id && !memberObjs.find(function(m){return m.id===g.owner_id;})){
+      memberObjs.unshift({id:g.owner_id, username:'', isMe:g.owner_id===myId, isOwner:true});
     }
+    // And me, in case I'm a member but the column isn't fully synced yet.
+    if(myId && !memberObjs.find(function(m){return m.id===myId;})){
+      memberObjs.push({id:myId, username:(acct&&acct.username)||'You', isMe:true, isOwner:myId===g.owner_id});
+    }
+    g.members = memberObjs;
+
+    _comms.push(g);
   }
 
-  // 2. Load communities user JOINED via accepted invites
-  var joins=await window._sb.from('invites').select('community_id,community_name').eq('to_id',user.id).eq('status','accepted');
-  if(!joins.error&&joins.data){
-    for(var j=0;j<joins.data.length;j++){
-      var ji=joins.data[j];
-      if(_comms.find(function(c){return c.id===ji.community_id;})) continue;
-      var cr=await window._sb.from('communities').select('*').eq('id',ji.community_id).single();
-      if(!cr.error&&cr.data&&cr.data.comm_data){
-        try{
-          var jg=JSON.parse(cr.data.comm_data);
-          if(cr.data.avatar_finish)    jg.avatar_finish    = cr.data.avatar_finish;
-          if(cr.data.avatar_image_url) jg.avatar_image_url = cr.data.avatar_image_url;
-          if(cr.data.icon_initials)    jg.icon_initials    = cr.data.icon_initials;
-          if(cr.data.created_at)       jg.created_at       = cr.data.created_at;
-          if(cr.data.is_public != null)jg.is_public        = cr.data.is_public;
-          if(jg.members){ jg.members.forEach(function(m){ m.isMe=(m.id===myId); }); }
-          if(!jg.members||!jg.members.find(function(m){return m.isMe;}))
-            (jg.members=jg.members||[]).push({id:myId,username:(acct&&acct.username)?acct.username:'You',isMe:true});
-          _comms.push(jg);
-        }catch(e){}
-      }
-    }
-  }
-
-  // Always overwrite localStorage with fresh Supabase data - even if empty
-  _comm=_comms.length?_comms[0]:null;
-  _activeCommId=_comm?_comm.id:null;
+  _comm = _comms.length ? _comms[0] : null;
+  _activeCommId = _comm ? _comm.id : null;
   try{
-    localStorage.setItem('tr1_comms',JSON.stringify(_comms));
-    localStorage.removeItem('tr1_comm'); // clear old single-comm format too
+    localStorage.setItem('tr1_comms', JSON.stringify(_comms));
+    localStorage.removeItem('tr1_comm');
   }catch(e){}
   renderCommunity();
 }
@@ -8002,46 +7993,89 @@ function markAllInvitesRead(){
   renderCommInvites();
 }
 
-function acceptCommInvite(invId) {
+async function acceptCommInvite(invId) {
   try {
     var inv = _notifications.find(function(n){ return n.id === invId; });
-    if (!inv) { toast('Invite not found'); return; }
-
-    inv.accepted = true;
-    inv.read = true;
-
-    // Update invite status in Supabase (async, non-blocking)
-    if(window._sb){
-      window._sb.from('invites').update({status:'accepted'}).eq('id',invId).then(function(r){
-        if(r&&r.error) console.warn('Accept invite DB error:',r.error.message);
-      });
+    if (!inv) { showToast('Invite not found', 'error'); return; }
+    if (!currentUser || !window._sb) {
+      // Offline / no auth — local-only acceptance, no DB push.
+      inv.accepted = true; inv.read = true;
+      updateInviteBadge(); renderCommInvites();
+      showToast('Joined locally — sign in to sync', 'info');
+      return;
     }
 
-    // Set _comm to the joined community (it is a single object, not an array)
-    var myUsername = (acct && acct.username) ? acct.username : 'Member';
-    var myId = (currentUser && currentUser.id) ? currentUser.id : 'me';
+    var myId = currentUser.id;
+    // Resolve the community_id. Prefer the invite row in DB (source of
+    // truth) but fall back to the locally-cached groupId.
+    var communityId = null;
+    var dbInv = await window._sb.from('invites').select('community_id,community_name,to_id')
+      .eq('id', invId).maybeSingle();
+    if (dbInv && dbInv.data) {
+      if (dbInv.data.to_id !== myId) {
+        showToast('Not your invite', 'error');
+        return;
+      }
+      communityId = dbInv.data.community_id;
+      inv.groupId = communityId;
+      if (dbInv.data.community_name) inv.groupName = dbInv.data.community_name;
+    } else {
+      communityId = inv.groupId;
+    }
+    if (!communityId) { showToast('Invite has no group', 'error'); return; }
 
-    var joinedComm = {
-      id: inv.groupId || ('grp_joined_' + Date.now()),
-      name: inv.groupName || 'Community',
-      owner: inv.from || 'Leader',
-      owner_id: null,
-      members: [{id: myId, username: myUsername, isMe: true}]
-    };
-    // Add to _comms if not already there
-    if(!_comms.find(function(c){ return c.id===joinedComm.id; })) _comms.push(joinedComm);
-    _comm = joinedComm;
-    try { localStorage.setItem('tr1_comms', JSON.stringify(_comms)); } catch(e) {}
+    // Pull current members[] (RLS read-policy lets a recipient SELECT
+    // a community they have an accepted invite for; if not, owner can
+    // do this read for them). We need the array to push to it.
+    var commRow = await window._sb.from('communities')
+      .select('id,name,members,owner_id')
+      .eq('id', communityId).maybeSingle();
+    if (!commRow || commRow.error || !commRow.data) {
+      console.warn('[acceptCommInvite] community fetch:', commRow && commRow.error && commRow.error.message);
+      showToast('Group not found', 'error');
+      return;
+    }
+
+    var existing = Array.isArray(commRow.data.members) ? commRow.data.members : [];
+    if (existing.indexOf(myId) === -1) {
+      var updated = existing.concat([myId]);
+      var u = await window._sb.from('communities')
+        .update({ members: updated })
+        .eq('id', communityId);
+      if (u && u.error) {
+        console.error('[acceptCommInvite] member push:', u.error);
+        showToast('Failed to join: '+(u.error.message||'try again'), 'error');
+        return;
+      }
+    }
+
+    // Mark invite accepted (best-effort).
+    try {
+      await window._sb.from('invites').update({status:'accepted'}).eq('id', invId);
+    } catch(e){ console.warn('[acceptCommInvite] invite flag failed:', e && e.message); }
+
+    // Local state.
+    inv.accepted = true; inv.read = true;
     try { localStorage.setItem('tr1_notifs', JSON.stringify(_notifications)); } catch(e) {}
+
+    // Reload _comms from DB so the joined group shows up with full data
+    // (members, avatar finish, etc.) — the OR query in loadCommunityFromDB
+    // now picks up communities where I'm in members[].
+    await loadCommunityFromDB(currentUser);
+
+    // Switch to the just-joined group if present.
+    var joined = _comms.find(function(c){ return c.id === communityId; });
+    if (joined) { _comm = joined; _activeCommId = joined.id; }
 
     updateInviteBadge();
     renderCommInvites();
-    renderCommunity();
-    toast('✅ Joined ' + (_comm.name) + '!');
+    if (typeof renderCommSidebar === 'function') renderCommSidebar();
+    if (typeof renderCommunity === 'function') renderCommunity();
+    showToast('Joined ' + (commRow.data.name || inv.groupName || 'community'), 'success');
 
   } catch(err) {
     console.error('acceptCommInvite error:', err);
-    toast('Something went wrong — try again');
+    showToast('Failed to join — '+(err.message||'try again'), 'error');
   }
 }
 
