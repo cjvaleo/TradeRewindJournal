@@ -3787,6 +3787,13 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   border-right:1px solid var(--n-border);
   overflow-y:auto;height:100%;background:transparent;
 }
+/* Cap the post list + filter pill row at 720px so posts feel filled
+   instead of stretched across the full column. Hero P&L + period tabs
+   stay at full feed-column width — the hero is meant to feel grand. */
+#pg-community .filters,
+#pg-community #comm-feed-posts{
+  max-width:720px;margin-left:auto;margin-right:auto;
+}
 #pg-community .rail{
   width:300px;padding:32px 22px;
   display:flex;flex-direction:column;gap:24px;flex-shrink:0;
@@ -4035,7 +4042,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 /* ── POST CARD (v6) — gradient bg + profit/loss accent edge ── */
 #pg-community .post{
   position:relative;
-  padding:18px 18px 14px;
+  padding:16px 18px 12px;
   background:linear-gradient(180deg, var(--n-surface-2) 0%, var(--n-surface) 100%);
   border:1px solid var(--n-border);
   border-radius:14px;
@@ -4074,7 +4081,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 /* TRADE BODY PILL — sym + side badge + italic P&L right-aligned */
 #pg-community .trade-body{
   display:flex;align-items:center;gap:14px;
-  padding:13px 16px;
+  padding:12px 14px;
   background:var(--n-surface);border:1px solid var(--n-border);
   border-radius:10px;margin-bottom:11px;
 }
