@@ -9854,20 +9854,35 @@ function closeCalEdit(){
   _cemId=null;
 }
 function saveCalEdit(){
+  // CAPTURE the trade id BEFORE closing the modal — closeCalEdit()
+  // nulls _cemId, so any later trades.find(x => x.id == _cemId) would
+  // match nothing and the whole save would silently bail. This was the
+  // root cause of "edit modal saves nothing".
+  var tradeId = _cemId;
+  if (tradeId == null) return; // modal opened with no target
+
+  // Read all field values FIRST while the modal still has them set.
+  // (display:none doesn't affect .value reads, but ID nulling would.)
+
   // Step 1: close modal and show toast immediately — guaranteed
   closeCalEdit();
-  toast('Changes saved', 'success');
 
   // Step 2: find and update the trade
-  var t=trades.find(function(x){return x.id==_cemId;});
-  if(!t) return;
+  var t=trades.find(function(x){return x.id==tradeId;});
+  if(!t){
+    showToast('Trade not found — refresh and try again', 'error');
+    return;
+  }
 
   var sym=(document.getElementById('cem-sym').value||'').trim().toUpperCase();
   var entry=parseFloat(document.getElementById('cem-entry').value);
   var exit=parseFloat(document.getElementById('cem-exit').value);
   var qty=parseFloat(document.getElementById('cem-qty').value)||1;
   var stop=parseFloat(document.getElementById('cem-stop').value)||null;
-  if(!sym||isNaN(entry)||isNaN(exit)) return;
+  if(!sym||isNaN(entry)||isNaN(exit)){
+    showToast('Symbol, entry, and exit are required', 'error');
+    return;
+  }
 
   var ptVal=(typeof PTS!=='undefined'&&PTS[sym])?PTS[sym]:1;
   var pnl=(_cemType==='long'?exit-entry:entry-exit)*qty*ptVal;
@@ -9906,6 +9921,7 @@ function saveCalEdit(){
     try{ if(typeof _comm!=='undefined' && _comm && typeof renderFeedPosts==='function') renderFeedPosts(_comm); }catch(e){}
     var dayTrades=trades.filter(function(x){return x.date===savedDate;});
     try{if(typeof openDayReview==='function') openDayReview(savedDate,dayTrades);}catch(e){}
+    toast('Trade updated', 'success');
   }, 50);
 }
 
