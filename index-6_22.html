@@ -12536,6 +12536,7 @@ const SUPA_KEY  = 'sb_publishable_F3g-zezPLXXQ6Khe0woNhg_n1V1FORM';
 
 function initSupabase() {
   _sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+  window._sb = _sb;  // expose for console debugging
   checkSession();
 }
 
@@ -12778,7 +12779,19 @@ async function doLogin() {
   setBtnLoading('login-btn', true, 'Log In');
   try {
     var r = await _sb.auth.signInWithPassword({ email: email, password: pass });
-    if (r.error) { setAuthMsg(r.error.message, true); setBtnLoading('login-btn', false, 'Log In'); return; }
+    if (r.error) {
+      setAuthMsg(r.error.message, true);
+      setBtnLoading('login-btn', false, 'Log In');
+      return;
+    }
+    // Gate on a REAL session, not just a returned user. Without a
+    // session the JWT isn't installed in subsequent requests, RLS
+    // rejects every write, and the dashboard becomes a zombie.
+    if (!r.data || !r.data.session || !r.data.user) {
+      setAuthMsg('Sign in failed: no session returned. Try again.', true);
+      setBtnLoading('login-btn', false, 'Log In');
+      return;
+    }
     await onSignedIn(r.data.user);
   } catch(e) {
     setAuthMsg('Error: ' + (e.message || e.toString()), true);
@@ -14688,13 +14701,15 @@ var _supaErrToastedAt = 0;
 async function saveTradeToSupa(trade) {
   if (!_sb) return;
   try {
-    // Re-fetch the auth user for every write. `currentUser` can drift
-    // if a session refresh happened mid-session, and RLS keys on
-    // auth.uid() at the row check — if the JWT doesn't carry the
-    // expected user_id we'd see "new row violates row-level security
-    // policy" even though the JS thinks it has a current user.
-    var au = await _sb.auth.getUser();
-    var authUser = au && au.data && au.data.user;
+    // Pull user_id from the LIVE session, not from `currentUser`. RLS
+    // keys on auth.uid() at row-check time — if the JWT doesn't carry
+    // the expected user_id (e.g. after a refresh, or in a zombie boot
+    // before the session is verified) we'd see "new row violates
+    // row-level security policy" even though the JS thinks it has a
+    // current user. getSession() is cheaper than getUser() and pulls
+    // straight from the active JWT.
+    var sess = await _sb.auth.getSession();
+    var authUser = sess && sess.data && sess.data.session && sess.data.session.user;
     if (!authUser || !authUser.id) throw new Error('Not authenticated');
 
     var r = await _sb.from('trades').upsert({
@@ -14743,11 +14758,27 @@ function handleStripeReturn() {
 
 /* ── Boot: poll until Supabase SDK is ready ── */
 function tryInitSupabase() {
-  // Load cached account data immediately so sidebar shows name/avatar before Supabase responds
-  loadAcct();
   if (window.supabase && window.supabase.createClient) {
     try {
       _sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+      window._sb = _sb;  // expose for console debugging
+      // Wire global auth-state listener BEFORE checkSession so the
+      // initial INITIAL_SESSION/SIGNED_IN events get logged.
+      _sb.auth.onAuthStateChange(function(event, session){
+        console.log('[auth]', event, session && session.user && session.user.id);
+        if (event === 'SIGNED_OUT' || (event === 'TOKEN_REFRESHED' && !session)) {
+          try {
+            Object.keys(localStorage).forEach(function(k){
+              if (k && k.indexOf('tr1_') === 0) localStorage.removeItem(k);
+            });
+          } catch(e){}
+          if (typeof clearUserCache === 'function') clearUserCache();
+          currentUser = null;
+          showAuth('login');
+        }
+        // Note: SIGNED_IN events from doLogin/doSignupStep2 already
+        // route through onSignedIn — don't double-fire here.
+      });
       checkSession();
     } catch(e) {
       console.error('Supabase init failed:', e);
