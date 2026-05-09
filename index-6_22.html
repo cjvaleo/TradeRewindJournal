@@ -4078,6 +4078,127 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   text-transform:uppercase;color:var(--n-text-3);margin-bottom:14px;
   text-shadow:none;
 }
+#pg-community .rail-title-row{
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--n-text-3);margin-bottom:12px;
+}
+#pg-community .rail-title-count{color:var(--n-text-4)}
+
+/* TRADE OF THE DAY — premium gold-accent card */
+#pg-community .totd-card{
+  position:relative;padding:18px;cursor:pointer;
+  border:1px solid var(--n-border);border-radius:11px;
+  background:linear-gradient(180deg,rgba(245,215,124,0.05) 0%,var(--n-surface) 30%,var(--n-surface) 100%);
+  overflow:hidden;transition:.2s;
+}
+#pg-community .totd-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(245,215,124,0.5),transparent);
+}
+#pg-community .totd-card:hover{
+  border-color:rgba(245,215,124,0.2);transform:translateY(-2px);
+  box-shadow:0 0 0 1px rgba(245,215,124,0.12),0 8px 24px -6px rgba(245,215,124,0.08);
+}
+#pg-community .totd-label{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.22em;
+  text-transform:uppercase;color:#f5d77c;margin-bottom:14px;
+}
+#pg-community .totd-label svg{width:11px;height:11px;stroke-width:1.8;fill:none;stroke:currentColor}
+#pg-community .totd-trader{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+#pg-community .totd-trader .av{width:34px!important;height:34px!important;font-size:11px!important}
+#pg-community .totd-tname{font-size:13px;color:var(--n-text);font-weight:500}
+#pg-community .totd-thandle{font-family:var(--n-font-mono);font-size:9.5px;color:var(--n-text-3);margin-top:2px}
+#pg-community .totd-trade{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;
+  background:var(--n-bg);border:1px solid var(--n-border);
+  border-radius:7px;margin-bottom:12px;
+}
+#pg-community .totd-sym{font-family:var(--n-font-mono);font-size:11px;color:var(--n-text);font-weight:500}
+#pg-community .totd-side{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.14em;
+  text-transform:uppercase;padding:2px 6px;border-radius:4px;
+}
+#pg-community .totd-side.long{color:var(--n-profit);background:rgba(95,179,137,0.08);border:1px solid rgba(95,179,137,0.18)}
+#pg-community .totd-side.short{color:var(--n-loss);background:rgba(201,95,95,0.08);border:1px solid rgba(201,95,95,0.18)}
+#pg-community .totd-thumb{
+  width:28px;height:28px;object-fit:cover;border-radius:5px;
+  border:1px solid var(--n-border-2);background:var(--n-surface-2);
+  margin-left:auto;flex-shrink:0;cursor:zoom-in;
+}
+#pg-community .totd-pnl-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+#pg-community .totd-pnl{
+  font-family:var(--n-font-display);font-style:italic;font-size:34px;line-height:1;
+  color:var(--n-profit);filter:drop-shadow(0 2px 8px rgba(95,179,137,0.18));
+}
+#pg-community .totd-pnl.loss{color:var(--n-loss);filter:drop-shadow(0 2px 8px rgba(201,95,95,0.18))}
+#pg-community .totd-pnl .cents{font-size:0.55em;opacity:0.7}
+#pg-community .totd-r{font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-2);letter-spacing:0.08em}
+#pg-community .totd-note{
+  font-size:11.5px;color:var(--n-text-3);line-height:1.55;font-style:italic;
+  border-left:1.5px solid var(--n-border-2);padding-left:10px;margin-top:4px;
+}
+
+/* MEMBERS LIST — compact rows in the rail card */
+#pg-community .members-list{display:flex;flex-direction:column}
+#pg-community .mem-item{
+  display:flex;align-items:center;gap:10px;padding:8px 0;
+  border-bottom:1px solid var(--n-border);cursor:pointer;
+  transition:padding-left .15s;
+}
+#pg-community .mem-item:last-child{border-bottom:none}
+#pg-community .mem-item:hover{padding-left:4px}
+#pg-community .mem-item .av{width:26px!important;height:26px!important;font-size:9.5px!important}
+#pg-community .mem-info{flex:1;min-width:0}
+#pg-community .mem-name{
+  font-size:12px;color:var(--n-text);font-weight:500;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#pg-community .mem-handle{
+  font-family:var(--n-font-mono);font-size:9px;color:var(--n-text-3);margin-top:1px;
+}
+#pg-community .mem-status{
+  width:7px;height:7px;border-radius:50%;background:var(--n-text-4);flex-shrink:0;
+}
+#pg-community .mem-status.online{
+  background:var(--n-profit);box-shadow:0 0 6px rgba(95,179,137,0.45);
+}
+
+/* View All button */
+#pg-community .view-all{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  width:100%;margin-top:10px;padding:8px;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-3);
+  background:transparent;border:1px solid var(--n-border);border-radius:6px;
+  cursor:pointer;transition:.15s;
+}
+#pg-community .view-all:hover{
+  color:var(--n-text);border-color:var(--n-border-2);background:var(--n-surface-2);
+}
+
+/* Post-flash highlight when scrolled to from TOTD click */
+#pg-community .post.post-flash{
+  animation:post-flash-anim 1.5s ease-out;
+}
+@keyframes post-flash-anim{
+  0%{box-shadow:0 0 0 1px rgba(245,215,124,0.6),0 0 24px rgba(245,215,124,0.35)}
+  100%{box-shadow:0 0 0 1px rgba(245,215,124,0),0 0 24px rgba(245,215,124,0)}
+}
+
+/* All-Members modal (chrome surface, scrollable) */
+#all-members-modal .am-list{display:flex;flex-direction:column;max-height:60vh;overflow-y:auto;padding-right:4px}
+#all-members-modal .mem-item{
+  display:flex;align-items:center;gap:10px;padding:10px 4px;
+  border-bottom:1px solid var(--n-border);cursor:pointer;
+}
+#all-members-modal .mem-item:last-child{border-bottom:none}
+#all-members-modal .mem-item .av{width:30px!important;height:30px!important;font-size:10.5px!important}
+#all-members-modal .mem-name{font-size:13px;color:var(--n-text);font-weight:500}
+#all-members-modal .mem-handle{font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-3);margin-top:2px}
+#all-members-modal .mem-status{width:7px;height:7px;border-radius:50%;background:var(--n-text-4);flex-shrink:0}
+#all-members-modal .mem-status.online{background:var(--n-profit);box-shadow:0 0 6px rgba(95,179,137,0.45)}
 
 /* Leaderboard */
 #pg-community .lb-row{
@@ -5991,14 +6112,21 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       </div>
 
       <aside class="rail">
+        <!-- Trade of the Day — populated by renderTOTD when today has trades -->
+        <div id="feed-totd" style="display:none"></div>
+
         <div class="card">
           <div class="card-title">Top This Week</div>
           <div id="feed-leaderboard"></div>
         </div>
 
         <div class="card">
-          <div class="card-title">Members &middot; 30D Activity</div>
+          <div class="rail-title-row">
+            <span>Members</span>
+            <span class="rail-title-count" id="feed-members-count"></span>
+          </div>
           <div id="feed-members"></div>
+          <button class="view-all" id="feed-members-view-all" onclick="openAllMembersModal()" style="display:none">View All <span id="feed-members-view-all-n"></span> Members</button>
         </div>
       </aside>
     </div>
@@ -7249,7 +7377,7 @@ function openCommFeed(gid){
     editBtn.style.display='';
     editBtn.title = (currentUser&&g.owner_id===currentUser.id) ? 'Edit group' : 'Group info';
   }
-  renderFeedPosts(g);renderFeedLeaderboard(g);renderFeedMembers(g);
+  renderFeedPosts(g);renderFeedLeaderboard(g);renderFeedMembers(g);renderTOTD(g);
   // Legacy renderers (renderSentInvites/renderMemberCalendars/renderCommunityWidgets/
   // renderDailyChallenge/renderGroupActivity) target IDs not present in the v3
   // chrome layout, so they no-op via their getElementById guards.
@@ -7499,7 +7627,7 @@ async function syncAndLoadCommFeed(g){
   // changes propagate across every group.
   var profMap={};
   try{
-    var pf=await _sb.from('profiles').select('id,username,initials,color,avatar_finish,avatar_image_url,avatar_initials').in('id',memberIds);
+    var pf=await _sb.from('profiles').select('id,username,initials,color,avatar_finish,avatar_image_url,avatar_initials,last_seen_at').in('id',memberIds);
     if(pf.data) pf.data.forEach(function(p){ profMap[p.id]=p; });
   }catch(e){ console.warn('Profile fetch skipped:',e.message); }
 
@@ -7532,6 +7660,7 @@ async function syncAndLoadCommFeed(g){
     m.avatar_finish = p.avatar_finish || p.color || m.color || 'chrome';
     m.avatar_image_url = p.avatar_image_url || null;
     m.initials = p.avatar_initials || p.initials || m.initials;
+    m.last_seen_at = p.last_seen_at || null;
   });
 
   // Fetch checkins for today from community_posts
@@ -7546,6 +7675,7 @@ async function syncAndLoadCommFeed(g){
 
   await loadFeedEngagement(g);
   renderFeedPosts(g);
+  renderTOTD(g);
   if(_comm){
     renderGroupStats(_comm);
     renderFeedLeaderboard(_comm);
@@ -8349,46 +8479,218 @@ function renderMemberCalModal(){
   grid.innerHTML=h;
 }
 
+/* Compact members list for the right rail. Top 8 by recent activity.
+   `last_seen_at` is read from the live profile JOIN (loadCommunityFromDB);
+   if absent, all dots render dim. */
+var MEMBERS_RAIL_LIMIT = 8;
+function _isOnline(lastSeenAt){
+  if(!lastSeenAt) return false;
+  var t = new Date(lastSeenAt).getTime();
+  if(!t || isNaN(t)) return false;
+  return (Date.now() - t) < 5*60*1000;
+}
 function renderFeedMembers(g){
   var el=document.getElementById('feed-members');
-  var slots=document.getElementById('feed-slots');if(slots)slots.textContent=(25-g.members.length)+' slots open';
+  var slots=document.getElementById('feed-slots');if(slots)slots.textContent=(25-(g.members||[]).length)+' slots open';
   if(!el)return;
-  var mT=getMemberTradesLookup();
-  function _avTone(finish){ return normalizeFinish(finish); }
-  function _shortK(n){
-    var s = n>=0 ? '+' : '−';
-    var a = Math.abs(n);
-    if(a >= 1000) return s + '$' + (a/1000).toFixed(1) + 'k';
-    return s + '$' + Math.round(a);
+  var members = (g.members||[]).slice();
+  // Online (last 5min) first; then alphabetical by username for stability
+  members.sort(function(a,b){
+    var ao=_isOnline(a.last_seen_at)?1:0, bo=_isOnline(b.last_seen_at)?1:0;
+    if(ao!==bo) return bo-ao;
+    return String(a.username||'').localeCompare(String(b.username||''));
+  });
+  var total = members.length;
+  var visible = members.slice(0, MEMBERS_RAIL_LIMIT);
+  var countEl=document.getElementById('feed-members-count');if(countEl) countEl.textContent=total;
+  var viewAll=document.getElementById('feed-members-view-all');
+  var viewAllN=document.getElementById('feed-members-view-all-n');
+  if(viewAll && viewAllN){
+    viewAll.style.display = total > MEMBERS_RAIL_LIMIT ? '' : 'none';
+    viewAllN.textContent = total;
   }
-  el.innerHTML=(g.members||[]).map(function(m){
-    var mt = m.isMe ? trades : (mT[m.id] || []);
-    var pnl = mt.reduce(function(a,t){return a+(t.pnl||0);},0);
-    var pnlCls = pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : '';
-    var finish = m.isMe ? ((acct && (acct.avatar_finish||acct.color)) || 'chrome')
-                        : (m.avatar_finish || m.color || 'chrome');
-    var avTone = _avTone(finish);
-    var imgUrl = m.isMe ? (acct && acct.avatar_image_url) : m.avatar_image_url;
-    var avExtra = imgUrl ? ' custom' : '';
+  el.className='members-list';
+  el.innerHTML=visible.map(function(m){
     var safeMid = safeText(m.id || '');
     var safeUname = safeText(m.username || '');
-    var safeInit = safeText(m.initials || (m.username || '??').slice(0,2).toUpperCase());
-    var nameDisplay = safeUname + (m.isMe ? ' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase">you</span>' : '');
-    var avInner = imgUrl
-      ? '<img src="'+safeURL(imgUrl)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;position:absolute;inset:0">'
-      : safeInit;
-    return '<div class="member" data-mid="'+safeMid+'" data-uname="'+safeUname+'" onclick="openMemberCal(this.dataset.mid,this.dataset.uname)">'
-      + '<div class="m-row">'
-      +   '<div class="m-av av '+avTone+avExtra+'">'+avInner+'</div>'
-      +   '<div class="m-meta">'
-      +     '<div class="m-name">'+nameDisplay+'</div>'
-      +     '<div class="m-handle">@'+safeText((m.username||'trader').replace(/^@/,''))+'</div>'
-      +   '</div>'
-      +   '<span class="m-pl '+pnlCls+'">'+_shortK(pnl)+'</span>'
+    var meTag = m.isMe ? ' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase">you</span>' : '';
+    var avHtml = renderUserAvatar({
+      avatar_finish: m.isMe ? (acct&&(acct.avatar_finish||acct.color)) : (m.avatar_finish||m.color),
+      avatar_image_url: m.isMe ? (acct&&acct.avatar_image_url) : m.avatar_image_url,
+      avatar_initials: m.initials,
+      name: m.username || ''
+    }, 'sm');
+    var online = _isOnline(m.last_seen_at);
+    return '<div class="mem-item" data-mid="'+safeMid+'" data-uname="'+safeUname+'" onclick="openMemberProfile(this.dataset.mid,this.dataset.uname)">'
+      + avHtml
+      + '<div class="mem-info">'
+      +   '<div class="mem-name">'+safeUname+meTag+'</div>'
+      +   '<div class="mem-handle">@'+safeText((m.username||'trader').replace(/^@/,''))+'</div>'
       + '</div>'
-      + buildMiniCal(mt)
+      + '<div class="mem-status'+(online?' online':'')+'" title="'+(online?'Online':'Offline')+'"></div>'
       + '</div>';
   }).join('');
+}
+
+/* Open the existing member-cal-modal. The all-members modal also calls
+   this so a user can drill into any member from either entry point. */
+function openMemberProfile(mid, uname){
+  if(typeof openMemberCal === 'function') openMemberCal(mid, uname);
+}
+
+/* Full-list modal — built on first open, refreshed each open. */
+function openAllMembersModal(){
+  var modal = document.getElementById('all-members-modal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.id = 'all-members-modal';
+    modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(3px);z-index:9990;align-items:center;justify-content:center;padding:24px';
+    modal.innerHTML =
+      '<div style="background:var(--n-surface);border:1px solid var(--n-border-2);border-radius:14px;width:100%;max-width:480px;max-height:calc(100vh - 100px);overflow:hidden;box-shadow:0 32px 80px -16px rgba(0,0,0,0.85);display:flex;flex-direction:column">'
+      +   '<div style="padding:20px 24px 16px;border-bottom:1px solid var(--n-border);display:flex;align-items:center;justify-content:space-between">'
+      +     '<div style="font-family:var(--n-font-display);font-style:italic;font-size:24px;color:var(--n-text);line-height:1.1">All Members</div>'
+      +     '<button onclick="document.getElementById(\'all-members-modal\').style.display=\'none\'" style="width:30px;height:30px;border-radius:6px;border:1px solid var(--n-border);background:transparent;color:var(--n-text-3);cursor:pointer">✕</button>'
+      +   '</div>'
+      +   '<div class="am-list" id="am-list" style="padding:14px 20px"></div>'
+      + '</div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e){ if(e.target===modal) modal.style.display='none'; });
+  }
+  var list = document.getElementById('am-list');
+  if(!list || !_comm) return;
+  var members = (_comm.members||[]).slice();
+  members.sort(function(a,b){
+    var ao=_isOnline(a.last_seen_at)?1:0, bo=_isOnline(b.last_seen_at)?1:0;
+    if(ao!==bo) return bo-ao;
+    return String(a.username||'').localeCompare(String(b.username||''));
+  });
+  list.innerHTML = members.map(function(m){
+    var safeMid = safeText(m.id || '');
+    var safeUname = safeText(m.username || '');
+    var meTag = m.isMe ? ' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase">you</span>' : '';
+    var avHtml = renderUserAvatar({
+      avatar_finish: m.isMe ? (acct&&(acct.avatar_finish||acct.color)) : (m.avatar_finish||m.color),
+      avatar_image_url: m.isMe ? (acct&&acct.avatar_image_url) : m.avatar_image_url,
+      avatar_initials: m.initials,
+      name: m.username || ''
+    }, 'md');
+    var online = _isOnline(m.last_seen_at);
+    return '<div class="mem-item" data-mid="'+safeMid+'" data-uname="'+safeUname+'" onclick="document.getElementById(\'all-members-modal\').style.display=\'none\';openMemberProfile(this.dataset.mid,this.dataset.uname)">'
+      + avHtml
+      + '<div style="flex:1;min-width:0">'
+      +   '<div class="mem-name">'+safeUname+meTag+'</div>'
+      +   '<div class="mem-handle">@'+safeText((m.username||'trader').replace(/^@/,''))+'</div>'
+      + '</div>'
+      + '<div class="mem-status'+(online?' online':'')+'" title="'+(online?'Online':'Offline')+'"></div>'
+      + '</div>';
+  }).join('') || '<div style="font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-3);text-align:center;padding:20px">No members yet</div>';
+  modal.style.display = 'flex';
+}
+
+/* ── TRADE OF THE DAY ──────────────────────────────────────
+   Find today's single highest-P&L trade across every member of the
+   selected community (own trades + remote). Hide the card if none. */
+function renderTOTD(g){
+  var card = document.getElementById('feed-totd');
+  if(!card) return;
+  if(!g){ card.style.display='none'; return; }
+
+  var todayStr = new Date().toISOString().slice(0,10);
+
+  // Gather candidates: own trades dated today + remote posts dated today.
+  var candidates = [];
+  trades.slice().forEach(function(t){
+    if((t.date||'').slice(0,10) !== todayStr) return;
+    candidates.push({
+      isMe: true, trade: t, pnl: Number(t.pnl)||0,
+      user_id: currentUser?currentUser.id:'me',
+      username: (acct&&acct.username) || 'You',
+      initials: (acct&&(acct.avatar_initials||acct.initials)) || 'ME',
+      avatar_finish: (acct&&(acct.avatar_finish||acct.color)) || 'chrome',
+      avatar_image_url: acct&&acct.avatar_image_url
+    });
+  });
+  (typeof _remotePosts!=='undefined' ? _remotePosts : []).forEach(function(row){
+    var rt={}; try{rt=JSON.parse(row.content||'{}');}catch(e){}
+    var d = (rt.date||row.created_at||'').slice(0,10);
+    if(d !== todayStr) return;
+    candidates.push({
+      isMe:false, trade:rt, pnl: Number(rt.pnl||row.pnl_today)||0,
+      user_id: row.user_id,
+      username: row.username || 'Trader',
+      initials: row.initials || '??',
+      avatar_finish: row.avatar_finish || row.avatar_color || 'chrome',
+      avatar_image_url: row.avatar_image_url || null,
+      remoteRow: row
+    });
+  });
+
+  if(!candidates.length){ card.style.display='none'; return; }
+  candidates.sort(function(a,b){return b.pnl - a.pnl;});
+  var top = candidates[0];
+  if(top.pnl <= 0){ card.style.display='none'; return; } // only feature winners
+
+  var t = top.trade;
+  var pid = top.isMe ? (t.id||'') : (top.remoteRow ? top.remoteRow.id+'_'+top.remoteRow.user_id : '');
+  var safePid = safeText(String(pid));
+  var sym = safeText(t.sym || '—');
+  var sideRaw = (t.type||'').toLowerCase();
+  var sideTxt = sideRaw ? sideRaw.charAt(0).toUpperCase()+sideRaw.slice(1) : '';
+  var sideClass = (sideRaw==='long' || sideRaw==='short') ? sideRaw : '';
+  var hasImg = t.images && t.images[0];
+  var imgUrl = hasImg ? safeURL(t.images[0]) : '';
+  var avHtml = renderUserAvatar({
+    avatar_finish: top.avatar_finish,
+    avatar_image_url: top.avatar_image_url,
+    avatar_initials: top.initials,
+    name: top.username
+  }, 'md');
+  function _money(n){
+    var sign = n>0?'+':n<0?'−':'';
+    var a = Math.abs(n);
+    var int = Math.floor(a).toLocaleString('en-US');
+    var cents = (a - Math.floor(a)).toFixed(2).slice(1);
+    return sign+'$'+int+'<span class="cents">'+cents+'</span>';
+  }
+  var rrTxt = '';
+  if(t.rr) rrTxt = (top.pnl>=0?'+':'') + Number(t.rr).toFixed(1) + 'R';
+  var note = t.notes ? String(t.notes).slice(0,100) + (t.notes.length>100?'…':'') : '';
+  var pnlClass = top.pnl>=0 ? '' : 'loss';
+
+  card.style.display='block';
+  card.innerHTML =
+    '<div class="totd-card" data-pid="'+safePid+'" onclick="scrollToPost(\''+safePid+'\')">'
+    + '<div class="totd-label">'
+    +   '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/></svg>'
+    +   'Trade of the Day'
+    + '</div>'
+    + '<div class="totd-trader">'
+    +   avHtml
+    +   '<div><div class="totd-tname">'+safeText(top.username)+'</div>'
+    +     '<div class="totd-thandle">@'+safeText((top.username||'trader').replace(/^@/,''))+'</div></div>'
+    + '</div>'
+    + '<div class="totd-trade">'
+    +   '<span class="totd-sym">'+sym+'</span>'
+    +   (sideTxt ? '<span class="totd-side '+sideClass+'">'+safeText(sideTxt)+'</span>' : '')
+    +   (hasImg ? '<img class="totd-thumb" src="'+imgUrl+'" alt="" onclick="event.stopPropagation();openScreenshotLightbox(\''+imgUrl+'\')">' : '')
+    + '</div>'
+    + '<div class="totd-pnl-row">'
+    +   '<span class="totd-pnl '+pnlClass+'">'+_money(top.pnl)+'</span>'
+    +   (rrTxt ? '<span class="totd-r">'+rrTxt+'</span>' : '')
+    + '</div>'
+    + (note ? '<div class="totd-note">"'+safeText(note)+'"</div>' : '')
+    + '</div>';
+}
+
+/* Scroll to a specific post by data-pid and flash its border for 1.5s. */
+function scrollToPost(pid){
+  if(!pid) return;
+  var el = document.querySelector('#comm-feed-posts .post[data-pid="'+pid+'"]');
+  if(!el) return;
+  el.scrollIntoView({behavior:'smooth', block:'center'});
+  el.classList.remove('post-flash'); void el.offsetWidth; // reflow to restart anim
+  el.classList.add('post-flash');
+  setTimeout(function(){ el.classList.remove('post-flash'); }, 1500);
 }
 
 function removeMember(id){
@@ -12045,6 +12347,11 @@ async function onSignedIn(user) {
   currentUser = user;
   document.getElementById('auth-screen').style.display = 'none';
   document.querySelector('.wrap').style.display = 'flex';
+  /* Heartbeat — flag this profile as online for the members rail. Tolerant
+     of the column not existing yet (silently skipped). */
+  try {
+    await _sb.from('profiles').update({ last_seen_at: new Date().toISOString() }).eq('id', user.id);
+  } catch(e) { /* column not migrated yet — fine, dot stays dim */ }
   /* Load data from DB, fall back to localStorage if tables don't exist yet */
   try { await loadProfileFromDB(user); refreshAcctUI(); } catch(e) { console.warn('Profile load skipped:', e.message); }
   try { await loadTradesFromDB(user); } catch(e) { console.warn('Trades load skipped:', e.message); }
