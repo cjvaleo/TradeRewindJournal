@@ -256,17 +256,36 @@ create policy "group_avatars_owner_delete"
 -- Every row should show rowsecurity = true after this script runs.
 -- ─────────────────────────────────────────────────────────────────
 
--- TRADES — only owner can do anything.
+-- TRADES — split policies so SELECT can allow community members to
+-- read each other's trades (the community feed builds posts directly
+-- from trades.in('user_id', memberIds)) while writes stay owner-only.
 alter table public.trades enable row level security;
-drop policy if exists "trades_all_own"        on public.trades;
-drop policy if exists "trades_select_own"     on public.trades;
-drop policy if exists "trades_insert_own"     on public.trades;
-drop policy if exists "trades_update_own"     on public.trades;
-drop policy if exists "trades_delete_own"     on public.trades;
-create policy "trades_all_own" on public.trades
-  for all
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+drop policy if exists "trades_all_own"         on public.trades;
+drop policy if exists "trades_select_own"      on public.trades;
+drop policy if exists "trades_select_member"   on public.trades;
+drop policy if exists "trades_insert_own"      on public.trades;
+drop policy if exists "trades_update_own"      on public.trades;
+drop policy if exists "trades_delete_own"      on public.trades;
+-- SELECT: my own trades, OR trades from anyone who shares a community
+-- with me (where "shares" means: there's a community row where both
+-- auth.uid() AND trades.user_id are either the owner or in members[]).
+create policy "trades_select_member" on public.trades
+  for select using (
+    auth.uid() = user_id
+    or exists (
+      select 1 from public.communities c
+      where
+        (c.owner_id = auth.uid() or auth.uid() = ANY (c.members))
+        and
+        (c.owner_id = trades.user_id or trades.user_id = ANY (c.members))
+    )
+  );
+create policy "trades_insert_own" on public.trades
+  for insert with check (auth.uid() = user_id);
+create policy "trades_update_own" on public.trades
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "trades_delete_own" on public.trades
+  for delete using (auth.uid() = user_id);
 
 -- PROFILES policies were created earlier (read=public, write=own).
 
@@ -312,63 +331,89 @@ do $$ begin
     execute 'alter table public.community_posts enable row level security';
   end if;
 end $$;
-drop policy if exists "posts_read_member"   on public.community_posts;
-drop policy if exists "posts_write_own"     on public.community_posts;
-drop policy if exists "posts_insert_member" on public.community_posts;
-drop policy if exists "posts_delete_own"    on public.community_posts;
-create policy "posts_read_member" on public.community_posts
+drop policy if exists "posts_read_member"               on public.community_posts;
+drop policy if exists "posts_write_own"                 on public.community_posts;
+drop policy if exists "posts_insert_member"             on public.community_posts;
+drop policy if exists "posts_delete_own"                on public.community_posts;
+drop policy if exists "community_posts_select_own"      on public.community_posts;
+drop policy if exists "community_posts_select_members"  on public.community_posts;
+drop policy if exists "community_posts_insert_own"      on public.community_posts;
+drop policy if exists "community_posts_update_own"      on public.community_posts;
+drop policy if exists "community_posts_delete_own_or_owner" on public.community_posts;
+drop policy if exists "Enable read access for users"    on public.community_posts;
+-- SELECT: any member (owner or in members[]) of the community can read
+-- every post in it — including the daily check-ins, which is the only
+-- thing this codebase writes to community_posts today.
+create policy "community_posts_select_members" on public.community_posts
   for select using (
     exists (
-      select 1 from public.community_members
-      where community_id = community_posts.community_id
-        and user_id = auth.uid()
+      select 1 from public.communities c
+      where c.id = community_posts.community_id
+        and (c.owner_id = auth.uid() or auth.uid() = ANY (c.members))
     )
   );
-create policy "posts_insert_member" on public.community_posts
+-- INSERT: must be a member, must post as themselves.
+create policy "community_posts_insert_own" on public.community_posts
   for insert with check (
     auth.uid() = user_id
     and exists (
-      select 1 from public.community_members
-      where community_id = community_posts.community_id
-        and user_id = auth.uid()
+      select 1 from public.communities c
+      where c.id = community_posts.community_id
+        and (c.owner_id = auth.uid() or auth.uid() = ANY (c.members))
     )
   );
-create policy "posts_write_own" on public.community_posts
-  for update using (auth.uid() = user_id);
-create policy "posts_delete_own" on public.community_posts
-  for delete using (auth.uid() = user_id);
-
--- COMMUNITY_MEMBERS — members of a community can see other members,
--- users can join/leave themselves.
-do $$ begin
-  if to_regclass('public.community_members') is not null then
-    execute 'alter table public.community_members enable row level security';
-  end if;
-end $$;
-drop policy if exists "members_read_same_community" on public.community_members;
-drop policy if exists "members_join_self"           on public.community_members;
-drop policy if exists "members_leave_self"          on public.community_members;
-drop policy if exists "members_remove_by_owner"     on public.community_members;
-create policy "members_read_same_community" on public.community_members
-  for select using (
-    exists (
-      select 1 from public.community_members cm2
-      where cm2.community_id = community_members.community_id
-        and cm2.user_id = auth.uid()
-    )
-  );
-create policy "members_join_self" on public.community_members
-  for insert with check (auth.uid() = user_id);
--- DELETE: members can leave themselves OR the community owner can kick.
-create policy "members_remove_by_owner" on public.community_members
+-- UPDATE: author only.
+create policy "community_posts_update_own" on public.community_posts
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+-- DELETE: author OR community owner (moderation).
+create policy "community_posts_delete_own_or_owner" on public.community_posts
   for delete using (
     auth.uid() = user_id
     or exists (
-      select 1 from public.communities
-      where id = community_members.community_id
-        and owner_id = auth.uid()
+      select 1 from public.communities c
+      where c.id = community_posts.community_id
+        and c.owner_id = auth.uid()
     )
   );
+
+-- COMMUNITY_MEMBERS — only relevant if a separate join table exists.
+-- This codebase stores membership on communities.members[] instead, so
+-- the table is usually absent. The whole block is wrapped in a guard
+-- so the migration is a no-op when the table isn't there.
+do $$ begin
+  if to_regclass('public.community_members') is not null then
+    execute 'alter table public.community_members enable row level security';
+    execute 'drop policy if exists "members_read_same_community" on public.community_members';
+    execute 'drop policy if exists "members_join_self"           on public.community_members';
+    execute 'drop policy if exists "members_leave_self"          on public.community_members';
+    execute 'drop policy if exists "members_remove_by_owner"     on public.community_members';
+    execute $POL$
+      create policy "members_read_same_community" on public.community_members
+        for select using (
+          exists (
+            select 1 from public.community_members cm2
+            where cm2.community_id = community_members.community_id
+              and cm2.user_id = auth.uid()
+          )
+        )
+    $POL$;
+    execute $POL$
+      create policy "members_join_self" on public.community_members
+        for insert with check (auth.uid() = user_id)
+    $POL$;
+    execute $POL$
+      create policy "members_remove_by_owner" on public.community_members
+        for delete using (
+          auth.uid() = user_id
+          or exists (
+            select 1 from public.communities
+            where id = community_members.community_id
+              and owner_id = auth.uid()
+          )
+        )
+    $POL$;
+  end if;
+end $$;
 
 -- COMMUNITY_POST_LIKES — read same as posts; write only own row.
 do $$ begin
@@ -376,14 +421,24 @@ do $$ begin
     execute 'alter table public.community_post_likes enable row level security';
   end if;
 end $$;
-drop policy if exists "likes_read_member" on public.community_post_likes;
-drop policy if exists "likes_write_own"   on public.community_post_likes;
-drop policy if exists "likes_delete_own"  on public.community_post_likes;
-create policy "likes_read_member" on public.community_post_likes
-  for select using (true);
-create policy "likes_write_own" on public.community_post_likes
+drop policy if exists "likes_read_member"            on public.community_post_likes;
+drop policy if exists "likes_write_own"              on public.community_post_likes;
+drop policy if exists "likes_delete_own"             on public.community_post_likes;
+drop policy if exists "post_likes_select_members"    on public.community_post_likes;
+drop policy if exists "post_likes_insert_own"        on public.community_post_likes;
+drop policy if exists "post_likes_delete_own"        on public.community_post_likes;
+-- SELECT: any community member can see every like in their community.
+create policy "post_likes_select_members" on public.community_post_likes
+  for select using (
+    exists (
+      select 1 from public.communities c
+      where c.id = community_post_likes.community_id
+        and (c.owner_id = auth.uid() or auth.uid() = ANY (c.members))
+    )
+  );
+create policy "post_likes_insert_own" on public.community_post_likes
   for insert with check (auth.uid() = user_id);
-create policy "likes_delete_own" on public.community_post_likes
+create policy "post_likes_delete_own" on public.community_post_likes
   for delete using (auth.uid() = user_id);
 
 -- COMMUNITY_POST_REPLIES — read same as posts; write only own row.
@@ -392,20 +447,24 @@ do $$ begin
     execute 'alter table public.community_post_replies enable row level security';
   end if;
 end $$;
-drop policy if exists "replies_read_member" on public.community_post_replies;
-drop policy if exists "replies_write_own"   on public.community_post_replies;
-drop policy if exists "replies_delete_own"  on public.community_post_replies;
-create policy "replies_read_member" on public.community_post_replies
+drop policy if exists "replies_read_member"           on public.community_post_replies;
+drop policy if exists "replies_write_own"             on public.community_post_replies;
+drop policy if exists "replies_delete_own"            on public.community_post_replies;
+drop policy if exists "post_replies_select_members"   on public.community_post_replies;
+drop policy if exists "post_replies_insert_own"       on public.community_post_replies;
+drop policy if exists "post_replies_delete_own"       on public.community_post_replies;
+-- SELECT: any community member can read every reply in their community.
+create policy "post_replies_select_members" on public.community_post_replies
   for select using (
     exists (
-      select 1 from public.community_members
-      where community_id = community_post_replies.community_id
-        and user_id = auth.uid()
+      select 1 from public.communities c
+      where c.id = community_post_replies.community_id
+        and (c.owner_id = auth.uid() or auth.uid() = ANY (c.members))
     )
   );
-create policy "replies_write_own" on public.community_post_replies
+create policy "post_replies_insert_own" on public.community_post_replies
   for insert with check (auth.uid() = user_id);
-create policy "replies_delete_own" on public.community_post_replies
+create policy "post_replies_delete_own" on public.community_post_replies
   for delete using (auth.uid() = user_id);
 
 -- INVITES — visible to sender + recipient; write by sender only.
