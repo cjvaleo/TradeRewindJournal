@@ -11536,26 +11536,64 @@ async function removeMember(memberId){
     //      USING ( auth.uid() = user_id OR auth.uid() IN (
     //        SELECT owner_id FROM communities WHERE id = community_id ))
     //
-    //    If that policy isn't in place, deleteErr surfaces and the
-    //    user gets a "couldn't clean posts" warning instead of a lie.
-    var deletedCount = 0, deleteErr;
+    //    Defensive instrumentation: an older DELETE policy (own-only)
+    //    will SILENTLY FILTER our delete — error is null and count is 0
+    //    but no rows were actually wiped. Without a pre-count check we'd
+    //    report "Removed @user" while their posts still live in DB and
+    //    re-render in the feed on next sync. Pre-count + .select() back
+    //    the actual deleted rows so we can detect that mode and surface
+    //    a clear RLS warning.
+    console.log('[removeMember] === KICK START ===');
+    console.log('[removeMember] community:', _comm.id, '| user:', memberId);
+
+    var preCount = 0;
     try {
-      var dr = await _sb.from('community_posts')
-        .delete({ count: 'exact' })
+      var pc = await _sb.from('community_posts')
+        .select('id', { count: 'exact', head: true })
         .eq('community_id', _comm.id)
         .eq('user_id', memberId);
-      deletedCount = (dr && dr.count) || 0;
+      preCount = (pc && pc.count) || 0;
+    } catch(e){ console.warn('[removeMember] pre-count failed:', e && e.message); }
+    console.log('[removeMember] pre-delete post count:', preCount);
+
+    var deletedRows = [], deleteErr;
+    try {
+      var dr = await _sb.from('community_posts')
+        .delete()
+        .eq('community_id', _comm.id)
+        .eq('user_id', memberId)
+        .select();
+      deletedRows = (dr && dr.data) || [];
       deleteErr = dr && dr.error;
     } catch(e){ deleteErr = e; }
+    console.log('[removeMember] delete result:', { rows: deletedRows.length, err: deleteErr });
+
+    var deletedCount = deletedRows.length;
     if(deleteErr){
-      console.warn('[removeMember] post cleanup failed:', deleteErr);
+      console.warn('[removeMember] post cleanup error:', deleteErr);
       showToast(
         'Removed @' + (member.username||'member') +
-        ' — posts kept (RLS blocked: ' + (deleteErr.message||'?') + ')',
+        ' — posts kept (' + (deleteErr.message||'unknown error') + ')',
+        'warning'
+      );
+    } else if(preCount > 0 && deletedCount === 0){
+      // RLS silently filtered the DELETE. Most likely the live DB has an
+      // older "auth.uid() = user_id" only policy — the owner can't wipe
+      // other users' posts. Surface this so the user knows why posts are
+      // still showing after the kick.
+      console.error(
+        '[removeMember] RLS silently blocked the DELETE — ' +
+        preCount + ' posts remain. Update the community_posts DELETE ' +
+        'policy to allow community owners (see supabase-avatar-migration.sql).'
+      );
+      showToast(
+        'Removed @' + (member.username||'member') +
+        ' — but ' + preCount + ' post' + (preCount===1?'':'s') +
+        ' couldn\'t be deleted (RLS). Update DB policy.',
         'warning'
       );
     } else {
-      console.log('[removeMember] deleted', deletedCount, 'posts from @' + (member.username||memberId));
+      console.log('[removeMember] ✓ deleted', deletedCount, 'posts');
     }
 
     // Drop the kicked user's rows from the in-memory _remotePosts cache
@@ -11595,14 +11633,26 @@ async function removeMember(memberId){
   }
   // Re-pull from DB to settle any drift between local _remotePosts and
   // server (defensive — covers the case where the DELETE removed rows
-  // we hadn't loaded into the cache yet).
+  // we hadn't loaded into the cache yet). Await this before the success
+  // toast so the user sees the freshly-rendered feed before the
+  // confirmation, not a stale-then-fresh flicker.
   if(typeof syncAndLoadCommFeed==='function'){
-    syncAndLoadCommFeed(_comm);
+    try { await syncAndLoadCommFeed(_comm); } catch(e){ console.warn('[removeMember] resync failed:', e && e.message); }
   }
+  console.log('[removeMember] === KICK END ===');
 
+  // Only show "X posts cleaned" when we have explicit evidence rows
+  // were actually wiped. The RLS-blocked path already toasted a
+  // warning earlier; suppress the success toast in that case so the
+  // user only sees one (correct) message.
+  if(typeof deletedCount === 'number' && deletedCount === 0 && typeof preCount === 'number' && preCount > 0){
+    return; // RLS warning was already shown
+  }
   showToast(
     'Removed @' + (member.username||'member') +
-    (deletedCount ? ' · ' + deletedCount + ' post' + (deletedCount===1?'':'s') + ' cleaned' : ''),
+    (typeof deletedCount === 'number' && deletedCount > 0
+      ? ' · ' + deletedCount + ' post' + (deletedCount===1?'':'s') + ' cleaned'
+      : ''),
     'success'
   );
 }
