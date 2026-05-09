@@ -3938,18 +3938,25 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   position:relative;overflow:hidden;
 }
 #pg-community .hero-pnl::before{
-  content:'';position:absolute;top:-2px;left:50%;transform:translateX(-50%);
-  width:60%;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(95,179,137,0.4),transparent);
+  content:'';position:absolute;top:-1px;left:50%;transform:translateX(-50%);
+  width:55%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(95,179,137,0.45),transparent);
+}
+#pg-community .hero-pnl::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at top center,rgba(95,179,137,0.04) 0%,transparent 50%);
+  pointer-events:none;
 }
 #pg-community .hero-pnl-label{
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.22em;
-  text-transform:uppercase;color:var(--n-text-3);text-align:center;margin-bottom:12px;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--n-text-3);text-align:center;margin-bottom:14px;
+  position:relative;
 }
 #pg-community .hero-pnl-value{
-  font-family:var(--n-font-display);font-style:italic;font-size:96px;line-height:1;
+  font-family:var(--n-font-display);font-style:italic;font-size:84px;line-height:1;
   text-align:center;color:var(--n-profit);letter-spacing:-0.02em;
-  filter:drop-shadow(0 4px 16px rgba(95,179,137,0.18));
+  filter:drop-shadow(0 6px 18px rgba(95,179,137,0.18));
+  position:relative;
 }
 #pg-community .hero-pnl-value.loss{
   color:var(--n-loss);
@@ -4003,123 +4010,150 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-community .csb-collapse-btn svg{width:14px;height:14px;transition:transform .3s}
 #pg-community .csb.collapsed .csb-collapse-btn svg{transform:rotate(180deg)}
 
-/* ── FILTER CHIPS ── */
-#pg-community .filters{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+/* ── FILTER CHIPS (v6) — rounded pills, white-on-black active ── */
+#pg-community .filters{
+  display:flex;gap:6px;margin-bottom:20px;
+  padding-bottom:14px;border-bottom:1px solid var(--n-border);
+  flex-wrap:wrap;
+}
 #pg-community .fchip{
-  padding:6px 13px;border-radius:14px;
+  padding:7px 16px;border-radius:18px;
   border:1px solid var(--n-border);background:transparent;
   color:var(--n-text-3);font-family:var(--n-font-mono);
-  font-size:10px;letter-spacing:0.13em;text-transform:uppercase;
+  font-size:10px;letter-spacing:0.16em;text-transform:uppercase;
   cursor:pointer;text-shadow:none;
-  transition:color .2s, border-color .2s, background .25s, box-shadow .25s, transform .15s;
+  transition:.15s;
 }
-#pg-community .fchip:hover{
-  color:var(--n-text-2);border-color:var(--n-border-2);transform:translateY(-1px);
+#pg-community .fchip:hover:not(.on){
+  color:var(--n-text);border-color:var(--n-border-2);
 }
 #pg-community .fchip.on{
-  background:var(--n-surface-2);color:var(--n-text);border-color:var(--n-border-2);
-  box-shadow:
-    0 0 0 1px var(--n-border-2),
-    inset 0 0 14px rgba(255,255,255,0.025),
-    0 1px 12px -4px rgba(110,168,255,0.15);
+  background:var(--n-text);color:var(--n-bg);border-color:var(--n-text);
 }
 
 /* ── POSTS — chrome card with hover lift + finish-tinted left border ── */
+/* ── POST CARD (v6) — gradient bg + profit/loss accent edge ── */
 #pg-community .post{
-  border:1px solid var(--n-border);border-radius:10px;
-  border-left:3px solid var(--av-tint,rgba(255,255,255,0.06));
-  padding:18px;margin-bottom:14px;background:var(--n-surface);
-  transition:transform .25s ease-out, border-color .2s, background .15s, box-shadow .3s;
+  position:relative;
+  padding:18px 18px 14px;
+  background:linear-gradient(180deg, var(--n-surface-2) 0%, var(--n-surface) 100%);
+  border:1px solid var(--n-border);
+  border-radius:14px;
+  margin-bottom:12px;
+  transition:border-color .15s, transform .15s;
 }
-#pg-community .post:hover{
-  transform:translateY(-2px);border-color:var(--n-border-2);
-  border-left-color:var(--av-tint,rgba(255,255,255,0.12));
-  box-shadow:
-    -6px 0 24px -10px var(--av-tint,transparent),
-    0 8px 28px -10px rgba(0,0,0,0.7),
-    0 0 0 1px rgba(110,168,255,0.04),
-    inset 0 1px 0 rgba(255,255,255,0.025);
+#pg-community .post:hover{border-color:var(--n-border-2)}
+#pg-community .post.profit{border-left:3px solid rgba(95,179,137,0.45)}
+#pg-community .post.loss{border-left:3px solid rgba(201,95,95,0.45)}
+
+/* POST HEAD */
+#pg-community .post-head{
+  display:flex;align-items:center;gap:11px;margin-bottom:12px;
 }
-#pg-community .post-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-#pg-community .post-av{
-  width:32px;height:32px;border-radius:50%;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--n-font-mono);font-size:11px;font-weight:600;
-  color:#fff;letter-spacing:0;text-shadow:none;
+#pg-community .post-head .av{width:36px;height:36px;font-size:11.5px}
+#pg-community .post-author{flex:1;min-width:0}
+#pg-community .author-line{display:flex;align-items:baseline;gap:7px}
+#pg-community .author-name{
+  font-size:14px;color:var(--n-text);font-weight:500;
 }
-#pg-community .post-name{
-  font-family:var(--n-font-sans);font-size:13px;font-weight:500;color:var(--n-text);
-  letter-spacing:0;text-shadow:none;
+#pg-community .author-you{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-4);
+  padding:1px 5px;border:1px solid var(--n-border);border-radius:3px;
 }
-#pg-community .post-handle{
-  font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-3);
-  letter-spacing:0.04em;margin-top:1px;
+#pg-community .author-handle{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.04em;
+  color:var(--n-text-3);
 }
 #pg-community .post-time{
-  font-family:var(--n-font-mono);font-size:9.5px;color:var(--n-text-4);
-  margin-left:auto;letter-spacing:0.06em;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-4);
+  align-self:flex-start;margin-top:2px;
 }
 
-#pg-community .trade-card{
-  background:var(--n-surface-2);border:1px solid var(--n-border);
-  border-radius:8px;padding:14px 16px;
-  display:flex;align-items:center;gap:20px;
-  transition:border-color .2s, box-shadow .25s;
+/* TRADE BODY PILL — sym + side badge + italic P&L right-aligned */
+#pg-community .trade-body{
+  display:flex;align-items:center;gap:14px;
+  padding:13px 16px;
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:10px;margin-bottom:11px;
 }
-#pg-community .post:hover .trade-card{
-  border-color:var(--n-border-2);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.02);
+#pg-community .trade-sym{
+  font-family:var(--n-font-mono);font-size:13px;color:var(--n-text);
+  font-weight:600;letter-spacing:0.02em;
 }
-#pg-community .tc-sym{display:flex;flex-direction:column;gap:3px}
-#pg-community .tc-sym-val{
-  font-family:var(--n-font-mono);font-size:14px;font-weight:600;
-  color:var(--n-text);letter-spacing:0.04em;text-shadow:none;
+#pg-community .trade-side{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;
+  text-transform:uppercase;padding:3px 9px;border-radius:5px;
 }
-#pg-community .tc-side{
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.16em;
-  text-transform:uppercase;color:var(--n-text-3);
+#pg-community .trade-side.long{
+  color:var(--n-profit);background:rgba(95,179,137,0.12);
+  border:1px solid rgba(95,179,137,0.20);
 }
-#pg-community .tc-divider{width:1px;height:30px;background:var(--n-border)}
-#pg-community .tc-pl{display:flex;flex-direction:column;gap:3px;flex:1}
-#pg-community .tc-pl-val{
+#pg-community .trade-side.short{
+  color:var(--n-loss);background:rgba(201,95,95,0.10);
+  border:1px solid rgba(201,95,95,0.20);
+}
+#pg-community .trade-pnl{
+  margin-left:auto;
   font-family:var(--n-font-display);font-style:italic;
-  font-size:24px;line-height:1;color:var(--n-text);
-  letter-spacing:-0.01em;text-shadow:none;
+  font-size:24px;letter-spacing:-0.01em;line-height:1;
 }
-#pg-community .tc-pl-val.profit{color:var(--n-profit)}
-#pg-community .tc-pl-val.loss{color:var(--n-loss)}
-#pg-community .tc-pl-r{
-  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.12em;
-  color:var(--n-text-3);text-transform:uppercase;
-}
-#pg-community .tc-meta{
-  font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-3);
-  text-align:right;line-height:1.5;letter-spacing:0.04em;
-}
-#pg-community .post-note{
-  margin-top:12px;font-family:var(--n-font-sans);font-size:13px;
-  color:var(--n-text-2);line-height:1.55;letter-spacing:0;text-shadow:none;
-}
-#pg-community .post-img{
-  margin-top:10px;width:100%;max-height:280px;object-fit:cover;
-  border-radius:7px;cursor:pointer;display:block;
-  border:1px solid var(--n-border);
+#pg-community .trade-pnl.profit{color:var(--n-profit)}
+#pg-community .trade-pnl.loss{color:var(--n-loss)}
+
+/* NOTES */
+#pg-community .trade-notes{
+  font-size:13px;color:var(--n-text-2);line-height:1.55;
+  margin-top:-3px;margin-bottom:11px;padding-left:2px;
+  white-space:pre-wrap;
 }
 
 /* Trade-screenshot block in community feed — compact 280×160 thumb
-   between the post body and the actions row. Click to zoom fullscreen
-   via the shared lightbox. */
+   with hover lift + zoom-out chip overlay. Click to fullscreen. */
 #pg-community .post-image{
-  margin-top:10px;border-radius:6px;overflow:hidden;
+  margin-top:8px;margin-bottom:12px;
+  border-radius:8px;overflow:hidden;
   border:1px solid var(--n-border);background:var(--n-bg);
-  cursor:zoom-in;
-  max-width:280px;width:fit-content;
+  cursor:zoom-in;width:fit-content;max-width:280px;
+  position:relative;transition:.18s;
+}
+#pg-community .post-image:hover{
+  border-color:var(--n-border-2);transform:translateY(-1px);
+  box-shadow:0 8px 24px -8px rgba(0,0,0,0.5);
 }
 #pg-community .post-image img{
   display:block;width:280px;height:160px;object-fit:cover;
   transition:opacity .15s;
 }
-#pg-community .post-image:hover img{opacity:0.93}
+#pg-community .post-image:hover img{opacity:0.95}
+#pg-community .post-image::after{
+  content:'';position:absolute;top:8px;right:8px;
+  width:22px;height:22px;
+  background:rgba(0,0,0,0.6);border-radius:5px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='none' stroke='white' viewBox='0 0 24 24' stroke-width='2'%3E%3Cpath d='M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:center;
+  backdrop-filter:blur(4px);
+  opacity:0;transition:opacity .15s;
+}
+#pg-community .post-image:hover::after{opacity:1}
+
+/* REACTIONS row — replaces legacy .pa class on action buttons */
+#pg-community .post-actions{
+  display:flex;align-items:center;gap:14px;
+  padding-top:10px;border-top:1px solid var(--n-border);
+}
+#pg-community .action-btn{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-3);
+  background:transparent;border:none;cursor:pointer;
+  padding:4px 0;transition:color .15s;
+}
+#pg-community .action-btn svg{width:14px;height:14px;stroke-width:1.6}
+#pg-community .action-btn:hover{color:var(--n-text)}
+#pg-community .action-btn.liked{color:var(--n-loss)}
+#pg-community .action-btn.liked svg{fill:var(--n-loss);stroke:var(--n-loss)}
 
 /* Plain text post body (community_posts rows whose content isn't a
    JSON trade — typed shares, manual posts, etc.) */
@@ -4333,7 +4367,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   transition:padding-left .15s;
 }
 #pg-community .mem-item:last-child{border-bottom:none}
-#pg-community .mem-item:hover{padding-left:4px}
+#pg-community .mem-item:hover{padding-left:6px}
 #pg-community .mem-item .av{width:26px!important;height:26px!important;font-size:9.5px!important}
 #pg-community .mem-info{flex:1;min-width:0}
 #pg-community .mem-name{
@@ -4396,11 +4430,19 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-community .lb-row:hover{transform:translateX(3px)}
 #pg-community .lb-row:last-child{border-bottom:none;padding-bottom:0}
 #pg-community .lb-row:first-of-type{padding-top:0}
-#pg-community .lb-rank{
-  font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-4);
-  width:14px;letter-spacing:0.04em;
+#pg-community .lb-rank,
+#pg-community .top-rank{
+  font-family:var(--n-font-mono);font-size:11.5px;color:var(--n-text-4);
+  width:14px;letter-spacing:0.04em;font-weight:500;
 }
 #pg-community .lb-rank.top{color:var(--n-text-2)}
+#pg-community .top-rank.gold,
+#pg-community .lb-rank.top:nth-child(1),
+#pg-community .lb-row:nth-child(1) .lb-rank{color:#f5d77c}
+#pg-community .top-rank.silver,
+#pg-community .lb-row:nth-child(2) .lb-rank{color:#c0c0c0}
+#pg-community .top-rank.bronze,
+#pg-community .lb-row:nth-child(3) .lb-rank{color:#b08d57}
 #pg-community .lb-av{
   width:24px;height:24px;border-radius:50%;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
@@ -8630,14 +8672,11 @@ function renderFeedPosts(g){
     if(!d) return '';
     var then = new Date(d).getTime();
     if(!then || isNaN(then)) return safeText(String(d).toUpperCase());
-    var diff = Date.now() - then;
-    var hr = Math.floor(diff / 3600000);
-    if(hr < 1) return 'JUST NOW';
-    if(hr < 24) return hr + 'H AGO';
-    var dy = Math.floor(hr / 24);
-    if(dy === 1) return 'YESTERDAY';
-    if(dy < 7) return dy + 'D AGO';
-    return safeText(String(d).slice(0, 10).toUpperCase());
+    var ago = (Date.now() - then) / 1000;
+    if(ago < 60) return 'Just now';
+    if(ago < 3600) return Math.floor(ago/60) + 'm';
+    if(ago < 86400) return Math.floor(ago/3600) + 'h';
+    return Math.floor(ago/86400) + 'd';
   }
 
   el.innerHTML = visible.map(function(p){
@@ -8687,34 +8726,40 @@ function renderFeedPosts(g){
       ? '<img class="post-thumb" src="'+imgUrl+'" alt="Trade screenshot" onclick="openScreenshotLightbox(\''+imgUrl+'\')">'
       : '';
 
-    var pAvInner = p.avatar_image_url
-      ? '<img src="'+safeURL(p.avatar_image_url)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;position:absolute;inset:0">'
-      : safeText(p.initials || '??');
-    var pAvExtra = p.avatar_image_url ? ' custom' : '';
-    // Body block — either the rich trade-card (when content is JSON
-    // trade data) or a plain text-post block (when content is a
-    // free-form string the user shared as a community_post).
-    var bodyHtml;
+    // Normalize content into a v6 trade-body pill (sym + side badge +
+    // italic P&L) and optional notes paragraph below. Two paths:
+    //  • text content (community_posts row): split first line on ' · '
+    //    to extract sym/side/pnl; remaining lines = notes
+    //  • JSON content (legacy or local-trade): rebuild from t.sym,
+    //    t.type, t.pnl, t.notes
+    var bodySym  = '';
+    var bodySide = '';
+    var bodyPnl  = '';
+    var bodyNotes = '';
     if(p.isText){
-      bodyHtml = '<div class="post-text">'+commEsc(p.text||'')+'</div>';
+      var lines  = String(p.text||'').split('\n');
+      var header = lines[0] || '';
+      bodyNotes  = lines.slice(1).join('\n').trim();
+      var partsArr = header.split(' · ');
+      bodySym  = partsArr[0] || '';
+      bodySide = partsArr[1] || '';
+      bodyPnl  = partsArr[2] || '';
     } else {
-      bodyHtml = '<div class="trade-card">'
-        +   '<div class="tc-sym">'
-        +     '<span class="tc-sym-val">'+safeText(t.sym || '—')+'</span>'
-        +     (sideTxt ? '<span class="tc-side">'+sideTxt+'</span>' : '')
-        +   '</div>'
-        +   '<div class="tc-divider"></div>'
-        +   '<div class="tc-pl">'
-        +     '<span class="tc-pl-val '+pnlTone+'">'+_shortMoney(pnl)+'</span>'
-        +     rrHoldHtml
-        +   '</div>'
-        +   thumbHtml
-        +   (dateStr || sessTxt
-              ? '<div class="tc-meta">'+safeText(dateStr)+(sessTxt && dateStr ? '<br>' : '')+sessTxt+'</div>'
-              : '')
-        + '</div>'
-        + (t.notes ? '<div class="post-note">'+commEsc(t.notes)+'</div>' : '');
+      bodySym  = t.sym || '';
+      var srLow = String(t.type||'').toLowerCase();
+      bodySide = srLow === 'short' ? '↘ Short' : srLow === 'long' ? '↗ Long' : '';
+      bodyPnl  = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toLocaleString();
+      bodyNotes = t.notes || '';
     }
+    var sideClass = /short/i.test(bodySide) ? 'short' : 'long';
+    var pnlClass  = pnl < 0 ? 'loss' : 'profit';
+    var cardClass = pnl < 0 ? 'loss' : 'profit';
+    var bodyHtml = '<div class="trade-body">'
+      + (bodySym  ? '<span class="trade-sym">'+safeText(bodySym)+'</span>' : '')
+      + (bodySide ? '<span class="trade-side '+sideClass+'">'+safeText(bodySide)+'</span>' : '')
+      + (bodyPnl  ? '<span class="trade-pnl '+pnlClass+'">'+safeText(bodyPnl)+'</span>' : '')
+      + '</div>'
+      + (bodyNotes ? '<div class="trade-notes">'+commEsc(bodyNotes)+'</div>' : '');
     // Screenshot block — sourced from community_posts.image_url so it
     // works for posts whose content is a free-form string (no embedded
     // images JSON) as well as the legacy JSON-content path.
@@ -8732,24 +8777,32 @@ function renderFeedPosts(g){
         console.warn('[feed] post', p.id, 'has invalid image_url:', p.image_url);
       }
     }
-    return '<div class="post '+tintClass+'" data-pid="'+safePid+'">'
+    return '<div class="post '+cardClass+' '+tintClass+'" data-pid="'+safePid+'">'
       + '<div class="post-head">'
-      +   '<div class="post-av av '+avTone+pAvExtra+'">'+pAvInner+'</div>'
-      +   '<div>'
-      +     '<div class="post-name">'+safeText(p.username || 'Trader')+(p.isMe?' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase">you</span>':'')+'</div>'
-      +     '<div class="post-handle">@'+safeText((p.username||'trader').replace(/^@/,''))+'</div>'
+      +   renderAvatar({
+            avatar_finish: p.avatar_finish || p.color,
+            avatar_image_url: p.avatar_image_url,
+            avatar_initials: p.initials,
+            name: p.username
+          }, 'sm')
+      +   '<div class="post-author">'
+      +     '<div class="author-line">'
+      +       '<span class="author-name">'+safeText(p.username || 'Trader')+'</span>'
+      +       (p.isMe ? '<span class="author-you">You</span>' : '')
+      +     '</div>'
+      +     '<div class="author-handle">@'+safeText((p.username||'trader').replace(/^@/,''))+'</div>'
       +   '</div>'
       +   '<span class="post-time">'+_relTime(p.date)+'</span>'
       + '</div>'
       + bodyHtml
       + postImgHtml
       + '<div class="post-actions">'
-      +   '<button class="pa'+(youLiked?' liked':'')+'" onclick="feedLike(this)" data-id="'+safePid+'"'+(youLiked?' data-liked="1"':'')+'>'
-      +     '<svg viewBox="0 0 24 24"' + (youLiked ? ' fill="currentColor"' : '') + '><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+      +   '<button class="action-btn'+(youLiked?' liked':'')+'" onclick="feedLike(this)" data-id="'+safePid+'"'+(youLiked?' data-liked="1"':'')+'>'
+      +     '<svg viewBox="0 0 24 24" fill="'+(youLiked?'currentColor':'none')+'" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
       +     '<span id="like-count-'+safePid+'">'+likes+'</span>'
       +   '</button>'
-      +   '<button class="pa" onclick="feedReply(\''+safePid+'\',this)">'
-      +     '<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+      +   '<button class="action-btn" onclick="feedReply(\''+safePid+'\',this)">'
+      +     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
       +     'Reply'
       +   '</button>'
       + '</div>'
