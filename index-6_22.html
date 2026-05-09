@@ -2533,6 +2533,29 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 #pg-log .lt-emo-pill.on .lbl{color:var(--n-text)}
 
+/* CONFIDENCE DOTS */
+#pg-log .lt-confidence-row{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 14px;
+  background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:8px;
+}
+#pg-log .lt-conf-dot{
+  width:14px;height:14px;border-radius:50%;
+  border:1.5px solid var(--n-border-2);background:transparent;
+  cursor:pointer;transition:.15s;flex-shrink:0;
+}
+#pg-log .lt-conf-dot:hover{border-color:var(--n-text-3)}
+#pg-log .lt-conf-dot.on{
+  background:var(--n-accent-cool);border-color:var(--n-accent-cool);
+  box-shadow:0 0 6px rgba(110,168,255,0.40);
+}
+#pg-log .lt-conf-label{
+  margin-left:12px;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--n-text-2);
+}
+
 /* DROPZONE */
 #pg-log .lt-dropzone{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -6379,6 +6402,18 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
           </div>
 
           <div class="lt-field">
+            <div class="lt-field-l">Confidence <span class="lt-hint">how strong was this setup?</span></div>
+            <div class="lt-confidence-row" id="lt-confidence-row">
+              <div class="lt-conf-dot" data-conf="1" title="No conviction" onclick="setConfidenceDots(1)"></div>
+              <div class="lt-conf-dot" data-conf="2" title="Low" onclick="setConfidenceDots(2)"></div>
+              <div class="lt-conf-dot on" data-conf="3" title="Medium" onclick="setConfidenceDots(3)"></div>
+              <div class="lt-conf-dot" data-conf="4" title="High" onclick="setConfidenceDots(4)"></div>
+              <div class="lt-conf-dot" data-conf="5" title="Max conviction" onclick="setConfidenceDots(5)"></div>
+              <span class="lt-conf-label" id="lt-conf-label">Medium</span>
+            </div>
+          </div>
+
+          <div class="lt-field">
             <div class="lt-field-l">Notes</div>
             <textarea id="lg-notes" class="lt-input lt-textarea" placeholder="Setup, what worked, what didn't, lessons&hellip;" oninput="updateLogPreview()"></textarea>
           </div>
@@ -9432,6 +9467,11 @@ function renderFeedPosts(g){
       if(meta.accounts != null && Number(meta.accounts) > 1){
         chips.push('<span class="chip chip-multi-acct">×'+Number(meta.accounts)+' accts</span>');
       }
+      var convN = Number(meta.confidence);
+      if(convN >= 1 && convN <= 5){
+        var dots = '●'.repeat(convN) + '○'.repeat(5-convN);
+        chips.push('<span class="chip">Conviction '+dots+'</span>');
+      }
       if(chips.length) chipsHtml = '<div class="post-chips">'+chips.join('')+'</div>';
     }
     // Screenshot block — sourced from community_posts.image_url so it
@@ -11977,6 +12017,21 @@ function setEmotionPill(n){
   updateLogPreview();
 }
 
+const CONF_LABELS=['','No Conviction','Low','Medium','High','Max Conviction'];
+function setConfidenceDots(n){
+  n = Math.max(1, Math.min(5, parseInt(n)||3));
+  document.querySelectorAll('#pg-log .lt-conf-dot').forEach(function(d){
+    var v = parseInt(d.dataset.conf||'0');
+    d.classList.toggle('on', v <= n);
+  });
+  var lbl=document.getElementById('lt-conf-label');
+  if(lbl) lbl.textContent = CONF_LABELS[n] || '';
+  var hidden=document.getElementById('lg-conf');
+  if(hidden) hidden.value=String(n);
+  if(typeof updateConf==='function'){ try{ updateConf(n); }catch(e){} }
+  updateLogPreview();
+}
+
 function onPnlInput(){
   _pnlManual = true;
   var hint=document.getElementById('lt-pnl-hint');
@@ -12030,6 +12085,7 @@ function updateLogPreview(){
   var session=(document.getElementById('lg-session')||{}).value||'';
   var gradePillEl=document.querySelector('#pg-log .lt-grade-pill.on');
   var grade = gradePillEl ? gradePillEl.dataset.grade : null;
+  var conf = parseInt((document.getElementById('lg-conf')||{}).value)||0;
 
   // Empty state — until they've entered a symbol AND an entry price
   if(!sym || isNaN(entry)){
@@ -12068,6 +12124,10 @@ function updateLogPreview(){
   }
   if(accts>1){
     chips.push('<span class="pc-chip multi-acct">×'+accts+' accts</span>');
+  }
+  if(conf>=1 && conf<=5){
+    var dots = '●'.repeat(conf) + '○'.repeat(5-conf);
+    chips.push('<span class="pc-chip">Conviction '+dots+'</span>');
   }
 
   card.className = 'lt-preview-card' + (hasPnl ? (isWin ? ' profit' : ' loss') : '');
@@ -12299,6 +12359,7 @@ function fullLog(){
   if(document.getElementById('lg-emotion'))document.getElementById('lg-emotion').value=3;
   if(typeof setGradePill==='function') setGradePill('B');
   if(typeof setEmotionPill==='function') setEmotionPill(3);
+  if(typeof setConfidenceDots==='function') setConfidenceDots(3);
   if(typeof _resetLtAutoFlags==='function') _resetLtAutoFlags();
   updateGrade(3);updateEmotion(3);
   const lc=document.getElementById('live-calc');if(lc)lc.style.display='none';
@@ -12371,6 +12432,7 @@ function resetLogForm(){
   document.querySelectorAll('.sess-btn').forEach(b=>b.style.boxShadow='none');
   if(typeof setGradePill==='function') setGradePill('B');
   if(typeof setEmotionPill==='function') setEmotionPill(3);
+  if(typeof setConfidenceDots==='function') setConfidenceDots(3);
   if(typeof _resetLtAutoFlags==='function') _resetLtAutoFlags();
   const lc=document.getElementById('live-calc');if(lc)lc.style.display='none';
   var note=document.getElementById('lt-acct-note'); if(note) note.style.display='none';
