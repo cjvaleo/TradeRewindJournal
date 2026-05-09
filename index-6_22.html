@@ -5735,15 +5735,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
             <div class="slider-marks"><span>None</span><span style="opacity:0">.</span><span style="opacity:0">.</span><span style="opacity:0">.</span><span>Max</span></div>
           </div>
 
-          <!-- SHARE-TO-COMMUNITY (only renders when user has groups) -->
-          <div class="field" id="share-comm-field" style="display:none;margin-top:12px">
-            <div class="field-l" style="font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);margin-bottom:6px">Share to community</div>
-            <select id="share-comm-select" class="field-input"
-              style="width:100%;padding:10px 12px;background:var(--n-surface-2);border:1px solid var(--n-border);color:var(--n-text);font-family:var(--n-font-sans);font-size:13px;border-radius:7px;outline:none">
-              <option value="">Don't share</option>
-            </select>
-          </div>
-
           <!-- SUBMIT -->
           <button class="lg-submit" onclick="confirmLog()">+ Log Trade</button>
           <button class="lg-reset" onclick="resetLogForm()">&#8634; Reset Form</button>
@@ -10163,7 +10154,6 @@ function goTo(pg){
   if(pg==='account'){refreshAcctUI();showTab('profile');return;}
   if(pg==='dashboard'){renderDashboard();setTimeout(drawMiniChart,80);}
   if(pg==='history')renderHistory();if(pg==='propfirms')pfRender();if(pg==='calendar')renderCalPage();if(pg==='analytics')renderAnalytics();if(pg==='community')renderCommunity();if(pg==='rules')renderRules();if(pg==='goals')renderGoals();
-  if(pg==='log' && typeof populateShareCommunities==='function') populateShareCommunities();
   if(pg==='equity'){requestAnimationFrame(function(){requestAnimationFrame(function(){renderEquity();});});}
 }
 
@@ -10920,41 +10910,24 @@ function setLgType(t){lgType=t;document.getElementById('lg-long').classList.togg
 /* Populate the Share-to-Community <select> on the Log Trade page.
    Pulls every community where the current user is owner OR a member
    (matches the OR query the loader uses, so only joinable groups). */
-async function populateShareCommunities(){
-  var sel = document.getElementById('share-comm-select');
-  if(!sel) return;
-  if(!_sb || !currentUser){
-    sel.innerHTML = '<option value="">Don\'t share</option>';
-    var wrap0 = document.getElementById('share-comm-field');
-    if(wrap0) wrap0.style.display = 'none';
-    return;
-  }
-  try {
-    var r = await _sb.from('communities').select('id, name')
-      .or('owner_id.eq.'+currentUser.id+',members.cs.{'+currentUser.id+'}');
-    var comms = (r && r.data) || [];
-    sel.innerHTML = '<option value="">Don\'t share</option>'
-      + comms.map(function(c){
-          return '<option value="'+safeText(c.id)+'">'+safeText(c.name||'Community')+'</option>';
-        }).join('');
-    var wrap = document.getElementById('share-comm-field');
-    if(wrap) wrap.style.display = comms.length ? '' : 'none';
-  } catch(e){
-    console.warn('[populateShareCommunities]', e && e.message);
-  }
-}
-
-/* Insert a community_posts row when the user picks a community from
-   the Share dropdown. JSON-stringifies the trade into `content` so the
-   feed renderer's existing parser keeps working (sym/type/pnl/images). */
+/* Auto-share a trade to every community the user belongs to (owner or
+   member). Silent on failure — the trade itself is already saved, so a
+   share hiccup shouldn't interrupt the success flow with an error toast.
+   `shareTradeToCommunity` retains its old name so existing callsites
+   (fullLog, etc.) keep working without renames. */
 async function shareTradeToCommunity(trade){
   if(!_sb || !currentUser || !trade) return;
-  var sel = document.getElementById('share-comm-select');
-  var shareCommId = sel && sel.value;
-  if(!shareCommId) return;
-
   try {
-    // Pull profile fields once for username/initials/avatar tagging.
+    // 1. Pull every community I'm in (owner or members[]).
+    var commsR = await _sb.from('communities')
+      .select('id, name')
+      .or('owner_id.eq.'+currentUser.id+',members.cs.{'+currentUser.id+'}');
+    var comms = (commsR && commsR.data) || [];
+    if(!comms.length){
+      console.log('[auto-share] no communities to share to'); return;
+    }
+
+    // 2. Profile fields for denormalized columns.
     var prof = await _sb.from('profiles')
       .select('username,avatar_finish,avatar_initials,initials,color')
       .eq('id', currentUser.id).maybeSingle();
@@ -10966,7 +10939,7 @@ async function shareTradeToCommunity(trade){
     var avatar_color = p.avatar_finish || p.color
                 || (acct && (acct.avatar_finish||acct.color)) || 'chrome';
 
-    // Build the spec's text content shape: "SYM · ↗ Side · +$P&L\nnotes".
+    // 3. Build the spec's text content: "SYM · ↗ Side · +$P&L\nnotes".
     var sym = trade.sym || trade.symbol || trade.ticker || 'Trade';
     var sideRaw = String(trade.type || trade.side || '').toLowerCase();
     var sideTxt = sideRaw === 'short' ? '↘ Short'
@@ -10978,43 +10951,51 @@ async function shareTradeToCommunity(trade){
     contentParts.push(pnlStr);
     var contentStr = contentParts.join(' · ') + (trade.notes ? '\n' + trade.notes : '');
 
-    var payload = {
-      id: 'trade_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
-      community_id: shareCommId,
-      user_id: currentUser.id,
-      username: username,
-      initials: initials,
-      avatar_color: avatar_color,
-      content: contentStr,
-      pnl_today: pnlNum,
-      likes_count: 0,
-      liked_by: []
-    };
+    // 4. One row per community, single batch insert.
+    var stamp = Date.now();
+    var posts = comms.map(function(c){
+      return {
+        id: 'trade_' + stamp + '_' + Math.random().toString(36).slice(2,8) + '_' + String(c.id).slice(0,4),
+        community_id: c.id,
+        user_id: currentUser.id,
+        username: username,
+        initials: initials,
+        avatar_color: avatar_color,
+        content: contentStr,
+        pnl_today: pnlNum,
+        likes_count: 0,
+        liked_by: []
+      };
+    });
 
-    var r = await _sb.from('community_posts').insert(payload);
-    if(r && r.error){
-      // Some columns may not exist in the user's schema yet (e.g.
-      // initials/avatar_color are convenience denormalizations).
-      // Retry with the minimum-shape payload before giving up.
-      if(/column .* does not exist/i.test(r.error.message||'') ||
-         /could not find the .* column/i.test(r.error.message||'')){
-        var minimal = { id: payload.id, community_id: shareCommId, user_id: currentUser.id,
-                        username: username, content: payload.content, pnl_today: payload.pnl_today };
-        var r2 = await _sb.from('community_posts').insert(minimal);
-        if(r2 && r2.error) throw r2.error;
-        showToast('Trade shared to community', 'success');
-        return;
-      }
+    var r = await _sb.from('community_posts').insert(posts);
+    // Schema-cache / missing-column fallback: retry with the minimum
+    // shape that matches every project's community_posts table.
+    if(r && r.error && (/column .* does not exist/i.test(r.error.message||'')
+                     || /could not find the .* column/i.test(r.error.message||''))){
+      var minimal = posts.map(function(post){
+        return {
+          id: post.id, community_id: post.community_id, user_id: post.user_id,
+          username: post.username, content: post.content, pnl_today: post.pnl_today
+        };
+      });
+      var r2 = await _sb.from('community_posts').insert(minimal);
+      if(r2 && r2.error) throw r2.error;
+      console.log('[auto-share] posted (legacy schema) to', comms.length, 'communities');
+    } else if(r && r.error){
       throw r.error;
+    } else {
+      console.log('[auto-share] posted to', comms.length, 'communities');
     }
-    showToast('Trade shared to community', 'success');
-    // If the user is currently looking at that community, refresh the feed.
-    if(_comm && _comm.id === shareCommId && typeof syncAndLoadCommFeed==='function'){
+
+    // If the active community got a new post, refresh that feed silently.
+    if(_comm && comms.find(function(c){ return c.id === _comm.id; })
+       && typeof syncAndLoadCommFeed === 'function'){
       syncAndLoadCommFeed(_comm);
     }
   } catch(e){
-    console.error('[shareTradeToCommunity]', e);
-    showToast('Trade saved, share failed: '+(e.message||'check console'), 'error');
+    // Silent — trade is already saved. Just log for diagnostics.
+    console.error('[auto-share] failed:', e);
   }
 }
 
@@ -11054,10 +11035,6 @@ function fullLog(){
   updateGrade(3);updateEmotion(3);
   const lc=document.getElementById('live-calc');if(lc)lc.style.display='none';
   noteImages=[];renderNoteImages();
-  // Reset the Share-to-Community dropdown so the next trade doesn't
-  // accidentally re-share to the same group.
-  var _shareSel=document.getElementById('share-comm-select');
-  if(_shareSel) _shareSel.value='';
   toast('Trade logged', 'success');setTimeout(drawMiniChart,100);
 }
 
