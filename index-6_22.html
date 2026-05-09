@@ -3843,6 +3843,94 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   font-style:normal;margin-left:1px;
 }
 
+/* ── HERO P&L (replaces .fbar in v4 layout) ── */
+#pg-community .fhead-right{display:flex;align-items:center;gap:14px;flex-shrink:0}
+#pg-community .period-tabs{
+  display:flex;background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:8px;padding:3px;flex-shrink:0;
+}
+#pg-community .period-tab{
+  padding:7px 14px;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--n-text-3);
+  background:transparent;border:none;border-radius:5px;cursor:pointer;
+  transition:color .15s, background .15s;
+}
+#pg-community .period-tab:hover{color:var(--n-text-2)}
+#pg-community .period-tab.on{background:var(--n-surface-3);color:var(--n-text)}
+
+#pg-community .hero-pnl{
+  margin:24px 0 32px;padding:32px 36px 36px;
+  border:1px solid var(--n-border);border-radius:14px;
+  background:radial-gradient(ellipse 700px 300px at 50% 0%,var(--n-surface-2) 0%,var(--n-bg) 80%);
+  position:relative;overflow:hidden;
+}
+#pg-community .hero-pnl::before{
+  content:'';position:absolute;top:-2px;left:50%;transform:translateX(-50%);
+  width:60%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(95,179,137,0.4),transparent);
+}
+#pg-community .hero-pnl-label{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--n-text-3);text-align:center;margin-bottom:12px;
+}
+#pg-community .hero-pnl-value{
+  font-family:var(--n-font-display);font-style:italic;font-size:96px;line-height:1;
+  text-align:center;color:var(--n-profit);letter-spacing:-0.02em;
+  filter:drop-shadow(0 4px 16px rgba(95,179,137,0.18));
+}
+#pg-community .hero-pnl-value.loss{
+  color:var(--n-loss);
+  filter:drop-shadow(0 4px 16px rgba(201,95,95,0.18));
+}
+#pg-community .hero-pnl-value .cents{font-size:0.42em;opacity:0.65}
+#pg-community .hero-pnl-stats{
+  display:flex;justify-content:center;gap:42px;
+  margin-top:24px;padding-top:22px;border-top:1px solid var(--n-border);
+  flex-wrap:wrap;
+}
+#pg-community .hero-stat{display:flex;flex-direction:column;align-items:center;gap:4px}
+#pg-community .hero-stat-label{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-4);
+}
+#pg-community .hero-stat-value{
+  font-family:var(--n-font-mono);font-size:14px;color:var(--n-text);font-weight:500;
+}
+#pg-community .hero-stat-value.profit{color:var(--n-profit)}
+#pg-community .hero-stat-value.loss{color:var(--n-loss)}
+
+/* ── COLLAPSIBLE COMMUNITIES SUB-SIDEBAR ── */
+#pg-community .csb{
+  transition:width .3s cubic-bezier(0.4,0,0.2,1),
+             padding .3s cubic-bezier(0.4,0,0.2,1);
+  position:relative;
+}
+#pg-community .csb.collapsed{width:64px!important;padding:24px 8px!important}
+#pg-community .csb.collapsed .csb-head,
+#pg-community .csb.collapsed .csb-tabs,
+#pg-community .csb.collapsed .gname,
+#pg-community .csb.collapsed .gsub,
+#pg-community .csb.collapsed .gmeta,
+#pg-community .csb.collapsed .csb-create,
+#pg-community .csb.collapsed .notif-list,
+#pg-community .csb.collapsed .gitem > div:not(.gicon){display:none}
+#pg-community .csb.collapsed .gitem{justify-content:center;padding:8px}
+#pg-community .csb.collapsed #comm-sidebar-list{padding:0!important}
+#pg-community .csb-collapse-btn{
+  position:absolute;top:18px;right:-13px;
+  width:26px;height:26px;
+  background:var(--n-bg);border:1px solid var(--n-border);
+  color:var(--n-text-3);border-radius:6px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  z-index:5;transition:.15s;
+}
+#pg-community .csb-collapse-btn:hover{
+  color:var(--n-text);border-color:var(--n-border-3);background:var(--n-surface);
+}
+#pg-community .csb-collapse-btn svg{width:14px;height:14px;transition:transform .3s}
+#pg-community .csb.collapsed .csb-collapse-btn svg{transform:rotate(180deg)}
+
 /* ── FILTER CHIPS ── */
 #pg-community .filters{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
 #pg-community .fchip{
@@ -6040,6 +6128,9 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
   <!-- LEFT COMMUNITIES SUB-SIDEBAR -->
   <aside class="csb">
+    <button class="csb-collapse-btn" id="csb-toggle" aria-label="Toggle sidebar">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
     <div class="csb-head">Communities</div>
     <div class="csb-tabs">
       <div class="csb-tab on" id="comm-tab-groups" onclick="switchCommSidebar('groups')">Groups</div>
@@ -6080,23 +6171,38 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
               <div class="fsub" id="feed-grp-meta">&mdash; members</div>
             </div>
           </div>
-          <div class="fhead-actions">
-            <button class="iconbtn" onclick="openInviteFlow()" title="Invite member">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
-            </button>
-            <button class="iconbtn" id="feed-edit-btn" onclick="openEditGroup()" title="Edit group" style="display:none">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            </button>
-            <button class="iconbtn" id="leave-or-delete-btn" onclick="confirmLeaveOrDelete()" title="Leave/delete">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            </button>
+          <div class="fhead-right">
+            <div class="period-tabs" id="comm-period-tabs">
+              <button class="period-tab" data-period="today" onclick="setCommPeriod('today',this)">Today</button>
+              <button class="period-tab on" data-period="week" onclick="setCommPeriod('week',this)">Week</button>
+              <button class="period-tab" data-period="month" onclick="setCommPeriod('month',this)">Month</button>
+              <button class="period-tab" data-period="all" onclick="setCommPeriod('all',this)">All-Time</button>
+            </div>
+            <div class="fhead-actions">
+              <button class="iconbtn" onclick="openInviteFlow()" title="Invite member">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
+              </button>
+              <button class="iconbtn" id="feed-edit-btn" onclick="openEditGroup()" title="Edit group" style="display:none">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              </button>
+              <button class="iconbtn" id="leave-or-delete-btn" onclick="confirmLeaveOrDelete()" title="Leave/delete">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="fbar">
-          <div class="fstat"><span class="fstat-label">Group P&amp;L</span><span class="fstat-val" id="grp-stat-pnl">&mdash;</span></div>
-          <div class="fstat"><span class="fstat-label">Trades Shared</span><span class="fstat-val" id="grp-stat-trades">&mdash;</span></div>
-          <div class="fstat"><span class="fstat-label">Avg Win Rate</span><span class="fstat-val cool" id="grp-stat-wr">&mdash;</span></div>
+        <!-- Hero P&L block — replaces the old .fbar stats row -->
+        <div class="hero-pnl">
+          <div class="hero-pnl-label">Group P&amp;L &middot; <span id="hero-pnl-period">This Week</span></div>
+          <div class="hero-pnl-value" id="hero-pnl-value">+$0<span class="cents">.00</span></div>
+          <div class="hero-pnl-stats">
+            <div class="hero-stat"><span class="hero-stat-label">Trades</span><span class="hero-stat-value" id="hero-trades">0</span></div>
+            <div class="hero-stat"><span class="hero-stat-label">Win Rate</span><span class="hero-stat-value" id="hero-winrate">0%</span></div>
+            <div class="hero-stat"><span class="hero-stat-label">Avg Trade</span><span class="hero-stat-value" id="hero-avg">+$0</span></div>
+            <div class="hero-stat"><span class="hero-stat-label">Best Trade</span><span class="hero-stat-value" id="hero-best">+$0</span></div>
+            <div class="hero-stat"><span class="hero-stat-label">Top Trader</span><span class="hero-stat-value" id="hero-top">&mdash;</span></div>
+          </div>
         </div>
 
         <!-- FILTER CHIPS -->
@@ -7377,7 +7483,7 @@ function openCommFeed(gid){
     editBtn.style.display='';
     editBtn.title = (currentUser&&g.owner_id===currentUser.id) ? 'Edit group' : 'Group info';
   }
-  renderFeedPosts(g);renderFeedLeaderboard(g);renderFeedMembers(g);renderTOTD(g);
+  renderFeedPosts(g);renderFeedLeaderboard(g);renderFeedMembers(g);renderTOTD(g);renderHeroPnl(g,_commPeriod);
   // Legacy renderers (renderSentInvites/renderMemberCalendars/renderCommunityWidgets/
   // renderDailyChallenge/renderGroupActivity) target IDs not present in the v3
   // chrome layout, so they no-op via their getElementById guards.
@@ -7676,6 +7782,7 @@ async function syncAndLoadCommFeed(g){
   await loadFeedEngagement(g);
   renderFeedPosts(g);
   renderTOTD(g);
+  renderHeroPnl(g, _commPeriod);
   if(_comm){
     renderGroupStats(_comm);
     renderFeedLeaderboard(_comm);
@@ -8597,10 +8704,21 @@ function renderTOTD(g){
 
   var todayStr = new Date().toISOString().slice(0,10);
 
+  // Tolerant date match — handles ISO timestamps, date-only strings,
+  // and falls back to row.created_at / date_logged for non-trade fields.
+  function _matchesToday(t, fallback){
+    var d = (t && (t.date || t.created_at || t.date_logged)) || fallback;
+    if(!d) return false;
+    var ds;
+    try { ds = new Date(d).toISOString().slice(0,10); }
+    catch(e){ ds = String(d).slice(0,10); }
+    return ds === todayStr;
+  }
+
   // Gather candidates: own trades dated today + remote posts dated today.
   var candidates = [];
   trades.slice().forEach(function(t){
-    if((t.date||'').slice(0,10) !== todayStr) return;
+    if(!_matchesToday(t)) return;
     candidates.push({
       isMe: true, trade: t, pnl: Number(t.pnl)||0,
       user_id: currentUser?currentUser.id:'me',
@@ -8612,8 +8730,7 @@ function renderTOTD(g){
   });
   (typeof _remotePosts!=='undefined' ? _remotePosts : []).forEach(function(row){
     var rt={}; try{rt=JSON.parse(row.content||'{}');}catch(e){}
-    var d = (rt.date||row.created_at||'').slice(0,10);
-    if(d !== todayStr) return;
+    if(!_matchesToday(rt, row.created_at)) return;
     candidates.push({
       isMe:false, trade:rt, pnl: Number(rt.pnl||row.pnl_today)||0,
       user_id: row.user_id,
@@ -8623,6 +8740,12 @@ function renderTOTD(g){
       avatar_image_url: row.avatar_image_url || null,
       remoteRow: row
     });
+  });
+
+  console.log('[TOTD]', {
+    candidates: candidates.length,
+    top: candidates[0] && candidates[0].pnl,
+    todayStr: todayStr
   });
 
   if(!candidates.length){ card.style.display='none'; return; }
@@ -8692,6 +8815,120 @@ function scrollToPost(pid){
   el.classList.add('post-flash');
   setTimeout(function(){ el.classList.remove('post-flash'); }, 1500);
 }
+
+/* ── HERO P&L ──────────────────────────────────────────────
+   Aggregates trades for the active community over a period and writes
+   to the hero block. Period: 'today' | 'week' | 'month' | 'all'. */
+var _commPeriod = 'week';
+function _startOfPeriod(period){
+  var now = new Date(); now.setHours(0,0,0,0);
+  if(period === 'today') return now;
+  if(period === 'week'){
+    // Start of the current ISO-ish week (Sunday). Matches Dashboard week.
+    var d = new Date(now); d.setDate(d.getDate() - d.getDay()); return d;
+  }
+  if(period === 'month') return new Date(now.getFullYear(), now.getMonth(), 1);
+  return new Date(0); // 'all'
+}
+function _heroMatches(t, fallback, since){
+  var d = (t && (t.date || t.created_at || t.date_logged)) || fallback;
+  if(!d) return false;
+  var ts;
+  try { ts = new Date(d).getTime(); } catch(e){ return false; }
+  if(!ts || isNaN(ts)) return false;
+  return ts >= since.getTime();
+}
+function _fmtMoney(n){
+  var sign = n>0?'+':n<0?'−':'';
+  var a = Math.abs(n);
+  var int = Math.floor(a).toLocaleString('en-US');
+  var cents = (a - Math.floor(a)).toFixed(2).slice(1);
+  return sign+'$'+int+'<span class="cents">'+cents+'</span>';
+}
+function _fmtShortMoney(n){
+  var sign = n>0?'+':n<0?'−':'';
+  var a = Math.abs(n);
+  if(a >= 1000) return sign+'$'+(a/1000).toFixed(1)+'k';
+  return sign+'$'+Math.round(a);
+}
+
+function renderHeroPnl(g, period){
+  if(!document.getElementById('hero-pnl-value')) return;
+  period = period || _commPeriod || 'week';
+  var since = _startOfPeriod(period);
+
+  var rows = [];
+  trades.slice().forEach(function(t){
+    if(!_heroMatches(t, null, since)) return;
+    rows.push({
+      pnl: Number(t.pnl)||0,
+      user: (acct&&acct.username) || 'you'
+    });
+  });
+  (typeof _remotePosts!=='undefined' ? _remotePosts : []).forEach(function(row){
+    var rt={}; try{rt=JSON.parse(row.content||'{}');}catch(e){}
+    if(!_heroMatches(rt, row.created_at, since)) return;
+    rows.push({
+      pnl: Number(rt.pnl||row.pnl_today)||0,
+      user: row.username || 'trader'
+    });
+  });
+
+  var totalPnl = rows.reduce(function(a,r){return a+r.pnl;}, 0);
+  var wins = rows.filter(function(r){return r.pnl > 0;}).length;
+  var winRate = rows.length ? Math.round(wins/rows.length*100) : 0;
+  var avg = rows.length ? totalPnl/rows.length : 0;
+  var best = rows.reduce(function(m,r){return Math.max(m, r.pnl);}, 0);
+  var byUser = {};
+  rows.forEach(function(r){ byUser[r.user] = (byUser[r.user]||0) + r.pnl; });
+  var topTrader = Object.keys(byUser).sort(function(a,b){return byUser[b]-byUser[a];})[0];
+
+  var valEl = document.getElementById('hero-pnl-value');
+  valEl.innerHTML = _fmtMoney(totalPnl);
+  valEl.className = 'hero-pnl-value' + (totalPnl < 0 ? ' loss' : '');
+  document.getElementById('hero-trades').textContent = rows.length;
+  var wrEl = document.getElementById('hero-winrate');
+  wrEl.textContent = winRate + '%';
+  wrEl.className = 'hero-stat-value' + (winRate >= 50 ? ' profit' : (rows.length ? ' loss' : ''));
+  var avgEl = document.getElementById('hero-avg');
+  avgEl.textContent = _fmtShortMoney(avg);
+  avgEl.className = 'hero-stat-value' + (avg > 0 ? ' profit' : avg < 0 ? ' loss' : '');
+  var bestEl = document.getElementById('hero-best');
+  bestEl.textContent = _fmtShortMoney(best);
+  bestEl.className = 'hero-stat-value' + (best > 0 ? ' profit' : '');
+  document.getElementById('hero-top').textContent = topTrader ? '@'+String(topTrader).replace(/^@/,'') : '—';
+}
+
+function setCommPeriod(period, btn){
+  _commPeriod = period;
+  document.querySelectorAll('#pg-community .period-tab').forEach(function(b){b.classList.remove('on');});
+  if(btn) btn.classList.add('on');
+  var labels = { today:'Today', week:'This Week', month:'This Month', all:'All-Time' };
+  var lbl = document.getElementById('hero-pnl-period');
+  if(lbl) lbl.textContent = labels[period] || 'This Week';
+  if(_comm) renderHeroPnl(_comm, period);
+}
+
+/* ── COMMUNITIES SUB-SIDEBAR COLLAPSE ──────────────────────
+   Persists across reloads via localStorage. Wired once on load. */
+(function initCsbToggle(){
+  function wire(){
+    var btn = document.getElementById('csb-toggle');
+    if(!btn || btn._wired) return false;
+    var csb = btn.closest('.csb');
+    if(!csb) return false;
+    btn._wired = true;
+    if(localStorage.getItem('csbCollapsed') === 'true') csb.classList.add('collapsed');
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      csb.classList.toggle('collapsed');
+      try{ localStorage.setItem('csbCollapsed', csb.classList.contains('collapsed')); }catch(err){}
+    });
+    return true;
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire);
+  else wire();
+})();
 
 function removeMember(id){
   if(!_comm)return;
