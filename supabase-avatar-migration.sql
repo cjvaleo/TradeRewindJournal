@@ -317,10 +317,28 @@ create policy "communities_select_visible" on public.communities
 -- themselves — the row's owner_id must match.
 create policy "communities_insert_own" on public.communities
   for insert with check (auth.uid() = owner_id);
--- UPDATE: owner. Required by removeMember() to push a new members
--- array. WITH CHECK keeps owner_id immutable.
+-- UPDATE (owner): owner can update everything on the row. Required
+-- by removeMember() to write a new members array.
 create policy "communities_update_by_owner" on public.communities
   for update using (auth.uid() = owner_id) with check (auth.uid() = owner_id);
+
+-- UPDATE (invited user, self-join): a user with a pending invite for
+-- this community can update the row IF the resulting row has them in
+-- members[]. This is the policy that lets acceptCommInvite() succeed
+-- without requiring owner-only writes. The WITH CHECK enforces the
+-- only allowed effect: their own UUID being added.
+drop policy if exists "communities_join_via_invite" on public.communities;
+create policy "communities_join_via_invite" on public.communities
+  for update using (
+    exists (
+      select 1 from public.invites
+      where community_id = communities.id
+        and to_id = auth.uid()
+        and status = 'pending'
+    )
+  )
+  with check (auth.uid() = ANY (members));
+
 -- DELETE: owner.
 create policy "communities_delete_by_owner" on public.communities
   for delete using (auth.uid() = owner_id);
