@@ -4672,6 +4672,11 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   border-color:rgba(201,95,95,0.25);
   background:rgba(201,95,95,0.04);
 }
+#pg-community .chip.chip-multi-acct{
+  color:#f5d77c;
+  border-color:rgba(245,215,124,0.30);
+  background:rgba(245,215,124,0.05);
+}
 
 
 /* Trade-screenshot block — full-width inside the post card. The chart
@@ -9424,6 +9429,9 @@ function renderFeedPosts(g){
         chips.push('<span class="chip '+rrCls+'">'+rrSign+rrNum.toFixed(1).replace(/\.0$/,'')+'R</span>');
       }
       if(meta.session) chips.push('<span class="chip">'+safeText(meta.session)+'</span>');
+      if(meta.accounts != null && Number(meta.accounts) > 1){
+        chips.push('<span class="chip chip-multi-acct">×'+Number(meta.accounts)+' accts</span>');
+      }
       if(chips.length) chipsHtml = '<div class="post-chips">'+chips.join('')+'</div>';
     }
     // Screenshot block — sourced from community_posts.image_url so it
@@ -11230,7 +11238,8 @@ function renderRecentTrades(){
     var pnlStr=(isWin?'+':'−')+'$'+(abs>=1000?(abs/1000).toFixed(1)+'K':abs.toLocaleString(undefined,{maximumFractionDigits:0}));
     var grade=t.grade?(t.grade+' SETUP'):'';
     var rr=(t.rr!=null&&t.rr!=='')?((t.rr>0?'+':'')+t.rr+'R'):'';
-    var meta=[grade,rr].filter(Boolean).join(' · ');
+    var accts=(t.accounts!=null && t.accounts>1)?('×'+t.accounts+' ACCTS'):'';
+    var meta=[grade,rr,accts].filter(Boolean).join(' · ');
     return '<div class="recent-card '+cls+'" onclick="openCalEdit('+JSON.stringify(t.id)+')">'+
       '<div class="rc-row">'+
         '<span class="rc-sym">'+safeText(t.sym||'—')+'</span>'+
@@ -11785,7 +11794,8 @@ function saveCalEdit(){
           confidence: t.confidence != null ? t.confidence : null,
           entry:      t.entry != null ? t.entry : null,
           exit:       t.exit != null ? t.exit : null,
-          qty:        t.qty != null ? t.qty : null
+          qty:        t.qty != null ? t.qty : null,
+          accounts:   (t.accounts != null && t.accounts > 1) ? t.accounts : null
         };
         var fullPayload = { content: newContent, pnl_today: pnlNum, image_url: newScreenshot, metadata: newMeta };
         _sb.from('community_posts')
@@ -12178,7 +12188,8 @@ async function shareTradeToCommunity(trade){
       confidence: trade.confidence != null ? trade.confidence : null,
       entry:      trade.entry != null ? trade.entry : null,
       exit:       trade.exit != null ? trade.exit : null,
-      qty:        trade.qty != null ? trade.qty : null
+      qty:        trade.qty != null ? trade.qty : null,
+      accounts:   (trade.accounts != null && trade.accounts > 1) ? trade.accounts : null
     };
 
     // 4. One row per community, single batch insert. The id is
