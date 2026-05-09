@@ -13034,29 +13034,67 @@ function parseTradovateCsv(text){
 
 function importCsvTrades(){
   if(!csvParsedTrades.length)return;
-  csvSaveCurrent();
+  csvSaveCurrent(); // legacy carousel save — no-op when carousel is gone
+  // Capture count BEFORE discardAiScan empties the array.
+  const n = csvParsedTrades.length;
+  const importedTrades = [];
+
   csvParsedTrades.forEach((t,i)=>{
     const e=csvEnrichment[i]||{};
     const tradeId=Date.now()+Math.random();
+    const accounts = (e.accounts!=null && Number(e.accounts) > 1) ? Number(e.accounts) : 1;
     var eStop=e.stop||null;
     var ePtVal=(typeof PTS!=='undefined'&&PTS[t.sym])?PTS[t.sym]:1;
-    var eRisk=eStop?eStop*t.qty*ePtVal:null;
+    // Total contracts including multi-account copies
+    var totalQty = (t.qty||1) * accounts;
+    var eRisk=eStop?eStop*totalQty*ePtVal:null;
     var eRR=eRisk&&eRisk>0?Math.abs(t.pnl)/eRisk:null;
-    trades.unshift({id:tradeId,sym:t.sym,type:t.direction,entry:t.entry,exit:t.exit,stop:eStop,qty:t.qty,date:t.date,market:t.market,notes:e.notes||t.notes||'',session:e.session||'',grade:e.grade||'B',emotion:e.emotion||3,confidence:e.confidence||3,pnl:t.pnl,rr:eRR,images:e.images||[],account:t.account});
+
+    var newTrade = {
+      id: tradeId,
+      sym: t.sym,
+      type: t.direction || t.type || 'long',
+      entry: t.entry, exit: t.exit, stop: eStop, qty: t.qty,
+      accounts: accounts > 1 ? accounts : undefined,
+      date: t.date, market: t.market,
+      notes: e.notes || t.notes || '',
+      session: e.session || '',
+      grade: e.grade || 'B',
+      emotion: e.emotion || 3,
+      confidence: e.confidence || 3,
+      pnl: t.pnl,
+      rr: eRR,
+      images: e.images || [],
+      account: t.account,
+      created_at: new Date().toISOString()
+    };
+    trades.unshift(newTrade);
+    importedTrades.push(newTrade);
 
     // Auto-journal each trade
     const pnlStr=(t.pnl>=0?'+':'-')+'$'+Math.abs(t.pnl).toFixed(2);
     const gradeStr=e.grade||'B';
     const emotionStr=e.emotion||3;
     const sessionStr=e.session?` · ${e.session}`:'';
+    const acctStr=accounts>1?` · ×${accounts} accts`:'';
     const notesStr=e.notes?`\n\nNotes: ${e.notes}`:'';
-    const journalText=`${t.date}${sessionStr} — ${t.sym} ${t.direction.toUpperCase()}\nEntry $${t.entry.toFixed(2)} → Exit $${t.exit.toFixed(2)} · ${t.qty} ct · P&L ${pnlStr}\nGrade: ${gradeStr} · Emotion: ${emotionStr}/5${notesStr}`;
+    const dirStr=(newTrade.type||'long').toUpperCase();
+    const eStr=t.entry!=null?t.entry.toFixed(2):'?';
+    const xStr=t.exit !=null?t.exit .toFixed(2):'?';
+    const journalText=`${t.date}${sessionStr} — ${t.sym} ${dirStr}\nEntry $${eStr} → Exit $${xStr} · ${t.qty} ct${acctStr} · P&L ${pnlStr}\nGrade: ${gradeStr} · Emotion: ${emotionStr}/5${notesStr}`;
     jEntries.unshift({id:tradeId+0.1,date:t.date+' (imported)',text:journalText});
   });
+
   save();renderAll();setTimeout(drawMiniChart,100);
-  
+
+  // Auto-share every imported trade to the user's communities (same flow
+  // as fullLog). Fire-and-forget; share failures shouldn't block the
+  // success toast.
+  importedTrades.forEach(function(nt){
+    try { shareTradeToCommunity(nt); } catch(e){ console.warn('csv share',e); }
+  });
+
   discardAiScan();
-  const n=csvParsedTrades.length;
   toast(n+' trade'+(n>1?'s':'')+' imported & journaled!');
   csvParsedTrades=[];
   setMode('manual',document.querySelector('.mode-tab'));
