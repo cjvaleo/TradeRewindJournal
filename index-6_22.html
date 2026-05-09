@@ -4106,6 +4106,20 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   border:1px solid var(--n-border);
 }
 
+/* Trade-screenshot block in community feed — full-width image
+   between the post body and the actions row. Click to zoom via the
+   shared lightbox. */
+#pg-community .post-image{
+  margin-top:10px;border-radius:8px;overflow:hidden;
+  border:1px solid var(--n-border);background:var(--n-bg);
+}
+#pg-community .post-image img{
+  display:block;width:100%;height:auto;
+  max-height:360px;object-fit:cover;cursor:zoom-in;
+  transition:opacity .15s;
+}
+#pg-community .post-image img:hover{opacity:0.95}
+
 /* Plain text post body (community_posts rows whose content isn't a
    JSON trade — typed shares, manual posts, etc.) */
 #pg-community .post-text{
@@ -8481,6 +8495,7 @@ async function syncAndLoadCommFeed(g){
         pnl_today: Number(row.pnl_today || t.pnl || 0),
         content: row.content,                     // raw JSON for renderFeedPosts to re-parse
         text_content: typeof row.content === 'string' && !t.sym ? row.content : '',
+        image_url: row.image_url || null,
         created_at: t.date || row.created_at || ''
       };
     })
@@ -8554,6 +8569,9 @@ function renderFeedPosts(g){
       // trade data). Renderer below switches layout for these.
       isText: !rt.sym && typeof row.content === 'string',
       text: typeof row.content === 'string' ? row.content : '',
+      // Screenshot URL (from community_posts.image_url) — flows from
+      // the trade row through auto-share / edit-cascade.
+      image_url: row.image_url || null,
       row: row
     };
     if(feedFilterDate([{date:rp.date}]).length) combined.push(rp);
@@ -8695,6 +8713,14 @@ function renderFeedPosts(g){
         + '</div>'
         + (t.notes ? '<div class="post-note">'+commEsc(t.notes)+'</div>' : '');
     }
+    // Screenshot block — sourced from community_posts.image_url so it
+    // works for posts whose content is a free-form string (no embedded
+    // images JSON) as well as the legacy JSON-content path.
+    var postImgHtml = '';
+    if(p.image_url){
+      var safeImg = safeURL(p.image_url);
+      postImgHtml = '<div class="post-image"><img src="'+safeImg+'" alt="Trade screenshot" onclick="openScreenshotLightbox(\''+safeImg+'\')"></div>';
+    }
     return '<div class="post '+tintClass+'" data-pid="'+safePid+'">'
       + '<div class="post-head">'
       +   '<div class="post-av av '+avTone+pAvExtra+'">'+pAvInner+'</div>'
@@ -8705,6 +8731,7 @@ function renderFeedPosts(g){
       +   '<span class="post-time">'+_relTime(p.date)+'</span>'
       + '</div>'
       + bodyHtml
+      + postImgHtml
       + '<div class="post-actions">'
       +   '<button class="pa'+(youLiked?' liked':'')+'" onclick="feedLike(this)" data-id="'+safePid+'"'+(youLiked?' data-liked="1"':'')+'>'
       +     '<svg viewBox="0 0 24 24"' + (youLiked ? ' fill="currentColor"' : '') + '><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
@@ -10826,11 +10853,24 @@ function saveCalEdit(){
         var pnlStr = (pnlNum >= 0 ? '+' : '') + '$' + Math.abs(pnlNum).toLocaleString();
         var parts = [sym]; if(sideTxt) parts.push(sideTxt); parts.push(pnlStr);
         var newContent = parts.join(' · ') + (t.notes ? '\n' + t.notes : '');
+        var newScreenshot = _extractTradeScreenshot(t);
+        var fullPayload = { content: newContent, pnl_today: pnlNum, image_url: newScreenshot };
         _sb.from('community_posts')
-          .update({ content: newContent, pnl_today: pnlNum })
+          .update(fullPayload)
           .like('id', 'trade_'+String(t.id)+'_%')
           .then(function(r){
-            if(r && r.error) console.error('[edit cascade] failed:', r.error);
+            if(r && r.error){
+              // image_url column may not exist yet — retry without it.
+              if(/column .* does not exist/i.test(r.error.message||'') ||
+                 /could not find the .* column/i.test(r.error.message||'')){
+                _sb.from('community_posts')
+                  .update({ content: newContent, pnl_today: pnlNum })
+                  .like('id', 'trade_'+String(t.id)+'_%')
+                  .then(function(r2){ if(r2 && r2.error) console.error('[edit cascade] failed:', r2.error); });
+              } else {
+                console.error('[edit cascade] failed:', r.error);
+              }
+            }
           });
       }
     } catch(e){ console.error('[edit cascade] failed:', e); }
@@ -10962,6 +11002,22 @@ function setLgType(t){lgType=t;document.getElementById('lg-long').classList.togg
 /* Populate the Share-to-Community <select> on the Log Trade page.
    Pulls every community where the current user is owner OR a member
    (matches the OR query the loader uses, so only joinable groups). */
+/* Pull a screenshot URL out of a trade row, no matter where it's
+   stored. Existing trades use `images:[url]`; this defends against
+   alternate key names that have shown up in imports / older paths. */
+function _extractTradeScreenshot(t){
+  if(!t) return null;
+  var td = t.trade_data || t;
+  return td.screenshot_url
+      || td.image_url
+      || td.imageUrl
+      || td.screenshot
+      || td.chart_url
+      || (Array.isArray(td.images) && td.images[0])
+      || (Array.isArray(td.screenshots) && td.screenshots[0])
+      || null;
+}
+
 /* Auto-share a trade to every community the user belongs to (owner or
    member). Silent on failure — the trade itself is already saved, so a
    share hiccup shouldn't interrupt the success flow with an error toast.
@@ -11003,6 +11059,11 @@ async function shareTradeToCommunity(trade){
     contentParts.push(pnlStr);
     var contentStr = contentParts.join(' · ') + (trade.notes ? '\n' + trade.notes : '');
 
+    // Pull the screenshot URL out of whatever shape the trade carries.
+    // Existing trades use `images: [url]`; defensive against alternate
+    // key names from older code paths or imports.
+    var screenshotUrl = _extractTradeScreenshot(trade);
+
     // 4. One row per community, single batch insert. The id is
     //    deterministic — `trade_{trade.id}_{communityIdPrefix}` —
     //    so deleteTrade / saveCalEdit can cascade by LIKE'ing on
@@ -11017,6 +11078,7 @@ async function shareTradeToCommunity(trade){
         avatar_color: avatar_color,
         content: contentStr,
         pnl_today: pnlNum,
+        image_url: screenshotUrl,
         likes_count: 0,
         liked_by: []
       };
