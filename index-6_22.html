@@ -6420,6 +6420,125 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   /* Heatmap: shrink min-width so 3M view fits without huge scroll */
   #pg-calendar .weeks-grid{min-width:420px}
 }
+
+/* ── COMMUNITY PAGE — phone tightening ───────────────── */
+@media (max-width:768px){
+  #pg-community .totd{padding:14px 16px}
+  #pg-community .post{padding:14px}
+  #pg-community .pc-trade-body,
+  #pg-community .post .trade-body{flex-wrap:wrap;gap:8px}
+  #pg-community .pc-pnl{font-size:22px}
+  #pg-community .pc-head{gap:9px}
+  #pg-community .pc-name{
+    font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  /* hero-pnl-value already 42px from legacy block; tighten further */
+  #pg-community .hero-pnl-value{font-size:40px;line-height:1}
+  #pg-community .hero-pnl{padding:18px 14px;margin:12px 0 16px}
+  #pg-community .filters{flex-wrap:wrap;gap:5px}
+  /* feed width cap removed on phone — let it span full container */
+  #pg-community #comm-feed-posts{max-width:none}
+}
+
+/* ── ANALYTICS (Stats) PAGE — full mobile pass ───────── */
+@media (max-width:1100px){
+  /* Section tabs were a 4-col scroll-row on desktop; let them flow */
+  #pg-analytics .sec-tabs{flex-wrap:wrap;gap:0}
+}
+@media (max-width:768px){
+  #pg-analytics.page.on{padding:18px 14px 80px}
+  #pg-analytics .an-head{flex-direction:column;align-items:flex-start;gap:10px}
+  #pg-analytics .an-head .h-title{font-size:28px}
+  #pg-analytics .tab-group{width:100%;display:flex}
+  #pg-analytics .tab-group .tab{flex:1;text-align:center;padding:9px 8px;font-size:9.5px}
+  /* Section tab strip becomes horizontally scrollable so all 4 fit */
+  #pg-analytics .sec-tabs{
+    flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    width:100%;gap:0;padding-bottom:2px;
+  }
+  #pg-analytics .sec-tab{flex-shrink:0;white-space:nowrap;padding:10px 12px}
+  #pg-analytics .panel-intro h2{font-size:22px;line-height:1.2}
+  #pg-analytics .an-card{padding:16px}
+  /* Two-up grids inside panels collapse to single column */
+  #pg-analytics .panel div[style*="grid-template-columns:1fr 1fr"],
+  #pg-analytics .panel div[style*="grid-template-columns:repeat(2"]{
+    grid-template-columns:1fr!important;gap:10px!important;
+  }
+  /* Chart canvases cap their height so they don't dominate the viewport */
+  #pg-analytics canvas{max-height:240px;width:100%!important;height:auto!important}
+  /* Tables overflow horizontally rather than crushing rows */
+  #pg-analytics table{font-size:12px;min-width:100%}
+  #pg-analytics .an-card{overflow-x:auto;-webkit-overflow-scrolling:touch}
+}
+@media (max-width:480px){
+  #pg-analytics .sec-tab{padding:9px 10px;font-size:9.5px}
+  #pg-analytics .an-head .h-title{font-size:24px}
+  #pg-analytics canvas{max-height:200px}
+}
+
+/* ── ACCOUNT (Profile) PAGE — full mobile pass ───────── */
+@media (max-width:1024px){
+  /* Two-column grid (240px nav + content) collapses on tablet */
+  #pg-account .acct-grid{grid-template-columns:1fr!important;gap:14px}
+  #pg-account .acct-nav-card{position:static}
+}
+@media (max-width:768px){
+  #pg-account.page.on{padding:18px 14px 80px}
+  #pg-account .acct-head{flex-direction:column;align-items:flex-start;gap:10px}
+  #pg-account .acct-head .h-title{font-size:28px}
+  #pg-account .signout-btn{align-self:flex-end;margin-top:-40px}
+
+  /* Settings nav becomes a horizontal scroll-strip of pill buttons */
+  #pg-account .acct-nav-card{padding:8px 10px}
+  #pg-account .acct-nav-head{display:none} /* avatar+name lives on dashboard hero */
+  #pg-account .acct-nav-list{
+    display:flex;flex-wrap:nowrap;overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    padding:4px 0;gap:6px;
+  }
+  #pg-account .atl{
+    flex-shrink:0;white-space:nowrap;
+    padding:8px 12px!important;font-size:12px;
+    border-left:none!important;border-radius:6px;
+    background:var(--n-surface-2);
+  }
+  #pg-account .atl.on{
+    background:var(--n-surface-3)!important;color:var(--n-text)!important;
+    border-left:none!important;
+  }
+  #pg-account .atl-divider{display:none}
+
+  /* Active tab content — drop side margins, tighten card padding */
+  #pg-account .acct-tab{padding:0!important}
+  #pg-account .acct-tab > div{padding:14px!important}
+  #pg-account .av-hero-card{
+    flex-direction:column;align-items:center;text-align:center;gap:12px;
+  }
+  #pg-account .av-hero-card .av.hero-pfp,
+  #pg-account .av-hero-card .av{width:80px!important;height:80px!important;font-size:24px!important}
+
+  /* Form fields stack + go full-width */
+  #pg-account .acct-tab input,
+  #pg-account .acct-tab select,
+  #pg-account .acct-tab textarea{width:100%!important;box-sizing:border-box}
+  #pg-account .acct-tab div[style*="grid-template-columns"]{grid-template-columns:1fr!important;gap:10px!important}
+
+  /* Avatar finish picker — wrap chips to multiple rows */
+  #pg-account .av-finishes,
+  #pg-account [class*="finish-row"]{flex-wrap:wrap;justify-content:center;gap:10px}
+
+  /* Action button rows go full-width column */
+  #pg-account .acct-tab button{min-height:44px}
+  #pg-account .btn-row,
+  #pg-account div[style*="display:flex"][style*="gap"][class*="actions"]{
+    flex-direction:column;
+  }
+  #pg-account .btn-row > button{width:100%}
+}
+@media (max-width:480px){
+  #pg-account .acct-head .h-title{font-size:24px}
+  #pg-account .av-hero-card .av{width:64px!important;height:64px!important;font-size:20px!important}
+}
 </style>
 </head>
 <body>
