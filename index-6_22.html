@@ -3787,12 +3787,13 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   border-right:1px solid var(--n-border);
   overflow-y:auto;height:100%;background:transparent;
 }
-/* Cap the post list + filter pill row at 720px so posts feel filled
-   instead of stretched across the full column. Hero P&L + period tabs
-   stay at full feed-column width — the hero is meant to feel grand. */
+/* Cap the post list + filter pill row at 640px (Twitter-style focus
+   column) so posts feel filled, not stretched. Hero P&L + period
+   tabs stay at full feed-column width — the hero is meant to feel
+   grand. */
 #pg-community .filters,
 #pg-community #comm-feed-posts{
-  max-width:720px;margin-left:auto;margin-right:auto;
+  max-width:640px;margin-left:auto;margin-right:auto;
 }
 #pg-community .rail{
   width:300px;padding:32px 22px;
@@ -4083,7 +4084,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   display:flex;align-items:center;gap:14px;
   padding:12px 14px;
   background:var(--n-surface);border:1px solid var(--n-border);
-  border-radius:10px;margin-bottom:11px;
+  border-radius:10px;margin-bottom:10px;
 }
 #pg-community .trade-sym{
   font-family:var(--n-font-mono);font-size:13px;color:var(--n-text);
@@ -4109,17 +4110,30 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-community .trade-pnl.profit{color:var(--n-profit)}
 #pg-community .trade-pnl.loss{color:var(--n-loss)}
 
+/* TRADE STATS ROW — Entry · Exit · Qty from metadata, sits below
+   the trade-body pill and above notes/image */
+#pg-community .trade-stats{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin-bottom:12px;padding:0 2px;
+  font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-2);
+}
+#pg-community .trade-stat-l{
+  color:var(--n-text-4);letter-spacing:0.14em;
+  text-transform:uppercase;font-size:9.5px;margin-right:4px;
+}
+#pg-community .trade-stat-sep{color:var(--n-text-4);font-size:9px}
+
 /* NOTES */
 #pg-community .trade-notes{
   font-size:13px;color:var(--n-text-2);line-height:1.55;
-  margin-top:-3px;margin-bottom:11px;padding-left:2px;
+  margin-top:-3px;margin-bottom:12px;padding-left:2px;
   white-space:pre-wrap;
 }
 
 /* META CHIPS — grade / R-multiple / session under the trade body */
 #pg-community .post-chips{
   display:flex;flex-wrap:wrap;gap:5px;
-  margin-top:8px;margin-bottom:11px;
+  margin-top:10px;margin-bottom:10px;
 }
 #pg-community .chip{
   font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;
@@ -4151,13 +4165,13 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 
 
-/* Trade-screenshot block in community feed — compact 280×160 thumb
-   with hover lift + zoom-out chip overlay. Click to fullscreen. */
+/* Trade-screenshot block — full-width inside the post card. The chart
+   IS the point in a trading feed, so it earns the real estate. */
 #pg-community .post-image{
-  margin-top:8px;margin-bottom:12px;
+  margin:12px 0;
   border-radius:8px;overflow:hidden;
   border:1px solid var(--n-border);background:var(--n-bg);
-  cursor:zoom-in;width:fit-content;max-width:280px;
+  cursor:zoom-in;width:100%;max-width:none;
   position:relative;transition:.18s;
 }
 #pg-community .post-image:hover{
@@ -4165,7 +4179,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   box-shadow:0 8px 24px -8px rgba(0,0,0,0.5);
 }
 #pg-community .post-image img{
-  display:block;width:280px;height:160px;object-fit:cover;
+  display:block;width:100%;height:240px;object-fit:cover;
   transition:opacity .15s;
 }
 #pg-community .post-image:hover img{opacity:0.95}
@@ -4183,7 +4197,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 /* REACTIONS row — replaces legacy .pa class on action buttons */
 #pg-community .post-actions{
   display:flex;align-items:center;gap:14px;
-  padding-top:10px;border-top:1px solid var(--n-border);
+  padding-top:10px;margin-top:0;border-top:1px solid var(--n-border);
 }
 #pg-community .action-btn{
   display:flex;align-items:center;gap:6px;
@@ -8804,32 +8818,54 @@ function renderFeedPosts(g){
     var sideClass = /short/i.test(bodySide) ? 'short' : 'long';
     var pnlClass  = pnl < 0 ? 'loss' : 'profit';
     var cardClass = pnl < 0 ? 'loss' : 'profit';
+    // Parse metadata once (it's used by both the stats row and the chips
+    // block below). Tolerant of jsonb returned as a string by PostgREST.
+    var meta = null;
+    if(p.metadata){
+      meta = (typeof p.metadata === 'string')
+        ? (function(){ try{return JSON.parse(p.metadata);}catch(e){return null;} })()
+        : p.metadata;
+    }
+
+    // Stats row: Entry · Exit · Qty (under the trade pill, above notes).
+    var statsHtml = '';
+    if(meta){
+      var statCells = [];
+      if(meta.entry != null) statCells.push('<span><span class="trade-stat-l">Entry</span> '+safeText(String(meta.entry))+'</span>');
+      if(meta.exit  != null) statCells.push('<span><span class="trade-stat-l">Exit</span> '+safeText(String(meta.exit))+'</span>');
+      if(meta.qty   != null) statCells.push('<span><span class="trade-stat-l">Qty</span> '+safeText(String(meta.qty))+'</span>');
+      if(statCells.length){
+        statsHtml = '<div class="trade-stats">'
+          + statCells.join('<span class="trade-stat-sep">·</span>')
+          + '</div>';
+      }
+    }
+
     var bodyHtml = '<div class="trade-body">'
       + (bodySym  ? '<span class="trade-sym">'+safeText(bodySym)+'</span>' : '')
       + (bodySide ? '<span class="trade-side '+sideClass+'">'+safeText(bodySide)+'</span>' : '')
       + (bodyPnl  ? '<span class="trade-pnl '+pnlClass+'">'+safeText(bodyPnl)+'</span>' : '')
       + '</div>'
+      + statsHtml
       + (bodyNotes ? '<div class="trade-notes">'+commEsc(bodyNotes)+'</div>' : '');
 
-    // Metadata chips (grade / R-multiple / session).
+    // Metadata chips (grade / R-multiple / session). Reuses `meta`
+    // already parsed once above for the stats row.
     var chipsHtml = '';
-    if(p.metadata){
-      var m = (typeof p.metadata === 'string')
-        ? (function(){ try{return JSON.parse(p.metadata);}catch(e){return {};} })()
-        : p.metadata;
+    if(meta){
       var chips = [];
-      if(m.grade){
+      if(meta.grade){
         var gradeMap = {A:'grade-a','A+':'grade-a',B:'grade-b',C:'grade-c',D:'grade-d',F:'grade-d'};
-        var gCls = gradeMap[m.grade] || 'grade-b';
-        chips.push('<span class="chip '+gCls+'">'+safeText(m.grade)+' Setup</span>');
+        var gCls = gradeMap[meta.grade] || 'grade-b';
+        chips.push('<span class="chip '+gCls+'">'+safeText(meta.grade)+' Setup</span>');
       }
-      if(m.rr != null && Number(m.rr) !== 0){
-        var rrNum = Number(m.rr);
+      if(meta.rr != null && Number(meta.rr) !== 0){
+        var rrNum = Number(meta.rr);
         var rrCls = rrNum > 0 ? 'chip-rr' : 'chip-rr-loss';
         var rrSign = rrNum > 0 ? '+' : '';
         chips.push('<span class="chip '+rrCls+'">'+rrSign+rrNum.toFixed(1).replace(/\.0$/,'')+'R</span>');
       }
-      if(m.session) chips.push('<span class="chip">'+safeText(m.session)+'</span>');
+      if(meta.session) chips.push('<span class="chip">'+safeText(meta.session)+'</span>');
       if(chips.length) chipsHtml = '<div class="post-chips">'+chips.join('')+'</div>';
     }
     // Screenshot block — sourced from community_posts.image_url so it
@@ -11002,7 +11038,10 @@ function saveCalEdit(){
           session:    t.session || null,
           market:     t.market || null,
           emotion:    t.emotion != null ? t.emotion : null,
-          confidence: t.confidence != null ? t.confidence : null
+          confidence: t.confidence != null ? t.confidence : null,
+          entry:      t.entry != null ? t.entry : null,
+          exit:       t.exit != null ? t.exit : null,
+          qty:        t.qty != null ? t.qty : null
         };
         var fullPayload = { content: newContent, pnl_today: pnlNum, image_url: newScreenshot, metadata: newMeta };
         _sb.from('community_posts')
@@ -11241,7 +11280,10 @@ async function shareTradeToCommunity(trade){
       session:    trade.session || null,
       market:     trade.market || null,
       emotion:    trade.emotion != null ? trade.emotion : null,
-      confidence: trade.confidence != null ? trade.confidence : null
+      confidence: trade.confidence != null ? trade.confidence : null,
+      entry:      trade.entry != null ? trade.entry : null,
+      exit:       trade.exit != null ? trade.exit : null,
+      qty:        trade.qty != null ? trade.qty : null
     };
 
     // 4. One row per community, single batch insert. The id is
