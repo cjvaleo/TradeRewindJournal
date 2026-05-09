@@ -12662,7 +12662,42 @@ async function loadSentInvitesFromDB(user){
   }
 }
 
+/* ── SECURITY: clear all per-user cache before loading a new user.
+   Without this, localStorage retains the previous user's trades /
+   community / profile, and load functions fall back to the cache
+   when their DB read returns empty — the new user sees the old data.
+
+   We keep ONLY pure UI prefs (theme, sidebar collapsed state). Anything
+   user-specific gets nuked. Also resets in-memory globals so a stale
+   render before the first DB load can't show old data either. */
+function clearUserCache(){
+  var keep = ['theme', 'csbCollapsed'];
+  try {
+    var keys = Object.keys(localStorage);
+    keys.forEach(function(k){ if(keep.indexOf(k) === -1) localStorage.removeItem(k); });
+  } catch(e){}
+  if (typeof trades !== 'undefined') trades = [];
+  if (typeof jEntries !== 'undefined') jEntries = [];
+  if (typeof acct !== 'undefined') acct = {name:'',email:'',username:'',initials:'?',plan:'free'};
+  if (typeof _comm !== 'undefined') _comm = null;
+  if (typeof _comms !== 'undefined') _comms = [];
+  if (typeof _activeCommId !== 'undefined') _activeCommId = null;
+  if (typeof _remotePosts !== 'undefined') _remotePosts = [];
+  if (typeof _remoteCheckins !== 'undefined') _remoteCheckins = {};
+  if (typeof _notifications !== 'undefined') _notifications = [];
+  if (typeof _sentInvites !== 'undefined') _sentInvites = [];
+  if (typeof _likeCounts !== 'undefined') _likeCounts = {};
+  if (typeof _myLikes !== 'undefined') _myLikes = {};
+  if (typeof _replies !== 'undefined') _replies = {};
+  console.log('[auth] cache cleared');
+}
+
 async function onSignedIn(user) {
+  // SECURITY: nuke the previous user's cache before doing ANY DB read.
+  // The localStorage fallback paths in loadTradesFromDB / loadAcct /
+  // loadComm would otherwise return the previous user's data when the
+  // new user's tables come back empty.
+  clearUserCache();
   currentUser = user;
   document.getElementById('auth-screen').style.display = 'none';
   document.querySelector('.wrap').style.display = 'flex';
@@ -12671,7 +12706,8 @@ async function onSignedIn(user) {
   try {
     await _sb.from('profiles').update({ last_seen_at: new Date().toISOString() }).eq('id', user.id);
   } catch(e) { /* column not migrated yet — fine, dot stays dim */ }
-  /* Load data from DB, fall back to localStorage if tables don't exist yet */
+  /* Load data from DB. localStorage fallbacks have been removed for
+     user-owned tables (trades, community) — empty DB now = empty UI. */
   try { await loadProfileFromDB(user); refreshAcctUI(); } catch(e) { console.warn('Profile load skipped:', e.message); }
   try { await loadTradesFromDB(user); } catch(e) { console.warn('Trades load skipped:', e.message); }
   try { await loadCommunityFromDB(user); } catch(e) { console.warn('Community load skipped:', e.message); }
@@ -14477,7 +14513,10 @@ async function confirmDeleteAccount() {
 
 async function doSignOut() {
   if (_sb) await _sb.auth.signOut();
-  currentUser = null; trades = []; jEntries = [];
+  // SECURITY: nuke localStorage + in-memory globals so the next user
+  // (same browser) doesn't inherit the previous session's data.
+  currentUser = null;
+  clearUserCache();
   showAuth('login');
   document.getElementById('login-email').value = '';
   document.getElementById('login-pass').value = '';
@@ -14616,26 +14655,21 @@ async function saveProfileToDB() {
 async function loadTradesFromDB(user) {
   var r = await _sb.from('trades').select('*').eq('user_id', user.id).eq('journal', activeJournal).order('created_at', {ascending: false});
   if (r.error) throw new Error(r.error.message);
+  // SECURITY: empty DB = empty UI. The previous code path here fell
+  // back to localStorage when the DB returned 0 rows AND auto-pushed
+  // those cached trades back to Supabase — so a new user signing in
+  // on a shared device would inherit (and re-write) the prior user's
+  // trades into their own row. Cache is cleared on auth changes via
+  // clearUserCache(); any localStorage that survives is from the
+  // current user and gets overwritten by the DB response below.
   if (r.data && r.data.length) {
     trades = r.data.map(function(row) {
       try { return JSON.parse(row.trade_data); } catch(e) { return null; }
     }).filter(Boolean);
     try{localStorage.setItem(journalKey(activeJournal), JSON.stringify(trades));}catch(e){}
   } else {
-    try {
-      var local = localStorage.getItem(journalKey(activeJournal));
-      if (local) {
-        var localTrades = JSON.parse(local);
-        if (Array.isArray(localTrades) && localTrades.length) {
-          trades = localTrades;
-          setTimeout(function(){ trades.forEach(function(t){ saveTradeToSupa(t); }); }, 1000);
-        } else {
-          trades = [];
-        }
-      } else {
-        trades = [];
-      }
-    } catch(e) { trades = []; }
+    trades = [];
+    try{localStorage.removeItem(journalKey(activeJournal));}catch(e){}
   }
 }
 

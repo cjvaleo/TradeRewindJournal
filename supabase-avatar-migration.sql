@@ -239,12 +239,222 @@ create policy "group_avatars_owner_delete"
 -- "Could not find the 'avatar_finish' column of 'profiles' in the
 -- schema cache" until the cache auto-reloads (~60s).
 -- ─────────────────────────────────────────────────────────────────
+-- 7. SECURITY — RLS on every user-owned table.
+-- Without this, app-side filters are the ONLY thing keeping users
+-- from each others' data. Defense-in-depth: enable RLS + proper
+-- policies so the database refuses cross-user reads even if the JS
+-- forgets a .eq('user_id', ...).
+--
+-- Pre-flight audit (uncomment to run alone):
+--   SELECT schemaname, tablename, rowsecurity
+--     FROM pg_tables
+--     WHERE schemaname='public'
+--       AND tablename IN ('trades','profiles','communities',
+--                         'community_posts','community_members',
+--                         'community_post_likes','community_post_replies',
+--                         'invites','user_settings');
+-- Every row should show rowsecurity = true after this script runs.
+-- ─────────────────────────────────────────────────────────────────
+
+-- TRADES — only owner can do anything.
+alter table public.trades enable row level security;
+drop policy if exists "trades_all_own"        on public.trades;
+drop policy if exists "trades_select_own"     on public.trades;
+drop policy if exists "trades_insert_own"     on public.trades;
+drop policy if exists "trades_update_own"     on public.trades;
+drop policy if exists "trades_delete_own"     on public.trades;
+create policy "trades_all_own" on public.trades
+  for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+-- PROFILES policies were created earlier (read=public, write=own).
+
+-- COMMUNITIES — members can read, owner can write.
+do $$ begin
+  if to_regclass('public.communities') is not null then
+    execute 'alter table public.communities enable row level security';
+  end if;
+end $$;
+drop policy if exists "communities_read_member"     on public.communities;
+drop policy if exists "communities_write_owner"    on public.communities;
+drop policy if exists "communities_insert_anyone"  on public.communities;
+drop policy if exists "communities_delete_owner"   on public.communities;
+create policy "communities_read_member" on public.communities
+  for select using (
+    auth.uid() = owner_id
+    or exists (
+      select 1 from public.community_members
+      where community_id = communities.id and user_id = auth.uid()
+    )
+  );
+create policy "communities_write_owner" on public.communities
+  for update using (auth.uid() = owner_id) with check (auth.uid() = owner_id);
+create policy "communities_insert_anyone" on public.communities
+  for insert with check (auth.uid() = owner_id);
+create policy "communities_delete_owner" on public.communities
+  for delete using (auth.uid() = owner_id);
+
+-- COMMUNITY_POSTS — members can read, only post author can write/delete.
+do $$ begin
+  if to_regclass('public.community_posts') is not null then
+    execute 'alter table public.community_posts enable row level security';
+  end if;
+end $$;
+drop policy if exists "posts_read_member"   on public.community_posts;
+drop policy if exists "posts_write_own"     on public.community_posts;
+drop policy if exists "posts_insert_member" on public.community_posts;
+drop policy if exists "posts_delete_own"    on public.community_posts;
+create policy "posts_read_member" on public.community_posts
+  for select using (
+    exists (
+      select 1 from public.community_members
+      where community_id = community_posts.community_id
+        and user_id = auth.uid()
+    )
+  );
+create policy "posts_insert_member" on public.community_posts
+  for insert with check (
+    auth.uid() = user_id
+    and exists (
+      select 1 from public.community_members
+      where community_id = community_posts.community_id
+        and user_id = auth.uid()
+    )
+  );
+create policy "posts_write_own" on public.community_posts
+  for update using (auth.uid() = user_id);
+create policy "posts_delete_own" on public.community_posts
+  for delete using (auth.uid() = user_id);
+
+-- COMMUNITY_MEMBERS — members of a community can see other members,
+-- users can join/leave themselves.
+do $$ begin
+  if to_regclass('public.community_members') is not null then
+    execute 'alter table public.community_members enable row level security';
+  end if;
+end $$;
+drop policy if exists "members_read_same_community" on public.community_members;
+drop policy if exists "members_join_self"           on public.community_members;
+drop policy if exists "members_leave_self"          on public.community_members;
+create policy "members_read_same_community" on public.community_members
+  for select using (
+    exists (
+      select 1 from public.community_members cm2
+      where cm2.community_id = community_members.community_id
+        and cm2.user_id = auth.uid()
+    )
+  );
+create policy "members_join_self" on public.community_members
+  for insert with check (auth.uid() = user_id);
+create policy "members_leave_self" on public.community_members
+  for delete using (auth.uid() = user_id);
+
+-- COMMUNITY_POST_LIKES — read same as posts; write only own row.
+do $$ begin
+  if to_regclass('public.community_post_likes') is not null then
+    execute 'alter table public.community_post_likes enable row level security';
+  end if;
+end $$;
+drop policy if exists "likes_read_member" on public.community_post_likes;
+drop policy if exists "likes_write_own"   on public.community_post_likes;
+drop policy if exists "likes_delete_own"  on public.community_post_likes;
+create policy "likes_read_member" on public.community_post_likes
+  for select using (true);
+create policy "likes_write_own" on public.community_post_likes
+  for insert with check (auth.uid() = user_id);
+create policy "likes_delete_own" on public.community_post_likes
+  for delete using (auth.uid() = user_id);
+
+-- COMMUNITY_POST_REPLIES — read same as posts; write only own row.
+do $$ begin
+  if to_regclass('public.community_post_replies') is not null then
+    execute 'alter table public.community_post_replies enable row level security';
+  end if;
+end $$;
+drop policy if exists "replies_read_member" on public.community_post_replies;
+drop policy if exists "replies_write_own"   on public.community_post_replies;
+drop policy if exists "replies_delete_own"  on public.community_post_replies;
+create policy "replies_read_member" on public.community_post_replies
+  for select using (
+    exists (
+      select 1 from public.community_members
+      where community_id = community_post_replies.community_id
+        and user_id = auth.uid()
+    )
+  );
+create policy "replies_write_own" on public.community_post_replies
+  for insert with check (auth.uid() = user_id);
+create policy "replies_delete_own" on public.community_post_replies
+  for delete using (auth.uid() = user_id);
+
+-- INVITES — visible to sender + recipient; write by sender only.
+do $$ begin
+  if to_regclass('public.invites') is not null then
+    execute 'alter table public.invites enable row level security';
+  end if;
+end $$;
+drop policy if exists "invites_read_self"   on public.invites;
+drop policy if exists "invites_insert_self" on public.invites;
+drop policy if exists "invites_update_self" on public.invites;
+drop policy if exists "invites_delete_self" on public.invites;
+create policy "invites_read_self" on public.invites
+  for select using (auth.uid() = from_id or auth.uid() = to_id);
+create policy "invites_insert_self" on public.invites
+  for insert with check (auth.uid() = from_id);
+create policy "invites_update_self" on public.invites
+  for update using (auth.uid() = to_id or auth.uid() = from_id);
+create policy "invites_delete_self" on public.invites
+  for delete using (auth.uid() = to_id or auth.uid() = from_id);
+
+-- USER_SETTINGS — only owner can read/write.
+do $$ begin
+  if to_regclass('public.user_settings') is not null then
+    execute 'alter table public.user_settings enable row level security';
+  end if;
+end $$;
+drop policy if exists "user_settings_all_own" on public.user_settings;
+create policy "user_settings_all_own" on public.user_settings
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ─────────────────────────────────────────────────────────────────
+-- 8. STORAGE — trade-images bucket policies (avatars + group-avatars
+-- already covered above). Keep public read so feed thumbnails work,
+-- restrict writes to user's own folder.
+-- ─────────────────────────────────────────────────────────────────
+drop policy if exists "trade_images_public_read"  on storage.objects;
+drop policy if exists "trade_images_user_write"   on storage.objects;
+drop policy if exists "trade_images_user_update"  on storage.objects;
+drop policy if exists "trade_images_user_delete"  on storage.objects;
+create policy "trade_images_public_read" on storage.objects
+  for select using (bucket_id = 'trade-images');
+create policy "trade_images_user_write" on storage.objects
+  for insert with check (
+    bucket_id = 'trade-images'
+    and auth.uid()::text = (storage.foldername(name))[1]
+  );
+create policy "trade_images_user_update" on storage.objects
+  for update using (
+    bucket_id = 'trade-images'
+    and auth.uid()::text = (storage.foldername(name))[1]
+  );
+create policy "trade_images_user_delete" on storage.objects
+  for delete using (
+    bucket_id = 'trade-images'
+    and auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+-- ─────────────────────────────────────────────────────────────────
 notify pgrst, 'reload schema';
 
 -- Final verify (paste these into the SQL editor after the migration):
 --   SELECT column_name FROM information_schema.columns
 --     WHERE table_name='profiles' AND column_name LIKE 'avatar%';
 --   -- expect: avatar_finish, avatar_initials, avatar_image_url
---   SELECT policyname, cmd FROM pg_policies WHERE tablename='profiles';
---   -- expect: users_read_own_profile, users_update_own_profile,
---   --         users_insert_own_profile
+--   SELECT tablename, rowsecurity FROM pg_tables
+--     WHERE schemaname='public'
+--       AND tablename IN ('trades','profiles','communities',
+--                         'community_posts','community_members');
+--   -- every row should show rowsecurity = true
+--   SELECT tablename, policyname, cmd FROM pg_policies
+--     WHERE schemaname='public' ORDER BY tablename, cmd;
