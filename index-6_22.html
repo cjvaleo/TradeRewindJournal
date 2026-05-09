@@ -10711,23 +10711,128 @@ function setLbFilter(f,el){
   if(_comm) renderFeedLeaderboard(_comm);
 }
 
+// Period cutoff helper used by the leaderboard. Returns a Date or
+// null (all-time). Week starts Monday.
+function _commPeriodCutoff(period){
+  var now = new Date();
+  if(period === 'today'){
+    var d = new Date(now); d.setHours(0,0,0,0); return d;
+  }
+  if(period === 'week'){
+    var d = new Date(now);
+    var dow = d.getDay() === 0 ? 7 : d.getDay(); // Sun=7, Mon=1..Sat=6
+    d.setDate(d.getDate() - (dow - 1));
+    d.setHours(0,0,0,0);
+    return d;
+  }
+  if(period === 'month'){
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+  return null; // 'all'
+}
+
 function renderFeedLeaderboard(g){
-  var el=document.getElementById('feed-leaderboard');if(!el)return;
-  var mT=getMemberTradesLookup();
-  var myPnl=trades.reduce(function(a,t){return a+(t.pnl||0);},0);
-  var myWr=trades.length?Math.round(trades.filter(function(t){return t.pnl>0;}).length/trades.length*100):0;
-  var rows=[{username:(acct&&acct.username)||'You',pnl:myPnl,wr:myWr,aplus:trades.filter(function(t){return t.grade==='A+';}).length,isMe:true,color:(acct&&acct.color)||'chrome'}];
-  (g.members||[]).filter(function(m){return!m.isMe;}).forEach(function(m){
-    var mt=mT[m.id]||[];
-    var pnl=mt.reduce(function(a,t){return a+(t.pnl||0);},0);
-    var wins=mt.filter(function(t){return t.pnl>0;}).length;
-    rows.push({username:m.username,pnl:pnl,wr:mt.length?Math.round(wins/mt.length*100):0,aplus:mt.filter(function(t){return t.grade==='A+';}).length,isMe:false,color:m.color||'blue'});
+  var el = document.getElementById('feed-leaderboard');
+  if(!el) return;
+
+  // Period filter — track _commPeriod so the rail mirrors the hero/feed.
+  var period = (typeof _commPeriod === 'string') ? _commPeriod : 'week';
+  var periodLabels = { today:'Today', week:'This Week', month:'This Month', all:'All-Time' };
+  var cutoff = _commPeriodCutoff(period);
+
+  // Update card title to track the active period
+  var titleEl = el.parentElement && el.parentElement.querySelector('.card-title');
+  if(titleEl) titleEl.textContent = 'Top · ' + (periodLabels[period] || 'This Week');
+
+  // Aggregate community_posts (loaded into _remotePosts) by user_id.
+  // Each row already has pnl_today (number), user_id, created_at, and
+  // denormalised display fields (username/initials/avatar_finish).
+  // The previous implementation tried to JSON.parse(row.content) and
+  // skipped any row whose content wasn't a JSON trade payload — but
+  // shareTradeToCommunity writes content as a plain string, so every
+  // non-self post got dropped and other members showed $0. Reading
+  // pnl_today directly fixes the leaderboard for everyone.
+  var myUid = (typeof currentUser==='object' && currentUser && currentUser.id) || null;
+  var byUser = {};
+  function bump(p, ts){
+    var uid = p.user_id; if(!uid) return;
+    if(cutoff){
+      var d = new Date(ts);
+      if(isNaN(d) || d < cutoff) return;
+    }
+    if(!byUser[uid]){
+      byUser[uid] = {
+        user_id: uid,
+        username: p.username || 'trader',
+        avatar_finish: p.avatar_finish || p.avatar_color || p.color || 'sapphire',
+        avatar_image_url: p.avatar_image_url || null,
+        initials: p.initials || (p.username||'').slice(0,2).toUpperCase(),
+        pnl: 0, count: 0, wins: 0, aplus: 0,
+      };
+    }
+    var pnl = Number(p.pnl_today || p.pnl || 0);
+    byUser[uid].pnl += pnl;
+    byUser[uid].count += 1;
+    if(pnl > 0) byUser[uid].wins += 1;
+    var meta = p.metadata; if(typeof meta === 'string'){try{meta=JSON.parse(meta);}catch(e){meta=null;}}
+    if(meta && (meta.grade === 'A+' || meta.grade === 'A')) byUser[uid].aplus += 1;
+  }
+  (typeof _remotePosts !== 'undefined' && _remotePosts ? _remotePosts : []).forEach(function(p){
+    bump(p, p.created_at);
   });
+
+  // Fold local trades into the "me" bucket too — covers the case where
+  // a trade was just logged but the community_posts insert hasn't
+  // round-tripped yet, and the case where a trade was logged before
+  // the user was in any community (no auto-share row in DB).
+  if(myUid){
+    (trades||[]).forEach(function(t){
+      if(!t || !t.date) return;
+      // Skip if the matching auto-share row is already in _remotePosts
+      // (otherwise we'd double-count). Use trade id pattern.
+      var alreadyShared = (typeof _remotePosts !== 'undefined' && _remotePosts || [])
+        .some(function(p){ return p.user_id === myUid && String(p.id||'').startsWith('trade_'+String(t.id)+'_'); });
+      if(alreadyShared) return;
+      var tsDate = t.date + 'T12:00:00';
+      bump({
+        user_id: myUid,
+        username: (acct&&acct.username) || 'You',
+        avatar_finish: (acct&&(acct.avatar_finish||acct.color)) || 'chrome',
+        avatar_image_url: (acct&&acct.avatar_image_url) || null,
+        initials: (acct&&(acct.avatar_initials||acct.initials)) || ((acct&&acct.username)||'YO').slice(0,2).toUpperCase(),
+        pnl_today: Number(t.pnl||0),
+        metadata: { grade: t.grade }
+      }, tsDate);
+    });
+  }
+
+  // Make sure every member of the group appears, even with $0 — keeps
+  // the leaderboard a full roster rather than only the recent traders.
+  (g.members||[]).forEach(function(m){
+    var uid = m.id;
+    if(uid === 'me' && myUid) uid = myUid;
+    if(!uid || byUser[uid]) return;
+    byUser[uid] = {
+      user_id: uid,
+      username: m.username || 'trader',
+      avatar_finish: m.avatar_finish || m.color || 'sapphire',
+      avatar_image_url: m.avatar_image_url || null,
+      initials: m.initials || (m.username||'').slice(0,2).toUpperCase(),
+      pnl: 0, count: 0, wins: 0, aplus: 0,
+    };
+  });
+
+  var rows = Object.keys(byUser).map(function(k){
+    var r = byUser[k];
+    r.wr = r.count ? Math.round(r.wins/r.count*100) : 0;
+    r.isMe = !!(myUid && r.user_id === myUid);
+    return r;
+  });
+
   if(_lbFilter==='wr') rows.sort(function(a,b){return b.wr-a.wr;});
   else if(_lbFilter==='aplus') rows.sort(function(a,b){return b.aplus-a.aplus;});
   else rows.sort(function(a,b){return b.pnl-a.pnl;});
 
-  // Avatar finish CSS class — alias-safe via normalizeFinish.
   function _avTone(finish){ return normalizeFinish(finish); }
   function _shortK(n){
     var s = n>=0 ? '+' : '−';
@@ -10736,7 +10841,7 @@ function renderFeedLeaderboard(g){
     return s + '$' + Math.round(a);
   }
 
-  el.innerHTML=rows.map(function(r,i){
+  el.innerHTML = rows.map(function(r,i){
     var valStr, valCls;
     if(_lbFilter==='wr'){
       valStr = r.wr + '%';
@@ -11286,7 +11391,11 @@ function setCommPeriod(period, btn){
   var labels = { today:'Today', week:'This Week', month:'This Month', all:'All-Time' };
   var lbl = document.getElementById('comm-hero-period');
   if(lbl) lbl.textContent = labels[period] || 'This Week';
-  if(_comm) renderHeroPnl(_comm, period);
+  if(_comm){
+    renderHeroPnl(_comm, period);
+    // Leaderboard mirrors the active period (Top · Today / Week / Month / All-Time)
+    if(typeof renderFeedLeaderboard==='function') renderFeedLeaderboard(_comm);
+  }
 }
 
 /* ── COMMUNITIES SUB-SIDEBAR COLLAPSE ──────────────────────
