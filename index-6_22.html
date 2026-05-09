@@ -2714,6 +2714,120 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   #pg-log .lt-triple{grid-template-columns:1fr 1fr}
 }
 
+/* ── CSV IMPORT V2 (compact rows) ─────────────────── */
+#pg-log .csv-rows-list{display:flex;flex-direction:column;gap:8px;margin:14px 0 18px}
+#pg-log .csv-rows-empty{
+  padding:24px;text-align:center;
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-3);
+  background:var(--n-surface);border:1px dashed var(--n-border);
+  border-radius:10px;
+}
+#pg-log .csv-edit-row{
+  padding:14px 16px;
+  background:linear-gradient(180deg, var(--n-surface-2) 0%, var(--n-surface) 100%);
+  border:1px solid var(--n-border);border-radius:10px;
+  transition:border-color .15s;
+}
+#pg-log .csv-edit-row:hover{border-color:var(--n-border-2)}
+#pg-log .csv-edit-row.profit{border-left:3px solid rgba(95,179,137,0.45)}
+#pg-log .csv-edit-row.loss{border-left:3px solid rgba(201,95,95,0.45)}
+
+#pg-log .csv-row-head{
+  display:flex;align-items:center;gap:10px;margin-bottom:10px;
+}
+#pg-log .csv-edit-row .csv-sym{
+  flex:0 0 100px;
+  font-family:var(--n-font-mono);font-weight:600;
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:6px;padding:8px 10px;color:var(--n-text);
+  font-size:12.5px;outline:none;transition:.15s;
+}
+#pg-log .csv-edit-row .csv-sym:focus{border-color:var(--n-text-3);background:var(--n-surface-3)}
+#pg-log .csv-edit-row .side-cards-mini{display:flex;gap:4px}
+#pg-log .csv-edit-row .side-card-mini{
+  width:32px;height:32px;
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:6px;display:flex;align-items:center;justify-content:center;
+  color:var(--n-text-4);font-size:18px;line-height:1;cursor:pointer;transition:.15s;
+}
+#pg-log .csv-edit-row .side-card-mini:hover{background:var(--n-surface-3)}
+#pg-log .csv-edit-row .side-card-mini.long.on{
+  color:var(--n-profit);
+  border-color:rgba(95,179,137,0.40);
+  background:rgba(95,179,137,0.08);
+}
+#pg-log .csv-edit-row .side-card-mini.short.on{
+  color:var(--n-loss);
+  border-color:rgba(201,95,95,0.40);
+  background:rgba(201,95,95,0.08);
+}
+#pg-log .csv-edit-row .csv-row-pnl{
+  margin-left:auto;
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:22px;line-height:1;color:var(--n-profit);
+}
+#pg-log .csv-edit-row .csv-row-pnl.loss{color:var(--n-loss)}
+#pg-log .csv-edit-row .csv-remove{
+  width:28px;height:28px;
+  background:transparent;border:1px solid var(--n-border);
+  color:var(--n-text-4);border-radius:5px;cursor:pointer;
+  font-size:14px;line-height:1;
+}
+#pg-log .csv-edit-row .csv-remove:hover{
+  color:var(--n-loss);border-color:rgba(201,95,95,0.40);
+}
+
+#pg-log .csv-edit-row .csv-row-body{
+  display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:6px;margin-bottom:10px;
+}
+#pg-log .csv-edit-row .field-input.field-sm{
+  appearance:none;-webkit-appearance:none;
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:6px;padding:8px 10px;font-size:12px;
+  font-family:var(--n-font-sans);color:var(--n-text);outline:none;
+  transition:.15s;width:100%;
+}
+#pg-log .csv-edit-row .field-input.field-sm:focus{
+  border-color:var(--n-text-3);background:var(--n-surface-3);
+}
+#pg-log .csv-edit-row .field-input.field-sm::placeholder{color:var(--n-text-4)}
+#pg-log .csv-edit-row .csv-pnl-input{font-family:var(--n-font-mono)}
+
+#pg-log .csv-edit-row .csv-row-extras{
+  display:flex;gap:10px;align-items:center;
+}
+#pg-log .csv-edit-row .grade-pills-mini{display:flex;gap:3px;flex-shrink:0}
+#pg-log .csv-edit-row .grade-pill-mini{
+  width:24px;height:24px;
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:4px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono);font-size:11px;font-weight:600;
+  color:var(--n-text-3);cursor:pointer;transition:.15s;
+}
+#pg-log .csv-edit-row .grade-pill-mini:hover{background:var(--n-surface-3);color:var(--n-text-2)}
+#pg-log .csv-edit-row .grade-pill-mini.on.A{
+  color:var(--n-profit);border-color:rgba(95,179,137,0.40);
+  background:rgba(95,179,137,0.08);
+}
+#pg-log .csv-edit-row .grade-pill-mini.on.B{color:#d4d4d4;border-color:var(--n-border-2);background:var(--n-surface-3)}
+#pg-log .csv-edit-row .grade-pill-mini.on.C{color:var(--n-text-2);background:var(--n-surface-3);border-color:var(--n-border-2)}
+#pg-log .csv-edit-row .grade-pill-mini.on.D{
+  color:#c98c5f;border-color:rgba(201,140,95,0.40);
+  background:rgba(201,140,95,0.06);
+}
+#pg-log .csv-edit-row .grade-pill-mini.on.F{
+  color:var(--n-loss);border-color:rgba(201,95,95,0.40);
+  background:rgba(201,95,95,0.08);
+}
+#pg-log .csv-edit-row .csv-notes{flex:1}
+
+@media (max-width:900px){
+  #pg-log .csv-edit-row .csv-row-body{grid-template-columns:1fr 1fr 1fr;gap:6px}
+  #pg-log .csv-edit-row .csv-row-extras{flex-wrap:wrap;gap:8px}
+  #pg-log .csv-edit-row .csv-notes{flex-basis:100%}
+}
+
 /* ── HISTORY REDESIGN ─────────────────────────────── */
 
 #pg-history.page.on{
@@ -6499,109 +6613,8 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
           <span id="csv-count"></span>
         </div>
 
-        <!-- TRADE NAVIGATOR -->
-        <div class="csv-nav">
-          <button onclick="csvNav(-1)">&#8592;</button>
-          <span id="csv-nav-label">Trade 1 of 1</span>
-          <button onclick="csvNav(1)">&#8594;</button>
-        </div>
-
-        <!-- CURRENT TRADE CARD -->
-        <div id="csv-current-card"></div>
-
-        <!-- ENRICHMENT PANEL -->
-        <div class="csv-enrich-card">
-          <div class="csv-eh">Add details for this trade</div>
-
-          <!-- Notes -->
-          <div class="f-row">
-            <label>Notes &middot; Setup</label>
-            <textarea id="csv-notes" class="notes-area" placeholder="Setup rationale, emotions, lessons learned&hellip;" style="min-height:70px"></textarea>
-          </div>
-
-          <!-- Stop Loss -->
-          <div class="f-row">
-            <label>Stop Loss Points <span class="opt">(optional &mdash; tracks R:R)</span></label>
-            <div style="display:flex;align-items:center;gap:10px">
-              <input type="number" id="csv-stop" class="f-input" placeholder="e.g. 4" step="0.01" oninput="csvCalcRR()" style="flex:1"/>
-              <span id="csv-rr-disp" style="font-family:var(--n-font-display);font-style:italic;font-size:18px;color:var(--n-accent-cool);min-width:56px;text-align:right">&mdash;</span>
-            </div>
-          </div>
-
-          <!-- Session -->
-          <div class="f-row">
-            <label>Session</label>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-              <div onclick="csvSelectSession(this,'Asia','','')" class="csv-sess">
-                <div></div><div>Asia</div>
-              </div>
-              <div onclick="csvSelectSession(this,'London','','')" class="csv-sess">
-                <div></div><div>London</div>
-              </div>
-              <div onclick="csvSelectSession(this,'NY AM','','')" class="csv-sess">
-                <div></div><div>NY AM</div>
-              </div>
-              <div onclick="csvSelectSession(this,'NY Lunch','','')" class="csv-sess">
-                <div></div><div>NY Lunch</div>
-              </div>
-              <div onclick="csvSelectSession(this,'NY PM','','')" class="csv-sess">
-                <div></div><div>NY PM</div>
-              </div>
-              <div onclick="csvSelectSession(this,'Other','','')" class="csv-sess">
-                <div></div><div>Other</div>
-              </div>
-            </div>
-            <input type="hidden" id="csv-session" value=""/>
-          </div>
-
-          <!-- Grade -->
-          <div class="slider-group" style="margin-bottom:16px">
-            <div class="slider-head"><div class="lbl">Trade Grade</div></div>
-            <div class="slider-display">
-              <div class="val" id="csv-grade-label" style="font-size:32px">B</div>
-              <div class="desc-r" id="csv-grade-desc">Good trade</div>
-            </div>
-            <input type="range" id="csv-grade" min="0" max="5" value="3" step="1" oninput="csvUpdateGrade(this.value)"/>
-            <div class="slider-marks"><span>F</span><span>D</span><span>C</span><span>B</span><span>A</span><span>A+</span></div>
-          </div>
-
-          <!-- Emotion -->
-          <div class="slider-group" style="margin-bottom:16px">
-            <div class="slider-head"><div class="lbl">Emotion Score</div></div>
-            <div class="slider-display">
-              <div class="val" id="csv-emotion-label" style="font-size:32px">3</div>
-              <div class="desc-r" id="csv-emotion-desc">Moderately emotional</div>
-            </div>
-            <input type="range" id="csv-emotion" min="1" max="5" value="3" step="1" oninput="csvUpdateEmotion(this.value)"/>
-            <div class="slider-marks"><span>Calm</span><span style="opacity:0">.</span><span style="opacity:0">.</span><span style="opacity:0">.</span><span>Max</span></div>
-          </div>
-
-          <!-- Confidence -->
-          <div class="slider-group" style="margin-bottom:16px">
-            <div class="slider-head"><div class="lbl">Confidence</div></div>
-            <div class="slider-display">
-              <div class="val" id="csv-conf-label" style="font-size:32px">3</div>
-              <div class="desc-r" id="csv-conf-desc">Moderate confidence</div>
-            </div>
-            <input type="range" id="csv-conf" min="1" max="5" value="3" step="1" oninput="csvUpdateConf(this.value)"/>
-            <div class="slider-marks"><span>None</span><span style="opacity:0">.</span><span style="opacity:0">.</span><span style="opacity:0">.</span><span>Max</span></div>
-          </div>
-
-          <!-- Screenshot -->
-          <div class="f-row" style="margin-bottom:0">
-            <label>Chart Screenshot</label>
-            <div id="csv-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
-            <div class="img-drop"
-              onclick="document.getElementById('csv-img-input').click()"
-              ondragover="event.preventDefault();this.style.borderColor='var(--n-text)';this.style.background='var(--n-surface-3)'"
-              ondragleave="this.style.borderColor='var(--n-border-3)';this.style.background='var(--n-surface-2)'"
-              ondrop="handleCsvImgDrop(event)">
-              <input type="file" id="csv-img-input" accept="image/*" multiple style="display:none" onchange="handleCsvImgFiles(this.files)"/>
-              <div class="icn">+</div>
-              <div class="txt">Drop screenshot</div>
-            </div>
-          </div>
-        </div>
+        <!-- TRADE LIST (v2) -->
+        <div id="csv-rows-list" class="csv-rows-list"></div>
 
         <div class="csv-actions">
           <button class="csv-discard" onclick="discardAiScan()">Discard all</button>
@@ -12498,9 +12511,59 @@ let csvCurrentImgs = [];
 
 function csvInitEnrichment() {
   csvCurrentIdx = 0;
-  csvEnrichment = csvParsedTrades.map(() => ({notes:'', session:'', grade:'B', emotion:3, images:[]}));
+  csvEnrichment = csvParsedTrades.map(() => ({notes:'', session:'', grade:'B', emotion:3, confidence:3, accounts:1, pnlManual:false, images:[]}));
   csvCurrentImgs = [];
-  csvRenderCurrentTrade();
+  csvRenderAllRows();
+}
+
+// v2 list-of-rows renderer — replaces the per-trade carousel.
+function csvRenderAllRows(){
+  var list = document.getElementById('csv-rows-list');
+  if(!list) return;
+  if(!csvParsedTrades.length){
+    list.innerHTML = '<div class="csv-rows-empty">All trades removed &middot; Discard the import to start over</div>';
+    return;
+  }
+  list.innerHTML = csvParsedTrades.map(function(t, i){
+    var e = csvEnrichment[i] || {grade:'B', accounts:1, notes:''};
+    var pnl = Number(t.pnl||0);
+    var isWin = pnl >= 0;
+    var pnlAbs = Math.abs(pnl);
+    var pnlStr = (isWin?'+':'−')+'$'+pnlAbs.toLocaleString(undefined,{maximumFractionDigits:2});
+    var side = (t.direction==='short' || t.type==='short') ? 'short' : 'long';
+    var grade = e.grade || 'B';
+    var accts = (e.accounts!=null) ? e.accounts : 1;
+    var entry = (t.entry!=null && !isNaN(t.entry)) ? t.entry : '';
+    var exit  = (t.exit !=null && !isNaN(t.exit )) ? t.exit  : '';
+    var qty   = (t.qty  !=null && !isNaN(t.qty )) ? t.qty   : 1;
+    var sym   = t.sym || '';
+    var notes = e.notes || '';
+    var gradePillsHtml = ['A','B','C','D','F'].map(function(g){
+      return '<div class="grade-pill-mini '+g+(grade===g?' on':'')+'" data-grade="'+g+'">'+g+'</div>';
+    }).join('');
+    return '<div class="csv-edit-row '+(isWin?'profit':'loss')+'" data-idx="'+i+'"'+(e.pnlManual?' data-pnl-manual="1"':'')+'>'+
+      '<div class="csv-row-head">'+
+        '<input class="csv-sym" data-field="sym" value="'+_safeText(sym)+'" placeholder="Sym"/>'+
+        '<div class="side-cards-mini">'+
+          '<div class="side-card-mini long'+(side==='long'?' on':'')+'" data-side="long">↗</div>'+
+          '<div class="side-card-mini short'+(side==='short'?' on':'')+'" data-side="short">↘</div>'+
+        '</div>'+
+        '<span class="csv-row-pnl'+(isWin?'':' loss')+'">'+pnlStr+'</span>'+
+        '<button class="csv-remove" data-action="remove" title="Remove">×</button>'+
+      '</div>'+
+      '<div class="csv-row-body">'+
+        '<input class="field-input field-sm" data-field="entry" placeholder="Entry" type="number" step="any" value="'+entry+'"/>'+
+        '<input class="field-input field-sm" data-field="exit" placeholder="Exit" type="number" step="any" value="'+exit+'"/>'+
+        '<input class="field-input field-sm" data-field="qty" placeholder="Qty" type="number" step="any" min="1" value="'+qty+'"/>'+
+        '<input class="field-input field-sm" data-field="accts" placeholder="Accts" type="number" min="1" value="'+accts+'"/>'+
+        '<input class="field-input field-sm csv-pnl-input" data-field="pnl" placeholder="P&amp;L (auto)" type="number" step="any" value="'+(pnl||'')+'"/>'+
+      '</div>'+
+      '<div class="csv-row-extras">'+
+        '<div class="grade-pills-mini">'+gradePillsHtml+'</div>'+
+        '<input class="field-input field-sm csv-notes" data-field="notes" placeholder="Notes (optional)" value="'+_safeText(notes)+'"/>'+
+      '</div>'+
+    '</div>';
+  }).join('');
 }
 
 function csvCalcRR(){
@@ -12520,7 +12583,10 @@ function csvCalcRR(){
 }
 
 function csvSaveCurrent() {
+  // Legacy carousel save — no-op when the old DOM is absent (replaced
+  // by per-row delegated handlers in csvRenderAllRows).
   if (!csvEnrichment.length) return;
+  if (!document.getElementById('csv-notes')) return;
   csvEnrichment[csvCurrentIdx].notes = document.getElementById('csv-notes').value;
   var csvStopEl = document.getElementById('csv-stop');
   csvEnrichment[csvCurrentIdx].stop = csvStopEl ? (parseFloat(csvStopEl.value)||null) : null;
@@ -12532,6 +12598,7 @@ function csvSaveCurrent() {
 }
 
 function csvNav(dir) {
+  if (!document.getElementById('csv-current-card')) return; // carousel removed
   csvSaveCurrent();
   csvCurrentIdx = Math.max(0, Math.min(csvParsedTrades.length - 1, csvCurrentIdx + dir));
   csvRenderCurrentTrade();
@@ -12541,6 +12608,7 @@ function csvRenderCurrentTrade() {
   const t = csvParsedTrades[csvCurrentIdx];
   const e = csvEnrichment[csvCurrentIdx];
   if (!t) return;
+  if (!document.getElementById('csv-current-card')) return; // carousel removed
 
   document.getElementById('csv-nav-label').textContent = `Trade ${csvCurrentIdx+1} of ${csvParsedTrades.length}`;
 
