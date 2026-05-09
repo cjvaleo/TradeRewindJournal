@@ -4107,18 +4107,19 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 
 /* Trade-screenshot block in community feed — full-width image
-   between the post body and the actions row. Click to zoom via the
-   shared lightbox. */
+   between the post body and the actions row. Click anywhere on the
+   card to zoom via the shared lightbox. */
 #pg-community .post-image{
   margin-top:10px;border-radius:8px;overflow:hidden;
   border:1px solid var(--n-border);background:var(--n-bg);
+  cursor:zoom-in;
 }
 #pg-community .post-image img{
   display:block;width:100%;height:auto;
-  max-height:360px;object-fit:cover;cursor:zoom-in;
+  max-height:360px;object-fit:cover;
   transition:opacity .15s;
 }
-#pg-community .post-image img:hover{opacity:0.95}
+#pg-community .post-image:hover img{opacity:0.93}
 
 /* Plain text post body (community_posts rows whose content isn't a
    JSON trade — typed shares, manual posts, etc.) */
@@ -8720,7 +8721,16 @@ function renderFeedPosts(g){
     var postImgHtml = '';
     if(p.image_url){
       var safeImg = safeURL(p.image_url);
-      postImgHtml = '<div class="post-image"><img src="'+safeImg+'" alt="Trade screenshot" loading="lazy" onclick="openScreenshotLightbox(\''+safeImg+'\')"></div>';
+      // safeURL returns '' for any non-http(s) / non-data URL (e.g. a
+      // relative-path placeholder). Skip the block entirely instead of
+      // emitting <img src=""> which renders as a broken icon.
+      if(safeImg){
+        postImgHtml = '<div class="post-image" onclick="openScreenshotLightbox(\''+safeImg+'\')">'
+          + '<img src="'+safeImg+'" alt="Trade screenshot" loading="lazy">'
+          + '</div>';
+      } else {
+        console.warn('[feed] post', p.id, 'has invalid image_url:', p.image_url);
+      }
     }
     return '<div class="post '+tintClass+'" data-pid="'+safePid+'">'
       + '<div class="post-head">'
