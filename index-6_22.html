@@ -6192,16 +6192,18 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
           </div>
         </div>
 
-        <!-- Hero P&L block — replaces the old .fbar stats row -->
+        <!-- Hero P&L block — replaces the old .fbar stats row.
+             IDs prefixed with `comm-` so they don't collide with the
+             dashboard's hero-trades/hero-winrate/hero-avg elements. -->
         <div class="hero-pnl">
-          <div class="hero-pnl-label">Group P&amp;L &middot; <span id="hero-pnl-period">This Week</span></div>
-          <div class="hero-pnl-value" id="hero-pnl-value">+$0<span class="cents">.00</span></div>
+          <div class="hero-pnl-label">Group P&amp;L &middot; <span id="comm-hero-period">This Week</span></div>
+          <div class="hero-pnl-value" id="comm-hero-pnl">+$0<span class="cents">.00</span></div>
           <div class="hero-pnl-stats">
-            <div class="hero-stat"><span class="hero-stat-label">Trades</span><span class="hero-stat-value" id="hero-trades">0</span></div>
-            <div class="hero-stat"><span class="hero-stat-label">Win Rate</span><span class="hero-stat-value" id="hero-winrate">0%</span></div>
-            <div class="hero-stat"><span class="hero-stat-label">Avg Trade</span><span class="hero-stat-value" id="hero-avg">+$0</span></div>
-            <div class="hero-stat"><span class="hero-stat-label">Best Trade</span><span class="hero-stat-value" id="hero-best">+$0</span></div>
-            <div class="hero-stat"><span class="hero-stat-label">Top Trader</span><span class="hero-stat-value" id="hero-top">&mdash;</span></div>
+            <div class="hero-stat"><span class="hero-stat-label">Trades</span><span class="hero-stat-value" id="comm-hero-trades">0</span></div>
+            <div class="hero-stat"><span class="hero-stat-label">Win Rate</span><span class="hero-stat-value" id="comm-hero-winrate">0%</span></div>
+            <div class="hero-stat"><span class="hero-stat-label">Avg Trade</span><span class="hero-stat-value" id="comm-hero-avg">+$0</span></div>
+            <div class="hero-stat"><span class="hero-stat-label">Best Trade</span><span class="hero-stat-value" id="comm-hero-best">+$0</span></div>
+            <div class="hero-stat"><span class="hero-stat-label">Top Trader</span><span class="hero-stat-value" id="comm-hero-top">&mdash;</span></div>
           </div>
         </div>
 
@@ -7056,8 +7058,8 @@ const NEWS=[
 ];
 function fmtPnl(v){v=v||0;var a=Math.abs(v);return a>=1000?'$'+(a/1000).toFixed(1)+'k':'$'+a.toFixed(2);}
 function init(){
-  const d=document.getElementById('lg-date');if(d)d.valueAsDate=new Date();
-  const aid=document.getElementById('ai-date');if(aid)aid.valueAsDate=new Date();
+  const d=document.getElementById('lg-date');if(d)d.value=_localDate(new Date());
+  const aid=document.getElementById('ai-date');if(aid)aid.value=_localDate(new Date());
   const dayName = now.toLocaleDateString('en-US',{weekday:'long'}).toUpperCase();
   const dateFull = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   document.getElementById('dash-date').textContent = dayName + ' \u00b7 ' + dateFull.toUpperCase();
@@ -8713,32 +8715,46 @@ function renderTOTD(g){
   if(!card) return;
   if(!g){ card.style.display='none'; return; }
 
-  // LOCAL timezone — trade.date is stored as the user's local YYYY-MM-DD,
-  // not UTC. Using toISOString here would slip to "tomorrow" in UTC for
-  // any user east of UTC after sunset, hiding their trades.
+  // LOCAL "today" reference for diagnostics + the date-string fallback.
   var todayStr = _localDate(new Date());
 
-  // Tolerant date match — handles ISO timestamps, date-only strings,
-  // and falls back to row.created_at / date_logged for non-trade fields.
-  function _matchesToday(t, fallback){
-    var d = (t && (t.date || t.created_at || t.date_logged)) || fallback;
-    if(!d) return false;
-    // If the value is already a date-only string ("2026-05-08"), trust it
-    // as local. Otherwise parse and convert via local components.
-    var ds;
-    if(typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d.slice(0,10))){
-      ds = d.slice(0,10);
-    } else {
-      try { ds = _localDate(new Date(d)); }
-      catch(e){ ds = String(d).slice(0,10); }
+  // Prefer the trade's TIMESTAMP (created_at / timestamp / logged_at)
+  // converted to local. If the trade was logged at 9:45pm EDT but the
+  // form stamped the date as the next UTC day, the timestamp still
+  // resolves to today locally — that's what we want.
+  function _isLoggedToday(t, fallback){
+    // Pick the best timestamp source. `id` from Date.now() at log time
+    // catches legacy own-trades that were stamped with a UTC-shifted
+    // date string but still know exactly when they were logged.
+    var ms = (t && t.id && Number(t.id) > 1e12) ? Number(t.id) : null;
+    var sources = [t && t.created_at, t && t.timestamp,
+                   t && t.date_logged, t && t.logged_at,
+                   ms, fallback];
+    var d = null;
+    for(var i=0; i<sources.length; i++){
+      if(sources[i]){
+        var x = new Date(sources[i]);
+        if(!isNaN(x.getTime())){ d = x; break; }
+      }
     }
-    return ds === todayStr;
+    if(!d && t && t.date){
+      // Fallback: parse YYYY-MM-DD as LOCAL midnight (not UTC).
+      var parts = String(t.date).slice(0,10).split('-');
+      if(parts.length === 3){
+        d = new Date(+parts[0], +parts[1]-1, +parts[2]);
+      }
+    }
+    if(!d || isNaN(d.getTime())) return false;
+    var today = new Date();
+    return d.getFullYear() === today.getFullYear()
+        && d.getMonth()    === today.getMonth()
+        && d.getDate()     === today.getDate();
   }
 
-  // Gather candidates: own trades dated today + remote posts dated today.
+  // Gather candidates: own trades logged today + remote posts logged today.
   var candidates = [];
   trades.slice().forEach(function(t){
-    if(!_matchesToday(t)) return;
+    if(!_isLoggedToday(t)) return;
     candidates.push({
       isMe: true, trade: t, pnl: Number(t.pnl)||0,
       user_id: currentUser?currentUser.id:'me',
@@ -8750,7 +8766,7 @@ function renderTOTD(g){
   });
   (typeof _remotePosts!=='undefined' ? _remotePosts : []).forEach(function(row){
     var rt={}; try{rt=JSON.parse(row.content||'{}');}catch(e){}
-    if(!_matchesToday(rt, row.created_at)) return;
+    if(!_isLoggedToday(rt, row.created_at)) return;
     candidates.push({
       isMe:false, trade:rt, pnl: Number(rt.pnl||row.pnl_today)||0,
       user_id: row.user_id,
@@ -8873,7 +8889,7 @@ function _fmtShortMoney(n){
 }
 
 function renderHeroPnl(g, period){
-  if(!document.getElementById('hero-pnl-value')) return;
+  if(!document.getElementById('comm-hero-pnl')) return;
   period = period || _commPeriod || 'week';
   var since = _startOfPeriod(period);
 
@@ -8903,20 +8919,22 @@ function renderHeroPnl(g, period){
   rows.forEach(function(r){ byUser[r.user] = (byUser[r.user]||0) + r.pnl; });
   var topTrader = Object.keys(byUser).sort(function(a,b){return byUser[b]-byUser[a];})[0];
 
-  var valEl = document.getElementById('hero-pnl-value');
+  console.log('[hero stats]', { count: rows.length, winRate: winRate, avg: avg, best: best, topTrader: topTrader, totalPnl: totalPnl });
+
+  var valEl = document.getElementById('comm-hero-pnl');
   valEl.innerHTML = _fmtMoney(totalPnl);
   valEl.className = 'hero-pnl-value' + (totalPnl < 0 ? ' loss' : '');
-  document.getElementById('hero-trades').textContent = rows.length;
-  var wrEl = document.getElementById('hero-winrate');
+  document.getElementById('comm-hero-trades').textContent = rows.length;
+  var wrEl = document.getElementById('comm-hero-winrate');
   wrEl.textContent = winRate + '%';
   wrEl.className = 'hero-stat-value' + (winRate >= 50 ? ' profit' : (rows.length ? ' loss' : ''));
-  var avgEl = document.getElementById('hero-avg');
+  var avgEl = document.getElementById('comm-hero-avg');
   avgEl.textContent = _fmtShortMoney(avg);
   avgEl.className = 'hero-stat-value' + (avg > 0 ? ' profit' : avg < 0 ? ' loss' : '');
-  var bestEl = document.getElementById('hero-best');
+  var bestEl = document.getElementById('comm-hero-best');
   bestEl.textContent = _fmtShortMoney(best);
   bestEl.className = 'hero-stat-value' + (best > 0 ? ' profit' : '');
-  document.getElementById('hero-top').textContent = topTrader ? '@'+String(topTrader).replace(/^@/,'') : '—';
+  document.getElementById('comm-hero-top').textContent = topTrader ? '@'+String(topTrader).replace(/^@/,'') : '—';
 }
 
 function setCommPeriod(period, btn){
@@ -8924,7 +8942,7 @@ function setCommPeriod(period, btn){
   document.querySelectorAll('#pg-community .period-tab').forEach(function(b){b.classList.remove('on');});
   if(btn) btn.classList.add('on');
   var labels = { today:'Today', week:'This Week', month:'This Month', all:'All-Time' };
-  var lbl = document.getElementById('hero-pnl-period');
+  var lbl = document.getElementById('comm-hero-period');
   if(lbl) lbl.textContent = labels[period] || 'This Week';
   if(_comm) renderHeroPnl(_comm, period);
 }
@@ -10006,12 +10024,12 @@ function fullLog(){
   const pnl=lgType==='long'?(exit-entry)*totalQty*ptVal:(entry-exit)*totalQty*ptVal;
   const risk=stop?stop*totalQty*ptVal:null;
   const calcRR=risk&&risk>0?Math.abs(pnl)/risk:null;
-  trades.unshift({id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,pnl,rr:calcRR,grade,emotion,confidence,images:[...noteImages]});
+  trades.unshift({id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,pnl,rr:calcRR,grade,emotion,confidence,images:[...noteImages],created_at:new Date().toISOString()});
   save();renderAll();
   ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('lg-qty').value='1';
   if(document.getElementById('lg-accounts'))document.getElementById('lg-accounts').value='1';
-  document.getElementById('lg-date').valueAsDate=new Date();
+  document.getElementById('lg-date').value=_localDate(new Date());
   if(document.getElementById('lg-session'))document.getElementById('lg-session').value='';
   _selSession='';
   document.querySelectorAll('.sess-btn').forEach(b=>b.style.boxShadow='none');
@@ -10077,7 +10095,7 @@ function resetLogForm(){
   ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('lg-qty').value='1';
   if(document.getElementById('lg-accounts'))document.getElementById('lg-accounts').value='1';
-  document.getElementById('lg-date').valueAsDate=new Date();
+  document.getElementById('lg-date').value=_localDate(new Date());
   if(document.getElementById('lg-grade')){document.getElementById('lg-grade').value=3;updateGrade(3);}
   if(document.getElementById('lg-emotion')){document.getElementById('lg-emotion').value=3;updateEmotion(3);}
   if(document.getElementById('lg-conf')){document.getElementById('lg-conf').value=3;updateConf(3);}
@@ -10115,7 +10133,7 @@ function quickFillLastTrade(){
     });
   }
   // Today's date
-  document.getElementById('lg-date').valueAsDate=new Date();
+  document.getElementById('lg-date').value=_localDate(new Date());
   calcLivePnl();
   toast('⚡ Filled from last '+( last.sym||'trade'));
 }
