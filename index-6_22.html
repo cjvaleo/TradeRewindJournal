@@ -8904,18 +8904,19 @@ function renderFeedPosts(g){
     }
     return '<div class="post '+cardClass+' '+tintClass+'" data-pid="'+safePid+'">'
       + '<div class="post-head">'
-      +   renderAvatar({
-            avatar_finish: p.avatar_finish || p.color,
+      +   renderUserAvatar({
+            avatar_finish: p.avatar_finish || p.color || p.avatar_color,
+            avatar_initials: p.avatar_initials || p.initials,
             avatar_image_url: p.avatar_image_url,
-            avatar_initials: p.initials,
+            username: p.username,
             name: p.username
           }, 'sm')
       +   '<div class="post-author">'
       +     '<div class="author-line">'
-      +       '<span class="author-name">'+safeText(p.username || 'Trader')+'</span>'
+      +       '<span class="author-name">'+safeText(p.username || 'Anonymous')+'</span>'
       +       (p.isMe ? '<span class="author-you">You</span>' : '')
       +     '</div>'
-      +     '<div class="author-handle">@'+safeText((p.username||'trader').replace(/^@/,''))+'</div>'
+      +     '<div class="author-handle">@'+safeText((p.username||'anon').replace(/^@/,''))+'</div>'
       +   '</div>'
       +   '<span class="post-time">'+_relTime(p.date)+'</span>'
       + '</div>'
@@ -9568,21 +9569,23 @@ function renderFeedMembers(g){
   el.className='members-list';
   el.innerHTML=visible.map(function(m){
     var safeMid = safeText(m.id || '');
-    var safeUname = safeText(m.username || '');
+    var displayName = safeText(m.username || 'Anonymous');
+    var handle = safeText((m.username || 'anon').replace(/^@/,''));
     var meTag = m.isMe ? ' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase">you</span>' : '';
     var avHtml = renderUserAvatar({
-      avatar_finish: m.isMe ? (acct&&(acct.avatar_finish||acct.color)) : (m.avatar_finish||m.color),
+      avatar_finish: m.isMe ? (acct&&(acct.avatar_finish||acct.color)) : (m.avatar_finish||m.color||m.avatar_color),
       avatar_image_url: m.isMe ? (acct&&acct.avatar_image_url) : m.avatar_image_url,
-      avatar_initials: m.initials,
+      avatar_initials: m.avatar_initials || m.initials,
+      username: m.username,
       name: m.username || ''
     }, 'sm');
     var online = _isOnline(m.last_seen_at);
     // Right-rail is read-only — owner controls live in edit-group-modal.
-    return '<div class="mem-item" data-mid="'+safeMid+'" data-uname="'+safeUname+'" onclick="openMemberProfile(this.dataset.mid,this.dataset.uname)">'
+    return '<div class="mem-item" data-mid="'+safeMid+'" data-uname="'+(m.username||'anon')+'" onclick="openMemberProfile(this.dataset.mid,this.dataset.uname)">'
       + avHtml
       + '<div class="mem-info">'
-      +   '<div class="mem-name">'+safeUname+meTag+'</div>'
-      +   '<div class="mem-handle">@'+safeText((m.username||'trader').replace(/^@/,''))+'</div>'
+      +   '<div class="mem-name">'+displayName+meTag+'</div>'
+      +   '<div class="mem-handle">@'+handle+'</div>'
       + '</div>'
       + '<div class="mem-status'+(online?' online':'')+'" title="'+(online?'Online':'Offline')+'"></div>'
       + '</div>';
@@ -9623,21 +9626,23 @@ function openAllMembersModal(){
   });
   list.innerHTML = members.map(function(m){
     var safeMid = safeText(m.id || '');
-    var safeUname = safeText(m.username || '');
+    var displayName = safeText(m.username || 'Anonymous');
+    var handle = safeText((m.username || 'anon').replace(/^@/,''));
     var meTag = m.isMe ? ' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase">you</span>' : '';
     var avHtml = renderUserAvatar({
-      avatar_finish: m.isMe ? (acct&&(acct.avatar_finish||acct.color)) : (m.avatar_finish||m.color),
+      avatar_finish: m.isMe ? (acct&&(acct.avatar_finish||acct.color)) : (m.avatar_finish||m.color||m.avatar_color),
       avatar_image_url: m.isMe ? (acct&&acct.avatar_image_url) : m.avatar_image_url,
-      avatar_initials: m.initials,
+      avatar_initials: m.avatar_initials || m.initials,
+      username: m.username,
       name: m.username || ''
     }, 'md');
     var online = _isOnline(m.last_seen_at);
     // All-members modal is read-only — owner controls live in edit-group-modal.
-    return '<div class="mem-item" data-mid="'+safeMid+'" data-uname="'+safeUname+'" onclick="document.getElementById(\'all-members-modal\').style.display=\'none\';openMemberProfile(this.dataset.mid,this.dataset.uname)">'
+    return '<div class="mem-item" data-mid="'+safeMid+'" data-uname="'+(m.username||'anon')+'" onclick="document.getElementById(\'all-members-modal\').style.display=\'none\';openMemberProfile(this.dataset.mid,this.dataset.uname)">'
       + avHtml
       + '<div style="flex:1;min-width:0">'
-      +   '<div class="mem-name">'+safeUname+meTag+'</div>'
-      +   '<div class="mem-handle">@'+safeText((m.username||'trader').replace(/^@/,''))+'</div>'
+      +   '<div class="mem-name">'+displayName+meTag+'</div>'
+      +   '<div class="mem-handle">@'+handle+'</div>'
       + '</div>'
       + '<div class="mem-status'+(online?' online':'')+'" title="'+(online?'Online':'Offline')+'"></div>'
       + '</div>';
@@ -13839,27 +13844,41 @@ function normalizeFinish(k){
 }
 /* User-avatar renderer. Pass {avatar_finish, avatar_image_url,
    avatar_initials, initials, name, color} (any field optional). */
-function renderUserAvatar(user, sizeClass){
-  user = user || {};
-  sizeClass = sizeClass || 'md';
+function renderUserAvatar(p, size){
+  p = p || {};
+  // Size accepts the legacy class names ('sm'/'md'/'lg'/'xl') and
+  // resolves to pixel sizes inline. Lets a single helper render at
+  // any pixel size without depending on .av.sm / .av.md classes.
+  var sz = size === 'sm' ? 28 : size === 'md' ? 36 : size === 'lg' ? 48 : size === 'xl' ? 96 : 36;
+  var fontSize = size === 'sm' ? 10 : size === 'md' ? 12 : size === 'lg' ? 15 : size === 'xl' ? 28 : 12;
   var safe = (typeof safeText==='function') ? safeText : function(s){return String(s||'').replace(/[<>&"]/g,'');};
   var safeUrl = (typeof safeURL==='function') ? safeURL : function(s){return String(s||'').replace(/["'<>]/g,'');};
-  if(user.avatar_image_url){
-    return '<div class="av custom '+sizeClass+'"><img src="'+safeUrl(user.avatar_image_url)+'" alt=""></div>';
+
+  // Custom image takes precedence — uses a CSS background so the
+  // wrapper stays a single <div> regardless of finish-fallback path.
+  if(p.avatar_image_url){
+    var u = safeUrl(p.avatar_image_url);
+    return '<div class="av" style="width:'+sz+'px;height:'+sz+'px;background-image:url(\''+u+'\');background-size:cover;background-position:center"></div>';
   }
-  // Finish fallback — `normalizeFinish` already lands on 'chrome' for
-  // unknown values, so a missing avatar_finish never breaks the render.
-  var finish = normalizeFinish(user.avatar_finish || user.color);
-  // Initials fallback — explicit field first, then derive from any
-  // name-ish field, finally '??'. Strip non-alpha so weird usernames
-  // like "@trader_99" render as "TR" not "TR".
-  var name = user.name || user.username || user.display_name || '';
-  var init = user.avatar_initials || user.initials;
+
+  // Finish fallback — handles BOTH field-name conventions:
+  //   profile-style → avatar_finish
+  //   member-style  → color, avatar_color
+  // Final default is 'sapphire' per spec (was 'chrome' previously, but
+  // sapphire reads better against muted text on the @trader-style
+  // half-empty rows).
+  var finishRaw = p.avatar_finish || p.color || p.avatar_color || 'sapphire';
+  var finish = (typeof normalizeFinish === 'function') ? normalizeFinish(finishRaw) : finishRaw;
+
+  // Initials fallback — explicit field first (either convention),
+  // then derive from any name-ish field with non-alpha stripped.
+  var init = p.avatar_initials || p.initials;
   if(!init || !String(init).trim()){
+    var name = p.username || p.name || p.display_name || '';
     var clean = String(name).replace(/[^a-zA-Z]/g,'');
     init = clean ? clean.slice(0,2).toUpperCase() : '??';
   }
-  return '<div class="av '+finish+' '+sizeClass+'">'+safe(init)+'</div>';
+  return '<div class="av '+finish+'" style="width:'+sz+'px;height:'+sz+'px;font-size:'+fontSize+'px">'+safe(init)+'</div>';
 }
 /* Backwards-compatible alias — earlier callers used renderAvatar. */
 var renderAvatar = renderUserAvatar;
