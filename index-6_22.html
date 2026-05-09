@@ -14675,21 +14675,27 @@ async function loadTradesFromDB(user) {
 
 var _supaErrToastedAt = 0;
 async function saveTradeToSupa(trade) {
-  if (!currentUser || !_sb) return;
+  if (!_sb) return;
   try {
+    // Re-fetch the auth user for every write. `currentUser` can drift
+    // if a session refresh happened mid-session, and RLS keys on
+    // auth.uid() at the row check — if the JWT doesn't carry the
+    // expected user_id we'd see "new row violates row-level security
+    // policy" even though the JS thinks it has a current user.
+    var au = await _sb.auth.getUser();
+    var authUser = au && au.data && au.data.user;
+    if (!authUser || !authUser.id) throw new Error('Not authenticated');
+
     var r = await _sb.from('trades').upsert({
       id: String(trade.id),
-      user_id: currentUser.id,
+      user_id: authUser.id,            // REQUIRED by RLS policy
       trade_data: JSON.stringify(trade),
       journal: activeJournal,
       updated_at: new Date().toISOString()
-    });
+    }, { onConflict: 'id' });
     if(r && r.error) throw r.error;
   } catch(e) {
     console.error('[saveTradeToSupa]', e);
-    // Rate-limit the user-facing toast — `save()` debounces and flushes
-    // every trade in the array, so a single broken connection would
-    // otherwise spam dozens of toasts in a row.
     var now = Date.now();
     if (now - _supaErrToastedAt > 8000) {
       _supaErrToastedAt = now;
