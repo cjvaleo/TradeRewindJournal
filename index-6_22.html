@@ -2908,9 +2908,61 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-log .csv-edit-row .csv-pnl-input{font-family:var(--n-font-mono)}
 
 #pg-log .csv-edit-row .csv-row-extras{
-  display:grid;grid-template-columns:auto auto 1fr;gap:8px;align-items:center;
+  display:grid;grid-template-columns:auto auto auto auto 1fr;gap:8px;align-items:center;
 }
 #pg-log .csv-edit-row .grade-pills-mini{display:flex;gap:3px;flex-shrink:0}
+
+/* Mini wrappers shared by grade / emotion / conf — animated bottom bar
+   driven by --mini-pct + --mini-color (set inline on the row). */
+#pg-log .csv-edit-row .csv-mini-wrap{
+  position:relative;padding-bottom:5px;overflow:hidden;border-radius:7px;
+}
+#pg-log .csv-edit-row .csv-mini-wrap::before{
+  content:'';position:absolute;bottom:0;left:0;
+  height:1.5px;width:var(--mini-pct, 0%);
+  background:var(--mini-color, var(--n-text-3));
+  box-shadow:0 0 4px var(--mini-color, transparent);
+  transition:width .4s ease, background .3s ease;
+  border-radius:1px;
+}
+#pg-log .csv-edit-row .conf-mini-row{--mini-color:var(--n-accent-cool)}
+
+/* Emotion mini — 5 emoji buttons */
+#pg-log .csv-edit-row .emotion-mini{display:flex;gap:3px;flex-shrink:0}
+#pg-log .csv-edit-row .em-mini{
+  width:28px;height:28px;
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:5px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;line-height:1;cursor:pointer;
+  transition:all .2s;padding:0;
+  filter:grayscale(0.4) opacity(0.6);
+}
+#pg-log .csv-edit-row .em-mini:hover{
+  filter:grayscale(0.2) opacity(0.85);
+  background:var(--n-surface-2);
+  border-color:var(--n-border-2);
+}
+#pg-log .csv-edit-row .em-mini.on{
+  filter:none;
+  background:var(--n-surface-3);
+  border-color:var(--n-border-2);
+  box-shadow:inset 0 0 0 1px var(--n-border-2);
+}
+
+/* Confidence mini — 5 dots */
+#pg-log .csv-edit-row .conf-mini{display:flex;gap:5px;align-items:center;flex-shrink:0;padding:0 4px}
+#pg-log .csv-edit-row .cm-dot{
+  width:10px;height:10px;border-radius:50%;
+  border:1.5px solid var(--n-border-2);background:transparent;
+  cursor:pointer;transition:all .15s;display:inline-block;
+}
+#pg-log .csv-edit-row .cm-dot:hover{
+  border-color:var(--n-text-3);transform:scale(1.15);
+}
+#pg-log .csv-edit-row .cm-dot.on{
+  background:var(--n-accent-cool);border-color:var(--n-accent-cool);
+  box-shadow:0 0 6px rgba(110,168,255,0.50);
+}
 
 /* SCREENSHOT ZONE — empty button or 56×32 thumb */
 #pg-log .csv-edit-row .csv-screenshot{flex-shrink:0;cursor:pointer;position:relative}
@@ -2983,8 +3035,12 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
 @media (max-width:900px){
   #pg-log .csv-edit-row .csv-row-body{grid-template-columns:1fr 1fr 1fr;gap:6px}
-  #pg-log .csv-edit-row .csv-row-extras{flex-wrap:wrap;gap:8px}
+  /* Switch extras from grid to wrapping flex so the mini groups + screenshot
+     + notes drop to multiple lines instead of squeezing. */
+  #pg-log .csv-edit-row .csv-row-extras{display:flex;flex-wrap:wrap;gap:8px}
   #pg-log .csv-edit-row .csv-notes{flex-basis:100%}
+  #pg-log .csv-edit-row .em-mini{width:24px;height:24px;font-size:12px}
+  #pg-log .csv-edit-row .grade-pill-mini{width:24px;height:24px;font-size:12px}
 }
 
 /* ── HISTORY REDESIGN ─────────────────────────────── */
@@ -12843,7 +12899,42 @@ document.addEventListener('click', function(e){
   if(gradeEl){
     row.querySelectorAll('.grade-pill-mini').forEach(function(p){ p.classList.remove('on'); });
     gradeEl.classList.add('on');
-    if(!isNaN(idx) && csvEnrichment[idx]) csvEnrichment[idx].grade = gradeEl.dataset.grade;
+    var gLetter = gradeEl.dataset.grade;
+    if(!isNaN(idx) && csvEnrichment[idx]) csvEnrichment[idx].grade = gLetter;
+    var gWrap = gradeEl.closest('.grade-mini-row');
+    if(gWrap){
+      gWrap.style.setProperty('--mini-color', (typeof GRADE_COLORS!=='undefined' ? GRADE_COLORS[gLetter] : '#e0e0e0') || '#e0e0e0');
+      gWrap.style.setProperty('--mini-pct', ((typeof GRADE_PCTS!=='undefined' ? GRADE_PCTS[gLetter] : 80) || 80)+'%');
+    }
+    return;
+  }
+
+  // Emotion mini button
+  var emEl = e.target.closest('.em-mini');
+  if(emEl){
+    row.querySelectorAll('.em-mini').forEach(function(b){ b.classList.remove('on'); });
+    emEl.classList.add('on');
+    var emLvl = parseInt(emEl.dataset.em)||3;
+    if(!isNaN(idx) && csvEnrichment[idx]) csvEnrichment[idx].emotion = emLvl;
+    var emWrap = emEl.closest('.emotion-mini-row');
+    if(emWrap){
+      emWrap.style.setProperty('--mini-color', (typeof EMOTION_COLORS!=='undefined' ? EMOTION_COLORS[emLvl] : '#888') || '#888');
+      emWrap.style.setProperty('--mini-pct', (emLvl*20)+'%');
+    }
+    return;
+  }
+
+  // Confidence mini dot
+  var cmEl = e.target.closest('.cm-dot');
+  if(cmEl){
+    var lvl = parseInt(cmEl.dataset.c)||3;
+    row.querySelectorAll('.cm-dot').forEach(function(d){
+      var n = parseInt(d.dataset.c)||0;
+      d.classList.toggle('on', n <= lvl);
+    });
+    if(!isNaN(idx) && csvEnrichment[idx]) csvEnrichment[idx].confidence = lvl;
+    var cWrap = cmEl.closest('.conf-mini-row');
+    if(cWrap){ cWrap.style.setProperty('--mini-pct', (lvl*20)+'%'); }
     return;
   }
 
@@ -12947,15 +13038,33 @@ function csvRenderAllRows(){
     var pnlStr = (isWin?'+':'−')+'$'+pnlAbs.toLocaleString(undefined,{maximumFractionDigits:2});
     var side = (t.direction==='short' || t.type==='short') ? 'short' : 'long';
     var grade = e.grade || 'B';
+    var emo   = parseInt(e.emotion)||3;
+    var conf  = parseInt(e.confidence)||3;
     var accts = (e.accounts!=null) ? e.accounts : 1;
     var entry = (t.entry!=null && !isNaN(t.entry)) ? t.entry : '';
     var exit  = (t.exit !=null && !isNaN(t.exit )) ? t.exit  : '';
     var qty   = (t.qty  !=null && !isNaN(t.qty )) ? t.qty   : 1;
     var sym   = t.sym || '';
     var notes = e.notes || '';
+
+    // Initial CSS-var values for each mini wrapper's progress bar
+    var gColor = (typeof GRADE_COLORS!=='undefined' && GRADE_COLORS[grade]) || '#e0e0e0';
+    var gPct   = (typeof GRADE_PCTS!=='undefined' && GRADE_PCTS[grade]) || 80;
+    var emColor= (typeof EMOTION_COLORS!=='undefined' && EMOTION_COLORS[emo]) || '#888';
+    var emPct  = emo*20;
+    var cPct   = conf*20;
+
     var gradePillsHtml = ['A','B','C','D','F'].map(function(g){
       return '<div class="grade-pill-mini '+g+(grade===g?' on':'')+'" data-grade="'+g+'">'+g+'</div>';
     }).join('');
+    var EMO_EMOJI={1:'\u{1F628}',2:'\u{1F61F}',3:'\u{1F610}',4:'\u{1F642}',5:'\u{1F60E}'};
+    var emoMiniHtml = [1,2,3,4,5].map(function(n){
+      return '<button type="button" class="em-mini'+(emo===n?' on':'')+'" data-em="'+n+'">'+EMO_EMOJI[n]+'</button>';
+    }).join('');
+    var confMiniHtml = [1,2,3,4,5].map(function(n){
+      return '<span class="cm-dot'+(n<=conf?' on':'')+'" data-c="'+n+'"></span>';
+    }).join('');
+
     var imgUrl = (Array.isArray(e.images) && e.images[0]) ? e.images[0] : '';
     var ssEmptyDisp = imgUrl ? 'none' : '';
     var ssThumbDisp = imgUrl ? '' : 'none';
@@ -12978,7 +13087,15 @@ function csvRenderAllRows(){
         '<input class="field-input field-sm csv-pnl-input" data-field="pnl" placeholder="P&amp;L (auto)" type="number" step="any" value="'+(pnl||'')+'"/>'+
       '</div>'+
       '<div class="csv-row-extras">'+
-        '<div class="grade-pills-mini">'+gradePillsHtml+'</div>'+
+        '<div class="csv-mini-wrap grade-mini-row" style="--mini-color:'+gColor+';--mini-pct:'+gPct+'%">'+
+          '<div class="grade-pills-mini">'+gradePillsHtml+'</div>'+
+        '</div>'+
+        '<div class="csv-mini-wrap emotion-mini-row" style="--mini-color:'+emColor+';--mini-pct:'+emPct+'%">'+
+          '<div class="emotion-mini">'+emoMiniHtml+'</div>'+
+        '</div>'+
+        '<div class="csv-mini-wrap conf-mini-row" style="--mini-pct:'+cPct+'%">'+
+          '<div class="conf-mini">'+confMiniHtml+'</div>'+
+        '</div>'+
         '<div class="csv-screenshot" data-row-screenshot>'+
           '<input type="file" accept="image/*" hidden class="csv-ss-input"/>'+
           '<div class="csv-ss-empty" style="display:'+ssEmptyDisp+'">'+
