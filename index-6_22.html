@@ -2537,45 +2537,9 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   box-shadow:0 0 24px rgba(201,95,95,0.20), inset 0 0 0 1px rgba(201,95,95,0.20);
 }
 
-/* EMOTION PILLS — bigger emoji, desaturated when inactive */
-#pg-log .lt-emo-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-#pg-log .lt-emo-pill{
-  display:flex;flex-direction:column;align-items:center;gap:0;
-  padding:14px 0 10px;
-  border:1px solid var(--n-border);border-radius:10px;
-  background:var(--n-surface);cursor:pointer;text-align:center;
-  transition:all .2s ease;user-select:none;
-  font-size:28px;line-height:1;
-  position:relative;
-  filter:grayscale(0.4) opacity(0.75);
-}
-#pg-log .lt-emo-pill .emj{font-size:28px;line-height:1}
-#pg-log .lt-emo-pill .lbl{
-  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.18em;
-  text-transform:uppercase;color:var(--n-text-4);margin-top:8px;display:block;
-}
-#pg-log .lt-emo-pill:hover{
-  border-color:var(--n-border-2);background:var(--n-surface-2);
-  transform:translateY(-1px);filter:grayscale(0.2) opacity(0.9);
-}
-#pg-log .lt-emo-pill.on{
-  background:linear-gradient(180deg, var(--n-surface-3) 0%, var(--n-surface-2) 100%);
-  border-color:var(--n-border-2);
-  box-shadow:inset 0 0 0 1px var(--n-border-2), 0 4px 12px rgba(0,0,0,0.30);
-  filter:none;transform:translateY(-1px);
-}
-#pg-log .lt-emo-pill.on::before{
-  content:'';position:absolute;top:-1px;left:50%;
-  transform:translateX(-50%);
-  width:30%;height:1px;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.30), transparent);
-}
-#pg-log .lt-emo-pill.on .lbl{color:var(--n-text)}
-
-/* GRADE / EMOTION ROW WRAPPERS — animated bottom progress bars
-   driven by --grade-pct/--grade-color and --emotion-pct/--emotion-color */
-#pg-log .grade-row,
-#pg-log .emotion-row-wrap{
+/* GRADE ROW WRAPPER — animated bottom progress bar
+   driven by --grade-pct + --grade-color. Reversed: F=20% → A=100%. */
+#pg-log .grade-row{
   position:relative;padding-bottom:6px;overflow:hidden;border-radius:12px;
 }
 #pg-log .grade-row::before{
@@ -2586,13 +2550,49 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   transition:width .4s ease, background .3s ease, box-shadow .3s ease;
   border-radius:1px;
 }
-#pg-log .emotion-row-wrap::before{
-  content:'';position:absolute;bottom:0;left:0;
-  height:2px;width:var(--emotion-pct, 60%);
-  background:var(--emotion-color, var(--n-text-3));
-  box-shadow:0 0 8px var(--emotion-color, transparent);
+
+/* EMOTION ROW — 5-dot meter mirroring .lt-confidence-row */
+#pg-log .emotion-row{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;
+  background:linear-gradient(180deg, var(--n-surface-2) 0%, var(--n-surface) 100%);
+  border:1px solid var(--n-border);border-radius:10px;
+  position:relative;overflow:hidden;
+}
+#pg-log .emotion-row::before{
+  content:'';position:absolute;
+  bottom:0;left:0;height:2px;
+  width:var(--em-pct, 60%);
+  background:var(--em-color, #888);
+  box-shadow:0 0 8px var(--em-color, transparent);
   transition:width .4s ease, background .3s ease, box-shadow .3s ease;
   border-radius:1px;
+}
+#pg-log .em-dot{
+  width:16px;height:16px;border-radius:50%;
+  border:1.5px solid var(--n-border-2);background:transparent;
+  cursor:pointer;transition:all .15s ease;flex-shrink:0;
+  position:relative;
+}
+#pg-log .em-dot::after{
+  content:'';position:absolute;inset:3px;border-radius:50%;
+  background:var(--em-color, #888);
+  opacity:0;transform:scale(0.6);
+  transition:all .2s ease;
+}
+#pg-log .em-dot:hover{
+  border-color:var(--n-text-3);transform:scale(1.10);
+}
+#pg-log .em-dot.on{
+  border-color:var(--em-color, #888);
+  box-shadow:0 0 8px var(--em-color, transparent);
+}
+#pg-log .em-dot.on::after{opacity:1;transform:scale(1)}
+#pg-log .em-label{
+  margin-left:auto;
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text);font-weight:500;
+  transition:color .15s;
 }
 
 /* CONFIDENCE DOTS — animated bottom progress bar + centered dot fill */
@@ -2927,26 +2927,19 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 #pg-log .csv-edit-row .conf-mini-row{--mini-color:var(--n-accent-cool)}
 
-/* Emotion mini — 5 emoji buttons */
-#pg-log .csv-edit-row .emotion-mini{display:flex;gap:3px;flex-shrink:0}
-#pg-log .csv-edit-row .em-mini{
-  width:28px;height:28px;
-  background:var(--n-surface);border:1px solid var(--n-border);
-  border-radius:5px;display:flex;align-items:center;justify-content:center;
-  font-size:14px;line-height:1;cursor:pointer;
-  transition:all .2s;padding:0;
-  filter:grayscale(0.4) opacity(0.6);
+/* Emotion mini — 5 dots (matches confidence dots pattern) */
+#pg-log .csv-edit-row .em-mini-row{display:flex;gap:5px;align-items:center;flex-shrink:0;padding:0 4px}
+#pg-log .csv-edit-row .em-mini-dot{
+  width:10px;height:10px;border-radius:50%;
+  border:1.5px solid var(--n-border-2);background:transparent;
+  cursor:pointer;transition:all .15s;display:inline-block;
 }
-#pg-log .csv-edit-row .em-mini:hover{
-  filter:grayscale(0.2) opacity(0.85);
-  background:var(--n-surface-2);
-  border-color:var(--n-border-2);
+#pg-log .csv-edit-row .em-mini-dot:hover{
+  border-color:var(--n-text-3);transform:scale(1.15);
 }
-#pg-log .csv-edit-row .em-mini.on{
-  filter:none;
-  background:var(--n-surface-3);
-  border-color:var(--n-border-2);
-  box-shadow:inset 0 0 0 1px var(--n-border-2);
+#pg-log .csv-edit-row .em-mini-dot.on{
+  background:var(--em-color, #888);border-color:var(--em-color, #888);
+  box-shadow:0 0 4px var(--em-color, transparent);
 }
 
 /* Confidence mini — 5 dots */
@@ -3039,7 +3032,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
      + notes drop to multiple lines instead of squeezing. */
   #pg-log .csv-edit-row .csv-row-extras{display:flex;flex-wrap:wrap;gap:8px}
   #pg-log .csv-edit-row .csv-notes{flex-basis:100%}
-  #pg-log .csv-edit-row .em-mini{width:24px;height:24px;font-size:12px}
   #pg-log .csv-edit-row .grade-pill-mini{width:24px;height:24px;font-size:12px}
 }
 
@@ -6065,12 +6057,11 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   #pg-log .lt-section{padding:18px 14px}
   #pg-log .lt-grade-pills{gap:5px}
   #pg-log .lt-grade-pill{font-size:22px;padding:13px 0}
-  #pg-log .lt-emo-row{gap:5px}
-  #pg-log .lt-emo-pill{padding:11px 0 8px}
-  #pg-log .lt-emo-pill .emj{font-size:22px}
-  #pg-log .lt-emo-pill .lbl{font-size:7.5px;margin-top:6px}
+  #pg-log .emotion-row,
   #pg-log .lt-confidence-row{gap:10px;padding:11px 12px}
+  #pg-log .em-dot,
   #pg-log .lt-conf-dot{width:14px;height:14px}
+  #pg-log .em-label,
   #pg-log .lt-conf-label{font-size:10px}
   #pg-log .field-input,
   #pg-log .f-input,
@@ -6713,11 +6704,11 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
             <div class="lt-field-l">Setup Grade</div>
             <div class="grade-row">
               <div class="lt-grade-pills">
-                <div class="lt-grade-pill grade-A" data-grade="A" onclick="setGradePill('A')">A</div>
-                <div class="lt-grade-pill grade-B on" data-grade="B" onclick="setGradePill('B')">B</div>
-                <div class="lt-grade-pill grade-C" data-grade="C" onclick="setGradePill('C')">C</div>
-                <div class="lt-grade-pill grade-D" data-grade="D" onclick="setGradePill('D')">D</div>
                 <div class="lt-grade-pill grade-F" data-grade="F" onclick="setGradePill('F')">F</div>
+                <div class="lt-grade-pill grade-D" data-grade="D" onclick="setGradePill('D')">D</div>
+                <div class="lt-grade-pill grade-C" data-grade="C" onclick="setGradePill('C')">C</div>
+                <div class="lt-grade-pill grade-B on" data-grade="B" onclick="setGradePill('B')">B</div>
+                <div class="lt-grade-pill grade-A" data-grade="A" onclick="setGradePill('A')">A</div>
               </div>
             </div>
             <input type="hidden" id="lg-grade" value="3"/>
@@ -6725,14 +6716,13 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
           <div class="lt-field">
             <div class="lt-field-l">Emotion</div>
-            <div class="emotion-row-wrap">
-              <div class="lt-emo-row">
-                <div class="lt-emo-pill" data-emo="1" onclick="setEmotionPill(1)"><span class="emj">&#128552;</span><span class="lbl">Anxious</span></div>
-                <div class="lt-emo-pill" data-emo="2" onclick="setEmotionPill(2)"><span class="emj">&#128543;</span><span class="lbl">Off</span></div>
-                <div class="lt-emo-pill on" data-emo="3" onclick="setEmotionPill(3)"><span class="emj">&#128528;</span><span class="lbl">Neutral</span></div>
-                <div class="lt-emo-pill" data-emo="4" onclick="setEmotionPill(4)"><span class="emj">&#128578;</span><span class="lbl">Confident</span></div>
-                <div class="lt-emo-pill" data-emo="5" onclick="setEmotionPill(5)"><span class="emj">&#128526;</span><span class="lbl">In Zone</span></div>
-              </div>
+            <div class="emotion-row" id="lt-emotion-row">
+              <div class="em-dot" data-emotion="1" title="Anxious" onclick="setEmotionDots(1)"></div>
+              <div class="em-dot" data-emotion="2" title="Off" onclick="setEmotionDots(2)"></div>
+              <div class="em-dot on" data-emotion="3" title="Neutral" onclick="setEmotionDots(3)"></div>
+              <div class="em-dot" data-emotion="4" title="Confident" onclick="setEmotionDots(4)"></div>
+              <div class="em-dot" data-emotion="5" title="In Zone" onclick="setEmotionDots(5)"></div>
+              <span class="em-label" id="lt-em-label">Neutral</span>
             </div>
             <input type="hidden" id="lg-emotion" value="3"/>
           </div>
@@ -12249,8 +12239,9 @@ const _GRADE_TO_IDX={F:0,D:1,C:2,B:3,A:4}; // existing GRADES is 0=F..5=A+; A+ u
 
 // Reflection-bar palettes (shared by manual + CSV minis)
 const GRADE_COLORS={A:'#5fb389',B:'#e0e0e0',C:'#888',D:'#d49a6a',F:'#c95f5f'};
-const GRADE_PCTS  ={A:100,B:80,C:60,D:40,F:20};
+const GRADE_PCTS  ={F:20,D:40,C:60,B:80,A:100};
 const EMOTION_COLORS={1:'#c95f5f',2:'#d49a6a',3:'#888',4:'#a8d8a8',5:'#5fb389'};
+const EMOTION_LABELS=['','Anxious','Off','Neutral','Confident','In Zone'];
 
 function setGradePill(letter){
   document.querySelectorAll('#pg-log .lt-grade-pill').forEach(function(p){ p.classList.remove('on'); });
@@ -12268,29 +12259,38 @@ function setGradePill(letter){
   updateLogPreview();
 }
 
-function setEmotionPill(n){
-  document.querySelectorAll('#pg-log .lt-emo-pill').forEach(function(p){ p.classList.remove('on'); });
-  var pill=document.querySelector('#pg-log .lt-emo-pill[data-emo="'+n+'"]');
-  if(pill) pill.classList.add('on');
-  var hidden=document.getElementById('lg-emotion');
-  if(hidden) hidden.value=String(n);
-  // Drive the row's bottom-bar fill + color (1=red, 5=green)
-  var row=document.querySelector('#pg-log .emotion-row-wrap');
+function setEmotionDots(n){
+  var lvl = Math.max(1, Math.min(5, parseInt(n)||3));
+  // Cumulative fill — every dot ≤ lvl gets .on
+  document.querySelectorAll('#pg-log .em-dot').forEach(function(d){
+    var v = parseInt(d.dataset.emotion||'0');
+    d.classList.toggle('on', v <= lvl);
+  });
+  // Label on right side ("Neutral", "In Zone", etc.)
+  var lbl=document.getElementById('lt-em-label');
+  if(lbl) lbl.textContent = EMOTION_LABELS[lvl] || '';
+  // Drive the row's bar fill + color and the dot ::after color via --em-*.
+  var row=document.getElementById('lt-emotion-row');
   if(row){
-    var lvl = parseInt(n)||3;
-    row.style.setProperty('--emotion-color', EMOTION_COLORS[lvl] || EMOTION_COLORS[3]);
-    row.style.setProperty('--emotion-pct',  (lvl*20)+'%');
+    row.style.setProperty('--em-color', EMOTION_COLORS[lvl] || EMOTION_COLORS[3]);
+    row.style.setProperty('--em-pct',   (lvl*20)+'%');
   }
-  if(typeof updateEmotion==='function'){ try{ updateEmotion(n); }catch(e){} }
+  // Persist for fullLog (which reads lg-emotion as source of truth)
+  var hidden=document.getElementById('lg-emotion');
+  if(hidden) hidden.value=String(lvl);
+  if(typeof updateEmotion==='function'){ try{ updateEmotion(lvl); }catch(e){} }
   updateLogPreview();
 }
+// Back-compat alias — older callsites (resetLogForm, fullLog reset, etc.)
+// invoke setEmotionPill. Keep name working without renaming everywhere.
+function setEmotionPill(n){ setEmotionDots(n); }
 
 // Set initial bar states on page load + after every reset.
 function initReflectionBars(){
   var g=document.querySelector('#pg-log .grade-row');
   if(g){ g.style.setProperty('--grade-color', GRADE_COLORS.B); g.style.setProperty('--grade-pct', '80%'); }
-  var em=document.querySelector('#pg-log .emotion-row-wrap');
-  if(em){ em.style.setProperty('--emotion-color', EMOTION_COLORS[3]); em.style.setProperty('--emotion-pct', '60%'); }
+  var em=document.getElementById('lt-emotion-row');
+  if(em){ em.style.setProperty('--em-color', EMOTION_COLORS[3]); em.style.setProperty('--em-pct', '60%'); }
   var c=document.querySelector('#pg-log .lt-confidence-row');
   if(c){ c.style.setProperty('--conf-pct', '60%'); }
 }
@@ -12909,17 +12909,26 @@ document.addEventListener('click', function(e){
     return;
   }
 
-  // Emotion mini button
-  var emEl = e.target.closest('.em-mini');
+  // Emotion mini dot — cumulative fill (1..emLvl), matches conf-mini pattern
+  var emEl = e.target.closest('.em-mini-dot');
   if(emEl){
-    row.querySelectorAll('.em-mini').forEach(function(b){ b.classList.remove('on'); });
-    emEl.classList.add('on');
     var emLvl = parseInt(emEl.dataset.em)||3;
+    var emInner = emEl.closest('.em-mini-row');
+    if(emInner){
+      emInner.querySelectorAll('.em-mini-dot').forEach(function(d){
+        var n = parseInt(d.dataset.em)||0;
+        d.classList.toggle('on', n <= emLvl);
+      });
+      emInner.dataset.csvEmotion = String(emLvl);
+    }
     if(!isNaN(idx) && csvEnrichment[idx]) csvEnrichment[idx].emotion = emLvl;
     var emWrap = emEl.closest('.emotion-mini-row');
     if(emWrap){
-      emWrap.style.setProperty('--mini-color', (typeof EMOTION_COLORS!=='undefined' ? EMOTION_COLORS[emLvl] : '#888') || '#888');
+      var emColorVal = (typeof EMOTION_COLORS!=='undefined' ? EMOTION_COLORS[emLvl] : '#888') || '#888';
+      emWrap.style.setProperty('--mini-color', emColorVal);
       emWrap.style.setProperty('--mini-pct', (emLvl*20)+'%');
+      // Also drive --em-color so each .on dot picks up the level color
+      emWrap.style.setProperty('--em-color', emColorVal);
     }
     return;
   }
@@ -13054,12 +13063,13 @@ function csvRenderAllRows(){
     var emPct  = emo*20;
     var cPct   = conf*20;
 
-    var gradePillsHtml = ['A','B','C','D','F'].map(function(g){
+    // Grade order F → A (worst → best), matching manual form
+    var gradePillsHtml = ['F','D','C','B','A'].map(function(g){
       return '<div class="grade-pill-mini '+g+(grade===g?' on':'')+'" data-grade="'+g+'">'+g+'</div>';
     }).join('');
-    var EMO_EMOJI={1:'\u{1F628}',2:'\u{1F61F}',3:'\u{1F610}',4:'\u{1F642}',5:'\u{1F60E}'};
+    // Emotion as 5 dots (cumulative fill 1..emo), no more emojis
     var emoMiniHtml = [1,2,3,4,5].map(function(n){
-      return '<button type="button" class="em-mini'+(emo===n?' on':'')+'" data-em="'+n+'">'+EMO_EMOJI[n]+'</button>';
+      return '<span class="em-mini-dot'+(n<=emo?' on':'')+'" data-em="'+n+'"></span>';
     }).join('');
     var confMiniHtml = [1,2,3,4,5].map(function(n){
       return '<span class="cm-dot'+(n<=conf?' on':'')+'" data-c="'+n+'"></span>';
@@ -13090,8 +13100,8 @@ function csvRenderAllRows(){
         '<div class="csv-mini-wrap grade-mini-row" style="--mini-color:'+gColor+';--mini-pct:'+gPct+'%">'+
           '<div class="grade-pills-mini">'+gradePillsHtml+'</div>'+
         '</div>'+
-        '<div class="csv-mini-wrap emotion-mini-row" style="--mini-color:'+emColor+';--mini-pct:'+emPct+'%">'+
-          '<div class="emotion-mini">'+emoMiniHtml+'</div>'+
+        '<div class="csv-mini-wrap emotion-mini-row" style="--mini-color:'+emColor+';--mini-pct:'+emPct+'%;--em-color:'+emColor+'">'+
+          '<div class="em-mini-row" data-csv-emotion="'+emo+'">'+emoMiniHtml+'</div>'+
         '</div>'+
         '<div class="csv-mini-wrap conf-mini-row" style="--mini-pct:'+cPct+'%">'+
           '<div class="conf-mini">'+confMiniHtml+'</div>'+
