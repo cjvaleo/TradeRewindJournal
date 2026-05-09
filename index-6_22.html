@@ -12516,6 +12516,123 @@ function csvInitEnrichment() {
   csvRenderAllRows();
 }
 
+// Recompute a row's P&L from its inputs, write back into csvParsedTrades,
+// and update the visible pill + win/loss accent. Skips when pnl was
+// manually edited by the user (data-pnl-manual="1" on the row).
+function recalcCsvRowPnl(row){
+  if(!row) return;
+  var idx = parseInt(row.dataset.idx);
+  if(isNaN(idx) || !csvParsedTrades[idx]) return;
+  var t = csvParsedTrades[idx];
+  var e = csvEnrichment[idx] || (csvEnrichment[idx] = {grade:'B', accounts:1, notes:''});
+
+  var entry = parseFloat(row.querySelector('[data-field="entry"]')?.value);
+  var exit  = parseFloat(row.querySelector('[data-field="exit"]')?.value);
+  var qty   = parseFloat(row.querySelector('[data-field="qty"]')?.value)||1;
+  var accts = parseInt(row.querySelector('[data-field="accts"]')?.value)||1;
+  var sym   = (row.querySelector('[data-field="sym"]')?.value||'').trim().toUpperCase();
+  var sideEl= row.querySelector('.side-card-mini.on');
+  var side  = sideEl && sideEl.dataset.side === 'short' ? 'short' : 'long';
+
+  // mirror edits back into the source-of-truth array
+  t.sym = sym;
+  t.entry = isNaN(entry) ? null : entry;
+  t.exit  = isNaN(exit)  ? null : exit;
+  t.qty   = isNaN(qty)   ? 1    : qty;
+  t.direction = side;
+  t.type = side; // unify side naming
+  e.accounts = accts;
+
+  if(e.pnlManual){
+    // User typed their own P&L — keep that value as the source of truth.
+    var manualPnl = parseFloat(row.querySelector('.csv-pnl-input')?.value);
+    if(!isNaN(manualPnl)) t.pnl = manualPnl;
+  } else if(!isNaN(entry) && !isNaN(exit)){
+    var tv = (typeof PTS !== 'undefined' && PTS[sym]) ? PTS[sym] : 1;
+    var dir = side === 'short' ? -1 : 1;
+    var totalQty = qty * accts;
+    var pnl = (exit - entry) * totalQty * tv * dir;
+    pnl = Math.round(pnl * 100) / 100;
+    t.pnl = pnl;
+    var pnlInput = row.querySelector('.csv-pnl-input');
+    if(pnlInput) pnlInput.value = pnl;
+  }
+
+  // Repaint pill + row accent
+  var pnlNum = Number(t.pnl||0);
+  var isWin = pnlNum >= 0;
+  var pill = row.querySelector('.csv-row-pnl');
+  if(pill){
+    pill.textContent = (isWin?'+':'−')+'$'+Math.abs(pnlNum).toLocaleString(undefined,{maximumFractionDigits:2});
+    pill.classList.toggle('loss', !isWin);
+  }
+  row.classList.toggle('profit', isWin);
+  row.classList.toggle('loss', !isWin);
+}
+
+// Delegated handlers — bound once, against the rows-list container.
+// Bound at script-init since the list is populated after csvInitEnrichment.
+document.addEventListener('input', function(e){
+  var row = e.target.closest && e.target.closest('#pg-log .csv-edit-row');
+  if(!row) return;
+  var field = e.target.dataset.field;
+  if(field === 'pnl'){
+    row.dataset.pnlManual = '1';
+    var idx = parseInt(row.dataset.idx);
+    if(!isNaN(idx) && csvEnrichment[idx]) csvEnrichment[idx].pnlManual = true;
+    // Still recalc so the row accent + pill match the typed number
+    recalcCsvRowPnl(row);
+    return;
+  }
+  if(field === 'notes'){
+    var i = parseInt(row.dataset.idx);
+    if(!isNaN(i) && csvEnrichment[i]) csvEnrichment[i].notes = e.target.value;
+    return;
+  }
+  // sym, entry, exit, qty, accts → recalc P&L (unless manual-overridden)
+  recalcCsvRowPnl(row);
+});
+
+document.addEventListener('click', function(e){
+  var row = e.target.closest && e.target.closest('#pg-log .csv-edit-row');
+  if(!row) return;
+  var idx = parseInt(row.dataset.idx);
+
+  // Remove button
+  var rmBtn = e.target.closest('[data-action="remove"]');
+  if(rmBtn){
+    if(!isNaN(idx)){
+      csvParsedTrades.splice(idx, 1);
+      csvEnrichment.splice(idx, 1);
+      csvRenderAllRows();
+      var countEl = document.getElementById('csv-count');
+      if(countEl) countEl.textContent = csvParsedTrades.length+' trade'+(csvParsedTrades.length===1?'':'s');
+    }
+    return;
+  }
+
+  // Side toggle
+  var sideEl = e.target.closest('.side-card-mini');
+  if(sideEl){
+    row.querySelectorAll('.side-card-mini').forEach(function(c){ c.classList.remove('on'); });
+    sideEl.classList.add('on');
+    // Side change invalidates the user's manual P&L (now wrong direction)
+    delete row.dataset.pnlManual;
+    if(!isNaN(idx) && csvEnrichment[idx]) csvEnrichment[idx].pnlManual = false;
+    recalcCsvRowPnl(row);
+    return;
+  }
+
+  // Grade pill
+  var gradeEl = e.target.closest('.grade-pill-mini');
+  if(gradeEl){
+    row.querySelectorAll('.grade-pill-mini').forEach(function(p){ p.classList.remove('on'); });
+    gradeEl.classList.add('on');
+    if(!isNaN(idx) && csvEnrichment[idx]) csvEnrichment[idx].grade = gradeEl.dataset.grade;
+    return;
+  }
+});
+
 // v2 list-of-rows renderer — replaces the per-trade carousel.
 function csvRenderAllRows(){
   var list = document.getElementById('csv-rows-list');
