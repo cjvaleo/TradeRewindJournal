@@ -1611,10 +1611,44 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 .sc-lbl{font-size:9px!important} 
 #mobile-nav{display:flex!important}
 }
-#mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:56px;background:rgba(6,0,20,.98);border-top:1px solid rgba(255,45,155,.3);z-index:99998;align-items:center;justify-content:space-around;backdrop-filter:blur(10px)}
-#mobile-nav .mn{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:6px 8px;color:rgba(255,255,255,.5);font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:1px;flex:1;text-align:center}
-#mobile-nav .mn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-#mobile-nav .mn.on{color:var(--pink);text-shadow:0 0 6px var(--pink)}
+/* Bottom tab bar — chrome/luxe palette to match the rest of the app.
+   Active tab: subtle white with a 24px top-edge indicator line. */
+#mobile-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  height:56px;
+  background:rgba(10,10,10,0.92);
+  border-top:1px solid var(--n-border);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  z-index:99998;
+  align-items:center;justify-content:space-around;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+#mobile-nav .mn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;cursor:pointer;padding:8px 4px;
+  color:var(--n-text-4);
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;
+  text-transform:uppercase;
+  flex:1;text-align:center;
+  background:transparent;border:none;
+  transition:color .15s ease;
+  position:relative;min-height:44px;
+}
+#mobile-nav .mn:hover{color:var(--n-text-2)}
+#mobile-nav .mn svg{
+  width:20px;height:20px;
+  stroke:currentColor;fill:none;
+  stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;
+}
+#mobile-nav .mn.on{color:var(--n-text);text-shadow:none}
+#mobile-nav .mn.on::before{
+  content:'';position:absolute;
+  top:0;left:50%;transform:translateX(-50%);
+  width:24px;height:2px;
+  background:var(--n-text);
+  border-radius:0 0 2px 2px;
+  box-shadow:0 0 8px rgba(255,255,255,0.30);
+}
 
 /* ── CALENDAR REDESIGN ─────────────────────────────── */
 
