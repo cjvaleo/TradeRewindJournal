@@ -7032,6 +7032,17 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
 <script>
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+/* Returns YYYY-MM-DD for a Date in the user's LOCAL timezone. Trade.date,
+   journal entries, daily challenges, and rules logs all key on local
+   dates, so toISOString() (UTC) drifts off-by-one after sunset for users
+   east of UTC. Use this everywhere "today" or a date-only key is meant. */
+function _localDate(d){
+  d = d || new Date();
+  var y = d.getFullYear();
+  var m = String(d.getMonth()+1).padStart(2,'0');
+  var dd = String(d.getDate()).padStart(2,'0');
+  return y + '-' + m + '-' + dd;
+}
 let trades=[],jEntries=[],csvParsedTrades=[],lgType='long',dashPeriod='today',calYear,calMonth,dashCalY,dashCalM,selDay=null;
 const now=new Date();calYear=dashCalY=now.getFullYear();calMonth=dashCalM=now.getMonth();
 const NEWS=[
@@ -7514,7 +7525,7 @@ try { _checkins = JSON.parse(localStorage.getItem('tr1_checkins') || '{}'); } ca
 function saveCheckins() { try { localStorage.setItem('tr1_checkins', JSON.stringify(_checkins)); } catch(e) {} }
 
 function setCheckin(status) {
-  var today = new Date().toISOString().slice(0, 10);
+  var today = _localDate(new Date());
   if (!_checkins[today]) _checkins[today] = {};
   _checkins[today]['me'] = status;
   saveCheckins();
@@ -7526,7 +7537,7 @@ function setCheckin(status) {
 
 function renderCheckinStrip() {
   var el = document.getElementById('checkin-strip'); if (!el) return;
-  var today = new Date().toISOString().slice(0, 10);
+  var today = _localDate(new Date());
   var myStatus = (_checkins[today] || {})['me'];
   var statusColor = myStatus === 'trading' ? 'var(--grn)' : myStatus === 'out' ? 'rgba(255,255,255,.3)' : 'rgba(255,255,255,.15)';
   var statusText = myStatus === 'trading' ? '✅ Trading today' : myStatus === 'out' ? '💤 Sitting out' : 'Not checked in';
@@ -7540,7 +7551,7 @@ function renderCheckinStrip() {
 
 function renderCheckinPanel(g) {
   var el = document.getElementById('checkin-panel'); if (!el) return;
-  var today = new Date().toISOString().slice(0, 10);
+  var today = _localDate(new Date());
   var todayData = _checkins[today] || {};
   // Build member list — always show "me" + simulate others from group
 var members = (_comm && _comm.members) ? _comm.members : [{id:'me',username:'You',isMe:true}];
@@ -7770,7 +7781,7 @@ async function syncAndLoadCommFeed(g){
   });
 
   // Fetch checkins for today from community_posts
-  var today=new Date().toISOString().slice(0,10);
+  var today=_localDate(new Date());
   var ck=await _sb.from('community_posts').select('user_id,content').eq('community_id',g.id).gte('created_at',today);
   if(!ck.error&&ck.data){
     _remoteCheckins={};
@@ -8342,7 +8353,7 @@ function renderGroupStats(g){
 function renderDailyChallenge(){
   var el=document.getElementById('daily-challenge-content');if(!el)return;
   var ch=getDailyChallenge();
-  var today=new Date().toISOString().slice(0,10);
+  var today=_localDate(new Date());
   var todayTrades=trades.filter(function(t){return t.date===today;});
   var progress=0,total=ch.target;
   if(ch.key==='trades_today') progress=Math.min(todayTrades.length,total);
@@ -8475,7 +8486,7 @@ function renderMemberCalendars(g){
     var initials=(m.username||'').slice(0,2).toUpperCase();
     var pnl=tData.reduce(function(a,t){return a+(t.pnl||0);},0);
     var col=pnl>0?'var(--grn)':pnl<0?'var(--red)':'rgba(255,255,255,.4)';
-    var today=new Date().toISOString().slice(0,10);
+    var today=_localDate(new Date());
     var todayN=tData.filter(function(t){return t.date===today;}).length;
     var s=memberAvatarStyle(m);
     var safeMid=safeText(m.id||'');
@@ -8532,7 +8543,7 @@ function buildMiniCal(tData){
   for(var i = 19; i >= 0; i--){
     var d = new Date(today);
     d.setDate(d.getDate() - i);
-    var key = d.toISOString().slice(0,10);
+    var key = _localDate(d);
     var pnl = byDay[key];
     if(pnl === undefined || Math.abs(pnl) < 0.01){
       cells.push('<div class="mc-cell"></div>');
@@ -8702,16 +8713,25 @@ function renderTOTD(g){
   if(!card) return;
   if(!g){ card.style.display='none'; return; }
 
-  var todayStr = new Date().toISOString().slice(0,10);
+  // LOCAL timezone — trade.date is stored as the user's local YYYY-MM-DD,
+  // not UTC. Using toISOString here would slip to "tomorrow" in UTC for
+  // any user east of UTC after sunset, hiding their trades.
+  var todayStr = _localDate(new Date());
 
   // Tolerant date match — handles ISO timestamps, date-only strings,
   // and falls back to row.created_at / date_logged for non-trade fields.
   function _matchesToday(t, fallback){
     var d = (t && (t.date || t.created_at || t.date_logged)) || fallback;
     if(!d) return false;
+    // If the value is already a date-only string ("2026-05-08"), trust it
+    // as local. Otherwise parse and convert via local components.
     var ds;
-    try { ds = new Date(d).toISOString().slice(0,10); }
-    catch(e){ ds = String(d).slice(0,10); }
+    if(typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d.slice(0,10))){
+      ds = d.slice(0,10);
+    } else {
+      try { ds = _localDate(new Date(d)); }
+      catch(e){ ds = String(d).slice(0,10); }
+    }
     return ds === todayStr;
   }
 
@@ -9440,7 +9460,7 @@ function renderDashboard(){
   setHero('hero-avg', n?(avg>=0?'+':'-')+'$'+Math.abs(avg).toFixed(0):'\u2014');
 
   // STATS ROW
-  const todayStr=new Date().toISOString().slice(0,10);
+  const todayStr=_localDate(new Date());
   const tdy=trades.filter(t=>t.date===todayStr);
   const tdyTot=tdy.reduce((a,t)=>a+t.pnl,0);
   const tdyW=tdy.filter(t=>t.pnl>0).length;
@@ -11390,7 +11410,7 @@ function rtAddRule() {
 function rtRenderChecklist() {
   var el = document.getElementById('rt-checklist'); if (!el) return;
   var rules = rtGetRules();
-  var today = new Date().toISOString().slice(0,10);
+  var today = _localDate(new Date());
   var logs = rtGetLogs();
   var todayLog = logs.find(function(l){ return l.date === today; });
   var checked = todayLog ? todayLog.checked : [];
@@ -11409,7 +11429,7 @@ function rtRenderChecklist() {
 }
 
 function rtToggle(idx) {
-  var today = new Date().toISOString().slice(0,10);
+  var today = _localDate(new Date());
   var logs = rtGetLogs();
   var entry = logs.find(function(l){ return l.date === today; });
   if (!entry) { entry = { date: today, checked: [], notes: '', submitted: false }; logs.unshift(entry); }
@@ -11429,7 +11449,7 @@ function rtDeleteRule(idx) {
 }
 
 function rtSubmitToday() {
-  var today = new Date().toISOString().slice(0,10);
+  var today = _localDate(new Date());
   var logs = rtGetLogs();
   var rules = rtGetRules();
   var entry = logs.find(function(l){ return l.date === today; });
@@ -11499,11 +11519,11 @@ function rtRenderHistory() {
 }
 
 function rtAutoReset() {
-  var today = new Date().toISOString().slice(0,10);
+  var today = _localDate(new Date());
   var logs = rtGetLogs();
 
   // If yesterday had activity but wasn't submitted, auto-submit it now
-  var yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+  var yesterday = _localDate(new Date(Date.now() - 86400000));
   var yLog = logs.find(function(l){ return l.date === yesterday; });
   if (yLog && !yLog.submitted) {
     yLog.submitted = true;
@@ -11742,7 +11762,7 @@ function showWeeklyReport() {
   var pnlSign  = s.pnl >= 0 ? '+' : '';
   var vsLast   = s.pnl - ls.pnl;
 
-  dateEl.textContent = fmtDate(monday.toISOString().slice(0,10)) + ' — ' + fmtDate(sunday.toISOString().slice(0,10));
+  dateEl.textContent = fmtDate(_localDate(monday)) + ' — ' + fmtDate(_localDate(sunday));
 
   if (!weekTrades.length) {
     body.innerHTML = '<div style="text-align:center;padding:40px 0;font-family:\'Orbitron\',monospace;font-size:13px;color:rgba(255,255,255,.35)">No trades this week yet</div>';
@@ -13735,7 +13755,7 @@ function renderAnalyticsAlerts(T){
   });
   var tpdVals = Object.values(tpdMap);
   var avgTpd  = tpdVals.length ? tpdVals.reduce(function(a,b){return a+b;},0) / tpdVals.length : 0;
-  var today   = new Date().toISOString().slice(0,10);
+  var today   = _localDate(new Date());
   var todayN  = tpdMap[today] || 0;
   if(todayN > 0 && avgTpd > 0 && todayN >= avgTpd*2){
     alerts.push({type:'warn', icn:'WARN', msg:'Overtrading today: <strong>'+todayN+'</strong> trades vs your avg of '+avgTpd.toFixed(1)+'. More trades ≠ more profit.'});
