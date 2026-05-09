@@ -2489,71 +2489,130 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 
 /* GRADE PILLS */
+/* GRADE PILLS — bigger, dramatic active state with color glow */
 #pg-log .lt-grade-pills{display:flex;gap:8px}
 #pg-log .lt-grade-pill{
-  flex:1;padding:11px 0;text-align:center;
+  flex:1;padding:18px 0;text-align:center;
   font-family:var(--n-font-display);font-style:italic;
-  font-size:22px;color:var(--n-text-3);
-  background:var(--n-surface-2);border:1px solid var(--n-border);
-  border-radius:8px;cursor:pointer;transition:.15s;user-select:none;
+  font-size:28px;line-height:1;color:var(--n-text-4);
+  background:var(--n-surface);border:1px solid var(--n-border);
+  border-radius:10px;cursor:pointer;
+  transition:all .2s ease;user-select:none;
+  position:relative;overflow:hidden;
 }
-#pg-log .lt-grade-pill:hover{background:var(--n-surface-3);color:var(--n-text-2)}
+#pg-log .lt-grade-pill:hover{
+  border-color:var(--n-border-2);color:var(--n-text-3);
+  transform:translateY(-1px);
+}
 #pg-log .lt-grade-pill.on{
-  background:var(--n-surface-3);color:var(--n-text);
-  border-color:var(--n-border-2);
-  box-shadow:0 0 0 1px var(--n-border-2) inset;
+  transform:translateY(-1px);
 }
 #pg-log .lt-grade-pill.on.grade-A{
-  color:#5fb389;border-color:rgba(95,179,137,0.45);
-  background:rgba(95,179,137,0.07);
-  box-shadow:0 0 14px rgba(95,179,137,0.18);
+  color:var(--n-profit);
+  background:linear-gradient(180deg, rgba(95,179,137,0.10) 0%, rgba(95,179,137,0.03) 100%);
+  border-color:rgba(95,179,137,0.40);
+  box-shadow:0 0 24px rgba(95,179,137,0.20), inset 0 0 0 1px rgba(95,179,137,0.20);
+}
+#pg-log .lt-grade-pill.on.grade-B{
+  color:#f0f0f0;
+  background:linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+  border-color:rgba(255,255,255,0.22);
+  box-shadow:0 0 18px rgba(255,255,255,0.06), inset 0 0 0 1px rgba(255,255,255,0.10);
+}
+#pg-log .lt-grade-pill.on.grade-C{
+  color:var(--n-text-2);
+  background:var(--n-surface-3);
+  border-color:var(--n-border-2);
+}
+#pg-log .lt-grade-pill.on.grade-D{
+  color:#d49a6a;
+  background:linear-gradient(180deg, rgba(212,154,106,0.10) 0%, rgba(212,154,106,0.03) 100%);
+  border-color:rgba(212,154,106,0.40);
+  box-shadow:0 0 20px rgba(212,154,106,0.18), inset 0 0 0 1px rgba(212,154,106,0.20);
 }
 #pg-log .lt-grade-pill.on.grade-F{
-  color:#c95f5f;border-color:rgba(201,95,95,0.45);
-  background:rgba(201,95,95,0.06);
+  color:var(--n-loss);
+  background:linear-gradient(180deg, rgba(201,95,95,0.10) 0%, rgba(201,95,95,0.03) 100%);
+  border-color:rgba(201,95,95,0.40);
+  box-shadow:0 0 24px rgba(201,95,95,0.20), inset 0 0 0 1px rgba(201,95,95,0.20);
 }
 
-/* EMOTION PILLS */
+/* EMOTION PILLS — bigger emoji, desaturated when inactive */
 #pg-log .lt-emo-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 #pg-log .lt-emo-pill{
-  display:flex;flex-direction:column;align-items:center;gap:5px;
-  padding:11px 6px;border:1px solid var(--n-border);border-radius:9px;
-  background:var(--n-surface-2);cursor:pointer;transition:.15s;
-  user-select:none;
+  display:flex;flex-direction:column;align-items:center;gap:0;
+  padding:14px 0 10px;
+  border:1px solid var(--n-border);border-radius:10px;
+  background:var(--n-surface);cursor:pointer;text-align:center;
+  transition:all .2s ease;user-select:none;
+  font-size:28px;line-height:1;
+  position:relative;
+  filter:grayscale(0.4) opacity(0.75);
 }
-#pg-log .lt-emo-pill .emj{font-size:22px;line-height:1}
+#pg-log .lt-emo-pill .emj{font-size:28px;line-height:1}
 #pg-log .lt-emo-pill .lbl{
-  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.14em;
-  text-transform:uppercase;color:var(--n-text-3);
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-4);margin-top:8px;display:block;
 }
-#pg-log .lt-emo-pill:hover{background:var(--n-surface-3);border-color:var(--n-border-2)}
+#pg-log .lt-emo-pill:hover{
+  border-color:var(--n-border-2);background:var(--n-surface-2);
+  transform:translateY(-1px);filter:grayscale(0.2) opacity(0.9);
+}
 #pg-log .lt-emo-pill.on{
-  background:var(--n-surface-3);border-color:var(--n-text-3);
-  box-shadow:0 0 0 1px var(--n-text-3) inset;
+  background:linear-gradient(180deg, var(--n-surface-3) 0%, var(--n-surface-2) 100%);
+  border-color:var(--n-border-2);
+  box-shadow:inset 0 0 0 1px var(--n-border-2), 0 4px 12px rgba(0,0,0,0.30);
+  filter:none;transform:translateY(-1px);
+}
+#pg-log .lt-emo-pill.on::before{
+  content:'';position:absolute;top:-1px;left:50%;
+  transform:translateX(-50%);
+  width:30%;height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.30), transparent);
 }
 #pg-log .lt-emo-pill.on .lbl{color:var(--n-text)}
 
-/* CONFIDENCE DOTS */
+/* CONFIDENCE DOTS — animated bottom progress bar + centered dot fill */
 #pg-log .lt-confidence-row{
-  display:flex;align-items:center;gap:8px;
-  padding:12px 14px;
-  background:var(--n-surface-2);border:1px solid var(--n-border);
-  border-radius:8px;
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;
+  background:linear-gradient(180deg, var(--n-surface-2) 0%, var(--n-surface) 100%);
+  border:1px solid var(--n-border);border-radius:10px;
+  position:relative;overflow:hidden;
+}
+#pg-log .lt-confidence-row::before{
+  content:'';position:absolute;
+  bottom:0;left:0;height:2px;
+  width:var(--conf-pct, 60%);
+  background:linear-gradient(90deg, var(--n-accent-cool) 0%, #8eb8ff 100%);
+  box-shadow:0 0 8px rgba(110,168,255,0.50);
+  transition:width .3s ease;
 }
 #pg-log .lt-conf-dot{
-  width:14px;height:14px;border-radius:50%;
+  width:16px;height:16px;border-radius:50%;
   border:1.5px solid var(--n-border-2);background:transparent;
-  cursor:pointer;transition:.15s;flex-shrink:0;
+  cursor:pointer;transition:all .15s ease;flex-shrink:0;
+  position:relative;
 }
-#pg-log .lt-conf-dot:hover{border-color:var(--n-text-3)}
+#pg-log .lt-conf-dot::after{
+  content:'';position:absolute;inset:3px;border-radius:50%;
+  background:var(--n-accent-cool);
+  opacity:0;transform:scale(0.6);
+  transition:all .2s ease;
+}
+#pg-log .lt-conf-dot:hover{
+  border-color:var(--n-text-3);transform:scale(1.10);
+}
 #pg-log .lt-conf-dot.on{
-  background:var(--n-accent-cool);border-color:var(--n-accent-cool);
-  box-shadow:0 0 6px rgba(110,168,255,0.40);
+  border-color:var(--n-accent-cool);
+  box-shadow:0 0 8px rgba(110,168,255,0.40);
 }
+#pg-log .lt-conf-dot.on::after{opacity:1;transform:scale(1)}
 #pg-log .lt-conf-label{
-  margin-left:12px;
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;
-  text-transform:uppercase;color:var(--n-text-2);
+  margin-left:auto;
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text);font-weight:500;
+  transition:color .15s;
 }
 
 /* DROPZONE */
@@ -2862,27 +2921,40 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   border-radius:3px;cursor:pointer;font-size:12px;line-height:1;padding:0;
 }
 #pg-log .csv-edit-row .csv-ss-remove:hover{background:rgba(201,95,95,0.7)}
+/* GRADE PILLS MINI — match the elevated manual style at small scale */
 #pg-log .csv-edit-row .grade-pill-mini{
-  width:24px;height:24px;
+  width:28px;height:28px;
   background:var(--n-surface);border:1px solid var(--n-border);
-  border-radius:4px;display:flex;align-items:center;justify-content:center;
-  font-family:var(--n-font-mono);font-size:11px;font-weight:600;
-  color:var(--n-text-3);cursor:pointer;transition:.15s;
+  border-radius:5px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:14px;color:var(--n-text-4);cursor:pointer;
+  transition:all .2s;
 }
-#pg-log .csv-edit-row .grade-pill-mini:hover{background:var(--n-surface-3);color:var(--n-text-2)}
+#pg-log .csv-edit-row .grade-pill-mini:hover{
+  border-color:var(--n-border-2);color:var(--n-text-3);
+}
 #pg-log .csv-edit-row .grade-pill-mini.on.A{
   color:var(--n-profit);border-color:rgba(95,179,137,0.40);
   background:rgba(95,179,137,0.08);
+  box-shadow:0 0 8px rgba(95,179,137,0.25);
 }
-#pg-log .csv-edit-row .grade-pill-mini.on.B{color:#d4d4d4;border-color:var(--n-border-2);background:var(--n-surface-3)}
-#pg-log .csv-edit-row .grade-pill-mini.on.C{color:var(--n-text-2);background:var(--n-surface-3);border-color:var(--n-border-2)}
+#pg-log .csv-edit-row .grade-pill-mini.on.B{
+  color:#f0f0f0;border-color:rgba(255,255,255,0.20);
+  background:rgba(255,255,255,0.04);
+}
+#pg-log .csv-edit-row .grade-pill-mini.on.C{
+  color:var(--n-text-2);background:var(--n-surface-3);
+  border-color:var(--n-border-2);
+}
 #pg-log .csv-edit-row .grade-pill-mini.on.D{
-  color:#c98c5f;border-color:rgba(201,140,95,0.40);
-  background:rgba(201,140,95,0.06);
+  color:#d49a6a;border-color:rgba(212,154,106,0.40);
+  background:rgba(212,154,106,0.08);
+  box-shadow:0 0 8px rgba(212,154,106,0.20);
 }
 #pg-log .csv-edit-row .grade-pill-mini.on.F{
   color:var(--n-loss);border-color:rgba(201,95,95,0.40);
   background:rgba(201,95,95,0.08);
+  box-shadow:0 0 8px rgba(201,95,95,0.25);
 }
 #pg-log .csv-edit-row .csv-notes{flex:1}
 
@@ -5913,11 +5985,14 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   #pg-log .lt-triple{grid-template-columns:1fr!important;gap:10px!important}
   #pg-log .lt-section{padding:18px 14px}
   #pg-log .lt-grade-pills{gap:5px}
-  #pg-log .lt-grade-pill{font-size:18px;padding:9px 0}
+  #pg-log .lt-grade-pill{font-size:22px;padding:13px 0}
   #pg-log .lt-emo-row{gap:5px}
-  #pg-log .lt-emo-pill{padding:9px 4px}
-  #pg-log .lt-emo-pill .emj{font-size:18px}
-  #pg-log .lt-emo-pill .lbl{font-size:7.5px}
+  #pg-log .lt-emo-pill{padding:11px 0 8px}
+  #pg-log .lt-emo-pill .emj{font-size:22px}
+  #pg-log .lt-emo-pill .lbl{font-size:7.5px;margin-top:6px}
+  #pg-log .lt-confidence-row{gap:10px;padding:11px 12px}
+  #pg-log .lt-conf-dot{width:14px;height:14px}
+  #pg-log .lt-conf-label{font-size:10px}
   #pg-log .field-input,
   #pg-log .f-input,
   #pg-log input[type="text"],
@@ -6580,7 +6655,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
           </div>
 
           <div class="lt-field">
-            <div class="lt-field-l">Confidence <span class="lt-hint">how strong was this setup?</span></div>
+            <div class="lt-field-l">Confidence</div>
             <div class="lt-confidence-row" id="lt-confidence-row">
               <div class="lt-conf-dot" data-conf="1" title="No conviction" onclick="setConfidenceDots(1)"></div>
               <div class="lt-conf-dot" data-conf="2" title="Low" onclick="setConfidenceDots(2)"></div>
@@ -12118,6 +12193,9 @@ function setConfidenceDots(n){
   });
   var lbl=document.getElementById('lt-conf-label');
   if(lbl) lbl.textContent = CONF_LABELS[n] || '';
+  // Drive the row's animated bottom-border fill (n=1 → 20%, n=5 → 100%).
+  var row=document.querySelector('#pg-log .lt-confidence-row');
+  if(row) row.style.setProperty('--conf-pct', (n*20)+'%');
   var hidden=document.getElementById('lg-conf');
   if(hidden) hidden.value=String(n);
   if(typeof updateConf==='function'){ try{ updateConf(n); }catch(e){} }
