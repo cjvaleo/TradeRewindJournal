@@ -12546,6 +12546,17 @@ async function checkSession() {
   if (session && session.user) {
     await onSignedIn(session.user);
   } else {
+    // SECURITY: no auth session = don't trust the cache. The previous
+    // user's localStorage could otherwise drive a "zombie" signed-in
+    // UI on a device with stale tr1_* keys but no backing JWT, and
+    // any save attempt would silently fail RLS. Nuke account caches
+    // before showing login.
+    try {
+      Object.keys(localStorage).forEach(function(k){
+        if (k && k.indexOf('tr1_') === 0) localStorage.removeItem(k);
+      });
+    } catch(e){}
+    if (typeof clearUserCache === 'function') clearUserCache();
     showAuth('login');
   }
 }
