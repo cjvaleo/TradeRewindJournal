@@ -1899,6 +1899,139 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);line-height:1.55;
 }
 
+/* ── CALENDAR HEATMAP (Month / Heatmap tab) ──────────── */
+#pg-calendar .cal-view-tabs{
+  display:inline-flex;background:var(--n-surface);
+  border:1px solid var(--n-border);border-radius:8px;padding:3px;
+  margin-bottom:18px;gap:0;
+}
+#pg-calendar .cal-view-tab{
+  padding:9px 18px;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--n-text-3);
+  background:transparent;border:none;border-radius:6px;cursor:pointer;
+  transition:.12s;
+}
+#pg-calendar .cal-view-tab:hover:not(.on){color:var(--n-text-2)}
+#pg-calendar .cal-view-tab.on{background:var(--n-surface-3);color:var(--n-text)}
+
+#pg-calendar .heatmap-h{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;
+}
+#pg-calendar .heatmap-title{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--n-text-3);
+  display:flex;align-items:center;gap:10px;
+}
+#pg-calendar .heatmap-title::after{
+  content:'';width:60px;height:1px;background:var(--n-border);
+}
+#pg-calendar .view-toggle{
+  display:inline-flex;background:var(--n-surface);
+  border:1px solid var(--n-border);border-radius:8px;padding:3px;
+}
+#pg-calendar .view-tab{
+  padding:7px 14px;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-3);
+  background:transparent;border:none;border-radius:6px;cursor:pointer;
+  transition:.12s;
+}
+#pg-calendar .view-tab:hover:not(.on){color:var(--n-text-2)}
+#pg-calendar .view-tab.on{background:var(--n-surface-3);color:var(--n-text)}
+
+#pg-calendar .heatmap-card{
+  padding:24px;
+  background:linear-gradient(180deg, var(--n-surface-2) 0%, var(--n-surface) 100%);
+  border:1px solid var(--n-border);border-radius:14px;
+  margin-bottom:24px;overflow-x:auto;
+}
+#pg-calendar .heatmap-card .month-row{
+  display:grid;grid-template-columns:36px 1fr;gap:14px;margin-bottom:8px;
+}
+#pg-calendar .heatmap-card .month-labels{
+  display:flex;gap:4px;
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-3);margin-bottom:6px;
+}
+#pg-calendar .heatmap-card .month-label{flex:1;text-align:left;min-width:0}
+
+#pg-calendar .cal-hm-grid{
+  display:grid;grid-template-columns:36px 1fr;gap:14px;align-items:start;
+}
+#pg-calendar .day-labels{
+  display:grid;grid-template-rows:repeat(7,1fr);gap:4px;
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-4);
+}
+#pg-calendar .day-labels .day-label{height:18px;line-height:18px}
+#pg-calendar .day-labels .day-label.hide{visibility:hidden}
+
+#pg-calendar .weeks-grid{
+  display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);
+  gap:4px;min-width:0;
+}
+#pg-calendar .week-col{
+  display:grid;grid-template-rows:repeat(7,1fr);gap:4px;min-width:0;
+}
+#pg-calendar .day-cell{
+  width:100%;aspect-ratio:1;
+  background:rgba(255,255,255,0.03);border-radius:4px;
+  cursor:pointer;transition:.15s;position:relative;
+  border:1px solid transparent;
+}
+#pg-calendar .day-cell.empty{cursor:default;opacity:0.30}
+#pg-calendar .day-cell.weekend{cursor:default;opacity:0.30}
+#pg-calendar .day-cell:hover:not(.empty):not(.weekend){
+  transform:scale(1.30);z-index:5;
+  border-color:var(--n-border-3);
+  box-shadow:0 4px 12px rgba(0,0,0,0.50);
+}
+
+/* P&L intensity tiers — wins (green) and losses (red) */
+#pg-calendar .day-cell.w1{background:rgba(95,179,137,0.15)}
+#pg-calendar .day-cell.w2{background:rgba(95,179,137,0.32)}
+#pg-calendar .day-cell.w3{background:rgba(95,179,137,0.55)}
+#pg-calendar .day-cell.w4{background:rgba(95,179,137,0.85);box-shadow:inset 0 0 0 1px rgba(95,179,137,0.30)}
+#pg-calendar .day-cell.l1{background:rgba(201,95,95,0.15)}
+#pg-calendar .day-cell.l2{background:rgba(201,95,95,0.32)}
+#pg-calendar .day-cell.l3{background:rgba(201,95,95,0.55)}
+#pg-calendar .day-cell.l4{background:rgba(201,95,95,0.85);box-shadow:inset 0 0 0 1px rgba(201,95,95,0.30)}
+
+#pg-calendar .day-cell.today{
+  box-shadow:0 0 0 1.5px var(--n-text), 0 0 8px rgba(255,255,255,0.20);z-index:2;
+}
+#pg-calendar .day-cell.selected{
+  box-shadow:0 0 0 1.5px var(--n-accent-cool), 0 0 12px rgba(110,168,255,0.40);z-index:3;
+}
+#pg-calendar .day-cell.streak::after{
+  content:'';position:absolute;top:1.5px;right:1.5px;
+  width:3px;height:3px;border-radius:50%;
+  background:#f5d77c;box-shadow:0 0 4px rgba(245,215,124,0.80);
+}
+
+#pg-calendar .legend{
+  display:flex;align-items:center;gap:16px;
+  margin-top:20px;padding-top:20px;
+  border-top:1px solid var(--n-border);
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+#pg-calendar .legend .legend-scale{display:flex;align-items:center;gap:3px}
+#pg-calendar .legend .legend-cell{width:11px;height:11px;border-radius:2.5px}
+#pg-calendar .legend-streak{display:flex;align-items:center;gap:5px;margin-left:auto}
+#pg-calendar .legend-streak-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#f5d77c;box-shadow:0 0 4px rgba(245,215,124,0.80);
+}
+
+@media (max-width:900px){
+  #pg-calendar .cal-view-tab{padding:8px 12px;font-size:9px}
+  #pg-calendar .heatmap-card{padding:16px}
+  #pg-calendar .cal-hm-grid{grid-template-columns:28px 1fr;gap:8px}
+  #pg-calendar .legend{flex-wrap:wrap}
+}
+
 /* ── LOG TRADE REDESIGN ─────────────────────────────── */
 
 #pg-log.page.on{
@@ -7090,11 +7223,17 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       <div class="h-title">Calendar</div>
       <div class="h-sub">Daily P&amp;L heatmap</div>
     </div>
-    <div class="cal-nav">
+    <div class="cal-nav" id="cal-nav-month">
       <button class="cal-nav-btn" onclick="calPrev()">&#8592;</button>
       <span class="cal-nav-lbl" id="cal-lbl"></span>
       <button class="cal-nav-btn" onclick="calNext()">&#8594;</button>
     </div>
+  </div>
+
+  <!-- VIEW TABS — Month grid vs Heatmap -->
+  <div class="cal-view-tabs">
+    <button class="cal-view-tab on" data-cal-view="month" onclick="setCalView('month')">Month</button>
+    <button class="cal-view-tab" data-cal-view="heatmap" onclick="setCalView('heatmap')">Heatmap</button>
   </div>
 
   <!-- STATS ROW -->
@@ -7122,7 +7261,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   </div>
 
   <!-- CALENDAR + DAY PANEL -->
-  <div class="cal-grid-wrap">
+  <div class="cal-grid-wrap" id="cal-month-view">
     <!-- CALENDAR GRID -->
     <div class="cal-card">
       <div class="cal-dow-row">
@@ -7145,6 +7284,57 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
         <div class="day-empty">Click any trading day to see full breakdown</div>
       </div>
     </div>
+  </div>
+
+  <!-- HEATMAP VIEW -->
+  <div id="cal-heatmap-view" style="display:none">
+    <div class="heatmap-h">
+      <div class="heatmap-title">Activity Heatmap</div>
+      <div class="view-toggle">
+        <button class="view-tab" data-hm-range="3M" onclick="setCalHmRange('3M')">3M</button>
+        <button class="view-tab on" data-hm-range="6M" onclick="setCalHmRange('6M')">6M</button>
+        <button class="view-tab" data-hm-range="1Y" onclick="setCalHmRange('1Y')">1Y</button>
+      </div>
+    </div>
+    <div class="heatmap-card">
+      <div class="month-row">
+        <div></div>
+        <div class="month-labels" id="hm-month-labels"></div>
+      </div>
+      <div class="cal-hm-grid">
+        <div class="day-labels">
+          <div class="day-label">Mon</div>
+          <div class="day-label hide">Tue</div>
+          <div class="day-label">Wed</div>
+          <div class="day-label hide">Thu</div>
+          <div class="day-label">Fri</div>
+          <div class="day-label hide">Sat</div>
+          <div class="day-label hide">Sun</div>
+        </div>
+        <div class="weeks-grid" id="hm-weeks-grid"></div>
+      </div>
+      <div class="legend">
+        <span>Less</span>
+        <div class="legend-scale">
+          <span class="legend-cell" style="background:rgba(201,95,95,0.85)"></span>
+          <span class="legend-cell" style="background:rgba(201,95,95,0.55)"></span>
+          <span class="legend-cell" style="background:rgba(201,95,95,0.32)"></span>
+          <span class="legend-cell" style="background:rgba(255,255,255,0.03)"></span>
+          <span class="legend-cell" style="background:rgba(95,179,137,0.32)"></span>
+          <span class="legend-cell" style="background:rgba(95,179,137,0.55)"></span>
+          <span class="legend-cell" style="background:rgba(95,179,137,0.85)"></span>
+        </div>
+        <span>More</span>
+        <div class="legend-streak">
+          <span class="legend-streak-dot"></span>
+          <span>Win Streak</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Heatmap day detail uses the same #cal-day-title / #cal-day-body
+         that the month view uses. Clicking a cell flips back to Month
+         and scrolls the day panel into view. -->
   </div>
 </div>
 <!-- EQUITY -->
@@ -11837,7 +12027,199 @@ function buildDashMiniCal(y,m,container){
 }
 function dashCalPrev(){dashCalM--;if(dashCalM<0){dashCalM=11;dashCalY--;}renderDashCal();}
 function dashCalNext(){dashCalM++;if(dashCalM>11){dashCalM=0;dashCalY++;}renderDashCal();}
-function renderCalPage(){document.getElementById('cal-lbl').textContent=MONTHS[calMonth]+' '+calYear;buildCal(calYear,calMonth,'big-cal',true);if(selDay)showDay(selDay);refreshCalendarStats();}
+function renderCalPage(){
+  document.getElementById('cal-lbl').textContent=MONTHS[calMonth]+' '+calYear;
+  buildCal(calYear,calMonth,'big-cal',true);
+  if(selDay)showDay(selDay);
+  refreshCalendarStats();
+  if(typeof renderCalHeatmap==='function') renderCalHeatmap();
+}
+
+// ── CALENDAR HEATMAP ───────────────────────────────────
+// View toggle (Month grid vs Heatmap) + 3M/6M/1Y range. Heatmap cell
+// click hands off to openDayReview(dateStr, dayTrades) — same path the
+// month-grid uses, so day-detail editing has full parity.
+var _calView = 'month';
+var _calHmRange = '6M';
+
+function setCalView(view){
+  _calView = view === 'heatmap' ? 'heatmap' : 'month';
+  var monthEl   = document.getElementById('cal-month-view');
+  var heatEl    = document.getElementById('cal-heatmap-view');
+  var monthNav  = document.getElementById('cal-nav-month');
+  if(monthEl) monthEl.style.display = _calView === 'month' ? '' : 'none';
+  if(heatEl)  heatEl.style.display  = _calView === 'heatmap' ? '' : 'none';
+  // Month nav (← Apr 2026 →) only makes sense on the month tab.
+  if(monthNav) monthNav.style.visibility = _calView === 'month' ? 'visible' : 'hidden';
+  document.querySelectorAll('#pg-calendar .cal-view-tab').forEach(function(t){
+    t.classList.toggle('on', t.dataset.calView === _calView);
+  });
+  if(_calView === 'heatmap' && typeof renderCalHeatmap==='function') renderCalHeatmap();
+}
+
+function setCalHmRange(range){
+  _calHmRange = range;
+  document.querySelectorAll('#pg-calendar .view-tab').forEach(function(t){
+    t.classList.toggle('on', t.dataset.hmRange === range);
+  });
+  renderCalHeatmap();
+}
+
+function renderCalHeatmap(){
+  var grid = document.getElementById('hm-weeks-grid');
+  var labels = document.getElementById('hm-month-labels');
+  if(!grid || !labels) return;
+
+  var weeks = _calHmRange === '3M' ? 13 : _calHmRange === '1Y' ? 52 : 26;
+
+  // Find the Monday that starts the visible window so each column = one week.
+  var today = new Date(); today.setHours(12,0,0,0);
+  var todayStr = _localDate(today);
+  var endMonday = new Date(today);
+  // Roll forward to the upcoming Sunday so the current week is fully visible.
+  var dayOfWeek = endMonday.getDay(); // 0=Sun..6=Sat
+  endMonday.setDate(endMonday.getDate() + (7 - dayOfWeek) % 7);
+  var startMonday = new Date(endMonday);
+  startMonday.setDate(startMonday.getDate() - 7*weeks);
+
+  // Group trades by day and get max abs daily P&L for tier scaling.
+  var byDay = {};
+  trades.forEach(function(t){
+    if(!t.date) return;
+    var key = String(t.date).slice(0,10);
+    if(!byDay[key]) byDay[key] = {pnl:0, count:0};
+    byDay[key].pnl   += Number(t.pnl || 0);
+    byDay[key].count += 1;
+  });
+
+  // Restrict to visible range when computing the scale, so a single
+  // outlier day far in the past doesn't flatten the recent gradient.
+  var visibleAbs = [];
+  Object.keys(byDay).forEach(function(k){
+    var d = new Date(k+'T12:00:00');
+    if(d >= startMonday && d <= today){ visibleAbs.push(Math.abs(byDay[k].pnl)); }
+  });
+  var refMax = visibleAbs.length ? Math.max.apply(null, visibleAbs) : 1;
+  if(refMax < 1) refMax = 1;
+
+  function tier(pnl){
+    if(Math.abs(pnl) < 0.01) return null;
+    var ratio = Math.abs(pnl) / refMax;
+    var n = ratio >= 0.85 ? 4 : ratio >= 0.55 ? 3 : ratio >= 0.30 ? 2 : 1;
+    return (pnl > 0 ? 'w' : 'l') + n;
+  }
+
+  // Walk forward by week, building columns. Each column has 7 rows (Mon..Sun).
+  // We render Mon,Tue,Wed,Thu,Fri,Sat,Sun in that vertical order to match the
+  // mockup's day-labels (Mon top, Sun bottom).
+  var html = '';
+  var monthMarkers = []; // {col:idx, label:'Apr'}
+  var lastMonth = -1;
+  var streakRunByDate = computeWinStreaksByDate(byDay);
+
+  for(var w = 0; w < weeks; w++){
+    var weekStart = new Date(startMonday);
+    weekStart.setDate(weekStart.getDate() + w*7);
+    // Track the first column of each new month for the top labels
+    var firstDayOfWeek = new Date(weekStart);
+    if(firstDayOfWeek.getMonth() !== lastMonth){
+      monthMarkers.push({col:w, label:MONTHS[firstDayOfWeek.getMonth()].slice(0,3)});
+      lastMonth = firstDayOfWeek.getMonth();
+    }
+    html += '<div class="week-col">';
+    // Mon..Sun rendering. Date offsets Mon=0..Sun=6.
+    for(var dRow = 0; dRow < 7; dRow++){
+      var cellDate = new Date(weekStart);
+      cellDate.setDate(cellDate.getDate() + dRow);
+      var isWeekend = (cellDate.getDay() === 0 || cellDate.getDay() === 6);
+      var ds = _localDate(cellDate);
+      var future = cellDate > today;
+      if(future){
+        html += '<div class="day-cell empty"></div>';
+        continue;
+      }
+      var dat = byDay[ds];
+      var classes = ['day-cell'];
+      if(isWeekend) classes.push('weekend');
+      var t = dat ? tier(dat.pnl) : null;
+      if(t) classes.push(t);
+      if(ds === todayStr) classes.push('today');
+      if(streakRunByDate[ds] && streakRunByDate[ds] >= 3) classes.push('streak');
+      // Tooltip via title — shown on hover, no extra JS needed
+      var titleAttr = '';
+      if(dat){
+        var pnlStr = (dat.pnl >= 0 ? '+' : '−') + '$' + Math.abs(dat.pnl).toLocaleString(undefined,{maximumFractionDigits:0});
+        titleAttr = ' title="' + ds + ' · ' + pnlStr + ' · ' + dat.count + ' trade'+(dat.count>1?'s':'') + '"';
+      } else if(!isWeekend){
+        titleAttr = ' title="' + ds + ' · No trades"';
+      }
+      // Clickable only for days that have trades — empty days skip the handler
+      var clickAttr = dat ? ' onclick="onCalHmCellClick(\''+ds+'\')" data-date="'+ds+'"' : '';
+      html += '<div class="'+classes.join(' ')+'"'+titleAttr+clickAttr+'></div>';
+    }
+    html += '</div>';
+  }
+  grid.innerHTML = html;
+  grid.style.gridTemplateColumns = 'repeat('+weeks+',1fr)';
+
+  // Month label row — flex children, weighted by how many week-columns
+  // each month spans within the visible window.
+  var labelHtml = '';
+  for(var i=0;i<monthMarkers.length;i++){
+    var span = (i < monthMarkers.length-1 ? monthMarkers[i+1].col : weeks) - monthMarkers[i].col;
+    labelHtml += '<span class="month-label" style="flex:'+span+'">'+monthMarkers[i].label+'</span>';
+  }
+  labels.innerHTML = labelHtml;
+}
+
+// Mark days that are part of a 3+ day winning streak.
+function computeWinStreaksByDate(byDay){
+  var dates = Object.keys(byDay).sort();
+  var run = {};
+  var streakLen = 0, streakDates = [];
+  function flush(){
+    if(streakLen >= 3) streakDates.forEach(function(d){ run[d] = streakLen; });
+    streakLen = 0; streakDates = [];
+  }
+  for(var i=0;i<dates.length;i++){
+    var d = dates[i];
+    if(byDay[d].pnl > 0){
+      streakLen++; streakDates.push(d);
+    } else {
+      flush();
+    }
+  }
+  flush();
+  return run;
+}
+
+// Heatmap cell click — flips to month view (so the day-panel is visible)
+// and hands off to the existing day-detail handler.
+function onCalHmCellClick(dateStr){
+  if(!dateStr) return;
+  // Highlight the cell itself
+  document.querySelectorAll('#pg-calendar .day-cell.selected').forEach(function(c){ c.classList.remove('selected'); });
+  var cell = document.querySelector('#pg-calendar .day-cell[data-date="'+dateStr+'"]');
+  if(cell) cell.classList.add('selected');
+  // Sync the month-grid context to the clicked date so showDay's calendar
+  // navigation lines up (shows the dot on the right month).
+  var d = new Date(dateStr+'T12:00:00');
+  if(!isNaN(d)){
+    calYear = d.getFullYear();
+    calMonth = d.getMonth();
+    selDay = d.getDate();
+  }
+  // Flip back to month view so the user can see the day panel
+  setCalView('month');
+  // Re-render the calendar grid to reflect the new month/year + selection
+  if(typeof renderCalPage === 'function') renderCalPage();
+  // Hand off to the existing day-detail handler
+  var dayTrades = trades.filter(function(t){ return t.date === dateStr; });
+  if(typeof openDayReview === 'function') openDayReview(dateStr, dayTrades);
+  // Scroll the day panel into view
+  var panel = document.getElementById('day-panel');
+  if(panel && panel.scrollIntoView) panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
 function showDay(d){
   selDay=d;
   var ds=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
