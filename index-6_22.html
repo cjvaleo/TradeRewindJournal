@@ -162,6 +162,62 @@
   border-color:var(--n-border-3)!important;background:var(--n-surface-3)!important;
 }
 
+/* Members list inside edit-group-modal — owner-only remove controls */
+#edit-group-modal .edit-members-list{
+  display:flex;flex-direction:column;
+  max-height:320px;overflow-y:auto;
+  border:1px solid var(--n-border);border-radius:9px;
+  background:var(--n-bg);
+}
+#edit-group-modal .edit-member-row{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 14px;
+  border-bottom:1px solid var(--n-border);
+  transition:background .15s;
+}
+#edit-group-modal .edit-member-row:last-child{border-bottom:none}
+#edit-group-modal .edit-member-row:hover{background:var(--n-surface-2)}
+#edit-group-modal .edit-member-info{flex:1;min-width:0}
+#edit-group-modal .edit-member-name{
+  font-size:13px;color:var(--n-text);font-weight:500;
+  display:flex;align-items:center;gap:8px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#edit-group-modal .edit-member-handle{
+  font-family:var(--n-font-mono);font-size:9.5px;
+  color:var(--n-text-3);margin-top:2px;letter-spacing:0.04em;
+}
+#edit-group-modal .member-role{
+  font-family:var(--n-font-mono);font-size:8.5px;
+  letter-spacing:0.18em;text-transform:uppercase;
+  padding:2px 7px;border-radius:4px;flex-shrink:0;
+}
+#edit-group-modal .member-role.owner{
+  color:var(--n-accent-cool);
+  background:rgba(110,168,255,0.08);
+  border:1px solid rgba(110,168,255,0.25);
+}
+#edit-group-modal .member-you{
+  font-family:var(--n-font-mono);font-size:8.5px;
+  letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--n-text-4);flex-shrink:0;
+}
+#edit-group-modal .member-remove-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:5px 10px;
+  background:transparent;color:var(--n-text-3);
+  border:1px solid var(--n-border-2);border-radius:5px;
+  font-family:var(--n-font-mono);font-size:9px;
+  letter-spacing:0.14em;text-transform:uppercase;
+  cursor:pointer;transition:.15s;flex-shrink:0;
+}
+#edit-group-modal .member-remove-btn:hover{
+  color:var(--n-loss);
+  border-color:rgba(201,95,95,0.35);
+  background:rgba(201,95,95,0.06);
+}
+#edit-group-modal .member-remove-btn svg{width:11px;height:11px}
+
 /* Finish text color must beat the per-avatar-class color:#fff above */
 #pg-community .post-av.av.chrome,#pg-community .lb-av.av.chrome,
 #pg-community .m-av.av.chrome,#pg-community .reply-av.av.chrome,
@@ -4269,32 +4325,8 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   background:var(--n-profit);box-shadow:0 0 6px rgba(95,179,137,0.45);
 }
 
-/* Owner-only remove (×) — appears on hover, hidden otherwise */
-#pg-community .mem-item{position:relative}
-#pg-community .mem-remove,
-#all-members-modal .mem-remove{
-  width:22px;height:22px;background:transparent;
-  border:1px solid var(--n-border-2);color:var(--n-text-3);
-  border-radius:5px;cursor:pointer;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  opacity:0;transition:opacity .15s, color .15s, border-color .15s, background .15s;
-  margin-left:6px;
-}
-#pg-community .mem-item:hover .mem-remove,
-#all-members-modal .mem-item:hover .mem-remove{opacity:1}
-#pg-community .mem-remove:hover,
-#all-members-modal .mem-remove:hover{
-  color:var(--n-loss);
-  border-color:rgba(201,95,95,0.35);
-  background:rgba(201,95,95,0.08);
-}
-#pg-community .mem-remove svg,
-#all-members-modal .mem-remove svg{width:11px;height:11px}
-/* Touch devices have no hover — keep the button visible at low opacity */
-@media (hover: none){
-  #pg-community .mem-remove,
-  #all-members-modal .mem-remove{opacity:0.5}
-}
+/* Right-rail / all-members rows are read-only display.
+   Owner controls live inside the edit-group-modal Members section. */
 
 /* View All button */
 #pg-community .view-all{
@@ -6753,6 +6785,15 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
           <span style="font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:var(--n-text-3)">Owner</span>
           <span id="eg-owner-val" style="font-size:13px;color:var(--n-text);font-weight:500">—</span>
         </div>
+      </div>
+
+      <!-- MEMBERS — owner controls live here. Read-only for non-owners. -->
+      <div class="eg-section" style="margin-bottom:18px">
+        <div class="eg-section-label" style="font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--n-text-3);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+          <span>Members</span>
+          <span class="hint" id="edit-group-member-count" style="color:var(--n-text-4);font-size:9px">0</span>
+        </div>
+        <div class="edit-members-list" id="edit-members-list"></div>
       </div>
 
     </div>
@@ -9253,12 +9294,7 @@ function renderFeedMembers(g){
       name: m.username || ''
     }, 'sm');
     var online = _isOnline(m.last_seen_at);
-    var canRemove = currentUser && _comm && _comm.owner_id === currentUser.id && m.id !== currentUser.id;
-    var removeBtn = canRemove
-      ? '<button class="mem-remove" onclick="event.stopPropagation();removeMember(\''+safeMid+'\')" title="Remove from group">'
-        +   '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path d="M18 6L6 18M6 6l12 12"/></svg>'
-        + '</button>'
-      : '';
+    // Right-rail is read-only — owner controls live in edit-group-modal.
     return '<div class="mem-item" data-mid="'+safeMid+'" data-uname="'+safeUname+'" onclick="openMemberProfile(this.dataset.mid,this.dataset.uname)">'
       + avHtml
       + '<div class="mem-info">'
@@ -9266,7 +9302,6 @@ function renderFeedMembers(g){
       +   '<div class="mem-handle">@'+safeText((m.username||'trader').replace(/^@/,''))+'</div>'
       + '</div>'
       + '<div class="mem-status'+(online?' online':'')+'" title="'+(online?'Online':'Offline')+'"></div>'
-      + removeBtn
       + '</div>';
   }).join('');
 }
@@ -9314,12 +9349,7 @@ function openAllMembersModal(){
       name: m.username || ''
     }, 'md');
     var online = _isOnline(m.last_seen_at);
-    var canRemove = currentUser && _comm && _comm.owner_id === currentUser.id && m.id !== currentUser.id;
-    var removeBtn = canRemove
-      ? '<button class="mem-remove" onclick="event.stopPropagation();removeMember(\''+safeMid+'\')" title="Remove from group">'
-        +   '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path d="M18 6L6 18M6 6l12 12"/></svg>'
-        + '</button>'
-      : '';
+    // All-members modal is read-only — owner controls live in edit-group-modal.
     return '<div class="mem-item" data-mid="'+safeMid+'" data-uname="'+safeUname+'" onclick="document.getElementById(\'all-members-modal\').style.display=\'none\';openMemberProfile(this.dataset.mid,this.dataset.uname)">'
       + avHtml
       + '<div style="flex:1;min-width:0">'
@@ -9327,7 +9357,6 @@ function openAllMembersModal(){
       +   '<div class="mem-handle">@'+safeText((m.username||'trader').replace(/^@/,''))+'</div>'
       + '</div>'
       + '<div class="mem-status'+(online?' online':'')+'" title="'+(online?'Online':'Offline')+'"></div>'
-      + removeBtn
       + '</div>';
   }).join('') || '<div style="font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-3);text-align:center;padding:20px">No members yet</div>';
   modal.style.display = 'flex';
@@ -9645,6 +9674,9 @@ async function removeMember(memberId){
   if(typeof renderFeedMembers==='function') renderFeedMembers(_comm);
   if(typeof renderFeedLeaderboard==='function') renderFeedLeaderboard(_comm);
   if(typeof renderCommSidebar==='function') renderCommSidebar();
+  // Refresh the edit-group-modal members list (this is where the user
+  // clicked the remove button) so the row vanishes immediately.
+  if(typeof renderEditMembersList==='function') renderEditMembersList();
   // Refresh the all-members modal if it's open.
   var amModal = document.getElementById('all-members-modal');
   if(amModal && amModal.style.display !== 'none' && typeof openAllMembersModal==='function'){
@@ -9735,8 +9767,52 @@ function openEditGroup(){
     ownerEl.innerHTML = safeText(ownerName||'—') + (isOwner ? ' <span style="font-family:var(--n-font-mono);font-size:10px;color:var(--n-text-3);margin-left:6px">· you</span>' : '');
   }
   egPreview();
+  renderEditMembersList();
   document.getElementById('edit-group-modal').style.display='flex';
   if(isOwner) setTimeout(function(){if(el){el.focus();el.select();}},100);
+}
+
+/* Members list inside edit-group-modal. Visible to all members
+   (read-only for non-owners); owner sees a Remove pill on each
+   non-self row. Re-rendered on open and after every removeMember. */
+function renderEditMembersList(){
+  var list = document.getElementById('edit-members-list');
+  var count = document.getElementById('edit-group-member-count');
+  if(!list || !_comm) return;
+  var members = _comm.members || [];
+  if(count) count.textContent = members.length;
+
+  var meId   = currentUser && currentUser.id;
+  var isOwner = !!(currentUser && _comm.owner_id === meId);
+
+  list.innerHTML = members.map(function(m){
+    var isMe          = m.id === meId;
+    var isMemberOwner = m.id === _comm.owner_id;
+    var safeMid   = safeText(m.id || '');
+    var safeUname = safeText(m.username || m.display_name || 'Trader');
+    var safeHandle= safeText((m.username||'trader').replace(/^@/,''));
+    var avHtml = renderUserAvatar({
+      avatar_finish: m.isMe ? (acct&&(acct.avatar_finish||acct.color)) : (m.avatar_finish||m.color),
+      avatar_image_url: m.isMe ? (acct&&acct.avatar_image_url) : m.avatar_image_url,
+      avatar_initials: m.initials,
+      name: m.username || ''
+    }, 'sm');
+    var roleBadge = isMemberOwner ? '<span class="member-role owner">Owner</span>' : '';
+    var youTag    = isMe ? '<span class="member-you">you</span>' : '';
+    var removeBtn = (isOwner && !isMe)
+      ? '<button class="member-remove-btn" onclick="removeMember(\''+safeMid+'\')" title="Remove from group">'
+        + '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path d="M18 6L6 18M6 6l12 12"/></svg>'
+        + 'Remove</button>'
+      : '';
+    return '<div class="edit-member-row">'
+      + avHtml
+      + '<div class="edit-member-info">'
+      +   '<div class="edit-member-name">' + safeUname + youTag + roleBadge + '</div>'
+      +   '<div class="edit-member-handle">@' + safeHandle + '</div>'
+      + '</div>'
+      + removeBtn
+      + '</div>';
+  }).join('') || '<div style="padding:14px;text-align:center;color:var(--n-text-3);font-size:12px">No members yet</div>';
 }
 
 async function saveEditGroup(){
