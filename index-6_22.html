@@ -4106,6 +4106,16 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   border:1px solid var(--n-border);
 }
 
+/* Plain text post body (community_posts rows whose content isn't a
+   JSON trade — typed shares, manual posts, etc.) */
+#pg-community .post-text{
+  padding:14px 16px;background:var(--n-surface-2);
+  border:1px solid var(--n-border);border-radius:8px;
+  color:var(--n-text);font-family:var(--n-font-sans);font-size:13.5px;
+  line-height:1.55;letter-spacing:0;text-shadow:none;
+  white-space:pre-wrap;word-break:break-word;
+}
+
 /* Inline trade-screenshot thumb in the trade-card row */
 .post-thumb{
   width:40px;height:40px;object-fit:cover;
@@ -8549,6 +8559,10 @@ function renderFeedPosts(g){
       color: rowIsMe ? myFinish : (row.avatar_finish || row.avatar_color || 'chrome'),
       avatar_finish: rowIsMe ? myFinish : (row.avatar_finish || row.avatar_color || 'chrome'),
       avatar_image_url: rowIsMe ? myImgUrl : (row.avatar_image_url || null),
+      // Text-mode flag: post.content is free-form (not JSON-stringified
+      // trade data). Renderer below switches layout for these.
+      isText: !rt.sym && typeof row.content === 'string',
+      text: typeof row.content === 'string' ? row.content : '',
       row: row
     };
     if(feedFilterDate([{date:rp.date}]).length) combined.push(rp);
@@ -8666,6 +8680,30 @@ function renderFeedPosts(g){
       ? '<img src="'+safeURL(p.avatar_image_url)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;position:absolute;inset:0">'
       : safeText(p.initials || '??');
     var pAvExtra = p.avatar_image_url ? ' custom' : '';
+    // Body block — either the rich trade-card (when content is JSON
+    // trade data) or a plain text-post block (when content is a
+    // free-form string the user shared as a community_post).
+    var bodyHtml;
+    if(p.isText){
+      bodyHtml = '<div class="post-text">'+commEsc(p.text||'')+'</div>';
+    } else {
+      bodyHtml = '<div class="trade-card">'
+        +   '<div class="tc-sym">'
+        +     '<span class="tc-sym-val">'+safeText(t.sym || '—')+'</span>'
+        +     (sideTxt ? '<span class="tc-side">'+sideTxt+'</span>' : '')
+        +   '</div>'
+        +   '<div class="tc-divider"></div>'
+        +   '<div class="tc-pl">'
+        +     '<span class="tc-pl-val '+pnlTone+'">'+_shortMoney(pnl)+'</span>'
+        +     rrHoldHtml
+        +   '</div>'
+        +   thumbHtml
+        +   (dateStr || sessTxt
+              ? '<div class="tc-meta">'+safeText(dateStr)+(sessTxt && dateStr ? '<br>' : '')+sessTxt+'</div>'
+              : '')
+        + '</div>'
+        + (t.notes ? '<div class="post-note">'+commEsc(t.notes)+'</div>' : '');
+    }
     return '<div class="post '+tintClass+'" data-pid="'+safePid+'">'
       + '<div class="post-head">'
       +   '<div class="post-av av '+avTone+pAvExtra+'">'+pAvInner+'</div>'
@@ -8675,22 +8713,7 @@ function renderFeedPosts(g){
       +   '</div>'
       +   '<span class="post-time">'+_relTime(p.date)+'</span>'
       + '</div>'
-      + '<div class="trade-card">'
-      +   '<div class="tc-sym">'
-      +     '<span class="tc-sym-val">'+safeText(t.sym || '—')+'</span>'
-      +     (sideTxt ? '<span class="tc-side">'+sideTxt+'</span>' : '')
-      +   '</div>'
-      +   '<div class="tc-divider"></div>'
-      +   '<div class="tc-pl">'
-      +     '<span class="tc-pl-val '+pnlTone+'">'+_shortMoney(pnl)+'</span>'
-      +     rrHoldHtml
-      +   '</div>'
-      +   thumbHtml
-      +   (dateStr || sessTxt
-            ? '<div class="tc-meta">'+safeText(dateStr)+(sessTxt && dateStr ? '<br>' : '')+sessTxt+'</div>'
-            : '')
-      + '</div>'
-      + (t.notes ? '<div class="post-note">'+commEsc(t.notes)+'</div>' : '')
+      + bodyHtml
       + '<div class="post-actions">'
       +   '<button class="pa'+(youLiked?' liked':'')+'" onclick="feedLike(this)" data-id="'+safePid+'"'+(youLiked?' data-liked="1"':'')+'>'
       +     '<svg viewBox="0 0 24 24"' + (youLiked ? ' fill="currentColor"' : '') + '><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
@@ -10943,6 +10966,18 @@ async function shareTradeToCommunity(trade){
     var avatar_color = p.avatar_finish || p.color
                 || (acct && (acct.avatar_finish||acct.color)) || 'chrome';
 
+    // Build the spec's text content shape: "SYM · ↗ Side · +$P&L\nnotes".
+    var sym = trade.sym || trade.symbol || trade.ticker || 'Trade';
+    var sideRaw = String(trade.type || trade.side || '').toLowerCase();
+    var sideTxt = sideRaw === 'short' ? '↘ Short'
+                 : sideRaw === 'long' ? '↗ Long' : '';
+    var pnlNum  = Number(trade.pnl) || 0;
+    var pnlStr  = (pnlNum >= 0 ? '+' : '') + '$' + Math.abs(pnlNum).toLocaleString();
+    var contentParts = [sym];
+    if(sideTxt) contentParts.push(sideTxt);
+    contentParts.push(pnlStr);
+    var contentStr = contentParts.join(' · ') + (trade.notes ? '\n' + trade.notes : '');
+
     var payload = {
       id: 'trade_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
       community_id: shareCommId,
@@ -10950,10 +10985,10 @@ async function shareTradeToCommunity(trade){
       username: username,
       initials: initials,
       avatar_color: avatar_color,
-      // Stringify the full trade so the feed renderer parses the same
-      // shape it does for any other community post.
-      content: JSON.stringify(trade),
-      pnl_today: Number(trade.pnl)||0
+      content: contentStr,
+      pnl_today: pnlNum,
+      likes_count: 0,
+      liked_by: []
     };
 
     var r = await _sb.from('community_posts').insert(payload);
