@@ -8380,6 +8380,7 @@ function openPinTrade() {
 }
 
 function openImgLightbox(src){ openScreenshotLightbox(src); }
+window.openImageLightbox = function(url){ openScreenshotLightbox(url); };
 window.openScreenshotLightbox = function(url){
   var lb = document.createElement('div');
   lb.className = 'lightbox-overlay';
@@ -8719,7 +8720,7 @@ function renderFeedPosts(g){
     var postImgHtml = '';
     if(p.image_url){
       var safeImg = safeURL(p.image_url);
-      postImgHtml = '<div class="post-image"><img src="'+safeImg+'" alt="Trade screenshot" onclick="openScreenshotLightbox(\''+safeImg+'\')"></div>';
+      postImgHtml = '<div class="post-image"><img src="'+safeImg+'" alt="Trade screenshot" loading="lazy" onclick="openScreenshotLightbox(\''+safeImg+'\')"></div>';
     }
     return '<div class="post '+tintClass+'" data-pid="'+safePid+'">'
       + '<div class="post-head">'
@@ -11002,18 +11003,35 @@ function setLgType(t){lgType=t;document.getElementById('lg-long').classList.togg
 /* Populate the Share-to-Community <select> on the Log Trade page.
    Pulls every community where the current user is owner OR a member
    (matches the OR query the loader uses, so only joinable groups). */
-/* Pull a screenshot URL out of a trade row, no matter where it's
-   stored. Existing trades use `images:[url]`; this defends against
-   alternate key names that have shown up in imports / older paths. */
+/* If the caller hands us a DB row, `trade_data` may be a JSON STRING
+   (the column type) rather than a parsed object. parseTradeData
+   normalizes both shapes into a plain object. */
+function parseTradeData(td){
+  if(!td) return {};
+  if(typeof td === 'string'){
+    try { return JSON.parse(td); } catch(e){ return {}; }
+  }
+  return td;
+}
+
+/* Pull a screenshot URL out of a trade, no matter where it's stored.
+   Walks the in-memory shape OR the DB-row shape (where trade_data is
+   a JSON string that has to be parsed). Defends against alternate
+   key names from imports / older paths. */
 function _extractTradeScreenshot(t){
   if(!t) return null;
-  var td = t.trade_data || t;
-  return td.screenshot_url
-      || td.image_url
-      || td.imageUrl
-      || td.screenshot
-      || td.chart_url
+  // The caller may pass either the in-memory trade (fields direct)
+  // or the DB row (trade_data string). Merge both views.
+  var inline = t;
+  var td = parseTradeData(t.trade_data);
+  return inline.screenshot_url || td.screenshot_url
+      || inline.image_url      || td.image_url
+      || inline.imageUrl       || td.imageUrl
+      || inline.screenshot     || td.screenshot
+      || inline.chart_url      || td.chart_url
+      || (Array.isArray(inline.images) && inline.images[0])
       || (Array.isArray(td.images) && td.images[0])
+      || (Array.isArray(inline.screenshots) && inline.screenshots[0])
       || (Array.isArray(td.screenshots) && td.screenshots[0])
       || null;
 }
@@ -11086,13 +11104,18 @@ async function shareTradeToCommunity(trade){
 
     var r = await _sb.from('community_posts').insert(posts);
     // Schema-cache / missing-column fallback: retry with the minimum
-    // shape that matches every project's community_posts table.
+    // shape — but KEEP image_url, since that's the field this whole
+    // bake is about. If image_url is the missing column, the second
+    // try will fail too and we'll log the error; otherwise screenshots
+    // still flow through even when other niceties (liked_by, etc.)
+    // don't exist in the user's schema.
     if(r && r.error && (/column .* does not exist/i.test(r.error.message||'')
                      || /could not find the .* column/i.test(r.error.message||''))){
       var minimal = posts.map(function(post){
         return {
           id: post.id, community_id: post.community_id, user_id: post.user_id,
-          username: post.username, content: post.content, pnl_today: post.pnl_today
+          username: post.username, content: post.content, pnl_today: post.pnl_today,
+          image_url: post.image_url
         };
       });
       var r2 = await _sb.from('community_posts').insert(minimal);
