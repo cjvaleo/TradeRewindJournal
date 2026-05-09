@@ -10782,6 +10782,27 @@ function saveCalEdit(){
     // any other tab/device. For the current session, renderFeedPosts
     // reads the in-memory `trades` array so own edits propagate either way.
     try{ if(typeof saveTradeToSupa==='function') saveTradeToSupa(t); }catch(e){}
+    // Cascade — update any community_posts auto-shared for this trade.
+    // Fire-and-forget; on failure, log and move on (the trade itself
+    // is saved either way and the next renderFeedPosts will refresh).
+    try {
+      if(_sb && t.id){
+        var sym = t.sym || t.symbol || t.ticker || 'Trade';
+        var sideRaw = String(t.type || t.side || '').toLowerCase();
+        var sideTxt = sideRaw === 'short' ? '↘ Short'
+                    : sideRaw === 'long' ? '↗ Long' : '';
+        var pnlNum = Number(t.pnl) || 0;
+        var pnlStr = (pnlNum >= 0 ? '+' : '') + '$' + Math.abs(pnlNum).toLocaleString();
+        var parts = [sym]; if(sideTxt) parts.push(sideTxt); parts.push(pnlStr);
+        var newContent = parts.join(' · ') + (t.notes ? '\n' + t.notes : '');
+        _sb.from('community_posts')
+          .update({ content: newContent, pnl_today: pnlNum })
+          .like('id', 'trade_'+String(t.id)+'_%')
+          .then(function(r){
+            if(r && r.error) console.error('[edit cascade] failed:', r.error);
+          });
+      }
+    } catch(e){ console.error('[edit cascade] failed:', e); }
     renderAll();
     // Force community feed re-render so the edited screenshot/P&L shows
     // up next time the user opens Community without waiting for goTo to
@@ -10951,11 +10972,13 @@ async function shareTradeToCommunity(trade){
     contentParts.push(pnlStr);
     var contentStr = contentParts.join(' · ') + (trade.notes ? '\n' + trade.notes : '');
 
-    // 4. One row per community, single batch insert.
-    var stamp = Date.now();
+    // 4. One row per community, single batch insert. The id is
+    //    deterministic — `trade_{trade.id}_{communityIdPrefix}` —
+    //    so deleteTrade / saveCalEdit can cascade by LIKE'ing on
+    //    the prefix and find every related post.
     var posts = comms.map(function(c){
       return {
-        id: 'trade_' + stamp + '_' + Math.random().toString(36).slice(2,8) + '_' + String(c.id).slice(0,4),
+        id: 'trade_' + trade.id + '_' + String(c.id).slice(0, 8),
         community_id: c.id,
         user_id: currentUser.id,
         username: username,
@@ -11669,11 +11692,21 @@ async function deleteTrade(id){
       showToast('Couldn\'t delete trade — '+(e.message||'try again'), 'error');
       return;
     }
+    // Cascade — clean up any community_posts auto-shared for this trade.
+    // Best-effort: failure here doesn't block the local UI update since
+    // the trade row itself is gone.
+    try {
+      var c = await _sb.from('community_posts').delete().like('id', 'trade_'+String(id)+'_%');
+      if(c && c.error) console.error('[delete cascade] failed:', c.error);
+      else console.log('[delete cascade] cleaned community posts for trade', id);
+    } catch(e){ console.error('[delete cascade] failed:', e); }
   }
   trades = trades.filter(t => t.id !== id);
   try{localStorage.setItem(journalKey(activeJournal), JSON.stringify(trades));}catch(e){}
   renderAll();
   setTimeout(drawMiniChart,100);
+  // Refresh the active community feed so the deleted post vanishes.
+  if(_comm && typeof syncAndLoadCommFeed==='function') syncAndLoadCommFeed(_comm);
   toast('Trade deleted', 'success');
 }
 function renderHistory(){
@@ -13156,11 +13189,17 @@ async function deleteTradeFromModal(id, ds){
   if(currentUser && _sb){
     var r = await _sb.from('trades').delete().eq('id', String(id)).eq('user_id', currentUser.id);
     if(r.error){ toast('Delete failed: ' + r.error.message); return; }
+    // Cascade — clean up any community_posts auto-shared for this trade.
+    try {
+      var c = await _sb.from('community_posts').delete().like('id', 'trade_'+String(id)+'_%');
+      if(c && c.error) console.error('[delete cascade] failed:', c.error);
+    } catch(e){ console.error('[delete cascade] failed:', e); }
   }
   trades = trades.filter(t => t.id !== id);
   try{localStorage.setItem(journalKey(activeJournal), JSON.stringify(trades));}catch(e){}
   renderAll();
   setTimeout(drawMiniChart, 100);
+  if(_comm && typeof syncAndLoadCommFeed==='function') syncAndLoadCommFeed(_comm);
   const remaining = trades.filter(t => t.date === ds);
   renderEditModal(remaining, ds);
 }
