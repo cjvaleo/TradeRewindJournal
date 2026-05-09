@@ -239,12 +239,15 @@ create policy "group_avatars_owner_delete"
 -- "Could not find the 'avatar_finish' column of 'profiles' in the
 -- schema cache" until the cache auto-reloads (~60s).
 -- ─────────────────────────────────────────────────────────────────
--- Community posts — screenshot URL column. Auto-share + edit-cascade
--- write a trade's screenshot here so it renders in the community feed.
+-- Community posts — screenshot URL + per-post metadata jsonb.
+-- Auto-share + edit-cascade write a trade's screenshot here so it
+-- renders in the community feed; metadata holds chip-render fields
+-- (grade / rr / session / market / emotion / confidence).
 -- ─────────────────────────────────────────────────────────────────
 do $$ begin
   if to_regclass('public.community_posts') is not null then
     execute 'alter table public.community_posts add column if not exists image_url text';
+    execute 'alter table public.community_posts add column if not exists metadata jsonb default ''{}''::jsonb';
   end if;
 end $$;
 
