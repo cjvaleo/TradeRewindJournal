@@ -2626,6 +2626,67 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   color:var(--n-accent-cool);
 }
 
+/* SESSION PILLS — one button per trading session, each with its
+   own color when active. Maps to the existing 6 sessions. */
+#pg-log .lt-session-pills{
+  display:flex;flex-wrap:wrap;gap:6px;
+}
+#pg-log .lt-session-pill{
+  flex:1 1 auto;min-width:0;
+  padding:9px 12px;
+  background:var(--n-surface-2);
+  border:1px solid var(--n-border);
+  border-radius:7px;
+  font-family:var(--n-font-mono);font-size:10.5px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-3);
+  cursor:pointer;transition:all .15s ease;user-select:none;
+  white-space:nowrap;text-align:center;
+}
+#pg-log .lt-session-pill:hover{
+  border-color:var(--n-border-2);color:var(--n-text-2);
+  background:var(--n-surface-3);
+}
+/* Active state — session-specific color */
+#pg-log .lt-session-pill.on.sess-asia{
+  color:#8a8a8a;background:rgba(138,138,138,0.10);
+  border-color:rgba(138,138,138,0.30);
+  box-shadow:inset 0 0 0 1px rgba(138,138,138,0.20);
+}
+#pg-log .lt-session-pill.on.sess-london{
+  color:var(--n-accent-cool);background:rgba(110,168,255,0.10);
+  border-color:rgba(110,168,255,0.30);
+  box-shadow:inset 0 0 0 1px rgba(110,168,255,0.20);
+}
+#pg-log .lt-session-pill.on.sess-ny-am{
+  color:var(--n-profit);background:rgba(95,179,137,0.10);
+  border-color:rgba(95,179,137,0.30);
+  box-shadow:inset 0 0 0 1px rgba(95,179,137,0.20);
+}
+#pg-log .lt-session-pill.on.sess-ny-lunch{
+  color:#f5d77c;background:rgba(245,215,124,0.10);
+  border-color:rgba(245,215,124,0.30);
+  box-shadow:inset 0 0 0 1px rgba(245,215,124,0.20);
+}
+#pg-log .lt-session-pill.on.sess-ny-pm{
+  color:#d4956a;background:rgba(212,149,106,0.10);
+  border-color:rgba(212,149,106,0.30);
+  box-shadow:inset 0 0 0 1px rgba(212,149,106,0.20);
+}
+#pg-log .lt-session-pill.on.sess-other{
+  color:#b48ad0;background:rgba(180,138,208,0.10);
+  border-color:rgba(180,138,208,0.30);
+  box-shadow:inset 0 0 0 1px rgba(180,138,208,0.20);
+}
+
+/* P&L INPUT COLORING — green when positive, red when negative. Applies
+   to both the manual #lg-pnl input and the per-row .csv-pnl-input in
+   the CSV import edit screen. */
+#pg-log #lg-pnl.pnl-positive,
+#pg-log .csv-pnl-input.pnl-positive{ color:var(--n-profit) }
+#pg-log #lg-pnl.pnl-negative,
+#pg-log .csv-pnl-input.pnl-negative{ color:var(--n-loss) }
+/* zero / empty falls through to default --n-text */
+
 /* GRADE PILLS */
 /* GRADE PILLS — bigger, dramatic active state with color glow */
 #pg-log .lt-grade-pills{display:flex;gap:8px}
@@ -7181,15 +7242,14 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
             </div>
             <div class="lt-field">
               <div class="lt-field-l">Session</div>
-              <select id="lg-session-sel" class="lt-input" onchange="onLtSessionChange(this.value)">
-                <option value="">&mdash;</option>
-                <option>Asia</option>
-                <option>London</option>
-                <option>NY AM</option>
-                <option>NY Lunch</option>
-                <option>NY PM</option>
-                <option>Other</option>
-              </select>
+              <div class="lt-session-pills" id="lt-session-pills">
+                <button type="button" class="lt-session-pill sess-asia"     data-session="Asia"     onclick="setSessionPill('Asia')">Asia</button>
+                <button type="button" class="lt-session-pill sess-london"   data-session="London"   onclick="setSessionPill('London')">London</button>
+                <button type="button" class="lt-session-pill sess-ny-am"    data-session="NY AM"    onclick="setSessionPill('NY AM')">NY AM</button>
+                <button type="button" class="lt-session-pill sess-ny-lunch" data-session="NY Lunch" onclick="setSessionPill('NY Lunch')">NY Lunch</button>
+                <button type="button" class="lt-session-pill sess-ny-pm"    data-session="NY PM"    onclick="setSessionPill('NY PM')">NY PM</button>
+                <button type="button" class="lt-session-pill sess-other"    data-session="Other"    onclick="setSessionPill('Other')">Other</button>
+              </div>
               <input type="hidden" id="lg-session" value=""/>
             </div>
           </div>
@@ -13318,6 +13378,8 @@ function onPnlInput(){
   _pnlManual = true;
   var hint=document.getElementById('lt-pnl-hint');
   if(hint){ hint.textContent='manual'; hint.classList.remove('hint-auto'); hint.classList.add('hint-manual'); }
+  // Color the input as the user types
+  if(typeof _colorPnlInput==='function') _colorPnlInput(document.getElementById('lg-pnl'));
   // Recompute rr from manual pnl + existing risk (if rr not also manual)
   if(typeof calcLivePnl==='function') calcLivePnl();
 }
@@ -13330,9 +13392,39 @@ function onRrInput(){
 }
 
 function onLtSessionChange(v){
+  // Legacy entry-point — the v2 form replaced the <select> with
+  // .lt-session-pill buttons that call setSessionPill directly.
+  // Kept so quickFillLastTrade and any other caller that passes a
+  // raw name keeps working.
+  if(typeof setSessionPill === 'function'){ setSessionPill(v||''); return; }
   var hidden=document.getElementById('lg-session');
   if(hidden) hidden.value = v || '';
   updateLogPreview();
+}
+
+// Session pill — set .on on the matching pill (or clear all if name
+// is empty / unknown), write the canonical name to hidden lg-session.
+function setSessionPill(name){
+  document.querySelectorAll('#pg-log .lt-session-pill').forEach(function(p){ p.classList.remove('on'); });
+  if(name){
+    var pill = document.querySelector('#pg-log .lt-session-pill[data-session="'+name+'"]');
+    if(pill) pill.classList.add('on');
+  }
+  var hidden = document.getElementById('lg-session');
+  if(hidden) hidden.value = name || '';
+  updateLogPreview();
+}
+
+// Toggle pnl-positive / pnl-negative on a P&L input based on its value.
+// Works for both the manual #lg-pnl and any CSV row's .csv-pnl-input.
+function _colorPnlInput(el){
+  if(!el) return;
+  var raw = el.value;
+  el.classList.remove('pnl-positive','pnl-negative','pnl-zero');
+  if(raw === '' || raw == null){ return; }
+  var n = parseFloat(raw);
+  if(isNaN(n) || n === 0){ el.classList.add('pnl-zero'); return; }
+  el.classList.add(n > 0 ? 'pnl-positive' : 'pnl-negative');
 }
 
 function _resetLtAutoFlags(){
@@ -13729,6 +13821,8 @@ function fullLog(){
   if(typeof setGradePill==='function') setGradePill('B');
   if(typeof setEmotionPill==='function') setEmotionPill(3);
   if(typeof setConfidenceDots==='function') setConfidenceDots(3);
+  if(typeof setSessionPill==='function') setSessionPill('');
+  if(typeof _colorPnlInput==='function') _colorPnlInput(document.getElementById('lg-pnl'));
   if(typeof _resetLtAutoFlags==='function') _resetLtAutoFlags();
   updateGrade(3);updateEmotion(3);
   const lc=document.getElementById('live-calc');if(lc)lc.style.display='none';
@@ -13802,6 +13896,8 @@ function resetLogForm(){
   if(typeof setGradePill==='function') setGradePill('B');
   if(typeof setEmotionPill==='function') setEmotionPill(3);
   if(typeof setConfidenceDots==='function') setConfidenceDots(3);
+  if(typeof setSessionPill==='function') setSessionPill('');
+  if(typeof _colorPnlInput==='function') _colorPnlInput(document.getElementById('lg-pnl'));
   if(typeof _resetLtAutoFlags==='function') _resetLtAutoFlags();
   const lc=document.getElementById('live-calc');if(lc)lc.style.display='none';
   var note=document.getElementById('lt-acct-note'); if(note) note.style.display='none';
@@ -13927,6 +14023,10 @@ function recalcCsvRowPnl(row){
   }
   row.classList.toggle('profit', isWin);
   row.classList.toggle('loss', !isWin);
+  // Color the row's pnl input (green / red / default)
+  if(typeof _colorPnlInput === 'function'){
+    _colorPnlInput(row.querySelector('.csv-pnl-input'));
+  }
 }
 
 // Delegated handlers — bound once, against the rows-list container.
@@ -16136,6 +16236,7 @@ function calcLivePnl(){
   if(pnlInput && !_pnlManual){
     pnlInput.value = pnl!=null ? (Math.round(pnl*100)/100) : '';
   }
+  if(typeof _colorPnlInput === 'function') _colorPnlInput(pnlInput);
 
   // Auto-fill lg-rr from stop. If user manually edited rr we leave it alone.
   // Manually-edited PnL still feeds rr (so rr reflects the user's number).
