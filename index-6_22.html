@@ -48,6 +48,8 @@
   --n-text-4:       #4a4a4a;
   --n-chrome:       linear-gradient(135deg,#f5f5f5 0%,#c8c8c8 35%,#ffffff 50%,#b8b8b8 65%,#e5e5e5 100%);
   --n-accent-cool:  #6ea8ff;
+  --n-cool:         #6ea8ff;   /* alias for --n-accent-cool */
+  --n-gold:         #f5d77c;   /* upgrade / streak / multi-account */
   --n-profit:       #5fb389;
   --n-loss:         #c95f5f;
   --n-font-display: 'Instrument Serif', Georgia, serif;
@@ -1164,6 +1166,218 @@
   height:14px!important;
   stroke-width:1.5!important;
   opacity:0.85;
+}
+
+/* Upgrade — gold-accented CTA in the sidebar, separated from
+   regular nav by a hairline border. */
+.ni.ni-upgrade{
+  color:var(--n-gold)!important;
+  margin-top:12px;
+  border-top:1px solid rgba(255,255,255,0.06)!important;
+  padding-top:14px!important;
+}
+.ni.ni-upgrade:hover{
+  background:rgba(245,215,124,0.06)!important;
+  color:var(--n-gold)!important;
+}
+.ni.ni-upgrade.on{
+  background:rgba(245,215,124,0.10)!important;
+  border-left-color:var(--n-gold)!important;
+  color:var(--n-gold)!important;
+}
+.ni.ni-upgrade svg{
+  fill:var(--n-gold);stroke:none!important;opacity:1;
+}
+
+/* ── UPGRADE PAGE ────────────────────────────────────── */
+#pg-upgrade.page.on{
+  padding:36px 48px 80px;
+  background:var(--n-bg);
+  position:relative;z-index:1;
+  display:block;
+}
+#pg-upgrade .up-hero{text-align:center;margin-bottom:32px;padding-top:20px}
+#pg-upgrade .up-tag{
+  font-family:var(--n-font-mono);font-size:12px;letter-spacing:0.36em;
+  color:var(--n-gold);text-transform:uppercase;margin-bottom:12px;
+}
+#pg-upgrade .up-headline{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:70px;line-height:0.95;letter-spacing:-0.025em;
+  margin-bottom:10px;font-weight:400;color:var(--n-text);
+}
+#pg-upgrade .up-headline .gold{color:var(--n-gold);font-style:italic}
+#pg-upgrade .up-sub{
+  font-family:var(--n-font-mono);font-size:13px;letter-spacing:0.20em;
+  color:var(--n-text-3);text-transform:uppercase;
+}
+
+#pg-upgrade .up-cards{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;
+}
+@media (max-width:1200px){ #pg-upgrade .up-cards{grid-template-columns:1fr 1fr} }
+@media (max-width:700px) { #pg-upgrade .up-cards{grid-template-columns:1fr} }
+
+#pg-upgrade .up-card{
+  padding:22px 20px;
+  background:linear-gradient(180deg, var(--n-surface-2) 0%, var(--n-surface) 100%);
+  border:1px solid rgba(255,255,255,0.08);border-radius:16px;
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;
+  transition:transform 200ms;
+}
+#pg-upgrade .up-card:hover{transform:translateY(-2px)}
+#pg-upgrade .up-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent);
+}
+#pg-upgrade .up-card.premium{border-color:rgba(110,168,255,0.30)}
+#pg-upgrade .up-card.premium::before{
+  background:linear-gradient(90deg, transparent, rgba(110,168,255,0.40), transparent);
+}
+#pg-upgrade .up-card.elite{
+  border-color:rgba(95,179,137,0.40);
+  background:linear-gradient(180deg, rgba(95,179,137,0.10) 0%, var(--n-surface) 100%);
+}
+#pg-upgrade .up-card.elite::before{
+  background:linear-gradient(90deg, transparent, rgba(95,179,137,0.50), transparent);
+}
+
+#pg-upgrade .best-pill{
+  position:absolute;top:14px;right:14px;
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.20em;
+  text-transform:uppercase;background:var(--n-profit);color:var(--n-bg);
+  padding:3px 8px;border-radius:4px;font-weight:600;
+}
+
+#pg-upgrade .uc-tag{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.22em;
+  text-transform:uppercase;font-weight:500;margin-bottom:6px;color:var(--n-text-3);
+}
+#pg-upgrade .up-card.direct .uc-tag{color:var(--n-text)}
+#pg-upgrade .up-card.premium .uc-tag{color:var(--n-cool)}
+#pg-upgrade .up-card.elite .uc-tag{color:var(--n-profit)}
+
+#pg-upgrade .uc-h{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:36px;line-height:1;margin-bottom:6px;letter-spacing:-0.015em;
+  color:var(--n-text);
+}
+#pg-upgrade .uc-h .gold{color:var(--n-gold);font-style:italic}
+#pg-upgrade .uc-h .cool{color:var(--n-cool);font-style:italic}
+#pg-upgrade .uc-h .green{color:var(--n-profit);font-style:italic}
+
+#pg-upgrade .uc-desc{
+  font-size:11px;line-height:1.5;color:var(--n-text-2);
+  margin-bottom:14px;min-height:48px;
+}
+#pg-upgrade .uc-price{
+  display:flex;align-items:baseline;gap:6px;
+  margin-bottom:14px;padding-bottom:14px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+#pg-upgrade .uc-strike{
+  font-family:var(--n-font-mono);font-size:12px;
+  color:var(--n-text-4);text-decoration:line-through;
+}
+#pg-upgrade .uc-big{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:50px;line-height:0.95;letter-spacing:-0.025em;color:var(--n-text);
+}
+#pg-upgrade .uc-big.cool{color:var(--n-cool)}
+#pg-upgrade .uc-big.green{color:var(--n-profit);font-size:42px}
+#pg-upgrade .uc-period{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;
+  color:var(--n-text-3);text-transform:uppercase;
+}
+
+#pg-upgrade .uc-feat{
+  display:flex;align-items:flex-start;gap:7px;
+  padding:5px 0;font-size:11px;line-height:1.4;color:var(--n-text-2);
+}
+#pg-upgrade .uc-feat::before{
+  content:'\2713';color:var(--n-profit);font-weight:600;font-size:11px;flex-shrink:0;
+}
+#pg-upgrade .uc-feat-x{
+  display:flex;align-items:flex-start;gap:7px;
+  padding:5px 0;font-size:11px;line-height:1.4;color:var(--n-text-4);
+}
+#pg-upgrade .uc-feat-x::before{
+  content:'\2717';color:var(--n-text-4);font-weight:600;font-size:11px;flex-shrink:0;
+}
+#pg-upgrade .uc-feat-h{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.20em;
+  color:var(--n-text-3);text-transform:uppercase;
+  padding-top:10px;padding-bottom:4px;
+}
+
+#pg-upgrade .uc-cta{
+  margin-top:auto;padding:12px;
+  font-family:var(--n-font-sans);font-size:12px;font-weight:600;
+  border-radius:9px;display:flex;align-items:center;justify-content:center;gap:8px;
+  cursor:pointer;transition:transform 150ms, opacity 150ms;border:none;
+  letter-spacing:0;
+}
+#pg-upgrade .uc-cta:hover{transform:translateY(-1px)}
+#pg-upgrade .uc-cta.free{
+  background:transparent;color:var(--n-text-2);
+  border:1px solid rgba(255,255,255,0.15);
+  cursor:default;
+}
+#pg-upgrade .uc-cta.free:hover{transform:none}
+#pg-upgrade .uc-cta.free[disabled]{opacity:0.7}
+#pg-upgrade .uc-cta.direct{
+  background:linear-gradient(180deg, #f5f5f5 0%, #dadada 100%);
+  color:var(--n-bg);
+}
+#pg-upgrade .uc-cta.discord{
+  background:linear-gradient(180deg, #7289da 0%, #5b6eae 100%);
+  color:white;
+}
+#pg-upgrade .uc-cta.discord-elite{
+  background:linear-gradient(180deg, var(--n-profit) 0%, #4a9b75 100%);
+  color:white;
+}
+
+#pg-upgrade .whop-callout{
+  padding:16px 22px;
+  background:linear-gradient(135deg, rgba(110,168,255,0.05) 0%, rgba(110,168,255,0.01) 100%);
+  border:1px solid rgba(110,168,255,0.20);
+  border-radius:12px;border-left:3px solid var(--n-cool);
+  display:flex;align-items:center;justify-content:space-between;gap:24px;
+  margin-bottom:14px;flex-wrap:wrap;
+}
+#pg-upgrade .whop-h{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.22em;
+  color:var(--n-cool);text-transform:uppercase;margin-bottom:4px;
+}
+#pg-upgrade .whop-body{font-size:12px;line-height:1.5;color:var(--n-text-2)}
+#pg-upgrade .whop-body b{color:var(--n-text);font-weight:600}
+#pg-upgrade .whop-cta{
+  padding:9px 16px;
+  background:rgba(110,168,255,0.10);
+  border:1px solid rgba(110,168,255,0.40);
+  color:var(--n-cool);
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;
+  text-transform:uppercase;border-radius:7px;text-decoration:none;
+  transition:background 150ms;
+}
+#pg-upgrade .whop-cta:hover{background:rgba(110,168,255,0.18)}
+
+#pg-upgrade .guarantee{
+  text-align:center;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.20em;
+  color:var(--n-text-3);text-transform:uppercase;
+  padding-top:12px;border-top:1px solid rgba(255,255,255,0.05);
+}
+
+@media (max-width:768px){
+  #pg-upgrade.page.on{padding:18px 14px 80px}
+  #pg-upgrade .up-headline{font-size:42px}
+  #pg-upgrade .up-tag{font-size:10px}
+  #pg-upgrade .uc-big{font-size:42px}
+  #pg-upgrade .whop-callout{flex-direction:column;align-items:flex-start;gap:12px}
+  #pg-upgrade .whop-cta{align-self:stretch;text-align:center}
 }
 .ni .badge{
   background:var(--n-surface-3)!important;
@@ -7022,6 +7236,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     <div class="sb-sec">Connect</div>
     <div class="ni" onclick="goTo('sync')"><svg viewBox="0 0 16 16"><path d="M13 8A5 5 0 1 1 8 3"/><polyline points="13,3 13,7 9,7"/></svg>Broker Sync</div>
     <div class="ni" onclick="goTo('community')"><svg viewBox="0 0 16 16"><circle cx="6" cy="5" r="2.5"/><path d="M2 13c0-2.2 1.8-4 4-4s4 1.8 4 4"/><circle cx="12" cy="6" r="2"/><path d="M14 13c0-1.7-1.3-3-2-3"/></svg>Community</div>
+    <div class="ni ni-upgrade" onclick="goTo('upgrade')"><svg viewBox="0 0 16 16" fill="currentColor" stroke="none"><polygon points="8,1.5 9.8,5.9 14.5,6.3 10.9,9.4 12,14 8,11.5 4,14 5.1,9.4 1.5,6.3 6.2,5.9"/></svg>Upgrade</div>
     <!-- Soft-removed nav items (Tools section + 4 features). Pages still exist in DOM
          and JS still works; just not reachable from nav. To restore, paste back. -->
   </div>
@@ -8695,6 +8910,116 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     </div>
     <button class="act-btn" style="margin-top:16px;padding:11px 32px;font-size:15px;letter-spacing:2px" onclick="glSave()">SAVE GOALS</button>
   </div></div>
+</div>
+
+<!-- UPGRADE PAGE -->
+<div id="pg-upgrade" class="page">
+  <div class="up-hero">
+    <div class="up-tag">&#9733; Pricing</div>
+    <h1 class="up-headline">Start free.<br>Get <em class="gold">Pro.</em></h1>
+    <div class="up-sub">One paid tier &middot; 3 ways to unlock</div>
+  </div>
+
+  <div class="up-cards">
+
+    <!-- FREE -->
+    <div class="up-card free">
+      <div class="uc-tag">&#9733; Free Tier</div>
+      <div class="uc-h">Free.</div>
+      <div class="uc-desc">A real journal. Free forever &mdash; no caps, no card.</div>
+      <div class="uc-price"><span class="uc-big">$0</span><span class="uc-period">forever</span></div>
+      <div class="uc-feat">Unlimited trades + screenshots</div>
+      <div class="uc-feat">Unlimited trading accounts</div>
+      <div class="uc-feat">Calendar + heatmap views</div>
+      <div class="uc-feat">Stats: best/worst day, win rate, streak</div>
+      <div class="uc-feat">Equity curve</div>
+      <div class="uc-feat">Grade + emotion + confidence</div>
+      <div class="uc-feat">Auto-calc P&amp;L</div>
+      <div class="uc-feat">Export your data</div>
+      <div class="uc-feat-h">Upgrade for more</div>
+      <div class="uc-feat-x">Communities (create + invite)</div>
+      <div class="uc-feat-x">CSV import + multi-account copies</div>
+      <div class="uc-feat-x">Advanced analytics + insights</div>
+      <div class="uc-feat-x">PDF export + priority support</div>
+      <button class="uc-cta free" disabled>Current plan</button>
+    </div>
+
+    <!-- PRO DIRECT -->
+    <div class="up-card direct">
+      <div class="uc-tag">&#9733; Pro &middot; Direct</div>
+      <div class="uc-h"><em class="gold">Pro.</em></div>
+      <div class="uc-desc">Full Pro features + your own communities. Cancel anytime.</div>
+      <div class="uc-price"><span class="uc-big">$19</span><span class="uc-period">per month</span></div>
+      <div class="uc-feat-h">Communities</div>
+      <div class="uc-feat">Create your own communities</div>
+      <div class="uc-feat">Invite Pro friends + live group P&amp;L</div>
+      <div class="uc-feat">Trade of the Day + leaderboards</div>
+      <div class="uc-feat-h">Convenience</div>
+      <div class="uc-feat">CSV bulk import</div>
+      <div class="uc-feat">Multi-account copies (&times;N at once)</div>
+      <div class="uc-feat">PDF journal export</div>
+      <div class="uc-feat-h">Advanced Insights</div>
+      <div class="uc-feat">P&amp;L by session &middot; symbol &middot; setup &middot; emotion</div>
+      <div class="uc-feat">Heatmap day &times; hour</div>
+      <div class="uc-feat">Holding time + R-multiple analysis</div>
+      <div class="uc-feat-h">Perks</div>
+      <div class="uc-feat">Priority email support</div>
+      <div class="uc-feat">Early access to new features</div>
+      <button class="uc-cta direct" onclick="window.open('/pricing','_blank')">Subscribe &rarr;</button>
+    </div>
+
+    <!-- PRO PREMIUM -->
+    <div class="up-card premium">
+      <div class="uc-tag">&#9733; Pro &middot; Premium</div>
+      <div class="uc-h">50% <em class="cool">off.</em></div>
+      <div class="uc-desc">For Trading Ark Premium members ($50/mo on Whop). Discord OAuth required.</div>
+      <div class="uc-price"><span class="uc-strike">$19</span><span class="uc-big cool">$9</span><span class="uc-period">per month</span></div>
+      <div class="uc-feat">&#9733; Trading Ark community</div>
+      <div class="uc-feat">Everything in Pro &middot; Direct</div>
+      <div class="uc-feat">50% off forever (while Premium)</div>
+      <div class="uc-feat">Auto-applied via Discord OAuth</div>
+      <div class="uc-feat-h">Whop bundle perks</div>
+      <div class="uc-feat">Trading Ark Discord access</div>
+      <div class="uc-feat">Trading classes + live alerts</div>
+      <div class="uc-feat">Synced with Discord roles</div>
+      <button class="uc-cta discord" onclick="signInWithDiscord()">
+        <svg viewBox="0 0 71 55" width="14" height="14" fill="white"><path d="M60 4.7A58.5 58.5 0 0 0 45.6 0c-.6 1.1-1.4 2.6-1.9 3.8a54 54 0 0 0-16.4 0c-.5-1.2-1.3-2.7-2-3.8C20.5 0 15.5 1.6 11 4.8 1.7 18.6-.8 32 .4 45.3a58.7 58.7 0 0 0 18 9c1.5-2 2.7-4 3.8-6.3-2.1-.8-4-1.7-5.9-2.9.5-.4 1-.7 1.5-1.1 11.4 5.2 23.7 5.2 35 0l1.5 1.1c-1.9 1.1-3.9 2.1-6 2.9 1.1 2.2 2.4 4.3 3.9 6.3a58.7 58.7 0 0 0 18-9c1.5-15.4-2.6-28.8-10.2-40.6zM23.7 37.3c-3.5 0-6.4-3.2-6.4-7.1 0-4 2.8-7.2 6.4-7.2 3.5 0 6.4 3.2 6.4 7.2 0 3.9-2.9 7.1-6.4 7.1zm23.6 0c-3.5 0-6.4-3.2-6.4-7.1 0-4 2.8-7.2 6.4-7.2 3.5 0 6.4 3.2 6.4 7.2 0 3.9-2.8 7.1-6.4 7.1z"/></svg>
+        Sign in with Discord
+      </button>
+    </div>
+
+    <!-- PRO ELITE -->
+    <div class="up-card elite">
+      <div class="best-pill">Best Value</div>
+      <div class="uc-tag">&#9733; Pro &middot; Elite</div>
+      <div class="uc-h">100% <em class="green">free.</em></div>
+      <div class="uc-desc">For Trading Ark Elite members ($100/mo on Whop). Auto-included.</div>
+      <div class="uc-price"><span class="uc-strike">$19</span><span class="uc-big green">FREE</span><span class="uc-period">included</span></div>
+      <div class="uc-feat">&#9733; Trading Ark community</div>
+      <div class="uc-feat">Everything in Pro &middot; Direct</div>
+      <div class="uc-feat">100% FREE forever (while Elite)</div>
+      <div class="uc-feat">Priority + first access to new features</div>
+      <div class="uc-feat-h">Whop bundle perks</div>
+      <div class="uc-feat">Trading Ark Discord (full access)</div>
+      <div class="uc-feat">All Premium perks + Elite-only rooms</div>
+      <div class="uc-feat">Direct DM access to instructors</div>
+      <button class="uc-cta discord-elite" onclick="signInWithDiscord()">
+        <svg viewBox="0 0 71 55" width="14" height="14" fill="white"><path d="M60 4.7A58.5 58.5 0 0 0 45.6 0c-.6 1.1-1.4 2.6-1.9 3.8a54 54 0 0 0-16.4 0c-.5-1.2-1.3-2.7-2-3.8C20.5 0 15.5 1.6 11 4.8 1.7 18.6-.8 32 .4 45.3a58.7 58.7 0 0 0 18 9c1.5-2 2.7-4 3.8-6.3-2.1-.8-4-1.7-5.9-2.9.5-.4 1-.7 1.5-1.1 11.4 5.2 23.7 5.2 35 0l1.5 1.1c-1.9 1.1-3.9 2.1-6 2.9 1.1 2.2 2.4 4.3 3.9 6.3a58.7 58.7 0 0 0 18-9c1.5-15.4-2.6-28.8-10.2-40.6zM23.7 37.3c-3.5 0-6.4-3.2-6.4-7.1 0-4 2.8-7.2 6.4-7.2 3.5 0 6.4 3.2 6.4 7.2 0 3.9-2.9 7.1-6.4 7.1zm23.6 0c-3.5 0-6.4-3.2-6.4-7.1 0-4 2.8-7.2 6.4-7.2 3.5 0 6.4 3.2 6.4 7.2 0 3.9-2.8 7.1-6.4 7.1z"/></svg>
+        Sign in with Discord
+      </button>
+    </div>
+  </div>
+
+  <!-- WHOP CALLOUT -->
+  <div class="whop-callout">
+    <div>
+      <div class="whop-h">&rarr; Not in Trading Ark yet?</div>
+      <div class="whop-body">Join <b>Trading Ark</b> on Whop. Get the Discord, the journal, and the in-Rewind community &mdash; all in one.</div>
+    </div>
+    <a href="https://whop.com/joined/tradingark/?tab=home" target="_blank" rel="noopener" class="whop-cta">Join on Whop &rarr;</a>
+  </div>
+
+  <div class="guarantee">No card to start &middot; Cancel anytime &middot; 7-day refund on Pro</div>
 </div>
 
 <!-- ACCOUNT PAGE -->
@@ -12171,13 +12496,22 @@ document.addEventListener('click',function(e){
     p.style.display='none';
 });
 
+// Stub for the Discord OAuth flow — wired up on the Upgrade page's
+// Premium / Elite cards. Full OAuth lands in a separate bake.
+function signInWithDiscord(){
+  console.log('[upgrade] Discord OAuth not wired yet');
+  if(typeof toast === 'function') toast('Discord sign-in coming soon', 'info');
+  else if(typeof showToast === 'function') showToast('Discord sign-in coming soon', 'info');
+}
+window.signInWithDiscord = signInWithDiscord;
+
 function goTo(pg){
   var pgEl = document.getElementById('pg-'+pg);
   if (!pgEl) { console.warn('goTo: page not found —', pg); return; }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
   pgEl.classList.add('on');
-  const map=['dashboard','log','history','calendar','equity','analytics','sync','community','risk','propfirms','rules','goals','account'];
+  const map=['dashboard','log','history','calendar','equity','analytics','sync','community','upgrade','risk','propfirms','rules','goals','account'];
   document.querySelectorAll('.ni')[map.indexOf(pg)]?.classList.add('on');
   document.querySelector('.main').scrollTop=0;
   if(pg==='account'){refreshAcctUI();showTab('profile');return;}
