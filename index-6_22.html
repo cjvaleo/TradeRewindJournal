@@ -9150,50 +9150,19 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       </div>
 
       <!-- SUBSCRIPTION (locked — in development) -->
-      <div class="acct-tab locked-tab" id="tab-subscription">
-        <div class="panel-card">
-          <div class="peek-content">
-            <div class="panel-card-head">
-              <div class="panel-card-title">Subscription</div>
-              <div class="panel-card-sub">Your current plan</div>
-            </div>
-            <div class="tier-grid">
-              <div class="tier-card current">
-                <span class="tier-current-badge">Current Plan</span>
-                <div class="tier-name">Free</div>
-                <div class="tier-price">$0<span class="per">/ month</span></div>
-                <ul class="tier-features">
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Manual trade logging</li>
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>CSV import</li>
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Up to 100 trades</li>
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Basic analytics</li>
-                </ul>
-                <button class="tier-btn current">Current Plan</button>
-              </div>
-              <div class="tier-card">
-                <div class="tier-name">Pro</div>
-                <div class="tier-price">$19<span class="per">/ month</span></div>
-                <ul class="tier-features">
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Unlimited trades</li>
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Full analytics suite</li>
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Broker sync (when live)</li>
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Community access</li>
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Priority support</li>
-                </ul>
-                <button class="tier-btn upgrade">Upgrade to Pro</button>
-              </div>
-            </div>
+      <div class="acct-tab" id="tab-subscription">
+        <!-- Plan summary — populated by refreshActiveSubCard() from /api/me. -->
+        <div class="panel-card" style="max-width:460px">
+          <div class="panel-card-head">
+            <div class="panel-card-title" id="sub-summary-title">Subscription</div>
+            <div class="panel-card-sub"   id="sub-summary-sub">Loading&hellip;</div>
           </div>
-          <div class="tab-lock">
-            <div class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
-            <div class="ttl">Subscription</div>
-            <div class="status"><span class="pulse"></span>In development</div>
-            <div class="desc">Plans and pricing are coming soon. Everything's free for now &mdash; enjoy.</div>
+          <div style="padding:14px 16px 16px" id="sub-summary-body">
+            <div style="font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-3);letter-spacing:0.04em">Checking your plan&hellip;</div>
           </div>
         </div>
 
-        <!-- Active subscription card — shown only when /api/me reports hasStripe=true.
-             Sibling of the locked .panel-card; not affected by .locked-tab blur. -->
+        <!-- Active Stripe subscription card — shown when /api/me reports hasStripe=true. -->
         <div class="panel-card" id="active-sub-card" style="display:none;margin-top:16px;max-width:460px">
           <div class="panel-card-head">
             <div class="panel-card-title">Active subscription</div>
@@ -19997,33 +19966,81 @@ async function cancelModalOpen(){
   _cancelModalShowOnly('1');
 }
 
-// Refresh the Active-subscription card on the Account → Subscription tab.
+// Refresh the Subscription tab — populates the summary card from /api/me
+// AND toggles the active-sub card based on hasStripe.
 async function refreshActiveSubCard(){
-  var card = document.getElementById('active-sub-card');
-  if (!card) return;
+  var card     = document.getElementById('active-sub-card');
+  var sumTitle = document.getElementById('sub-summary-title');
+  var sumSub   = document.getElementById('sub-summary-sub');
+  var sumBody  = document.getElementById('sub-summary-body');
+  if (!card && !sumBody) return;
+
+  function setSummary(title, sub, bodyHtml) {
+    if (sumTitle) sumTitle.textContent = title;
+    if (sumSub)   sumSub.textContent   = sub;
+    if (sumBody)  sumBody.innerHTML    = bodyHtml;
+  }
+  var bodyStyle = 'font-family:var(--n-font-sans);font-size:14px;color:var(--n-text-2);line-height:1.5';
+  var linkStyle = 'display:inline-block;text-decoration:none;margin-top:14px;background:transparent;font-family:var(--n-font-sans);font-size:12px;padding:7px 14px;border-radius:6px;border:1px solid';
+
   try {
     var session = await _cancelModalGetSession();
-    if (!session) { card.style.display = 'none'; return; }
+    if (!session) {
+      setSummary('Subscription', 'Sign in required', '<div style="' + bodyStyle + '">Sign in to see your plan.</div>');
+      if (card) card.style.display = 'none';
+      return;
+    }
     var r = await fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + session.access_token } });
-    if (!r.ok) { card.style.display = 'none'; return; }
+    if (!r.ok) {
+      setSummary('Subscription', 'Unavailable', '<div style="' + bodyStyle + ';color:var(--n-loss)">Couldn\'t load plan info. Refresh to retry.</div>');
+      if (card) card.style.display = 'none';
+      return;
+    }
     var me = await r.json();
+    var whopEliteUrl = 'https://whop.com/checkout/plan_KY7CY81vHFic1?a=christianvaleo';
+
+    if (me.tier === 'free') {
+      setSummary('Free plan', 'Logging your trades for free.',
+        '<div style="' + bodyStyle + '">Upgrade for unlimited trades, full analytics, and broker sync.</div>' +
+        '<a href="/upgrade" style="' + linkStyle + ' rgba(245,215,124,0.4);color:var(--n-gold)">Upgrade &rarr;</a>');
+    } else if (me.tier === 'pro_direct') {
+      setSummary('Pro · Direct', '$20 / month',
+        '<div style="' + bodyStyle + '">Full Pro access. Renews monthly via Stripe.</div>');
+    } else if (me.tier === 'pro_premium') {
+      setSummary('Pro · Premium', '$10 / month · 50% off via Trading Ark',
+        '<div style="' + bodyStyle + '">Pro features plus Trading Ark Discord community access.</div>');
+    } else if (me.tier === 'pro_elite') {
+      if (me.hasStripe) {
+        setSummary('Pro · Elite', 'Free with Trading Ark Elite',
+          '<div style="' + bodyStyle + '">Your Elite role on Discord covers Rewind Pro at no cost. You also have a Stripe subscription — you can cancel it any time without losing access; Elite keeps you Pro.</div>');
+      } else {
+        setSummary('Pro · Elite', 'Free with Trading Ark Elite',
+          '<div style="' + bodyStyle + '">Your Elite role on Discord covers Rewind Pro at no cost. Manage your Trading Ark membership on Whop.</div>' +
+          '<a href="' + whopEliteUrl + '" target="_blank" rel="noopener" style="' + linkStyle + ' rgba(110,168,255,0.4);color:var(--n-cool)">Open Whop Elite &rarr;</a>');
+      }
+    } else {
+      setSummary('Subscription', 'Plan status unavailable', '<div style="' + bodyStyle + ';color:var(--n-text-3)">&mdash;</div>');
+    }
+
+    // Active-sub card toggle
     if (me.hasStripe && me.tier !== 'free') {
       var descEl  = document.getElementById('active-sub-desc');
       var untilEl = document.getElementById('active-sub-until');
       if (descEl) {
         descEl.textContent =
-          me.tier === 'pro_premium' ? 'Pro · Premium · $9 / month' :
-          me.tier === 'pro_direct'  ? 'Pro · Direct · $19 / month' :
-          me.tier === 'pro_elite'   ? 'Pro · Elite (paid Stripe sub also active)' :
+          me.tier === 'pro_premium' ? 'Pro · Premium · $10 / month' :
+          me.tier === 'pro_direct'  ? 'Pro · Direct · $20 / month' :
+          me.tier === 'pro_elite'   ? 'Premium · $10 / month' :
                                        'Active subscription';
       }
       if (untilEl) untilEl.textContent = _cancelModalFormatDate(me.activeUntil);
-      card.style.display = '';
+      if (card) card.style.display = '';
     } else {
-      card.style.display = 'none';
+      if (card) card.style.display = 'none';
     }
   } catch (e) {
-    card.style.display = 'none';
+    setSummary('Subscription', 'Network error', '<div style="' + bodyStyle + ';color:var(--n-loss)">Couldn\'t reach server. Refresh to retry.</div>');
+    if (card) card.style.display = 'none';
   }
 }
 </script>
