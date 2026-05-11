@@ -8965,7 +8965,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       <div class="uc-feat-h">Perks</div>
       <div class="uc-feat">Priority email support</div>
       <div class="uc-feat">Early access to new features</div>
-      <button class="uc-cta direct" onclick="window.open('/pricing','_blank')">Subscribe &rarr;</button>
+      <button class="uc-cta direct" onclick="tierUpgradeFlow('direct')">Subscribe &rarr;</button>
     </div>
 
     <!-- PRO PREMIUM -->
@@ -8982,7 +8982,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       <div class="uc-feat">Trading Ark Discord access</div>
       <div class="uc-feat">Trading classes + live alerts</div>
       <div class="uc-feat">Synced with Discord roles</div>
-      <button class="uc-cta discord" onclick="signInWithDiscord()">
+      <button class="uc-cta discord" onclick="tierUpgradeFlow('premium')">
         <svg viewBox="0 0 71 55" width="14" height="14" fill="white"><path d="M60 4.7A58.5 58.5 0 0 0 45.6 0c-.6 1.1-1.4 2.6-1.9 3.8a54 54 0 0 0-16.4 0c-.5-1.2-1.3-2.7-2-3.8C20.5 0 15.5 1.6 11 4.8 1.7 18.6-.8 32 .4 45.3a58.7 58.7 0 0 0 18 9c1.5-2 2.7-4 3.8-6.3-2.1-.8-4-1.7-5.9-2.9.5-.4 1-.7 1.5-1.1 11.4 5.2 23.7 5.2 35 0l1.5 1.1c-1.9 1.1-3.9 2.1-6 2.9 1.1 2.2 2.4 4.3 3.9 6.3a58.7 58.7 0 0 0 18-9c1.5-15.4-2.6-28.8-10.2-40.6zM23.7 37.3c-3.5 0-6.4-3.2-6.4-7.1 0-4 2.8-7.2 6.4-7.2 3.5 0 6.4 3.2 6.4 7.2 0 3.9-2.9 7.1-6.4 7.1zm23.6 0c-3.5 0-6.4-3.2-6.4-7.1 0-4 2.8-7.2 6.4-7.2 3.5 0 6.4 3.2 6.4 7.2 0 3.9-2.8 7.1-6.4 7.1z"/></svg>
         Sign in with Discord
       </button>
@@ -9003,7 +9003,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       <div class="uc-feat">Trading Ark Discord (full access)</div>
       <div class="uc-feat">All Premium perks + Elite-only rooms</div>
       <div class="uc-feat">Direct DM access to instructors</div>
-      <button class="uc-cta discord-elite" onclick="signInWithDiscord()">
+      <button class="uc-cta discord-elite" onclick="tierUpgradeFlow('elite')">
         <svg viewBox="0 0 71 55" width="14" height="14" fill="white"><path d="M60 4.7A58.5 58.5 0 0 0 45.6 0c-.6 1.1-1.4 2.6-1.9 3.8a54 54 0 0 0-16.4 0c-.5-1.2-1.3-2.7-2-3.8C20.5 0 15.5 1.6 11 4.8 1.7 18.6-.8 32 .4 45.3a58.7 58.7 0 0 0 18 9c1.5-2 2.7-4 3.8-6.3-2.1-.8-4-1.7-5.9-2.9.5-.4 1-.7 1.5-1.1 11.4 5.2 23.7 5.2 35 0l1.5 1.1c-1.9 1.1-3.9 2.1-6 2.9 1.1 2.2 2.4 4.3 3.9 6.3a58.7 58.7 0 0 0 18-9c1.5-15.4-2.6-28.8-10.2-40.6zM23.7 37.3c-3.5 0-6.4-3.2-6.4-7.1 0-4 2.8-7.2 6.4-7.2 3.5 0 6.4 3.2 6.4 7.2 0 3.9-2.9 7.1-6.4 7.1zm23.6 0c-3.5 0-6.4-3.2-6.4-7.1 0-4 2.8-7.2 6.4-7.2 3.5 0 6.4 3.2 6.4 7.2 0 3.9-2.8 7.1-6.4 7.1z"/></svg>
         Sign in with Discord
       </button>
@@ -19140,11 +19140,30 @@ function refreshSubUI() {
   var up = document.getElementById('sub-upgrade-preview'); if(up) up.style.display = isFree ? 'block' : 'none';
 }
 
-/* ── UPGRADE FLOW (stub — real Stripe Checkout / Discord OAuth wires in step 3) ── */
+/* ── UPGRADE FLOW (wired to scaffolded /api routes — real logic lands in step 4) ── */
 async function tierUpgradeFlow(plan){
-  // Read live tier even though the result is unused today, so this
-  // stub already exercises the contract the real flow will use.
-  await getCurrentTier();
+  // Direct → POST /api/checkout/direct. Stub returns 501; real handler
+  // will return { url } pointing at a Stripe Checkout session.
+  if (plan === 'direct') {
+    try {
+      var r = await fetch('/api/checkout/direct', { method: 'POST' });
+      if (r.status === 501) { toast('Server flow not wired yet — coming next.'); return; }
+      var d = await r.json().catch(function(){ return null; });
+      if (d && d.url) { window.location.href = d.url; return; }
+      toast('Checkout failed — please try again.');
+    } catch (e) {
+      console.warn('[tier] direct checkout error:', e && e.message);
+      toast('Server flow not wired yet — coming next.');
+    }
+    return;
+  }
+  // Premium / Elite → server-side Discord OAuth redirect. The route is at
+  // /api/oauth/discord/start; vercel.json rewrites /oauth/discord/start → it.
+  if (plan === 'premium' || plan === 'elite') {
+    window.location.href = '/oauth/discord/start?plan=' + encodeURIComponent(plan);
+    return;
+  }
+  // Unknown plan — defensive fallback.
   toast('Paid plans launching very soon — coming in days, not weeks.');
 }
 window.tierUpgradeFlow = tierUpgradeFlow;

@@ -1,0 +1,10 @@
+node_modules/
+.vercel/
+
+# env — local only, never commit
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store

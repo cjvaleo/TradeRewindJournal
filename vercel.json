@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/oauth/discord/start", "destination": "/api/oauth/discord/start" },
+    { "source": "/oauth/discord/callback", "destination": "/api/oauth/discord/callback" }
+  ],
+  "crons": [
+    { "path": "/api/cron/daily-role-check", "schedule": "0 3 * * *" }
+  ]
+}
