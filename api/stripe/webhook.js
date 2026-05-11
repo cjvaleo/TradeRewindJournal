@@ -23,20 +23,25 @@ function json(body, status = 200) {
   });
 }
 
+let _stripe;
 function getStripe() {
   // createFetchHttpClient() makes the Stripe SDK use the global fetch
   // (Edge-compatible) instead of node:http.
-  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+  if (_stripe) return _stripe;
+  _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: '2024-12-18.acacia',
     httpClient: Stripe.createFetchHttpClient(),
   });
+  return _stripe;
 }
 
 // Inline a fresh service-role client here. The shared api/_lib/supabase.js
 // is fine for Node routes; this Edge route avoids importing from it so the
 // dependency graph stays clean (Edge bundle doesn't pull in Node-only paths).
+let _sb;
 function getSb() {
-  return createClient(
+  if (_sb) return _sb;
+  _sb = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY,
     {
@@ -47,6 +52,7 @@ function getSb() {
       },
     }
   );
+  return _sb;
 }
 
 // Insert via UNIQUE(provider, event_id). Returns true if new, false if dup.
@@ -80,6 +86,67 @@ async function markEventFailed(sb, eventId, msg) {
       processed_at: new Date().toISOString(),
     })
     .eq('provider', PROVIDER).eq('event_id', eventId);
+}
+
+// ── Event handlers ──────────────────────────────────────────────
+
+async function onCheckoutCompleted(sb, event) {
+  const session = event.data.object;
+  const userId = session.client_reference_id;
+  const subscriptionId = session.subscription;
+  if (!userId)         throw new Error('missing client_reference_id');
+  if (!subscriptionId) throw new Error('missing subscription on session');
+
+  // Fetch the subscription to read metadata.plan + current_period_end.
+  // subscription_data.metadata was set at checkout creation, so .plan is here.
+  const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
+  const plan = subscription.metadata && subscription.metadata.plan;
+  if (plan !== 'direct' && plan !== 'premium') {
+    throw new Error(`unknown plan in subscription metadata: ${plan}`);
+  }
+  if (typeof subscription.current_period_end !== 'number') {
+    throw new Error('missing current_period_end on subscription');
+  }
+  const newWindowMs = subscription.current_period_end * 1000 + 7 * 86400 * 1000;
+
+  // Read current row for the carve-out + MAX() computation.
+  const { data: profile, error: readErr } = await sb
+    .from('profiles')
+    .select('pro_source, pro_active_until')
+    .eq('id', userId)
+    .single();
+  if (readErr) throw new Error(`profile read failed: ${readErr.message}`);
+
+  const currentUntilMs = profile.pro_active_until
+    ? new Date(profile.pro_active_until).getTime()
+    : 0;
+  // Carve-out: if the user already holds Discord-Elite with an active window,
+  // Stripe checkout (even for Premium) MUST NOT downgrade pro_source. Without
+  // this, a later Stripe cancellation would incorrectly drop them off Pro
+  // even though their Discord role still entitles them.
+  const keepDiscordElite =
+    profile.pro_source === 'discord_elite' && currentUntilMs > Date.now();
+  const newProSource = keepDiscordElite ? 'discord_elite' : `stripe_${plan}`;
+  const finalProUntilIso = new Date(Math.max(currentUntilMs, newWindowMs)).toISOString();
+
+  const { error: upErr } = await sb
+    .from('profiles')
+    .update({
+      stripe_subscription_id: subscriptionId,
+      is_pro: true,
+      pro_source: newProSource,
+      pro_active_until: finalProUntilIso,
+    })
+    .eq('id', userId);
+  if (upErr) throw new Error(`profile update failed: ${upErr.message}`);
+
+  console.log('[webhook] checkout.session.completed processed', {
+    user_id: userId,
+    subscription_id: subscriptionId,
+    plan,
+    pro_source: newProSource,
+    pro_active_until: finalProUntilIso,
+  });
 }
 
 export default async function handler(request) {
@@ -129,7 +196,9 @@ export default async function handler(request) {
   //    Phases B-E will fill these in.
   try {
     switch (event.type) {
-      // Phase B: case 'checkout.session.completed':    await onCheckoutCompleted(sb, event); break;
+      case 'checkout.session.completed':
+        await onCheckoutCompleted(sb, event);
+        break;
       // Phase C: case 'invoice.paid':                  await onInvoicePaid(sb, event); break;
       // Phase D: case 'invoice.payment_failed':        await onPaymentFailed(sb, event); break;
       // Phase E: case 'customer.subscription.deleted': await onSubscriptionDeleted(sb, event); break;
