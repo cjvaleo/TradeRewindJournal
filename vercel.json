@@ -5,6 +5,7 @@
     { "source": "/oauth/discord/callback", "destination": "/api/oauth/discord/callback" },
     { "source": "/welcome/elite", "destination": "/welcome/elite.html" },
     { "source": "/welcome/direct", "destination": "/welcome/direct.html" },
+    { "source": "/welcome/premium", "destination": "/welcome/premium.html" },
     { "source": "/oauth-no-access", "destination": "/oauth-no-access.html" },
     { "source": "/oauth-error", "destination": "/oauth-error.html" },
     { "source": "/upgrade", "destination": "/index-6_22.html" }
