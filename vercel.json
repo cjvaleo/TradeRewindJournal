@@ -11,6 +11,7 @@
     { "source": "/upgrade", "destination": "/index-6_22.html" }
   ],
   "crons": [
-    { "path": "/api/cron/daily-role-check", "schedule": "0 3 * * *" }
+    { "path": "/api/cron/daily-role-check", "schedule": "0 3 * * *" },
+    { "path": "/api/cron/email-worker",     "schedule": "*/5 * * * *" }
   ]
 }
