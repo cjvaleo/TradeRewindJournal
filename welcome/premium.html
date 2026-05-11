@@ -42,11 +42,22 @@
   .foot{margin-top:36px;padding-top:20px;border-top:1px solid var(--n-border);font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.15em;text-transform:uppercase;color:var(--n-text-4)}
   .foot a{color:var(--n-text-3);text-decoration:none}
   .foot a:hover{color:var(--n-text-2)}
+  #loading-pane .tag,#timeout-pane .tag{color:var(--n-text-3)}
+  .dots{display:inline-block;width:1em;text-align:left;color:var(--n-text-3)}
+  .dots::after{content:'.';animation:dots 1.4s steps(4,end) infinite}
+  @keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}100%{content:''}}
   @media (max-width:520px){h1{font-size:42px}.perks{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<main class="card">
+
+<main class="card" id="loading-pane">
+  <div class="tag">Activating Pro · Premium</div>
+  <h1>Hold tight<span class="dots"></span></h1>
+  <p class="lead">Confirming your payment with Stripe. Usually a couple seconds.</p>
+</main>
+
+<main class="card" id="success-pane" style="display:none">
   <div class="tag"><span class="star">★</span>Pro · Premium</div>
   <h1>You're in. <span class="cool">50% off.</span></h1>
   <p class="lead">Discord linked, Trading Ark Premium role verified, and your 50%-off subscription is active. Pro features unlocked alongside your community access.</p>
@@ -61,5 +72,64 @@
   <a class="cta" href="/index-6_22.html">Go to dashboard →</a>
   <div class="foot">Receipt sent to your email · <a href="mailto:hello@traderewindjournal.com">hello@traderewindjournal.com</a></div>
 </main>
+
+<main class="card" id="timeout-pane" style="display:none">
+  <div class="tag">Almost there</div>
+  <h1>Just a sec.</h1>
+  <p class="lead">Your Pro features should activate any moment. Refresh if this page doesn't update — your payment is safe and your data is intact.</p>
+  <a class="cta" href="javascript:location.reload()">Refresh</a>
+  <div class="foot">Need help? <a href="mailto:hello@traderewindjournal.com">hello@traderewindjournal.com</a></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(async function(){
+  var SUPA_URL         = 'https://efxjxmtjycldvovcbczg.supabase.co';
+  var SUPA_KEY         = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmeGp4bXRqeWNsZHZvdmNiY3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyMTE4MTEsImV4cCI6MjA5MTc4NzgxMX0.82aeJ6UtcHxkifdjhLsaAXwHeAjyzI2iQ4KakHy3zik';
+  var TIMEOUT_MS       = 30000;
+  var POLL_INTERVAL_MS = 2000;
+
+  function show(id){
+    ['loading-pane','success-pane','timeout-pane'].forEach(function(p){
+      var el = document.getElementById(p);
+      if (el) el.style.display = (p === id) ? '' : 'none';
+    });
+  }
+
+  if (!window.supabase || !window.supabase.createClient) {
+    console.error('[welcome] Supabase SDK failed to load');
+    show('timeout-pane'); return;
+  }
+  var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY, {
+    auth: { persistSession: true, autoRefreshToken: false }
+  });
+
+  var startedMs = Date.now();
+  while (Date.now() - startedMs < TIMEOUT_MS) {
+    try {
+      var sessRes = await sb.auth.getSession();
+      var session = sessRes && sessRes.data && sessRes.data.session;
+      if (session && session.access_token) {
+        var r = await fetch('/api/me', {
+          headers: { 'Authorization': 'Bearer ' + session.access_token }
+        });
+        if (r.ok) {
+          var me = await r.json();
+          // Accept ANY active Pro tier — a discord_elite user who buys Premium
+          // still lands here with tier='pro_elite' (carve-out keeps the durable
+          // source). isActive alone is the right success signal.
+          if (me && me.isActive) {
+            show('success-pane'); return;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[welcome] poll error:', e && e.message);
+    }
+    await new Promise(function(res){ setTimeout(res, POLL_INTERVAL_MS); });
+  }
+  show('timeout-pane');
+})();
+</script>
 </body>
 </html>
