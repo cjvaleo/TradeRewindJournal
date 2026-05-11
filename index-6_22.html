@@ -8920,6 +8920,12 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     <div class="up-sub">One paid tier &middot; 3 ways to unlock</div>
   </div>
 
+  <!-- Elite-already banner — toggled by refreshUpgradePage() when /api/me returns tier=pro_elite. -->
+  <div id="upgrade-elite-banner" style="display:none;max-width:700px;margin:0 auto 28px;background:rgba(95,179,137,0.06);border:1px solid rgba(95,179,137,0.32);padding:16px 20px;border-radius:10px;text-align:center">
+    <div style="font-family:var(--n-font-display);font-style:italic;font-size:22px;color:var(--n-profit);margin-bottom:4px;letter-spacing:-0.01em">You're already Pro &middot; Elite.</div>
+    <div style="font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);line-height:1.5">Trading Ark Elite covers Rewind Pro &mdash; no need to upgrade.</div>
+  </div>
+
   <div class="up-cards">
 
     <!-- FREE -->
@@ -12535,6 +12541,7 @@ function goTo(pg){
   if(pg==='dashboard'){renderDashboard();setTimeout(drawMiniChart,80);}
   if(pg==='history')renderHistory();if(pg==='propfirms')pfRender();if(pg==='calendar')renderCalPage();if(pg==='analytics')renderAnalytics();if(pg==='community')renderCommunity();if(pg==='rules')renderRules();if(pg==='goals')renderGoals();
   if(pg==='equity'){requestAnimationFrame(function(){requestAnimationFrame(function(){renderEquity();});});}
+  if(pg==='upgrade' && typeof refreshUpgradePage === 'function') refreshUpgradePage();
 }
 
 /* Open the Legal page on a specific tab. Used by sidebar links + the
@@ -19964,6 +19971,29 @@ async function cancelModalOpen(){
 
   document.getElementById('cancel-modal').style.display = 'flex';
   _cancelModalShowOnly('1');
+}
+
+// Upgrade page — hide the Premium card for users who are already Pro · Elite
+// (their Discord role makes Premium redundant). Defaults to showing all cards
+// on any error so the page never breaks.
+async function refreshUpgradePage(){
+  var banner = document.getElementById('upgrade-elite-banner');
+  var premiumCard = document.querySelector('#pg-upgrade .up-card.premium');
+  if (!banner || !premiumCard) return;
+  // Reset to default-show. Hides will fire after /api/me resolves.
+  banner.style.display = 'none';
+  premiumCard.style.display = '';
+  try {
+    var session = await _cancelModalGetSession();
+    if (!session) return;
+    var r = await fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + session.access_token } });
+    if (!r.ok) return;
+    var me = await r.json();
+    if (me && me.tier === 'pro_elite') {
+      premiumCard.style.display = 'none';
+      banner.style.display = 'block';
+    }
+  } catch (e) { /* fail open — keep all cards visible */ }
 }
 
 // Refresh the Subscription tab — populates the summary card from /api/me
