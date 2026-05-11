@@ -4,8 +4,10 @@
     { "source": "/oauth/discord/start", "destination": "/api/oauth/discord/start" },
     { "source": "/oauth/discord/callback", "destination": "/api/oauth/discord/callback" },
     { "source": "/welcome/elite", "destination": "/welcome/elite.html" },
+    { "source": "/welcome/direct", "destination": "/welcome/direct.html" },
     { "source": "/oauth-no-access", "destination": "/oauth-no-access.html" },
-    { "source": "/oauth-error", "destination": "/oauth-error.html" }
+    { "source": "/oauth-error", "destination": "/oauth-error.html" },
+    { "source": "/upgrade", "destination": "/index-6_22.html" }
   ],
   "crons": [
     { "path": "/api/cron/daily-role-check", "schedule": "0 3 * * *" }

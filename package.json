@@ -9,6 +9,7 @@
     "dev": "./dev.sh"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.49.0"
+    "@supabase/supabase-js": "^2.49.0",
+    "stripe": "^17.5.0"
   }
 }

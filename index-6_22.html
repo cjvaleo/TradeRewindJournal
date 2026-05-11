@@ -19142,18 +19142,32 @@ function refreshSubUI() {
 
 /* ── UPGRADE FLOW (wired to scaffolded /api routes — real logic lands in step 4) ── */
 async function tierUpgradeFlow(plan){
-  // Direct → POST /api/checkout/direct. Stub returns 501; real handler
-  // will return { url } pointing at a Stripe Checkout session.
+  // Direct → authenticated POST to /api/checkout/direct. The route creates a
+  // Stripe Checkout session and returns { url } for the Stripe-hosted page.
   if (plan === 'direct') {
     try {
-      var r = await fetch('/api/checkout/direct', { method: 'POST' });
-      if (r.status === 501) { toast('Server flow not wired yet — coming next.'); return; }
+      var sess = (_sb && _sb.auth && _sb.auth.getSession) ? await _sb.auth.getSession() : { data: { session: null } };
+      var session = sess && sess.data && sess.data.session;
+      if (!session) { toast('Please sign in first'); return; }
+      var r = await fetch('/api/checkout/direct', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + session.access_token
+        }
+      });
+      if (r.status === 401) { toast('Session expired — please sign in again'); return; }
+      if (!r.ok) {
+        console.warn('[tier] /checkout/direct error:', r.status);
+        toast('Could not start checkout — please try again');
+        return;
+      }
       var d = await r.json().catch(function(){ return null; });
-      if (d && d.url) { window.location.href = d.url; return; }
-      toast('Checkout failed — please try again.');
+      if (!d || !d.url) { toast('Could not start checkout — please try again'); return; }
+      window.location.href = d.url;
     } catch (e) {
-      console.warn('[tier] direct checkout error:', e && e.message);
-      toast('Server flow not wired yet — coming next.');
+      console.warn('[tier] /checkout/direct fetch failed:', e && e.message);
+      toast('Could not reach server — check your connection');
     }
     return;
   }
