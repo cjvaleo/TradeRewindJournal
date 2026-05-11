@@ -12505,6 +12505,39 @@ function signInWithDiscord(){
 }
 window.signInWithDiscord = signInWithDiscord;
 
+// === TIER STATE (single source of truth) ===
+// Read live paid-tier state from profiles. NEVER throws — any error
+// (no _sb, no user, missing columns, network blip) returns the free
+// default so the live free experience can't break behind a Pro bug.
+// Anything that gates a feature on plan MUST go through this — do
+// not read acct.plan or profiles.plan directly anywhere new.
+async function getCurrentTier(){
+  var safe = { tier: 'free', isActive: false, activeUntil: null };
+  try {
+    if (!_sb || !currentUser) return safe;
+    var r = await _sb.from('profiles')
+      .select('is_pro,pro_source,pro_active_until')
+      .eq('id', currentUser.id)
+      .maybeSingle();
+    if (r.error || !r.data) return safe;
+    var d = r.data;
+    var untilMs = d.pro_active_until ? new Date(d.pro_active_until).getTime() : 0;
+    var isActive = !!(d.is_pro && untilMs > Date.now());
+    if (!isActive) return safe;
+    var tier = ({
+      stripe_direct:   'direct',
+      discord_premium: 'premium',
+      discord_elite:   'elite'
+    })[d.pro_source] || 'free';
+    if (tier === 'free') return safe;
+    return { tier: tier, isActive: true, activeUntil: d.pro_active_until };
+  } catch (e) {
+    console.warn('[tier] getCurrentTier failed, defaulting to free:', e && e.message);
+    return safe;
+  }
+}
+window.getCurrentTier = getCurrentTier;
+
 function goTo(pg){
   var pgEl = document.getElementById('pg-'+pg);
   if (!pgEl) { console.warn('goTo: page not found —', pg); return; }
@@ -19107,29 +19140,21 @@ function refreshSubUI() {
   var up = document.getElementById('sub-upgrade-preview'); if(up) up.style.display = isFree ? 'block' : 'none';
 }
 
-/* ── UPGRADE via Stripe Payment Links ── */
-function doUpgrade(plan) {
-  if (!currentUser) { toast('Please log in first'); return; }
-  var email = encodeURIComponent(currentUser.email || '');
-  var userId = encodeURIComponent(currentUser.id || '');
-  var urls = {
-    pro:   'https://buy.stripe.com/test_aFa00jagE10qglwfY067S00?prefilled_email=' + email + '&client_reference_id=' + userId,
-    elite: 'https://buy.stripe.com/test_bJeeVdcoMbF48T4dPS67S01?prefilled_email=' + email + '&client_reference_id=' + userId
-  };
-  window.location.href = urls[plan];
+/* ── UPGRADE FLOW (stub — real Stripe Checkout / Discord OAuth wires in step 3) ── */
+async function tierUpgradeFlow(plan){
+  // Read live tier even though the result is unused today, so this
+  // stub already exercises the contract the real flow will use.
+  await getCurrentTier();
+  toast('Paid plans launching very soon — coming in days, not weeks.');
 }
+window.tierUpgradeFlow = tierUpgradeFlow;
 
-/* ── CANCEL ── */
-async function doCancelSubscription() {
-  if (!confirm('Cancel your subscription? You keep access until end of billing period.')) return;
-  acct.plan = 'free';
-  saveAcct();
-  if (_sb && currentUser) {
-    await _sb.from('profiles').update({plan:'free'}).eq('id', currentUser.id);
-  }
-  refreshAcctUI();
-  refreshSubUI();
-  toast('Subscription cancelled. Access continues until billing period ends.');
+function doUpgrade(plan){ return tierUpgradeFlow(plan); }
+
+/* ── CANCEL (stub — real cancel modal wires in step 5) ── */
+async function doCancelSubscription(){
+  await getCurrentTier();
+  toast("You're on the free tier — nothing to cancel.");
 }
 
 /* ── SIGN OUT ── */
