@@ -149,6 +149,177 @@ async function onCheckoutCompleted(sb, event) {
   });
 }
 
+async function onInvoicePaid(sb, event) {
+  const inv = event.data.object;
+  const subscriptionId = inv.subscription;
+  if (!subscriptionId) {
+    console.log('[webhook] invoice.paid: no subscription on invoice, skipping');
+    return;
+  }
+
+  const { data: profile, error: readErr } = await sb
+    .from('profiles')
+    .select('id, pro_active_until')
+    .eq('stripe_subscription_id', subscriptionId)
+    .maybeSingle();
+  if (readErr) throw new Error(`profile read failed: ${readErr.message}`);
+  if (!profile) {
+    // Common during `stripe trigger invoice.paid` (fake subscription IDs).
+    // Also legitimate if subscription was created outside our flow. Ack gracefully.
+    console.warn('[webhook] invoice.paid: no profile for subscription', {
+      subscription_id: subscriptionId,
+    });
+    return;
+  }
+
+  if (typeof inv.period_end !== 'number') {
+    throw new Error('invoice.paid missing period_end');
+  }
+  const newWindowMs = inv.period_end * 1000 + 7 * 86400 * 1000;
+  const currentUntilMs = profile.pro_active_until
+    ? new Date(profile.pro_active_until).getTime()
+    : 0;
+  const finalProUntilIso = new Date(Math.max(currentUntilMs, newWindowMs)).toISOString();
+
+  const { error: upErr } = await sb
+    .from('profiles')
+    .update({
+      is_pro: true,
+      pro_active_until: finalProUntilIso,
+    })
+    .eq('id', profile.id);
+  if (upErr) throw new Error(`profile update failed: ${upErr.message}`);
+
+  console.log('[webhook] invoice.paid processed', {
+    user_id: profile.id,
+    subscription_id: subscriptionId,
+    pro_active_until: finalProUntilIso,
+  });
+}
+
+async function onInvoicePaymentFailed(sb, event) {
+  const inv = event.data.object;
+  const subscriptionId = inv.subscription;
+  if (!subscriptionId) {
+    console.log('[webhook] invoice.payment_failed: no subscription on invoice, skipping');
+    return;
+  }
+
+  const { data: profile, error: readErr } = await sb
+    .from('profiles')
+    .select('id')
+    .eq('stripe_subscription_id', subscriptionId)
+    .maybeSingle();
+  if (readErr) throw new Error(`profile read failed: ${readErr.message}`);
+  if (!profile) {
+    console.warn('[webhook] invoice.payment_failed: no profile for subscription', {
+      subscription_id: subscriptionId,
+    });
+    return;
+  }
+
+  // Look up email from auth.users via service role admin API. If it fails,
+  // queue with a placeholder rather than dropping the email — the queued row
+  // is useful as a signal even without a deliverable address (manual recovery).
+  let toAddress = null;
+  try {
+    const { data: userData, error } = await sb.auth.admin.getUserById(profile.id);
+    if (!error && userData && userData.user && userData.user.email) {
+      toAddress = userData.user.email;
+    }
+  } catch (e) {
+    console.warn('[webhook] invoice.payment_failed: email lookup threw', e && e.message);
+  }
+  if (!toAddress) {
+    console.warn('[webhook] invoice.payment_failed: email unavailable, queueing with placeholder', {
+      user_id: profile.id,
+    });
+    toAddress = 'unknown@placeholder.local';
+  }
+
+  const { error: insErr } = await sb.from('email_log').insert({
+    user_id: profile.id,
+    to_address: toAddress,
+    template_id: 'payment-failed',
+    subject: 'Payment issue with your Rewind subscription',
+    status: 'queued',
+  });
+  if (insErr) throw new Error(`email_log insert failed: ${insErr.message}`);
+
+  // Deliberately do NOT touch is_pro — the 7-day grace baked into
+  // pro_active_until covers Stripe's dunning retry window.
+  console.log('[webhook] invoice.payment_failed: email queued', {
+    user_id: profile.id,
+    subscription_id: subscriptionId,
+  });
+}
+
+async function onSubscriptionDeleted(sb, event) {
+  const sub = event.data.object;
+  const subscriptionId = sub.id;
+  if (!subscriptionId) {
+    console.log('[webhook] customer.subscription.deleted: missing id on event, skipping');
+    return;
+  }
+
+  const { data: profile, error: readErr } = await sb
+    .from('profiles')
+    .select('id, pro_source, pro_active_until')
+    .eq('stripe_subscription_id', subscriptionId)
+    .maybeSingle();
+  if (readErr) throw new Error(`profile read failed: ${readErr.message}`);
+  if (!profile) {
+    console.warn('[webhook] customer.subscription.deleted: no profile for subscription', {
+      subscription_id: subscriptionId,
+    });
+    return;
+  }
+
+  // Carve-out: Discord-Elite with active window keeps Pro even after the
+  // paid sub is gone. Without this, an Elite user who briefly held a Stripe
+  // sub would lose Pro on Stripe cancellation, despite still holding the role.
+  const currentUntilMs = profile.pro_active_until
+    ? new Date(profile.pro_active_until).getTime()
+    : 0;
+  const keepPro =
+    profile.pro_source === 'discord_elite' && currentUntilMs > Date.now();
+
+  const { error: upErr } = await sb
+    .from('profiles')
+    .update({
+      is_pro: keepPro,
+      pro_source: keepPro ? 'discord_elite' : null,
+      stripe_subscription_id: null,
+    })
+    .eq('id', profile.id);
+  if (upErr) throw new Error(`profile update failed: ${upErr.message}`);
+
+  // Queue cancellation email — best effort, don't fail the webhook over it.
+  try {
+    const { data: userData } = await sb.auth.admin.getUserById(profile.id);
+    const email = userData && userData.user && userData.user.email;
+    if (email) {
+      await sb.from('email_log').insert({
+        user_id: profile.id,
+        to_address: email,
+        template_id: 'subscription-canceled',
+        subject: 'Your Rewind subscription has ended',
+        status: 'queued',
+      });
+    }
+  } catch (e) {
+    console.warn('[webhook] customer.subscription.deleted: email queue failed', e && e.message);
+  }
+
+  console.log('[webhook] customer.subscription.deleted processed', {
+    user_id: profile.id,
+    subscription_id: subscriptionId,
+    keepPro,
+    final_is_pro: keepPro,
+    final_pro_source: keepPro ? 'discord_elite' : null,
+  });
+}
+
 export default async function handler(request) {
   if (request.method !== 'POST') {
     return json({ error: 'method not allowed', allowed: ['POST'] }, 405);
@@ -199,9 +370,15 @@ export default async function handler(request) {
       case 'checkout.session.completed':
         await onCheckoutCompleted(sb, event);
         break;
-      // Phase C: case 'invoice.paid':                  await onInvoicePaid(sb, event); break;
-      // Phase D: case 'invoice.payment_failed':        await onPaymentFailed(sb, event); break;
-      // Phase E: case 'customer.subscription.deleted': await onSubscriptionDeleted(sb, event); break;
+      case 'invoice.paid':
+        await onInvoicePaid(sb, event);
+        break;
+      case 'invoice.payment_failed':
+        await onInvoicePaymentFailed(sb, event);
+        break;
+      case 'customer.subscription.deleted':
+        await onSubscriptionDeleted(sb, event);
+        break;
       case 'customer.subscription.updated':
         // Logged via insertEvent; no profile mutation per spec.
         break;
