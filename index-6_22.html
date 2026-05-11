@@ -4888,8 +4888,10 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 
 /* ── LEFT COMMUNITIES SUB-SIDEBAR ── */
+/* Width matches .rail (300px) so .feed sits in the viewport center —
+   without this the +20px asymmetry shifted the hero P&L visually left. */
 #pg-community .csb{
-  width:260px;flex-shrink:0;
+  width:300px;flex-shrink:0;
   border-right:1px solid var(--n-border);
   padding:24px 16px;display:flex;flex-direction:column;
   background:var(--n-bg);overflow-y:auto;height:100%;
