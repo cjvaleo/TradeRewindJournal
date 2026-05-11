@@ -10398,7 +10398,7 @@ async function syncAndLoadCommFeed(g){
   if(idsToFetch.length){
     try{
       var pf = await _sb.from('profiles')
-        .select('id,username,initials,color,avatar_finish,avatar_image_url,avatar_initials,last_seen_at')
+        .select('id,username,display_name,initials,color,avatar_finish,avatar_image_url,avatar_initials,last_seen_at')
         .in('id', idsToFetch);
       if(pf.data) pf.data.forEach(function(p){ profMap[p.id] = p; });
     }catch(e){ console.warn('Profile fetch skipped:', e.message); }
@@ -10422,7 +10422,11 @@ async function syncAndLoadCommFeed(g){
       return {
         id: String(row.id),
         user_id: row.user_id,
-        username: row.username || p.username || m.username || 'Trader',
+        // Prefer fresh profile data over denormalized row.username (which goes
+        // stale when users rename). Empty string fallback lets render-time
+        // helpers handle the final fallback uniformly across surfaces.
+        username: p.username || row.username || m.username || '',
+        display_name: p.display_name || '',
         initials: p.avatar_initials || p.initials || row.initials || m.initials
                   || (p.username || row.username || m.username || '??').slice(0,2).toUpperCase(),
         avatar_finish: p.avatar_finish || p.color || row.avatar_color || m.color || m.avatar_color || 'chrome',
@@ -10439,9 +10443,14 @@ async function syncAndLoadCommFeed(g){
     .filter(Boolean);
 
   // Also patch g.members with live profile data so renderFeedMembers and
-  // renderFeedLeaderboard reflect current finishes.
+  // renderFeedLeaderboard reflect current usernames + finishes. The members
+  // built in loadCommunityFromDB() only have IDs (from communities.members
+  // UUID array) — without this patch, m.username stays empty and the panel
+  // renders "Member" / "@member" placeholders for everyone.
   (g.members||[]).forEach(function(m){
     var p=profMap[m.id]; if(!p) return;
+    m.username = p.username || m.username || '';
+    m.display_name = p.display_name || m.display_name || '';
     m.avatar_finish = p.avatar_finish || p.color || m.color || 'chrome';
     m.avatar_image_url = p.avatar_image_url || null;
     m.initials = p.avatar_initials || p.initials || m.initials;
@@ -10496,7 +10505,10 @@ function renderFeedPosts(g){
       trade: rt,
       pnl: row.pnl_today || rt.pnl || 0,
       date: rt.date || row.created_at || '',
-      username: rowIsMe ? myName : (row.username||'Trader'),
+      // Fresh username + display_name from _remotePost (already profMap-enriched
+      // in renderCommunity). Self uses acct.name (display_name) + acct.username.
+      username:     rowIsMe ? myName : (row.username || ''),
+      display_name: rowIsMe ? ((acct && (acct.display_name || acct.name)) || '') : (row.display_name || ''),
       initials: rowIsMe ? myInit : (row.initials||'??'),
       user_id: row.user_id || null,
       color: rowIsMe ? myFinish : (row.avatar_finish || row.avatar_color || 'chrome'),
@@ -10739,10 +10751,10 @@ function renderFeedPosts(g){
           }, 'sm')
       +   '<div class="post-author">'
       +     '<div class="author-line">'
-      +       '<span class="author-name">'+safeText(p.username || 'Anonymous')+'</span>'
+      +       '<span class="author-name">'+safeText(_memberDisplayName(p))+'</span>'
       +       (p.isMe ? '<span class="author-you">You</span>' : '')
       +     '</div>'
-      +     '<div class="author-handle">@'+safeText((p.username||'anon').replace(/^@/,''))+'</div>'
+      +     '<div class="author-handle">@'+safeText(_memberHandle(p))+'</div>'
       +   '</div>'
       +   '<span class="post-time">'+_relTime(p.date)+'</span>'
       + '</div>'
@@ -11189,6 +11201,22 @@ function _commPeriodCutoff(period){
   return null; // 'all'
 }
 
+// Resolve a member's best display name. Order: display_name → username →
+// 'Member'. Same fallback for leaderboard rows, members panel, and the
+// all-members modal. Forward-compatible: prefers display_name when the
+// member-load query enriches with it.
+function _memberDisplayName(m){
+  if (!m) return 'Member';
+  var n = m.display_name || m.username || m.name;
+  return (n && String(n).trim()) || 'Member';
+}
+function _memberHandle(m){
+  if (!m) return 'member';
+  var h = m.username || m.display_name;
+  if (h && String(h).trim()) return String(h).trim().replace(/^@/, '');
+  return 'member';
+}
+
 function renderFeedLeaderboard(g){
   var el = document.getElementById('feed-leaderboard');
   if(!el) return;
@@ -11221,7 +11249,8 @@ function renderFeedLeaderboard(g){
     if(!byUser[uid]){
       byUser[uid] = {
         user_id: uid,
-        username: p.username || 'trader',
+        username: p.username || '',
+        display_name: p.display_name || '',
         avatar_finish: p.avatar_finish || p.avatar_color || p.color || 'sapphire',
         avatar_image_url: p.avatar_image_url || null,
         initials: p.initials || (p.username||'').slice(0,2).toUpperCase(),
@@ -11272,7 +11301,8 @@ function renderFeedLeaderboard(g){
     if(!uid || byUser[uid]) return;
     byUser[uid] = {
       user_id: uid,
-      username: m.username || 'trader',
+      username: m.username || '',
+      display_name: m.display_name || '',
       avatar_finish: m.avatar_finish || m.color || 'sapphire',
       avatar_image_url: m.avatar_image_url || null,
       initials: m.initials || (m.username||'').slice(0,2).toUpperCase(),
@@ -11327,7 +11357,7 @@ function renderFeedLeaderboard(g){
     }
     var rankCls = i < 3 ? 'lb-rank top' : 'lb-rank';
     var avTone = _avTone(r.avatar_finish || r.color);
-    var safeUname = safeText(r.username || '');
+    var safeUname = safeText(_memberDisplayName(r));
     var safeUInit = safeText(r.initials || (r.username || '').slice(0,2).toUpperCase());
     var avInner = r.avatar_image_url
       ? '<img src="'+safeURL(r.avatar_image_url)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;position:absolute;inset:0">'
@@ -11337,7 +11367,7 @@ function renderFeedLeaderboard(g){
       + '<span class="' + rankCls + '">' + (i+1) + '</span>'
       + '<div class="lb-av av ' + avTone + avExtra + '">' + avInner + '</div>'
       + '<div class="lb-name">' + safeUname + (r.isMe ? ' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase">you</span>' : '')
-      +   '<div class="lb-handle">@' + safeText((r.username||'trader').replace(/^@/,'')) + '</div>'
+      +   '<div class="lb-handle">@' + safeText(_memberHandle(r)) + '</div>'
       + '</div>'
       + '<span class="lb-pl ' + valCls + '">' + valStr + '</span>'
       + '</div>';
@@ -11514,8 +11544,8 @@ function renderFeedMembers(g){
   el.className='members-list';
   el.innerHTML=visible.map(function(m){
     var safeMid = safeText(m.id || '');
-    var displayName = safeText(m.username || 'Anonymous');
-    var handle = safeText((m.username || 'anon').replace(/^@/,''));
+    var displayName = safeText(_memberDisplayName(m));
+    var handle = safeText(_memberHandle(m));
     var meTag = m.isMe ? ' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase">you</span>' : '';
     var avHtml = renderUserAvatar({
       avatar_finish: m.isMe ? (acct&&(acct.avatar_finish||acct.color)) : (m.avatar_finish||m.color||m.avatar_color),
@@ -11526,7 +11556,7 @@ function renderFeedMembers(g){
     }, 'sm');
     var online = _isOnline(m.last_seen_at);
     // Right-rail is read-only — owner controls live in edit-group-modal.
-    return '<div class="mem-item" data-mid="'+safeMid+'" data-uname="'+(m.username||'anon')+'" onclick="openMemberProfile(this.dataset.mid,this.dataset.uname)">'
+    return '<div class="mem-item" data-mid="'+safeMid+'" data-uname="'+_memberHandle(m)+'" onclick="openMemberProfile(this.dataset.mid,this.dataset.uname)">'
       + avHtml
       + '<div class="mem-info">'
       +   '<div class="mem-name">'+displayName+meTag+'</div>'
@@ -11571,8 +11601,8 @@ function openAllMembersModal(){
   });
   list.innerHTML = members.map(function(m){
     var safeMid = safeText(m.id || '');
-    var displayName = safeText(m.username || 'Anonymous');
-    var handle = safeText((m.username || 'anon').replace(/^@/,''));
+    var displayName = safeText(_memberDisplayName(m));
+    var handle = safeText(_memberHandle(m));
     var meTag = m.isMe ? ' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase">you</span>' : '';
     var avHtml = renderUserAvatar({
       avatar_finish: m.isMe ? (acct&&(acct.avatar_finish||acct.color)) : (m.avatar_finish||m.color||m.avatar_color),
@@ -11583,7 +11613,7 @@ function openAllMembersModal(){
     }, 'md');
     var online = _isOnline(m.last_seen_at);
     // All-members modal is read-only — owner controls live in edit-group-modal.
-    return '<div class="mem-item" data-mid="'+safeMid+'" data-uname="'+(m.username||'anon')+'" onclick="document.getElementById(\'all-members-modal\').style.display=\'none\';openMemberProfile(this.dataset.mid,this.dataset.uname)">'
+    return '<div class="mem-item" data-mid="'+safeMid+'" data-uname="'+_memberHandle(m)+'" onclick="document.getElementById(\'all-members-modal\').style.display=\'none\';openMemberProfile(this.dataset.mid,this.dataset.uname)">'
       + avHtml
       + '<div style="flex:1;min-width:0">'
       +   '<div class="mem-name">'+displayName+meTag+'</div>'
