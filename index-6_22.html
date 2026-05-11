@@ -10628,7 +10628,12 @@ function renderFeedPosts(g){
     //    t.type, t.pnl, t.notes
     var bodySym  = '';
     var bodySide = '';
-    var bodyPnl  = '';
+    // Always format PnL from the numeric `pnl`. The stored text-content header
+    // can lack the minus sign for CSV-imported / legacy trades, so partsArr[2]
+    // is unreliable — numeric `pnl` from row.pnl_today is the source of truth.
+    // Don't "fix" this back to reading partsArr[2]: that's what broke the
+    // display before. Color comes from pnlClass below; sign comes from here.
+    var bodyPnl  = (pnl >= 0 ? '+' : '-') + '$' + Math.abs(pnl).toLocaleString();
     var bodyNotes = '';
     if(p.isText){
       var lines  = String(p.text||'').split('\n');
@@ -10637,12 +10642,10 @@ function renderFeedPosts(g){
       var partsArr = header.split(' · ');
       bodySym  = partsArr[0] || '';
       bodySide = partsArr[1] || '';
-      bodyPnl  = partsArr[2] || '';
     } else {
       bodySym  = t.sym || '';
       var srLow = String(t.type||'').toLowerCase();
       bodySide = srLow === 'short' ? '↘ Short' : srLow === 'long' ? '↗ Long' : '';
-      bodyPnl  = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toLocaleString();
       bodyNotes = t.notes || '';
     }
     // Trade-share posts only — feed loader already filters to
