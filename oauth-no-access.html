@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not in Trading Ark — Rewind</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --n-bg:#0a0a0a;
+    --n-surface:#121212;
+    --n-surface-2:#181818;
+    --n-border:rgba(255,255,255,0.06);
+    --n-border-2:rgba(255,255,255,0.10);
+    --n-border-3:rgba(255,255,255,0.18);
+    --n-text:#f5f5f5;
+    --n-text-2:#a1a1a1;
+    --n-text-3:#6b6b6b;
+    --n-text-4:#4a4a4a;
+    --n-cool:#6ea8ff;
+    --n-gold:#f5d77c;
+    --n-font-display:'Instrument Serif',Georgia,serif;
+    --n-font-sans:'Geist',system-ui,sans-serif;
+    --n-font-mono:'Geist Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;min-height:100%;background:var(--n-bg);color:var(--n-text);font-family:var(--n-font-sans);-webkit-font-smoothing:antialiased}
+  body{display:grid;place-items:center;padding:48px 20px}
+  .card{max-width:580px;width:100%}
+  .tag{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);margin-bottom:18px;text-align:center}
+  h1{font-family:var(--n-font-display);font-style:italic;font-weight:400;font-size:46px;line-height:1.08;margin:0 0 14px;letter-spacing:-0.01em;text-align:center}
+  .lead{font-family:var(--n-font-sans);font-size:15px;color:var(--n-text-2);line-height:1.55;margin:0 0 32px;letter-spacing:-0.005em;text-align:center}
+  .opt{display:block;padding:18px 20px;background:var(--n-surface);border:1px solid var(--n-border-2);border-radius:10px;margin-bottom:10px;text-decoration:none;color:var(--n-text);transition:transform .12s,border-color .15s,background .15s}
+  .opt:hover{transform:translateY(-1px);background:var(--n-surface-2)}
+  .opt.cool{border-color:rgba(110,168,255,0.22)}
+  .opt.cool:hover{border-color:rgba(110,168,255,0.55)}
+  .opt.gold{border-color:rgba(245,215,124,0.22)}
+  .opt.gold:hover{border-color:rgba(245,215,124,0.55)}
+  .opt.neutral:hover{border-color:var(--n-border-3)}
+  .opt-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:4px}
+  .opt-h{font-family:var(--n-font-sans);font-size:15px;font-weight:600;letter-spacing:-0.005em}
+  .opt.cool .opt-h{color:var(--n-cool)}
+  .opt.gold .opt-h{color:var(--n-gold)}
+  .opt.neutral .opt-h{color:var(--n-text)}
+  .opt-price{font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-3);letter-spacing:0.04em;white-space:nowrap}
+  .opt-d{font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);line-height:1.45;letter-spacing:-0.005em}
+  .foot{margin-top:24px;padding-top:18px;border-top:1px solid var(--n-border);font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.15em;text-transform:uppercase;color:var(--n-text-4);text-align:center}
+  .foot a{color:var(--n-text-3);text-decoration:none}
+  .foot a:hover{color:var(--n-text-2)}
+  @media (max-width:520px){h1{font-size:36px}}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="tag">Discord linked · No matching role</div>
+  <h1>Hmm, not in Trading Ark.</h1>
+  <p class="lead">We linked your Discord, but you don't hold a Premium or Elite role in the Trading Ark server. Three ways forward:</p>
+
+  <a class="opt cool" href="https://whop.com/checkout/plan_tRNqykRyLXsKv?a=christianvaleo" target="_blank" rel="noopener">
+    <div class="opt-row"><div class="opt-h">★ Trading Ark Premium</div><div class="opt-price">$50 / mo on Whop</div></div>
+    <div class="opt-d">Join the Discord, classes, and live alerts — then get 50% off Rewind Pro ($9 / mo).</div>
+  </a>
+
+  <a class="opt gold" href="https://whop.com/checkout/plan_KY7CY81vHFic1?a=christianvaleo" target="_blank" rel="noopener">
+    <div class="opt-row"><div class="opt-h">★ Trading Ark Elite</div><div class="opt-price">$100 / mo on Whop</div></div>
+    <div class="opt-d">Full Discord access, Elite rooms, and DM access to instructors — Rewind Pro included free.</div>
+  </a>
+
+  <a class="opt neutral" href="/index-6_22.html">
+    <div class="opt-row"><div class="opt-h">→ Pro · Direct</div><div class="opt-price">$19 / mo</div></div>
+    <div class="opt-d">Skip the community, pay direct. Same Pro features, no Discord required.</div>
+  </a>
+
+  <div class="foot">Joined in another tab? <a href="javascript:location.reload()">Refresh and check again</a></div>
+</main>
+</body>
+</html>

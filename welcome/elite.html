@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome · Pro Elite — Rewind</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --n-bg:#0a0a0a;
+    --n-surface:#121212;
+    --n-surface-2:#181818;
+    --n-border:rgba(255,255,255,0.06);
+    --n-border-2:rgba(255,255,255,0.10);
+    --n-text:#f5f5f5;
+    --n-text-2:#a1a1a1;
+    --n-text-3:#6b6b6b;
+    --n-text-4:#4a4a4a;
+    --n-chrome:linear-gradient(135deg,#f5f5f5 0%,#c8c8c8 35%,#ffffff 50%,#b8b8b8 65%,#e5e5e5 100%);
+    --n-gold:#f5d77c;
+    --n-cool:#6ea8ff;
+    --n-font-display:'Instrument Serif',Georgia,serif;
+    --n-font-sans:'Geist',system-ui,sans-serif;
+    --n-font-mono:'Geist Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;min-height:100%;background:var(--n-bg);color:var(--n-text);font-family:var(--n-font-sans);-webkit-font-smoothing:antialiased}
+  body{display:grid;place-items:center;padding:48px 20px}
+  .card{max-width:520px;width:100%;text-align:center}
+  .tag{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-gold);margin-bottom:24px}
+  .tag .star{color:var(--n-gold);margin-right:4px}
+  h1{font-family:var(--n-font-display);font-style:italic;font-weight:400;font-size:54px;line-height:1.05;margin:0 0 18px;letter-spacing:-0.01em}
+  h1 .gold{color:var(--n-gold)}
+  .lead{font-family:var(--n-font-sans);font-size:16px;color:var(--n-text-2);line-height:1.55;margin:0 0 36px;letter-spacing:-0.005em}
+  .perks{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 auto 36px;text-align:left;max-width:440px}
+  .perk{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--n-surface);border:1px solid var(--n-border);border-radius:7px;font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);letter-spacing:-0.005em}
+  .perk::before{content:'';width:14px;height:1px;background:var(--n-gold);flex-shrink:0}
+  .cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 36px;border:0;border-radius:7px;background:var(--n-chrome);color:#0a0a0a;font-family:var(--n-font-sans);font-size:13px;font-weight:600;letter-spacing:-0.005em;text-decoration:none;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),inset 0 -1px 0 rgba(0,0,0,0.15),0 1px 3px rgba(0,0,0,0.5);transition:transform .08s}
+  .cta:hover{transform:translateY(-0.5px)}
+  .cta:active{transform:translateY(0.5px)}
+  .foot{margin-top:36px;padding-top:20px;border-top:1px solid var(--n-border);font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.15em;text-transform:uppercase;color:var(--n-text-4)}
+  .foot a{color:var(--n-text-3);text-decoration:none}
+  .foot a:hover{color:var(--n-text-2)}
+  @media (max-width:520px){h1{font-size:42px}.perks{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="tag"><span class="star">★</span>Pro · Elite</div>
+  <h1>You're in. <span class="gold">It's free.</span></h1>
+  <p class="lead">Your Trading Ark Elite role qualifies you for Rewind Pro at no cost. Access stays active as long as you hold the role.</p>
+  <div class="perks">
+    <div class="perk">Unlimited trades</div>
+    <div class="perk">Full analytics</div>
+    <div class="perk">Live broker sync</div>
+    <div class="perk">Multi-account</div>
+    <div class="perk">PDF journal export</div>
+    <div class="perk">Early access</div>
+  </div>
+  <a class="cta" href="/index-6_22.html">Go to dashboard →</a>
+  <div class="foot">Questions? <a href="mailto:hello@traderewindjournal.com">hello@traderewindjournal.com</a></div>
+</main>
+</body>
+</html>

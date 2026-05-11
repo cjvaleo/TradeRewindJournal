@@ -2,7 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     { "source": "/oauth/discord/start", "destination": "/api/oauth/discord/start" },
-    { "source": "/oauth/discord/callback", "destination": "/api/oauth/discord/callback" }
+    { "source": "/oauth/discord/callback", "destination": "/api/oauth/discord/callback" },
+    { "source": "/welcome/elite", "destination": "/welcome/elite.html" },
+    { "source": "/oauth-no-access", "destination": "/oauth-no-access.html" },
+    { "source": "/oauth-error", "destination": "/oauth-error.html" }
   ],
   "crons": [
     { "path": "/api/cron/daily-role-check", "schedule": "0 3 * * *" }
