@@ -37,6 +37,24 @@ function getResend() {
 }
 
 async function getFirstName(sb, userId) {
+  // 1. Prefer auth.users.user_metadata.full_name — that's typically a real
+  //    name from OAuth or signup ("Christian Valeo"), whereas profiles.display_name
+  //    is often a handle the user picked ("valeo"). Split on whitespace, first word.
+  try {
+    const { data: userData, error } = await sb.auth.admin.getUserById(userId);
+    if (!error && userData && userData.user && userData.user.user_metadata) {
+      const fullName = userData.user.user_metadata.full_name;
+      if (fullName && typeof fullName === 'string') {
+        const firstWord = fullName.trim().split(/\s+/)[0];
+        if (firstWord) return firstWord;
+      }
+    }
+  } catch (e) {
+    console.warn('[email-worker] auth.admin.getUserById failed', { user_id: userId, msg: e && e.message });
+  }
+
+  // 2. Fall back to profiles.display_name / username (often a handle, but
+  //    better than the generic 'there' fallback).
   try {
     const { data: profile } = await sb
       .from('profiles')
@@ -47,8 +65,10 @@ async function getFirstName(sb, userId) {
     const trimmed = name.trim();
     if (trimmed) return trimmed.split(/\s+/)[0];
   } catch (e) {
-    console.warn('[email-worker] name lookup failed', { user_id: userId, msg: e && e.message });
+    console.warn('[email-worker] profile lookup failed', { user_id: userId, msg: e && e.message });
   }
+
+  // 3. Final fallback
   return 'there';
 }
 
