@@ -19157,10 +19157,35 @@ async function tierUpgradeFlow(plan){
     }
     return;
   }
-  // Premium / Elite → server-side Discord OAuth redirect. The route is at
-  // /api/oauth/discord/start; vercel.json rewrites /oauth/discord/start → it.
+  // Premium / Elite → authenticated POST to /oauth/discord/start. The route
+  // verifies the Supabase Bearer token, signs user_id into the OAuth state,
+  // and returns { url } for the Discord authorize page.
   if (plan === 'premium' || plan === 'elite') {
-    window.location.href = '/oauth/discord/start?plan=' + encodeURIComponent(plan);
+    try {
+      var sess = (_sb && _sb.auth && _sb.auth.getSession) ? await _sb.auth.getSession() : { data: { session: null } };
+      var session = sess && sess.data && sess.data.session;
+      if (!session) { toast('Please sign in first'); return; }
+      var r = await fetch('/oauth/discord/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + session.access_token
+        },
+        body: JSON.stringify({ plan: plan })
+      });
+      if (r.status === 401) { toast('Session expired — please sign in again'); return; }
+      if (!r.ok) {
+        console.warn('[tier] /start error:', r.status);
+        toast('Could not start Discord link — please try again');
+        return;
+      }
+      var d = await r.json().catch(function(){ return null; });
+      if (!d || !d.url) { toast('Could not start Discord link — please try again'); return; }
+      window.location.href = d.url;
+    } catch (e) {
+      console.warn('[tier] /start fetch failed:', e && e.message);
+      toast('Could not reach server — check your connection');
+    }
     return;
   }
   // Unknown plan — defensive fallback.
