@@ -9191,6 +9191,21 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
             <div class="desc">Plans and pricing are coming soon. Everything's free for now &mdash; enjoy.</div>
           </div>
         </div>
+
+        <!-- Active subscription card — shown only when /api/me reports hasStripe=true.
+             Sibling of the locked .panel-card; not affected by .locked-tab blur. -->
+        <div class="panel-card" id="active-sub-card" style="display:none;margin-top:16px;max-width:460px">
+          <div class="panel-card-head">
+            <div class="panel-card-title">Active subscription</div>
+            <div class="panel-card-sub" id="active-sub-desc">&mdash;</div>
+          </div>
+          <div style="padding:14px 16px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <div style="font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-3);letter-spacing:0.04em">
+              Pro until <span id="active-sub-until">&mdash;</span>
+            </div>
+            <button class="cancel-sub-btn" onclick="cancelModalOpen()">Cancel subscription</button>
+          </div>
+        </div>
       </div>
 
       <!-- BILLING (locked — in development) -->
@@ -16977,6 +16992,8 @@ function showTab(tab){
   document.querySelectorAll('.atl').forEach(function(el){el.classList.remove('on');});
   var t=document.getElementById('tab-'+tab);if(t)t.classList.add('on');
   var l=document.getElementById('atl-'+tab);if(l)l.classList.add('on');
+  // Subscription tab: re-fetch /api/me to show/hide the Active-subscription card.
+  if (tab === 'subscription' && typeof refreshActiveSubCard === 'function') refreshActiveSubCard();
 }
 function onPfpInput(el){
   el.value=el.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,2);
@@ -19209,10 +19226,11 @@ window.tierUpgradeFlow = tierUpgradeFlow;
 
 function doUpgrade(plan){ return tierUpgradeFlow(plan); }
 
-/* ── CANCEL (stub — real cancel modal wires in step 5) ── */
+/* ── CANCEL — opens the 3-step cancellation modal ── */
 async function doCancelSubscription(){
-  await getCurrentTier();
-  toast("You're on the free tier — nothing to cancel.");
+  if (typeof cancelModalOpen === 'function') return cancelModalOpen();
+  // Defensive fallback if the modal failed to load.
+  toast('Cancellation flow unavailable — refresh and try again.');
 }
 
 /* ── SIGN OUT ── */
@@ -19716,5 +19734,298 @@ function cookieDecline(){
 <div class="mn" onclick="goTo('community');mNav(this)"><svg viewBox="0 0 16 16"><circle cx="6" cy="5" r="2.5"/><path d="M2 13c0-2.2 1.8-4 4-4s4 1.8 4 4"/><circle cx="12" cy="6" r="2"/><path d="M14 13c0-1.7-1.3-3-2-3"/></svg>Group</div>
 <div class="mn" onclick="openAccountSettings();mNav(this)"><svg viewBox="0 0 16 16"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>You</div>
 </div>
-<script>function mNav(el){document.querySelectorAll('#mobile-nav .mn').forEach(function(m){m.classList.remove('on')});el.classList.add('on')}</script></body>
+<script>function mNav(el){document.querySelectorAll('#mobile-nav .mn').forEach(function(m){m.classList.remove('on')});el.classList.add('on')}</script>
+
+<!-- ─────────────────────────────────────────────────────────────────
+     Cancellation modal — 3-step flow with save offers per spec §11.
+     Entry point: cancelModalOpen() called from the Cancel button in
+     the Account → Subscription tab (and the legacy doCancelSubscription
+     wrapper). Hits /api/me first to branch on hasStripe.
+     ───────────────────────────────────────────────────────────────── -->
+<style>
+.cancel-sub-btn{background:transparent;border:1px solid rgba(201,95,95,0.35);color:rgba(201,95,95,0.85);font-family:var(--n-font-sans);font-size:12px;padding:7px 14px;border-radius:6px;cursor:pointer;transition:border-color .12s,color .12s}
+.cancel-sub-btn:hover{border-color:var(--n-loss);color:var(--n-loss)}
+.cm-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px}
+.cm-card{background:var(--n-surface);border:1px solid var(--n-border-2);border-radius:14px;max-width:500px;width:100%;padding:32px 28px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+.cm-close{position:absolute;top:14px;right:14px;background:transparent;border:0;cursor:pointer;width:28px;height:28px;border-radius:6px;color:var(--n-text-3);font-size:20px;line-height:1;transition:color .12s,background .12s}
+.cm-close:hover{color:var(--n-text);background:var(--n-surface-2)}
+.cm-title{font-family:var(--n-font-display);font-style:italic;font-weight:400;font-size:30px;line-height:1.15;margin:0 0 12px;letter-spacing:-0.01em;color:var(--n-text)}
+.cm-title .cool{color:var(--n-cool);font-style:italic}
+.cm-lead{font-family:var(--n-font-sans);font-size:14px;color:var(--n-text-2);line-height:1.5;margin:0 0 24px}
+.cm-lead strong{color:var(--n-text);font-weight:600}
+.cm-reasons{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+.cm-reason{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--n-surface-2);border:1px solid var(--n-border-2);border-radius:8px;font-family:var(--n-font-sans);font-size:14px;color:var(--n-text-2);cursor:pointer;transition:border-color .12s,color .12s,background .12s}
+.cm-reason:hover{border-color:var(--n-border-3);color:var(--n-text)}
+.cm-reason input[type=radio]{accent-color:var(--n-cool);margin:0}
+.cm-reason:has(input:checked){border-color:rgba(110,168,255,0.6);color:var(--n-text);background:rgba(110,168,255,0.06)}
+.cm-actions{display:flex;gap:10px;flex-wrap:wrap}
+.cm-btn{flex:1;min-width:140px;padding:11px 18px;border-radius:7px;font-family:var(--n-font-sans);font-size:13px;font-weight:600;letter-spacing:-0.005em;cursor:pointer;transition:opacity .12s,transform .08s,background .12s,border-color .12s,color .12s}
+.cm-btn:disabled{opacity:0.5;cursor:not-allowed}
+.cm-btn:active:not(:disabled){transform:translateY(0.5px)}
+.cm-btn-primary{background:var(--n-profit);color:#0a0a0a;border:0}
+.cm-btn-primary:hover:not(:disabled){background:#6cc095}
+.cm-btn-secondary{background:transparent;border:1px solid var(--n-border-2);color:var(--n-text-2)}
+.cm-btn-secondary:hover{border-color:var(--n-border-3);color:var(--n-text)}
+.cm-btn-destructive{background:transparent;border:1px solid rgba(201,95,95,0.4);color:rgba(201,95,95,0.85)}
+.cm-btn-destructive:hover{border-color:var(--n-loss);color:var(--n-loss)}
+.cm-error{margin-top:12px;padding:10px 12px;border:1px solid rgba(201,95,95,0.3);border-radius:6px;background:rgba(201,95,95,0.05);color:var(--n-loss);font-size:12px;font-family:var(--n-font-mono);letter-spacing:0.02em}
+@media (max-width:480px){
+  .cm-card{padding:24px 18px;border-radius:12px}
+  .cm-title{font-size:26px}
+  .cm-actions{flex-direction:column-reverse}
+  .cm-btn{width:100%;flex:none;min-width:0}
+}
+</style>
+
+<div id="cancel-modal" class="cm-backdrop" style="display:none" onclick="cancelModalBackdropClick(event)">
+  <div class="cm-card" onclick="event.stopPropagation()">
+    <button class="cm-close" onclick="cancelModalClose()" aria-label="Close">&times;</button>
+
+    <div class="cm-pane" data-cm-step="1">
+      <h2 class="cm-title">Before you go</h2>
+      <p class="cm-lead">Help us understand why you're canceling.</p>
+      <div class="cm-reasons">
+        <label class="cm-reason"><input type="radio" name="cm-reason" value="too_expensive"    onchange="_cancelModalReasonChanged()"> Too expensive</label>
+        <label class="cm-reason"><input type="radio" name="cm-reason" value="not_using"        onchange="_cancelModalReasonChanged()"> Not using it enough</label>
+        <label class="cm-reason"><input type="radio" name="cm-reason" value="missing_features" onchange="_cancelModalReasonChanged()"> Missing features I need</label>
+        <label class="cm-reason"><input type="radio" name="cm-reason" value="switching"        onchange="_cancelModalReasonChanged()"> Switching to another tool</label>
+        <label class="cm-reason"><input type="radio" name="cm-reason" value="exploring"        onchange="_cancelModalReasonChanged()"> Just exploring, not the right time</label>
+        <label class="cm-reason"><input type="radio" name="cm-reason" value="other"            onchange="_cancelModalReasonChanged()"> Other</label>
+      </div>
+      <div class="cm-actions">
+        <button class="cm-btn cm-btn-secondary" onclick="cancelModalClose()">Never mind</button>
+        <button class="cm-btn cm-btn-primary" id="cm-step1-continue" onclick="cancelModalStep1Continue()" disabled>Continue</button>
+      </div>
+    </div>
+
+    <div class="cm-pane" data-cm-step="2-discount" style="display:none">
+      <h2 class="cm-title">Stay for <span class="cool">50% off</span> for 3 months?</h2>
+      <p class="cm-lead">Your next 3 charges drop in half. Then back to normal.</p>
+      <div class="cm-actions">
+        <button class="cm-btn cm-btn-destructive" onclick="cancelModalGoTo('3')">No thanks, cancel</button>
+        <button class="cm-btn cm-btn-primary"     onclick="cancelModalApplyCoupon()">Apply 50% off</button>
+      </div>
+      <div class="cm-error" id="cm-step2-discount-error" style="display:none"></div>
+    </div>
+
+    <div class="cm-pane" data-cm-step="2-pause" style="display:none">
+      <h2 class="cm-title">Pause for <span class="cool">30 days</span>?</h2>
+      <p class="cm-lead">No charges, your data stays, you can resume anytime in the next 30 days.</p>
+      <div class="cm-actions">
+        <button class="cm-btn cm-btn-destructive" onclick="cancelModalGoTo('3')">No thanks, cancel</button>
+        <button class="cm-btn cm-btn-primary"     onclick="cancelModalPause()">Pause for 30 days</button>
+      </div>
+      <div class="cm-error" id="cm-step2-pause-error" style="display:none"></div>
+    </div>
+
+    <div class="cm-pane" data-cm-step="3" style="display:none">
+      <h2 class="cm-title">Cancel your subscription?</h2>
+      <p class="cm-lead" id="cm-step3-lead">Pro features remain active until <strong id="cm-active-until">&hellip;</strong>. You can resubscribe anytime.</p>
+      <div class="cm-actions">
+        <button class="cm-btn cm-btn-destructive" onclick="cancelModalDoCancel()">Cancel subscription</button>
+        <button class="cm-btn cm-btn-primary"     onclick="cancelModalClose()">Keep my subscription</button>
+      </div>
+      <div class="cm-error" id="cm-step3-error" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// === CANCELLATION MODAL ===========================================
+var _cancelModalState = { step: null, reason: null, working: false, me: null };
+
+function _cancelModalFormatDate(iso){
+  if (!iso) return 'end of billing period';
+  try {
+    var d = new Date(iso);
+    return d.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  } catch (e) { return iso; }
+}
+
+function _cancelModalShowOnly(step){
+  _cancelModalState.step = step;
+  document.querySelectorAll('#cancel-modal .cm-pane').forEach(function(p){
+    p.style.display = (p.dataset.cmStep === step) ? '' : 'none';
+  });
+  document.querySelectorAll('#cancel-modal .cm-error').forEach(function(e){
+    e.style.display = 'none'; e.textContent = '';
+  });
+}
+
+function cancelModalClose(){
+  var el = document.getElementById('cancel-modal');
+  if (el) el.style.display = 'none';
+  _cancelModalState = { step: null, reason: null, working: false, me: null };
+  document.querySelectorAll('input[name="cm-reason"]').forEach(function(r){ r.checked = false; });
+  var btn = document.getElementById('cm-step1-continue');
+  if (btn) btn.disabled = true;
+  _cancelModalShowOnly('1');
+}
+
+function cancelModalBackdropClick(ev){
+  if (ev && ev.target === ev.currentTarget) cancelModalClose();
+}
+
+function _cancelModalReasonChanged(){
+  var checked = document.querySelector('input[name="cm-reason"]:checked');
+  _cancelModalState.reason = checked ? checked.value : null;
+  var btn = document.getElementById('cm-step1-continue');
+  if (btn) btn.disabled = !checked;
+}
+
+function cancelModalGoTo(step){ _cancelModalShowOnly(step); }
+
+function cancelModalStep1Continue(){
+  var reason = _cancelModalState.reason;
+  if (!reason) return;
+  if (reason === 'too_expensive')      _cancelModalShowOnly('2-discount');
+  else if (reason === 'not_using')     _cancelModalShowOnly('2-pause');
+  else                                  _cancelModalShowOnly('3');
+}
+
+async function _cancelModalGetSession(){
+  try {
+    if (!_sb || !_sb.auth || !_sb.auth.getSession) return null;
+    var r = await _sb.auth.getSession();
+    return r && r.data && r.data.session;
+  } catch (e) { return null; }
+}
+
+async function _cancelModalAPI(path, body){
+  if (_cancelModalState.working) return { error: 'busy' };
+  _cancelModalState.working = true;
+  try {
+    var session = await _cancelModalGetSession();
+    if (!session) return { error: 'auth required' };
+    var opts = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token,
+      },
+    };
+    if (body) opts.body = JSON.stringify(body);
+    var r = await fetch(path, opts);
+    var data = null;
+    try { data = await r.json(); } catch (e) {}
+    if (!r.ok) return { error: (data && data.error) || ('HTTP ' + r.status) };
+    return data || { ok: true };
+  } catch (e) {
+    return { error: (e && e.message) || 'network error' };
+  } finally {
+    _cancelModalState.working = false;
+  }
+}
+
+async function cancelModalApplyCoupon(){
+  var errEl = document.getElementById('cm-step2-discount-error');
+  if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+  var res = await _cancelModalAPI('/api/billing/apply-coupon');
+  if (res && res.error) {
+    if (errEl) { errEl.textContent = "Couldn't apply discount: " + res.error; errEl.style.display = 'block'; }
+    return;
+  }
+  cancelModalClose();
+  toast('Discount applied — your next charge is reduced.');
+}
+
+async function cancelModalPause(){
+  var errEl = document.getElementById('cm-step2-pause-error');
+  if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+  var res = await _cancelModalAPI('/api/billing/pause');
+  if (res && res.error) {
+    if (errEl) { errEl.textContent = "Couldn't pause: " + res.error; errEl.style.display = 'block'; }
+    return;
+  }
+  cancelModalClose();
+  toast("Paused. We'll see you in 30 days.");
+}
+
+async function cancelModalDoCancel(){
+  var errEl = document.getElementById('cm-step3-error');
+  if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+  var reason = _cancelModalState.reason || 'other';
+  var res = await _cancelModalAPI('/api/billing/cancel', { reason: reason });
+  if (res && res.error) {
+    if (errEl) { errEl.textContent = "Couldn't cancel: " + res.error; errEl.style.display = 'block'; }
+    return;
+  }
+  cancelModalClose();
+  var until = res && res.active_until ? _cancelModalFormatDate(res.active_until) : 'end of billing period';
+  toast("Subscription canceled. You'll keep Pro until " + until + '.');
+}
+
+async function cancelModalOpen(){
+  cancelModalClose();   // reset all panes/state
+  var session = await _cancelModalGetSession();
+  if (!session) { toast('Please sign in first'); return; }
+  var me;
+  try {
+    var r = await fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + session.access_token } });
+    if (r.status === 401) { toast('Session expired — please sign in again'); return; }
+    if (!r.ok)            { toast('Could not check subscription — please try again'); return; }
+    me = await r.json();
+  } catch (e) {
+    console.warn('[cancel-modal] /api/me failed', e && e.message);
+    toast('Could not reach server — check your connection');
+    return;
+  }
+  _cancelModalState.me = me;
+
+  // Branch by hasStripe (per dual-state edge case): if no Stripe sub, nothing
+  // to cancel via this flow — Elite users manage via Whop, free users have
+  // no sub, premium-without-stripe users shouldn't exist in v1.
+  if (!me.hasStripe) {
+    if (me.tier === 'free')      { toast("You're on the free tier — nothing to cancel."); return; }
+    if (me.tier === 'pro_elite') { toast('Your Pro Elite is tied to your Trading Ark role. To stop it, manage your membership on Whop.'); return; }
+    toast('No active subscription to cancel.');
+    return;
+  }
+
+  // Has Stripe → open modal. Adapt step 3 copy for dual-state (Elite + Stripe).
+  var step3Lead = document.getElementById('cm-step3-lead');
+  if (step3Lead) {
+    if (me.tier === 'pro_elite') {
+      step3Lead.innerHTML = "Cancel your Stripe subscription? Your Pro Elite access via Discord will continue &mdash; only the Stripe sub stops.";
+    } else {
+      var until = _cancelModalFormatDate(me.activeUntil);
+      step3Lead.innerHTML = "Pro features remain active until <strong>" + until + "</strong>. You can resubscribe anytime.";
+    }
+  }
+
+  document.getElementById('cancel-modal').style.display = 'flex';
+  _cancelModalShowOnly('1');
+}
+
+// Refresh the Active-subscription card on the Account → Subscription tab.
+async function refreshActiveSubCard(){
+  var card = document.getElementById('active-sub-card');
+  if (!card) return;
+  try {
+    var session = await _cancelModalGetSession();
+    if (!session) { card.style.display = 'none'; return; }
+    var r = await fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + session.access_token } });
+    if (!r.ok) { card.style.display = 'none'; return; }
+    var me = await r.json();
+    if (me.hasStripe && me.tier !== 'free') {
+      var descEl  = document.getElementById('active-sub-desc');
+      var untilEl = document.getElementById('active-sub-until');
+      if (descEl) {
+        descEl.textContent =
+          me.tier === 'pro_premium' ? 'Pro · Premium · $9 / month' :
+          me.tier === 'pro_direct'  ? 'Pro · Direct · $19 / month' :
+          me.tier === 'pro_elite'   ? 'Pro · Elite (paid Stripe sub also active)' :
+                                       'Active subscription';
+      }
+      if (untilEl) untilEl.textContent = _cancelModalFormatDate(me.activeUntil);
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  } catch (e) {
+    card.style.display = 'none';
+  }
+}
+</script>
+</body>
 </html>
