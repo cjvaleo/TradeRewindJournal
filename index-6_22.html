@@ -3361,6 +3361,78 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   color:#f5d77c;margin-left:6px;
 }
 
+/* ── Free-tier gating — Pattern A across the SPA ─────────────
+   Driven by body[data-tier="free"] set by applyTierGating(). When the
+   attribute is absent (e.g., briefly during initial auth load), nothing
+   is gated — safer than a flash of locks on Pro users. */
+
+/* Sidebar Community lock icon — sits inline, hidden by default */
+.sb .ni .ni-lock{
+  margin-left:auto;display:inline-flex;align-items:center;
+  color:var(--n-text-4);opacity:0.7;transition:.12s;
+}
+.sb .ni:hover .ni-lock{color:var(--n-gold);opacity:1}
+.sb .ni .ni-lock svg{width:11px;height:11px;stroke-width:1.8;fill:none;stroke:currentColor}
+
+/* Analytics locked tabs — visible but visually dimmed; lock icon shown */
+#pg-analytics .sec-tab .tab-lock-icon{
+  display:none;margin-left:6px;color:var(--n-text-4);vertical-align:middle;
+}
+body[data-tier="free"] #pg-analytics .sec-tab[data-locked]{opacity:0.65}
+body[data-tier="free"] #pg-analytics .sec-tab[data-locked] .tab-lock-icon{
+  display:inline-block;
+}
+body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
+  color:var(--n-gold);
+}
+
+/* Upgrade modal — shared across every locked surface */
+#upgrade-modal{
+  position:fixed;inset:0;z-index:9994;
+  background:rgba(0,0,0,0.78);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;padding:24px;
+}
+#upgrade-modal.on{display:flex}
+#upgrade-modal .up-modal-card{
+  position:relative;width:100%;max-width:420px;
+  background:var(--n-surface);border:1px solid var(--n-border-2);
+  border-radius:12px;padding:32px 28px 24px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+#upgrade-modal .up-modal-close{
+  position:absolute;top:14px;right:14px;
+  width:28px;height:28px;border-radius:6px;
+  background:transparent;border:none;cursor:pointer;
+  color:var(--n-text-3);font-size:20px;line-height:1;
+  display:flex;align-items:center;justify-content:center;transition:.12s;
+}
+#upgrade-modal .up-modal-close:hover{color:var(--n-text);background:var(--n-surface-2)}
+#upgrade-modal .up-modal-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:6px 14px;border-radius:99px;margin-bottom:14px;
+  background:rgba(245,215,124,0.10);border:1px solid rgba(245,215,124,0.32);
+  color:#f5d77c;font-family:var(--n-font-mono);font-size:10px;
+  letter-spacing:0.18em;text-transform:uppercase;
+}
+#upgrade-modal .up-modal-badge svg{width:11px;height:11px;stroke-width:2;fill:none;stroke:currentColor}
+#upgrade-modal .up-modal-title{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:26px;line-height:1.1;letter-spacing:-0.01em;
+  color:var(--n-text);margin-bottom:8px;
+}
+#upgrade-modal .up-modal-body{
+  font-family:var(--n-font-sans);font-size:13.5px;
+  color:var(--n-text-2);line-height:1.55;margin-bottom:22px;
+}
+#upgrade-modal .up-modal-cta{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;padding:13px;border-radius:7px;cursor:pointer;text-decoration:none;
+  background:#f5d77c;color:#1a1408;
+  font-family:var(--n-font-sans);font-size:14px;font-weight:600;letter-spacing:0;
+  border:1px solid rgba(245,215,124,0.5);transition:.15s;
+}
+#upgrade-modal .up-modal-cta:hover{background:#fce8a8;box-shadow:0 4px 18px rgba(245,215,124,0.18)}
+
 /* ── v2: sage CTA (fix #9) — override base .lt-submit ── */
 #pg-log .lt-submit{
   background:var(--n-profit);color:#0a1a12;
@@ -7541,7 +7613,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     <div class="ni" onclick="goTo('analytics')"><svg viewBox="0 0 16 16"><rect x="2" y="8" width="3" height="5" rx=".5"/><rect x="6" y="5" width="3" height="8" rx=".5"/><rect x="10" y="2" width="3" height="11" rx=".5"/></svg>Analytics</div>
     <div class="sb-sec">Connect</div>
     <div class="ni" onclick="goTo('sync')"><svg viewBox="0 0 16 16"><path d="M13 8A5 5 0 1 1 8 3"/><polyline points="13,3 13,7 9,7"/></svg>Broker Sync</div>
-    <div class="ni" onclick="goTo('community')"><svg viewBox="0 0 16 16"><circle cx="6" cy="5" r="2.5"/><path d="M2 13c0-2.2 1.8-4 4-4s4 1.8 4 4"/><circle cx="12" cy="6" r="2"/><path d="M14 13c0-1.7-1.3-3-2-3"/></svg>Community</div>
+    <div class="ni" id="sb-nav-community" onclick="onCommunityNavClick()"><svg viewBox="0 0 16 16"><circle cx="6" cy="5" r="2.5"/><path d="M2 13c0-2.2 1.8-4 4-4s4 1.8 4 4"/><circle cx="12" cy="6" r="2"/><path d="M14 13c0-1.7-1.3-3-2-3"/></svg>Community<span class="ni-lock" id="sb-community-lock" style="display:none" title="Pro feature"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></div>
     <div class="ni ni-upgrade" onclick="goTo('upgrade')"><svg viewBox="0 0 16 16" fill="currentColor" stroke="none"><polygon points="8,1.5 9.8,5.9 14.5,6.3 10.9,9.4 12,14 8,11.5 4,14 5.1,9.4 1.5,6.3 6.2,5.9"/></svg>Upgrade</div>
     <!-- Soft-removed nav items (Tools section + 4 features). Pages still exist in DOM
          and JS still works; just not reachable from nav. To restore, paste back. -->
@@ -8467,9 +8539,9 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   <div class="sec-tabs">
     <div class="sec-tab on" onclick="showAnalyticsPanel('performance',this)"><span class="num">01</span>Performance</div>
     <div class="sec-tab"     onclick="showAnalyticsPanel('quality',this)"><span class="num">02</span>Quality</div>
-    <div class="sec-tab"     onclick="showAnalyticsPanel('behavior',this)"><span class="num">03</span>Behavior</div>
-    <div class="sec-tab"     onclick="showAnalyticsPanel('time',this)"><span class="num">04</span>Time</div>
-    <div class="sec-tab"     onclick="showAnalyticsPanel('psychology',this)"><span class="num">05</span>Psychology</div>
+    <div class="sec-tab" data-locked="behavior"   onclick="onAnalyticsTabClick('behavior',this)"><span class="num">03</span>Behavior<svg class="tab-lock-icon" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+    <div class="sec-tab" data-locked="time"       onclick="onAnalyticsTabClick('time',this)"><span class="num">04</span>Time<svg class="tab-lock-icon" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+    <div class="sec-tab" data-locked="psychology" onclick="onAnalyticsTabClick('psychology',this)"><span class="num">05</span>Psychology<svg class="tab-lock-icon" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
   </div>
 
   <!-- ========== PERFORMANCE PANEL ========== -->
@@ -12750,6 +12822,15 @@ async function getCurrentTier(){
 window.getCurrentTier = getCurrentTier;
 
 function goTo(pg){
+  // Defense-in-depth tier gate — bounce free users away from Pro-only pages
+  // BEFORE any DOM mutation, so the page never flashes visible. Sidebar
+  // wrappers (onCommunityNavClick) intercept the common path; this catches
+  // console calls, deep links, and any older code path that still calls
+  // goTo() directly.
+  if (pg === 'community' && typeof isFreeTier === 'function' && isFreeTier()) {
+    if (typeof openUpgradeModal === 'function') openUpgradeModal('community');
+    return;
+  }
   var pgEl = document.getElementById('pg-'+pg);
   if (!pgEl) { console.warn('goTo: page not found —', pg); return; }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
@@ -13972,6 +14053,100 @@ async function applyLogTradeTier(){
   if (pin) pin.style.display = isFree ? '' : 'none';
 }
 window.applyLogTradeTier = applyLogTradeTier;
+
+/* ─────────────────────────────────────────────────────────────
+   FREE-TIER GATING — shared infrastructure (Phase 8 launch gate)
+
+   getCurrentTier() fetches from /api/me but is async — too slow for
+   inline click handlers. Cache the result on _userTier so onclick
+   wrappers can branch synchronously. Refresh after sign-in.
+
+   isFreeTier() defaults to true when cache isn't populated yet (safer
+   to brief-flash a free user clicking through than to leak Pro UX
+   during the ~200ms before /api/me resolves).
+   ───────────────────────────────────────────────────────────── */
+window._userTier = null;  // { tier, isActive, activeUntil } once loaded
+async function refreshUserTier(){
+  try {
+    if (typeof getCurrentTier === 'function') {
+      window._userTier = await getCurrentTier();
+    }
+  } catch(e){
+    console.warn('[tier-cache] refresh failed:', e && e.message);
+  }
+  if (typeof applyTierGating === 'function') applyTierGating();
+}
+window.refreshUserTier = refreshUserTier;
+
+function isFreeTier(){
+  return !window._userTier || !window._userTier.isActive;
+}
+window.isFreeTier = isFreeTier;
+
+// Set body[data-tier] + per-surface visual locks. Idempotent.
+function applyTierGating(){
+  document.body.dataset.tier = isFreeTier() ? 'free' : 'pro';
+  // Sidebar Community lock — show/hide the lock icon
+  var lock = document.getElementById('sb-community-lock');
+  if (lock) lock.style.display = isFreeTier() ? 'inline-flex' : 'none';
+}
+window.applyTierGating = applyTierGating;
+
+/* ─── Shared upgrade modal — opens on locked-feature click ─── */
+const UPGRADE_REASONS = {
+  community: {
+    title: 'Community is a Pro feature',
+    body:  "Share trades, see leaderboards, and pressure-test your edge with other traders. Available on every Pro plan.",
+  },
+  analytics: {
+    title: 'Deeper Analytics with Pro',
+    body:  "Behavior, Time, and Psychology breakdowns are part of Pro. Your free plan includes Performance + Quality.",
+  },
+  history:  { title: 'Unlimited history with Pro',  body: "Free shows your last 30 days. Upgrade to see every trade you've ever logged." },
+  equity:   { title: 'Full equity curve with Pro',  body: 'Free shows the last 30 days. Upgrade for unlimited history.' },
+  calendar: { title: 'Full calendar with Pro',      body: 'Free shows 30 days. Upgrade to navigate any month.' },
+};
+function openUpgradeModal(reason){
+  var r = UPGRADE_REASONS[reason] || UPGRADE_REASONS.community;
+  var modal = document.getElementById('upgrade-modal');
+  var titleEl = document.getElementById('upgrade-modal-title');
+  var bodyEl  = document.getElementById('upgrade-modal-body');
+  if (titleEl) titleEl.textContent = r.title;
+  if (bodyEl)  bodyEl.textContent  = r.body;
+  if (modal)   modal.classList.add('on');
+}
+function closeUpgradeModal(){
+  var modal = document.getElementById('upgrade-modal');
+  if (modal) modal.classList.remove('on');
+}
+window.openUpgradeModal  = openUpgradeModal;
+window.closeUpgradeModal = closeUpgradeModal;
+
+// ESC closes the upgrade modal — matches existing modal pattern
+document.addEventListener('keydown', function(e){
+  if (e.key !== 'Escape') return;
+  var m = document.getElementById('upgrade-modal');
+  if (m && m.classList.contains('on')) closeUpgradeModal();
+});
+
+/* ─── Navigation wrappers for locked features ─── */
+function onCommunityNavClick(){
+  if (isFreeTier()) { openUpgradeModal('community'); return; }
+  goTo('community');
+}
+function onCommunityNavClickMobile(el){
+  if (isFreeTier()) { openUpgradeModal('community'); return; }
+  goTo('community');
+  if (typeof mNav === 'function') mNav(el);
+}
+window.onCommunityNavClick = onCommunityNavClick;
+window.onCommunityNavClickMobile = onCommunityNavClickMobile;
+
+function onAnalyticsTabClick(panel, el){
+  if (isFreeTier()) { openUpgradeModal('analytics'); return; }
+  if (typeof showAnalyticsPanel === 'function') showAnalyticsPanel(panel, el);
+}
+window.onAnalyticsTabClick = onAnalyticsTabClick;
 
 function setEmotionDots(n){
   var lvl = Math.max(1, Math.min(5, parseInt(n)||3));
@@ -17785,6 +17960,13 @@ async function onSignedIn(user) {
   try { await loadUserSettings(); refreshCustomRulesFromSettings(); } catch(e) { console.warn('Settings load skipped:', e.message); }
   try { await loadSentInvitesFromDB(user); } catch(e) { console.warn('Sent invites load skipped:', e.message); }
   init();
+  // Cache the user's tier so free-tier gates (Community, Analytics tabs,
+  // future History/Equity/Calendar caps) can branch synchronously on
+  // inline click handlers. Fires once per auth load; Stripe portal /
+  // Discord OAuth roundtrips both end with a real page navigation that
+  // re-fires onSignedIn, so cache stays fresh post-upgrade. Fire-and-
+  // forget — applyTierGating runs once the fetch resolves.
+  if (typeof refreshUserTier === 'function') refreshUserTier();
   // Path-aware initial route — honors deep links like /account#billing
   // (from Stripe portal returns) and /upgrade (from any internal link).
   // Falls back to dashboard for the default '/' landing.
@@ -20185,6 +20367,24 @@ if (document.readyState === 'loading') {
 </div>
 
 <!-- COOKIE CONSENT BANNER -->
+<!-- UPGRADE MODAL — body-direct (not nested in any .page) so it escapes
+     the position:relative; z-index:1 stacking-context trap that every
+     page-nested modal hits on mobile. Shared by every locked surface
+     (Community sidebar, Analytics tabs, future History/Equity/Calendar
+     30-day cap banners). -->
+<div id="upgrade-modal" onclick="if(event.target===this)closeUpgradeModal()">
+  <div class="up-modal-card" role="dialog" aria-labelledby="upgrade-modal-title" aria-modal="true">
+    <button class="up-modal-close" onclick="closeUpgradeModal()" aria-label="Close">&times;</button>
+    <div class="up-modal-badge">
+      <svg viewBox="0 0 24 24"><path d="M12 1l3 6 6 .9-4.5 4.4 1 6.2L12 16.8 6.5 18.5l1-6.2L3 7.9 9 7z"/></svg>
+      Pro feature
+    </div>
+    <div class="up-modal-title" id="upgrade-modal-title">Unlock with Pro</div>
+    <div class="up-modal-body" id="upgrade-modal-body"></div>
+    <a href="javascript:goTo('upgrade');closeUpgradeModal()" class="up-modal-cta">See Pro plans &rarr;</a>
+  </div>
+</div>
+
 <div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(4,1,14,.97);border-top:1px solid rgba(0,180,255,.2);padding:14px 24px;z-index:99999;align-items:center;gap:16px;flex-wrap:wrap;backdrop-filter:blur(10px)">
   <div style="flex:1;min-width:260px">
     <div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;color:#fff;margin-bottom:3px">🍪 Cookie Notice</div>
@@ -20231,7 +20431,7 @@ function cookieDecline(){
 <div class="mn" onclick="goTo('log');mNav(this)"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="11"/><line x1="5" y1="8" x2="11" y2="8"/></svg>Log</div>
 <div class="mn" onclick="goTo('calendar');mNav(this)"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="1.5"/><line x1="5" y1="1" x2="5" y2="5"/><line x1="11" y1="1" x2="11" y2="5"/><line x1="2" y1="7" x2="14" y2="7"/></svg>Calendar</div>
 <div class="mn" onclick="goTo('analytics');mNav(this)"><svg viewBox="0 0 16 16"><rect x="2" y="8" width="3" height="5" rx=".5"/><rect x="6" y="5" width="3" height="8" rx=".5"/><rect x="10" y="2" width="3" height="11" rx=".5"/></svg>Stats</div>
-<div class="mn" onclick="goTo('community');mNav(this)"><svg viewBox="0 0 16 16"><circle cx="6" cy="5" r="2.5"/><path d="M2 13c0-2.2 1.8-4 4-4s4 1.8 4 4"/><circle cx="12" cy="6" r="2"/><path d="M14 13c0-1.7-1.3-3-2-3"/></svg>Group</div>
+<div class="mn" onclick="onCommunityNavClickMobile(this)"><svg viewBox="0 0 16 16"><circle cx="6" cy="5" r="2.5"/><path d="M2 13c0-2.2 1.8-4 4-4s4 1.8 4 4"/><circle cx="12" cy="6" r="2"/><path d="M14 13c0-1.7-1.3-3-2-3"/></svg>Group</div>
 <div class="mn" onclick="openAccountSettings();mNav(this)"><svg viewBox="0 0 16 16"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>You</div>
 </div>
 <script>function mNav(el){document.querySelectorAll('#mobile-nav .mn').forEach(function(m){m.classList.remove('on')});el.classList.add('on')}</script>
