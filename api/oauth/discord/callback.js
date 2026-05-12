@@ -7,6 +7,7 @@ import {
 } from '../../_lib/crypto.js';
 import { exchangeCode, fetchMe, fetchGuildMember } from '../../_lib/discord.js';
 import { sbService } from '../../_lib/supabase.js';
+import { joinTradingArk } from '../../../lib/community.js';
 
 const STATE_TTL_SECONDS = 600;
 const ELITE_WINDOW_DAYS = 35;
@@ -209,6 +210,14 @@ export default async function handler(req, res) {
 
   // ── (xii) Branch-specific redirect ──
   if (branch === 'A') {
+    // Auto-join Trading Ark community. Idempotent + graceful — log on failure
+    // but never fail the OAuth flow over a community-membership side effect.
+    try {
+      const joinRes = await joinTradingArk(sb, userId);
+      console.log('[community-autojoin] OAuth Branch A', userId, joinRes);
+    } catch (e) {
+      console.warn('[community-autojoin] OAuth Branch A threw', userId, e && e.message);
+    }
     return redirect(res, REDIRECT.WELCOME_ELITE, cookiesToSet);
   }
   if (branch === 'B') {

@@ -11,6 +11,7 @@
 
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { joinTradingArk } from '../../lib/community.js';
 
 export const config = { runtime: 'edge' };
 
@@ -147,6 +148,18 @@ async function onCheckoutCompleted(sb, event) {
     pro_source: newProSource,
     pro_active_until: finalProUntilIso,
   });
+
+  // Premium plan: auto-join Trading Ark community. Direct does NOT auto-join.
+  // Idempotent + graceful — log on failure but never throw (would otherwise
+  // mark the whole webhook_event row 'failed' for a side-effect-only failure).
+  if (plan === 'premium') {
+    try {
+      const joinRes = await joinTradingArk(sb, userId);
+      console.log('[community-autojoin] Stripe Premium webhook', userId, joinRes);
+    } catch (e) {
+      console.warn('[community-autojoin] Stripe Premium webhook threw', userId, e && e.message);
+    }
+  }
 }
 
 async function onInvoicePaid(sb, event) {

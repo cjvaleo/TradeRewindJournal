@@ -17,6 +17,7 @@ import { sbService } from '../_lib/supabase.js';
 import { decryptToken, encryptToken } from '../_lib/crypto.js';
 import { fetchGuildMember, refreshAccessToken } from '../_lib/discord.js';
 import { getStripe } from '../_lib/stripe.js';
+import { joinTradingArk } from '../../lib/community.js';
 
 const ELITE_WINDOW_DAYS       = 35;
 const PREMIUM_GRACE_DAYS      = 7;       // when Discord-Premium has no Stripe sub
@@ -32,6 +33,16 @@ function maxProActiveUntil(existingIso, daysFromNow) {
   const newMs     = Date.now() + daysFromNow * DAY_MS;
   const currentMs = existingIso ? new Date(existingIso).getTime() : 0;
   return new Date(Math.max(currentMs, newMs)).toISOString();
+}
+
+// Idempotent + graceful Trading Ark auto-join wrapper. Never throws.
+async function _fireAutojoin(sb, userId, label) {
+  try {
+    const joinRes = await joinTradingArk(sb, userId);
+    console.log('[community-autojoin] ' + label, userId, joinRes);
+  } catch (e) {
+    console.warn('[community-autojoin] ' + label + ' threw', userId, e && e.message);
+  }
 }
 
 // ── Stripe fallback lookup ──────────────────────────────────────
@@ -124,6 +135,10 @@ async function handleRoleLoss(sb, stripe, profile) {
       console.log('[cron] role-loss fallback to stripe', {
         user_id: userId, old_source: oldSource, new_source: `stripe_${planKind}`,
       });
+      if (planKind === 'premium') {
+        const caseLabel = oldSource === 'discord_elite' ? 'D' : 'E';
+        await _fireAutojoin(sb, userId, 'Cron Case ' + caseLabel + ' (kept, premium)');
+      }
       return oldSource === 'discord_elite' ? 'case_d_kept' : 'case_e_kept';
     }
   }
@@ -163,6 +178,9 @@ async function handleTokenRevoked(sb, stripe, profile) {
       console.log('[cron] case_f_kept (stripe fallback)', {
         user_id: userId, new_source: `stripe_${planKind}`,
       });
+      if (planKind === 'premium') {
+        await _fireAutojoin(sb, userId, 'Cron Case F (kept, premium)');
+      }
       return 'case_f_kept';
     }
   }
@@ -271,6 +289,7 @@ async function processProfile(sb, stripe, profile, env) {
     }).eq('id', userId);
     if (upErr) throw new Error(`case_a update failed: ${upErr.message}`);
     console.log('[cron] case_a', { user_id: userId, pro_active_until: finalIso });
+    await _fireAutojoin(sb, userId, 'Cron Case A');
     return 'case_a';
   }
 
@@ -290,6 +309,7 @@ async function processProfile(sb, stripe, profile, env) {
     console.log('[cron] ' + result, {
       user_id: userId, has_stripe: !!profile.stripe_subscription_id,
     });
+    await _fireAutojoin(sb, userId, 'Cron Case B (' + result + ')');
     return result;
   }
 
@@ -304,6 +324,7 @@ async function processProfile(sb, stripe, profile, env) {
     if (upErr) throw new Error(`case_c update failed: ${upErr.message}`);
     await queueEmail(sb, userId, 'role-upgraded', "You've been upgraded to Pro · Elite");
     console.log('[cron] case_c', { user_id: userId, pro_active_until: finalIso });
+    await _fireAutojoin(sb, userId, 'Cron Case C');
     return 'case_c';
   }
 
@@ -320,6 +341,9 @@ async function processProfile(sb, stripe, profile, env) {
         console.log('[cron] case_g_stripe_fallback', {
           user_id: userId, new_source: `stripe_${planKind}`,
         });
+        if (planKind === 'premium') {
+          await _fireAutojoin(sb, userId, 'Cron Case G (stripe_fallback)');
+        }
         return 'case_g_stripe_fallback';
       }
     }
@@ -334,6 +358,7 @@ async function processProfile(sb, stripe, profile, env) {
     await queueEmail(sb, userId, 'role-downgraded-elite-to-premium',
       'Set up billing to keep Pro · Premium');
     console.log('[cron] case_g_grace', { user_id: userId, pro_active_until: graceIso });
+    await _fireAutojoin(sb, userId, 'Cron Case G (grace)');
     return 'case_g_grace';
   }
 
