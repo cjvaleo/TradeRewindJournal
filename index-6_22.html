@@ -2742,14 +2742,21 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 #pg-log .lt-section + .lt-section{margin-top:0}
 #pg-log .lt-section-h{
-  display:flex;align-items:center;gap:10px;
-  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.22em;
-  text-transform:uppercase;color:var(--n-text-2);margin-bottom:18px;
+  display:flex;align-items:baseline;gap:10px;
+  margin-bottom:18px;padding-bottom:14px;
+  border-bottom:1px solid var(--n-border);
 }
 #pg-log .lt-section-num{
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;
-  color:var(--n-text-4);background:var(--n-surface-3);
-  padding:3px 7px;border-radius:4px;border:1px solid var(--n-border);
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.2em;
+  color:var(--n-text-4);text-transform:uppercase;
+  /* v2: dropped pill background so "01" sits inline with the title at the
+     same left edge as field labels + input borders below. */
+}
+/* v2: section title (the "SETUP" / "EXECUTION" / "REFLECTION" word) — big,
+   white, sans-serif. The second span inside .lt-section-h. */
+#pg-log .lt-section-h > span:not(.lt-section-num){
+  font-family:var(--n-font-sans);font-size:15px;font-weight:500;
+  color:#ffffff;letter-spacing:0;line-height:1;text-transform:none;
 }
 
 #pg-log .lt-field{display:flex;flex-direction:column;gap:7px;min-width:0}
@@ -3202,11 +3209,169 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   text-transform:uppercase;color:var(--n-text-4);text-align:center;
 }
 
+/* ── v2: futures-locked market pill (fix #1) ─────────── */
+#pg-log .lt-market-pill{
+  display:flex;align-items:center;gap:9px;
+  padding:12px 14px;background:var(--n-surface-2);
+  border:1px solid var(--n-border);border-radius:7px;
+  font-family:var(--n-font-sans);font-size:13.5px;color:var(--n-text);
+  cursor:not-allowed;
+}
+#pg-log .lt-market-pill .ic{
+  width:6px;height:6px;border-radius:50%;background:var(--n-accent-cool);
+  box-shadow:0 0 6px rgba(110,168,255,0.4);
+}
+#pg-log .lt-market-pill .note{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.12em;
+  color:var(--n-text-4);text-transform:uppercase;margin-left:auto;padding-left:12px;
+}
+
+/* ── v2: live calc strip (fix #9 polish) ─────────────── */
+#pg-log #live-calc{
+  margin-top:14px;padding:16px;border:1px solid var(--n-border);
+  background:var(--n-surface-2);border-radius:8px;
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;
+}
+#pg-log #live-calc .cell{text-align:center}
+#pg-log #live-calc .lbl{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-4);margin-bottom:8px;
+}
+#pg-log #live-calc .val{
+  font-family:var(--n-font-display);font-style:italic;font-size:28px;
+  line-height:1;letter-spacing:-0.01em;color:var(--n-text-2);
+}
+#pg-log #live-calc .val.pos{color:var(--n-profit)}
+#pg-log #live-calc .val.neg{color:var(--n-loss)}
+#pg-log #live-calc .val.cool{color:var(--n-accent-cool)}
+#pg-log #live-calc .val .unit{font-size:0.5em;opacity:0.6;font-style:normal;margin-left:1px}
+
+/* ── v2: conditional R helper (fix #5) ───────────────── */
+#pg-log .r-helper{
+  margin-top:12px;padding:11px 14px;border-radius:7px;
+  background:var(--n-surface-2);border:1px solid var(--n-border);
+  font-family:var(--n-font-sans);font-size:12px;color:var(--n-text-3);line-height:1.55;
+}
+#pg-log .r-helper.active{border-color:rgba(110,168,255,0.22)}
+#pg-log .r-helper .calc-line{
+  font-family:var(--n-font-display);font-style:italic;font-size:22px;
+  color:var(--n-accent-cool);letter-spacing:-0.01em;line-height:1.1;
+}
+#pg-log .r-helper .calc-line .unit{font-size:0.55em;opacity:0.6;font-style:normal}
+#pg-log .r-helper .formula{
+  margin-top:5px;font-family:var(--n-font-sans);font-size:11px;color:var(--n-text-3);
+}
+#pg-log .r-helper .formula strong{color:var(--n-text-2);font-weight:500}
+
+/* ── v2: Setup Grade as dot meter (fix #7) ─────────────
+   Matches .emotion-row / .lt-confidence-row pattern exactly:
+   gradient panel + bottom progress bar driven by --grade-pct,
+   16px ring dots with inner ::after fill driven by --grade-color,
+   mono-caps label pushed to far right via margin-left:auto. */
+#pg-log .lt-grade-dots-row{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;
+  background:linear-gradient(180deg, var(--n-surface-2) 0%, var(--n-surface) 100%);
+  border:1px solid var(--n-border);border-radius:10px;
+  position:relative;overflow:hidden;
+}
+#pg-log .lt-grade-dots-row::before{
+  content:'';position:absolute;bottom:0;left:0;height:2px;
+  width:var(--grade-pct, 80%);
+  background:var(--grade-color, var(--n-text-3));
+  box-shadow:0 0 8px var(--grade-color, transparent);
+  transition:width .4s ease, background .3s ease, box-shadow .3s ease;
+  border-radius:1px;
+}
+#pg-log .lt-grade-dots{display:flex;gap:8px}
+#pg-log .lt-grade-dot{
+  width:16px;height:16px;border-radius:50%;
+  border:1.5px solid var(--n-border-2);background:transparent;
+  cursor:pointer;transition:all .15s ease;flex-shrink:0;position:relative;
+}
+#pg-log .lt-grade-dot::after{
+  content:'';position:absolute;inset:3px;border-radius:50%;
+  background:var(--grade-color, #888);
+  opacity:0;transform:scale(0.6);transition:all .2s ease;
+}
+#pg-log .lt-grade-dot:hover{border-color:var(--n-text-3);transform:scale(1.10)}
+#pg-log .lt-grade-dot.on{
+  border-color:var(--grade-color, #888);
+  box-shadow:0 0 8px var(--grade-color, transparent);
+}
+#pg-log .lt-grade-dot.on::after{opacity:1;transform:scale(1)}
+#pg-log .lt-grade-dots-lbl{
+  margin-left:auto;line-height:1;
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text);font-weight:500;
+  transition:color .15s;
+}
+
+/* ── v2: lock overlay (Pattern A — free-tier gating) ── */
+#pg-log .lt-section.locked,
+#pg-log .csv-pane.locked{position:relative;overflow:hidden}
+#pg-log .lt-section.locked > *:not(.lock-veil),
+#pg-log .csv-pane.locked > *:not(.lock-veil){
+  opacity:0.45;filter:grayscale(0.2);pointer-events:none;user-select:none;
+}
+#pg-log .lock-veil{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:12px;
+  background:radial-gradient(ellipse at center,rgba(10,10,10,0.45) 0%,rgba(10,10,10,0.75) 100%);
+  z-index:5;padding:32px 24px;text-align:center;backdrop-filter:blur(1.2px);
+}
+#pg-log .lock-veil .pro-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:6px 14px;border-radius:99px;
+  background:rgba(245,215,124,0.10);border:1px solid rgba(245,215,124,0.32);
+  color:#f5d77c;font-family:var(--n-font-mono);font-size:10px;
+  letter-spacing:0.18em;text-transform:uppercase;
+}
+#pg-log .lock-veil .pro-badge svg{width:11px;height:11px;stroke-width:2;fill:none;stroke:currentColor}
+#pg-log .lock-veil .head{
+  font-family:var(--n-font-display);font-style:italic;font-size:28px;
+  letter-spacing:-0.01em;color:var(--n-text);line-height:1.1;max-width:380px;
+}
+#pg-log .lock-veil .sub{
+  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);
+  line-height:1.55;max-width:420px;
+}
+#pg-log .lock-veil .cta{
+  margin-top:6px;display:inline-flex;align-items:center;gap:6px;
+  padding:10px 18px;border-radius:7px;cursor:pointer;text-decoration:none;
+  background:#f5d77c;color:#1a1408;
+  font-family:var(--n-font-sans);font-size:13px;font-weight:600;letter-spacing:0;
+  border:1px solid rgba(245,215,124,0.5);transition:.15s;
+}
+#pg-log .lock-veil .cta:hover{background:#fce8a8;box-shadow:0 4px 18px rgba(245,215,124,0.18)}
+
+/* CSV tab badge: PRO pin (shown only for free) */
+#pg-log .mode-tab .pro-pin{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.18em;
+  color:#f5d77c;margin-left:6px;
+}
+
+/* ── v2: sage CTA (fix #9) — override base .lt-submit ── */
+#pg-log .lt-submit{
+  background:var(--n-profit);color:#0a1a12;
+  font-weight:600;box-shadow:0 0 0 1px rgba(95,179,137,0.4);transition:.15s;
+}
+#pg-log .lt-submit:hover{
+  background:#6cc69a;
+  box-shadow:0 0 0 1px rgba(95,179,137,0.7),0 4px 18px rgba(95,179,137,0.18);
+}
+
 @media (max-width:1100px){
   #pg-log .lt-grid{grid-template-columns:1fr;gap:20px}
   #pg-log .lt-preview{position:static}
   #pg-log .lt-rr-help-wrap{display:none}
   #pg-log .lt-triple{grid-template-columns:1fr 1fr}
+  #pg-log #live-calc{padding:12px;gap:8px}
+  #pg-log #live-calc .val{font-size:22px}
+  #pg-log .lt-grade-dot{width:16px;height:16px}
+  #pg-log .lt-grade-dots-lbl .gl{font-size:18px}
+  #pg-log .lock-veil .head{font-size:22px}
+  #pg-log .lock-veil .sub{font-size:12px}
 }
 
 /* ── CSV IMPORT V2 (compact rows) ─────────────────── */
@@ -7409,8 +7574,10 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     <div class="mode-tab on" onclick="setMode('manual',this)">
       <svg viewBox="0 0 16 16"><path d="M2 12.5V14h1.5l8.5-8.5-1.5-1.5L2 12.5z"/></svg>Manual
     </div>
-    <div class="mode-tab" onclick="setMode('ai',this)">
-      <svg viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="11" rx="1"/><line x1="6" y1="7" x2="11" y2="7"/><line x1="6" y1="10" x2="11" y2="10"/></svg>CSV Import <span class="badge-recommended">Recommended</span>
+    <div class="mode-tab" id="lt-tab-csv" onclick="setMode('ai',this)">
+      <svg viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="11" rx="1"/><line x1="6" y1="7" x2="11" y2="7"/><line x1="6" y1="10" x2="11" y2="10"/></svg>CSV Import
+      <span class="badge-recommended" id="lt-csv-rec-badge">Recommended</span>
+      <span class="pro-pin" id="lt-csv-pro-pin" style="display:none">PRO</span>
     </div>
   </div>
 
@@ -7446,9 +7613,13 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
             </div>
             <div class="lt-field">
               <div class="lt-field-l">Market</div>
-              <select id="lg-mkt" class="lt-input" onchange="onMarketChange()">
-                <option>Futures</option><option>Stocks</option><option>Crypto</option><option>Options</option><option>Forex</option>
-              </select>
+              <div class="lt-market-pill" title="Rewind is futures-only">
+                <span class="ic"></span>
+                <span>Futures</span>
+                <span class="note">Locked</span>
+              </div>
+              <!-- Hidden source-of-truth so existing JS reading lg-mkt.value still works. -->
+              <input type="hidden" id="lg-mkt" value="Futures"/>
             </div>
           </div>
 
@@ -7493,11 +7664,11 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
           <div class="lt-triple">
             <div class="lt-field">
-              <div class="lt-field-l">Qty <span class="lt-hint">per account</span></div>
+              <div class="lt-field-l">Contracts</div>
               <input class="lt-input" id="lg-qty" type="number" step="any" min="1" value="1" oninput="calcLivePnl()"/>
             </div>
             <div class="lt-field">
-              <div class="lt-field-l">Accounts <span class="lt-hint">copies</span></div>
+              <div class="lt-field-l"># of Accounts</div>
               <input class="lt-input" id="lg-accounts" type="number" min="1" value="1" oninput="calcLivePnl()"/>
             </div>
             <div class="lt-field">
@@ -7506,35 +7677,51 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
             </div>
           </div>
 
-          <div class="lt-dual">
-            <div class="lt-field">
-              <div class="lt-field-l">R Multiple <span class="lt-hint hint-auto" id="lt-rr-hint">from stop</span></div>
-              <input class="lt-input" id="lg-rr" type="number" step="0.1" placeholder="auto" oninput="onRrInput()"/>
+          <!-- Hidden field — JS still reads/writes lg-rr; UI surface is the calc strip + helper. -->
+          <input type="hidden" id="lg-rr" value=""/>
+          <!-- Off-DOM target for legacy onRrInput hint writes — harmless if updated. -->
+          <span id="lt-rr-hint" style="display:none"></span>
+
+          <!-- LIVE CALC strip (auto-lit by existing calcLivePnl() — fix #9 polish) -->
+          <div id="live-calc" style="display:none">
+            <div class="cell">
+              <div class="lbl">P&amp;L</div>
+              <div class="val" id="calc-pnl">—</div>
+              <div id="calc-acct-note" style="font-family:var(--n-font-mono);font-size:9px;color:var(--n-text-4);letter-spacing:0.05em;margin-top:3px"></div>
             </div>
-            <div class="lt-field lt-rr-help-wrap">
-              <div class="lt-rr-help">
-                <strong>R</strong> = profit &divide; risk. Risked $100, made $300 = +3R.
-              </div>
+            <div class="cell">
+              <div class="lbl">Risk $</div>
+              <div class="val" id="calc-risk">—</div>
             </div>
+            <div class="cell">
+              <div class="lbl">R Multiple</div>
+              <div class="val" id="calc-rr-disp">—</div>
+            </div>
+          </div>
+
+          <!-- R Multiple conditional helper (fix #5) -->
+          <div class="r-helper" id="lt-r-helper">
+            <span id="lt-r-helper-text">Add a stop loss to calculate your R multiple.</span>
           </div>
 
           <div id="lt-acct-note" class="lt-acct-note" style="display:none"></div>
         </div>
 
-        <!-- 03 REFLECTION -->
-        <div class="lt-section">
+        <!-- 03 REFLECTION (lock-gated for Free tier) -->
+        <div class="lt-section" id="lt-sec-reflection">
           <div class="lt-section-h"><span class="lt-section-num">03</span><span>Reflection</span></div>
 
           <div class="lt-field">
             <div class="lt-field-l">Setup Grade</div>
-            <div class="grade-row">
-              <div class="lt-grade-pills">
-                <div class="lt-grade-pill grade-F" data-grade="F" onclick="setGradePill('F')">F</div>
-                <div class="lt-grade-pill grade-D" data-grade="D" onclick="setGradePill('D')">D</div>
-                <div class="lt-grade-pill grade-C" data-grade="C" onclick="setGradePill('C')">C</div>
-                <div class="lt-grade-pill grade-B on" data-grade="B" onclick="setGradePill('B')">B</div>
-                <div class="lt-grade-pill grade-A" data-grade="A" onclick="setGradePill('A')">A</div>
+            <div class="lt-grade-dots-row" id="lt-grade-dots-row" style="--grade-color:#e0e0e0;--grade-pct:80%">
+              <div class="lt-grade-dots">
+                <div class="lt-grade-dot on" data-grade-idx="1" onclick="setGradeDots(1)"></div>
+                <div class="lt-grade-dot on" data-grade-idx="2" onclick="setGradeDots(2)"></div>
+                <div class="lt-grade-dot on" data-grade-idx="3" onclick="setGradeDots(3)"></div>
+                <div class="lt-grade-dot on" data-grade-idx="4" onclick="setGradeDots(4)"></div>
+                <div class="lt-grade-dot" data-grade-idx="5" onclick="setGradeDots(5)"></div>
               </div>
+              <div class="lt-grade-dots-lbl" id="lt-grade-dots-lbl" style="color:#e0e0e0">B</div>
             </div>
             <input type="hidden" id="lg-grade" value="3"/>
           </div>
@@ -7542,11 +7729,11 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
           <div class="lt-field">
             <div class="lt-field-l">Emotion</div>
             <div class="emotion-row" id="lt-emotion-row">
-              <div class="em-dot" data-emotion="1" title="Anxious" onclick="setEmotionDots(1)"></div>
+              <div class="em-dot" data-emotion="1" title="Tilted" onclick="setEmotionDots(1)"></div>
               <div class="em-dot" data-emotion="2" title="Off" onclick="setEmotionDots(2)"></div>
               <div class="em-dot on" data-emotion="3" title="Neutral" onclick="setEmotionDots(3)"></div>
-              <div class="em-dot" data-emotion="4" title="Confident" onclick="setEmotionDots(4)"></div>
-              <div class="em-dot" data-emotion="5" title="In Zone" onclick="setEmotionDots(5)"></div>
+              <div class="em-dot" data-emotion="4" title="Focused" onclick="setEmotionDots(4)"></div>
+              <div class="em-dot" data-emotion="5" title="In the zone" onclick="setEmotionDots(5)"></div>
               <span class="em-label" id="lt-em-label">Neutral</span>
             </div>
             <input type="hidden" id="lg-emotion" value="3"/>
@@ -7555,12 +7742,12 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
           <div class="lt-field">
             <div class="lt-field-l">Confidence</div>
             <div class="lt-confidence-row" id="lt-confidence-row">
-              <div class="lt-conf-dot" data-conf="1" title="No conviction" onclick="setConfidenceDots(1)"></div>
-              <div class="lt-conf-dot" data-conf="2" title="Low" onclick="setConfidenceDots(2)"></div>
-              <div class="lt-conf-dot on" data-conf="3" title="Medium" onclick="setConfidenceDots(3)"></div>
-              <div class="lt-conf-dot" data-conf="4" title="High" onclick="setConfidenceDots(4)"></div>
-              <div class="lt-conf-dot" data-conf="5" title="Max conviction" onclick="setConfidenceDots(5)"></div>
-              <span class="lt-conf-label" id="lt-conf-label">Medium</span>
+              <div class="lt-conf-dot" data-conf="1" title="Unsure" onclick="setConfidenceDots(1)"></div>
+              <div class="lt-conf-dot" data-conf="2" title="Hesitant" onclick="setConfidenceDots(2)"></div>
+              <div class="lt-conf-dot on" data-conf="3" title="Comfortable" onclick="setConfidenceDots(3)"></div>
+              <div class="lt-conf-dot" data-conf="4" title="Confident" onclick="setConfidenceDots(4)"></div>
+              <div class="lt-conf-dot" data-conf="5" title="Conviction" onclick="setConfidenceDots(5)"></div>
+              <span class="lt-conf-label" id="lt-conf-label">Comfortable</span>
             </div>
           </div>
 
@@ -7582,6 +7769,17 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
               <div class="dz-sub">or click to browse</div>
             </div>
             <div id="note-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+          </div>
+
+          <!-- LOCK VEIL (free tier only — toggled by applyLogTradeTier) -->
+          <div class="lock-veil" id="lt-veil-reflection" style="display:none">
+            <div class="pro-badge">
+              <svg viewBox="0 0 24 24"><path d="M12 1l3 6 6 .9-4.5 4.4 1 6.2L12 16.8 6.5 18.5l1-6.2L3 7.9 9 7z"/></svg>
+              Pro
+            </div>
+            <div class="head">Unlock the journal</div>
+            <div class="sub">Track your mindset, add notes, and attach screenshots. The Pro tier turns Rewind from a tracker into a journal.</div>
+            <a href="javascript:goTo('upgrade')" class="cta">Upgrade <span>&rarr;</span></a>
           </div>
         </div>
 
@@ -7620,7 +7818,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
   <!-- CSV IMPORT MODE -->
   <div id="mode-ai" class="mode-panel">
-    <div class="lg-card">
+    <div class="lg-card csv-pane" id="lt-csv-pane">
 
       <!-- DROP ZONE -->
       <div id="ai-drop-zone"
@@ -7691,6 +7889,16 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
         </div>
       </div>
 
+      <!-- LOCK VEIL (free tier only — toggled by applyLogTradeTier) -->
+      <div class="lock-veil" id="lt-veil-csv" style="display:none">
+        <div class="pro-badge">
+          <svg viewBox="0 0 24 24"><path d="M12 1l3 6 6 .9-4.5 4.4 1 6.2L12 16.8 6.5 18.5l1-6.2L3 7.9 9 7z"/></svg>
+          Pro
+        </div>
+        <div class="head">Import in bulk with Pro</div>
+        <div class="sub">CSV import lets you log a month of trades in seconds. Available on Pro Direct, Premium, and Elite.</div>
+        <a href="javascript:goTo('upgrade')" class="cta">Upgrade <span>&rarr;</span></a>
+      </div>
     </div><!-- /lg-card -->
   </div><!-- /mode-ai -->
 </div>
@@ -12575,6 +12783,7 @@ function goTo(pg){
   if(pg==='account'){refreshAcctUI();showTab('profile');return;}
   if(pg==='dashboard'){renderDashboard();setTimeout(drawMiniChart,80);}
   if(pg==='history')renderHistory();if(pg==='propfirms')pfRender();if(pg==='calendar')renderCalPage();if(pg==='analytics')renderAnalytics();if(pg==='community')renderCommunity();if(pg==='rules')renderRules();if(pg==='goals')renderGoals();
+  if(pg==='log' && typeof applyLogTradeTier === 'function') applyLogTradeTier();
   if(pg==='equity'){requestAnimationFrame(function(){requestAnimationFrame(function(){renderEquity();});});}
   if(pg==='upgrade' && typeof refreshUpgradePage === 'function') refreshUpgradePage();
 }
@@ -13695,23 +13904,115 @@ const _GRADE_TO_IDX={F:0,D:1,C:2,B:3,A:4}; // existing GRADES is 0=F..5=A+; A+ u
 const GRADE_COLORS={A:'#5fb389',B:'#e0e0e0',C:'#888',D:'#d49a6a',F:'#c95f5f'};
 const GRADE_PCTS  ={F:20,D:40,C:60,B:80,A:100};
 const EMOTION_COLORS={1:'#c95f5f',2:'#d49a6a',3:'#888',4:'#a8d8a8',5:'#5fb389'};
-const EMOTION_LABELS=['','Anxious','Off','Neutral','Confident','In Zone'];
+const EMOTION_LABELS=['','Tilted','Off','Neutral','Focused','In the zone'];
 
 function setGradePill(letter){
-  document.querySelectorAll('#pg-log .lt-grade-pill').forEach(function(p){ p.classList.remove('on'); });
-  var pill=document.querySelector('#pg-log .lt-grade-pill[data-grade="'+letter+'"]');
-  if(pill) pill.classList.add('on');
-  var hidden=document.getElementById('lg-grade');
-  if(hidden) hidden.value = (_GRADE_TO_IDX[letter] != null ? _GRADE_TO_IDX[letter] : 3);
-  // Drive the row's bottom-bar fill + color
-  var row=document.querySelector('#pg-log .grade-row');
-  if(row){
-    row.style.setProperty('--grade-color', GRADE_COLORS[letter] || GRADE_COLORS.B);
-    row.style.setProperty('--grade-pct',  (GRADE_PCTS[letter]  || GRADE_PCTS.B)+'%');
-  }
-  if(typeof updateGrade==='function'){ try{ updateGrade(hidden && hidden.value); }catch(e){} }
-  updateLogPreview();
+  // v2: pill UI dropped in favor of dot meter. Route through setGradeDots so any
+  // legacy callsite (resetLogForm, fullLog reset, CSV import default) keeps working.
+  var GRADE_LETTER_TO_IDX = { F:1, D:2, C:3, B:4, A:5 };
+  var idx = GRADE_LETTER_TO_IDX[letter];
+  if (idx == null) idx = 4; // default → B
+  setGradeDots(idx);
 }
+
+// Setup Grade dot meter (fix #7): mirrors .emotion-row / .lt-confidence-row
+// structurally — gradient panel, cumulative dot fill via --grade-color, bottom
+// progress bar via --grade-pct, mono-caps letter label pushed right.
+// Idx → letter map: 1=F 2=D 3=C 4=B 5=A. Persists 0-based idx to #lg-grade
+// (via _GRADE_TO_IDX) so fullLog continues to read the grade correctly.
+function setGradeDots(idx){
+  idx = Math.max(1, Math.min(5, parseInt(idx)||4));
+  var GRADE_IDX_TO_LETTER = { 1:'F', 2:'D', 3:'C', 4:'B', 5:'A' };
+  var letter = GRADE_IDX_TO_LETTER[idx];
+  var color  = (typeof GRADE_COLORS !== 'undefined' && GRADE_COLORS[letter]) || '#e0e0e0';
+
+  // Cumulative dot fill — color comes from --grade-color set on the row.
+  document.querySelectorAll('#pg-log .lt-grade-dot').forEach(function(d){
+    var v = parseInt(d.dataset.gradeIdx||'0');
+    d.classList.toggle('on', v <= idx);
+  });
+
+  // Row drives the dot fill color + bottom progress bar (matches em-row pattern).
+  var row = document.getElementById('lt-grade-dots-row');
+  if (row) {
+    row.style.setProperty('--grade-color', color);
+    row.style.setProperty('--grade-pct',   (idx * 20) + '%');
+  }
+
+  // Label: just the letter, mono caps via CSS, color-shifted via inline style.
+  var lbl = document.getElementById('lt-grade-dots-lbl');
+  if (lbl) {
+    lbl.textContent = letter;
+    lbl.style.color = color;
+  }
+
+  // Persist — fullLog reads #lg-grade as 0-based index (_GRADE_TO_IDX)
+  var hidden = document.getElementById('lg-grade');
+  if (hidden) hidden.value = (_GRADE_TO_IDX[letter] != null ? _GRADE_TO_IDX[letter] : 3);
+  if (typeof updateGrade === 'function') { try { updateGrade(hidden && hidden.value); } catch(e){} }
+  if (typeof updateLogPreview === 'function') updateLogPreview();
+}
+
+// Render the conditional R-multiple helper (fix #5). Reads #lg-stop + #lg-rr.
+// Three states:
+//   • Stop empty → "Add a stop loss to calculate your R multiple."
+//   • Stop filled, R uncomputable → "Fill entry, exit, and contracts…"
+//   • Stop filled, R computed → big colored "+3.2R" + formula line
+function _renderRHelper(){
+  var helper = document.getElementById('lt-r-helper');
+  var txt    = document.getElementById('lt-r-helper-text');
+  if (!helper || !txt) return;
+  var stop = parseFloat((document.getElementById('lg-stop')||{}).value);
+  var rr   = parseFloat((document.getElementById('lg-rr')||{}).value);
+  var pnl  = parseFloat((document.getElementById('lg-pnl')||{}).value);
+  if (!stop || stop <= 0) {
+    helper.className = 'r-helper';
+    txt.textContent  = 'Add a stop loss to calculate your R multiple.';
+    return;
+  }
+  if (isNaN(rr)) {
+    helper.className = 'r-helper';
+    txt.textContent  = 'Fill entry, exit, and contracts to see your R multiple.';
+    return;
+  }
+  helper.className = 'r-helper active';
+  var sign = rr >= 0 ? '+' : '';
+  var risk = parseFloat((document.getElementById('calc-risk')||{}).textContent.replace(/[^\d.-]/g,''));
+  var pnlTxt = (document.getElementById('calc-pnl')||{}).textContent || (isNaN(pnl) ? '' : '$' + Math.round(pnl).toLocaleString());
+  var riskTxt = !isNaN(risk) ? '$' + Math.round(risk).toLocaleString() : '—';
+  txt.innerHTML =
+    '<span class="calc-line">' + sign + rr.toFixed(2) + '<span class="unit">R</span></span>' +
+    '<div class="formula"><strong>R</strong> = profit &divide; risk. Risked ' + riskTxt + ', made ' + pnlTxt + '.</div>';
+}
+
+// Free-tier gating for Log Trade (Pattern A — visible-but-disabled).
+// Reflection section + CSV pane veiled when tier === 'free'.
+async function applyLogTradeTier(){
+  var isFree = true;
+  try {
+    if (typeof getCurrentTier === 'function') {
+      var t = await getCurrentTier();
+      isFree = !(t && t.isActive);
+    }
+  } catch (e) {
+    console.warn('[lt-tier] getCurrentTier threw, defaulting to free:', e && e.message);
+  }
+  var sec = document.getElementById('lt-sec-reflection');
+  var veilR = document.getElementById('lt-veil-reflection');
+  if (sec)   sec.classList.toggle('locked', isFree);
+  if (veilR) veilR.style.display = isFree ? '' : 'none';
+
+  var csvPane = document.getElementById('lt-csv-pane');
+  var veilC   = document.getElementById('lt-veil-csv');
+  if (csvPane) csvPane.classList.toggle('locked', isFree);
+  if (veilC)   veilC.style.display = isFree ? '' : 'none';
+
+  var rec = document.getElementById('lt-csv-rec-badge');
+  var pin = document.getElementById('lt-csv-pro-pin');
+  if (rec) rec.style.display = isFree ? 'none' : '';
+  if (pin) pin.style.display = isFree ? '' : 'none';
+}
+window.applyLogTradeTier = applyLogTradeTier;
 
 function setEmotionDots(n){
   var lvl = Math.max(1, Math.min(5, parseInt(n)||3));
@@ -13741,7 +14042,8 @@ function setEmotionPill(n){ setEmotionDots(n); }
 
 // Set initial bar states on page load + after every reset.
 function initReflectionBars(){
-  var g=document.querySelector('#pg-log .grade-row');
+  // v2: grade row was .grade-row, now .lt-grade-dots-row (panel + bottom bar).
+  var g=document.getElementById('lt-grade-dots-row');
   if(g){ g.style.setProperty('--grade-color', GRADE_COLORS.B); g.style.setProperty('--grade-pct', '80%'); }
   var em=document.getElementById('lt-emotion-row');
   if(em){ em.style.setProperty('--em-color', EMOTION_COLORS[3]); em.style.setProperty('--em-pct', '60%'); }
@@ -13749,7 +14051,7 @@ function initReflectionBars(){
   if(c){ c.style.setProperty('--conf-pct', '60%'); }
 }
 
-const CONF_LABELS=['','No Conviction','Low','Medium','High','Max Conviction'];
+const CONF_LABELS=['','Unsure','Hesitant','Comfortable','Confident','Conviction'];
 function setConfidenceDots(n){
   n = Math.max(1, Math.min(5, parseInt(n)||3));
   document.querySelectorAll('#pg-log .lt-conf-dot').forEach(function(d){
@@ -16675,6 +16977,7 @@ function calcLivePnl(){
   }
 
   if(typeof updateLogPreview === 'function') updateLogPreview();
+  if(typeof _renderRHelper === 'function') _renderRHelper();
 }
 
 function handleImgDrop(e){
