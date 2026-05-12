@@ -3460,6 +3460,27 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 }
 #upgrade-modal .up-modal-cta:hover{background:#fce8a8;box-shadow:0 4px 18px rgba(245,215,124,0.18)}
 
+/* Free-tier 30-day data cap banner — sits above the gated page's content.
+   Same gold treatment as the Pro feature pill on the upgrade modal. */
+.free-cap-banner{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:11px 16px;margin-bottom:18px;
+  background:rgba(245,215,124,0.06);
+  border:1px solid rgba(245,215,124,0.22);border-radius:8px;
+  font-family:var(--n-font-sans);font-size:12.5px;color:var(--n-text-2);
+}
+.free-cap-banner .fcb-text strong{color:var(--n-gold);font-weight:500}
+.free-cap-banner .fcb-cta{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--n-gold);text-decoration:none;
+  white-space:nowrap;background:transparent;border:none;cursor:pointer;
+  padding:6px 8px;transition:.12s;
+}
+.free-cap-banner .fcb-cta:hover{color:#fce8a8}
+@media (max-width:768px){
+  .free-cap-banner{flex-direction:column;align-items:flex-start;gap:6px;padding:10px 14px}
+}
+
 /* ── v2: sage CTA (fix #9) — override base .lt-submit ── */
 #pg-log .lt-submit{
   background:var(--n-profit);color:#0a1a12;
@@ -8306,6 +8327,12 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
     </div>
   </div>
 
+  <!-- FREE-TIER 30-DAY CAP BANNER — toggled by toggleFreeCapBanner('history') -->
+  <div id="history-cap-banner" class="free-cap-banner" style="display:none">
+    <div class="fcb-text">Showing the last 30 days &middot; <strong>Free plan</strong></div>
+    <button class="fcb-cta" onclick="openUpgradeModal('history')">Unlock unlimited &rarr;</button>
+  </div>
+
   <!-- SUMMARY -->
   <div class="h-summary">
     <div class="item"><span class="lbl">Trades</span><span class="val" id="hs-count">&mdash;</span></div>
@@ -8356,6 +8383,13 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
       <span class="cal-nav-lbl" id="cal-lbl"></span>
       <button class="cal-nav-btn" onclick="calNext()">&#8594;</button>
     </div>
+  </div>
+
+  <!-- FREE-TIER 30-DAY CAP BANNER — always shown for free users since past
+       months render empty (trades older than 30 days are filtered out). -->
+  <div id="calendar-cap-banner" class="free-cap-banner" style="display:none">
+    <div class="fcb-text">Showing the last 30 days &middot; <strong>Free plan</strong> &middot; past months are empty</div>
+    <button class="fcb-cta" onclick="openUpgradeModal('calendar')">Unlock unlimited &rarr;</button>
   </div>
 
   <!-- VIEW TABS — Month grid vs Heatmap -->
@@ -8486,6 +8520,12 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         <div class="tab" onclick="setEqMode('r',this)">R</div>
       </div>
     </div>
+  </div>
+
+  <!-- FREE-TIER 30-DAY CAP BANNER -->
+  <div id="equity-cap-banner" class="free-cap-banner" style="display:none">
+    <div class="fcb-text">Showing the last 30 days &middot; <strong>Free plan</strong></div>
+    <button class="fcb-cta" onclick="openUpgradeModal('equity')">Unlock unlimited &rarr;</button>
   </div>
 
   <!-- STATS ROW -->
@@ -13281,7 +13321,9 @@ function renderRecentList(){
 
 function buildCal(y,m,container,clickable){
   const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),dp={},dc={};
-  trades.forEach(t=>{if(!t.date)return;const td=new Date(t.date+'T00:00:00');if(td.getFullYear()===y&&td.getMonth()===m){const d=td.getDate();dp[d]=(dp[d]||0)+t.pnl;dc[d]=(dc[d]||0)+1;}});
+  // 30-day cap for Free tier — past months render empty.
+  const view = _visibleTrades();
+  view.forEach(t=>{if(!t.date)return;const td=new Date(t.date+'T00:00:00');if(td.getFullYear()===y&&td.getMonth()===m){const d=td.getDate();dp[d]=(dp[d]||0)+t.pnl;dc[d]=(dc[d]||0)+1;}});
   const n=new Date();let h='';
 
   // Big calendar: 8-column grid (week-num + 7 days)
@@ -13360,7 +13402,9 @@ function renderDashCal(){
 }
 function buildDashMiniCal(y,m,container){
   const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),dp={},dc={};
-  trades.forEach(t=>{if(!t.date)return;const td=new Date(t.date+'T00:00:00');if(td.getFullYear()===y&&td.getMonth()===m){const d=td.getDate();dp[d]=(dp[d]||0)+t.pnl;dc[d]=(dc[d]||0)+1;}});
+  // Dashboard mini-cal respects same 30-day cap as the main Calendar page.
+  const view = _visibleTrades();
+  view.forEach(t=>{if(!t.date)return;const td=new Date(t.date+'T00:00:00');if(td.getFullYear()===y&&td.getMonth()===m){const d=td.getDate();dp[d]=(dp[d]||0)+t.pnl;dc[d]=(dc[d]||0)+1;}});
   const n=new Date();let h='';
   for(let i=0;i<first;i++)h+='<div class="n-cal-cell empty"></div>';
   for(let d=1;d<=days;d++){
@@ -13376,6 +13420,9 @@ function buildDashMiniCal(y,m,container){
 function dashCalPrev(){dashCalM--;if(dashCalM<0){dashCalM=11;dashCalY--;}renderDashCal();}
 function dashCalNext(){dashCalM++;if(dashCalM>11){dashCalM=0;dashCalY++;}renderDashCal();}
 function renderCalPage(){
+  // Banner always on for free tier — past months render empty because
+  // _visibleTrades() filters out anything older than 30 days.
+  toggleFreeCapBanner('calendar', isFreeTier());
   document.getElementById('cal-lbl').textContent=MONTHS[calMonth]+' '+calYear;
   buildCal(calYear,calMonth,'big-cal',true);
   if(selDay)showDay(selDay);
@@ -13431,8 +13478,11 @@ function renderCalHeatmap(){
   startMonday.setDate(startMonday.getDate() - 7*weeks);
 
   // Group trades by day and get max abs daily P&L for tier scaling.
+  // 30-day cap applies for free tier (heatmap cells outside the window
+  // render with zero contribution → blank cells, consistent with the
+  // calendar grid and the empty-month banner).
   var byDay = {};
-  trades.forEach(function(t){
+  _visibleTrades().forEach(function(t){
     if(!t.date) return;
     var key = String(t.date).slice(0,10);
     if(!byDay[key]) byDay[key] = {pnl:0, count:0};
@@ -13571,7 +13621,9 @@ function onCalHmCellClick(dateStr){
 function showDay(d){
   selDay=d;
   var ds=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-  var dt=trades.filter(function(t){return t.date===ds;});
+  // Free tier: day-detail respects the 30-day cap (past days outside the
+  // window will show an empty list, consistent with the calendar grid).
+  var dt=_visibleTrades().filter(function(t){return t.date===ds;});
   buildCal(calYear,calMonth,'big-cal',true);
   openDayReview(ds, dt);
   refreshCalendarStats();
@@ -13951,8 +14003,11 @@ function attachChartHover(canvas, pts, padL, W, H) {
 }
 
 function buildEquityData(){
-  if(!trades.length)return[];
-  const s=[...trades].sort((a,b)=>new Date(a.date+'T00:00:00')-new Date(b.date+'T00:00:00'));
+  // Same 30-day cap as refreshEquity so the Dashboard mini-equity widget
+  // and the main Equity page agree for free users.
+  const view = _visibleTrades();
+  if(!view.length)return[];
+  const s=[...view].sort((a,b)=>new Date(a.date+'T00:00:00')-new Date(b.date+'T00:00:00'));
   let c=0;return[0,...s.map(t=>{c+=t.pnl;return c;})];
 }
 function drawMiniChart(){requestAnimationFrame(function(){drawChart('mini-eq-canvas',buildEquityData(),280);});}
@@ -14184,6 +14239,32 @@ function onAnalyticsTabClick(panel, el){
   if (typeof showAnalyticsPanel === 'function') showAnalyticsPanel(panel, el);
 }
 window.onAnalyticsTabClick = onAnalyticsTabClick;
+
+/* ─── Free-tier 30-day trade-view cap (Chunk 4) ─────────────
+   Returns the trades array each gated render function should
+   iterate. Pro tier: full `trades`. Free tier: last 30 days only.
+   Called from History, Equity, Calendar render paths so all three
+   surfaces agree on what's visible. Dashboard period filters
+   (Today/Week/Month) already cap to recent windows by design,
+   so the Dashboard mini-widgets stay coherent. */
+function _within30Days(t){
+  if (!t || !t.date) return false;
+  var cutoff = Date.now() - 30 * 86400 * 1000;
+  return new Date(t.date + 'T00:00:00').getTime() >= cutoff;
+}
+function _visibleTrades(){
+  if (!isFreeTier()) return trades;
+  return trades.filter(_within30Days);
+}
+window._visibleTrades = _visibleTrades;
+
+// Show/hide the per-page cap banner. Element id pattern: `{page}-cap-banner`.
+function toggleFreeCapBanner(page, isCapped){
+  var el = document.getElementById(page + '-cap-banner');
+  if (!el) return;
+  el.style.display = isCapped ? 'flex' : 'none';
+}
+window.toggleFreeCapBanner = toggleFreeCapBanner;
 
 function setEmotionDots(n){
   var lvl = Math.max(1, Math.min(5, parseInt(n)||3));
@@ -15882,7 +15963,10 @@ async function deleteTrade(id){
 }
 function renderHistory(){
   const fm=document.getElementById('h-mkt').value,fd=document.getElementById('h-dir').value,fr=document.getElementById('h-res').value;
-  const ft=trades.filter(t=>{if(fm&&t.market!==fm)return false;if(fd&&t.type!==fd)return false;if(fr==='win'&&t.pnl<=0)return false;if(fr==='loss'&&t.pnl>=0)return false;return true;});
+  // Free tier sees the last 30 days only; Pro sees everything.
+  const view = _visibleTrades();
+  toggleFreeCapBanner('history', view !== trades);
+  const ft=view.filter(t=>{if(fm&&t.market!==fm)return false;if(fd&&t.type!==fd)return false;if(fr==='win'&&t.pnl<=0)return false;if(fr==='loss'&&t.pnl>=0)return false;return true;});
 
   // ── SUMMARY STRIP (live counts from filtered results) ──────────
   function _setSum(id, html, tone){
@@ -18214,15 +18298,18 @@ function renderFeed() {}
    CALENDAR — MONTHLY STATS + DAY REVIEW
 ═══════════════════════════════════════════════════════ */
 function refreshCalendarStats() {
+  // Free tier: stats reflect the 30-day cap (months > 30 days back will
+  // have 0 trades, so totals/streaks recompute against the visible window).
+  var view = _visibleTrades();
   var now = new Date(); var cy = calYear||now.getFullYear(); var cm2 = calMonth!==undefined?calMonth:now.getMonth();
-  var monthTrades = trades.filter(function(t){var d=new Date(t.date);return d.getFullYear()===cy&&d.getMonth()===cm2;});
+  var monthTrades = view.filter(function(t){var d=new Date(t.date);return d.getFullYear()===cy&&d.getMonth()===cm2;});
   var dayMap = {};
   monthTrades.forEach(function(t){var d=t.date?t.date.slice(0,10):'';if(d){if(!dayMap[d])dayMap[d]=[];dayMap[d].push(t);}});
   var days=Object.keys(dayMap); var greenDays=0,redDays=0,totalPnl=0;
   days.forEach(function(d){var dp=dayMap[d].reduce(function(s,t){return s+(t.pnl||0);},0);totalPnl+=dp;if(dp>0)greenDays++;else if(dp<0)redDays++;});
   var avgDaily=days.length>0?(totalPnl/days.length):0;
   // streak
-  var sorted=trades.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  var sorted=view.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   var streak=0,streakDir=0;
   var byDay={};
   sorted.forEach(function(t){var d=t.date?t.date.slice(0,10):'';if(d){if(!byDay[d])byDay[d]=0;byDay[d]+=(t.pnl||0);}});
@@ -18264,7 +18351,9 @@ function openImgLightbox(src){ openScreenshotLightbox(src); }
 function showWeekSummary(y,m,dayStart){
   var wStart=new Date(y,m,dayStart);
   var wEnd=new Date(wStart);wEnd.setDate(wEnd.getDate()+6);
-  var wTrades=trades.filter(function(t){
+  // Week summary respects the 30-day cap for free tier — older weeks
+  // in past months show as empty consistent with the calendar grid.
+  var wTrades=_visibleTrades().filter(function(t){
     if(!t.date)return false;
     var td=new Date(t.date+'T12:00:00');
     return td>=wStart&&td<=wEnd;
@@ -18445,7 +18534,11 @@ function refreshEquity() {
   }
   function _tone(v){return v>0?'pos':v<0?'neg':'';}
 
-  if (!trades.length) {
+  // Free tier sees last 30 days; Pro sees everything.
+  var view = _visibleTrades();
+  toggleFreeCapBanner('equity', view !== trades);
+
+  if (!view.length) {
     _setStat('es-pnl','&mdash;','');
     _setStat('es-peak','&mdash;','');
     _setStat('es-dd','&mdash;','');
@@ -18470,7 +18563,7 @@ function refreshEquity() {
     if(dd2){var dctx=dd2.getContext('2d');dd2.width=dd2.parentElement?dd2.parentElement.clientWidth:900;dd2.height=160;dctx.clearRect(0,0,dd2.width,dd2.height);}
     return;
   }
-  var sorted = trades.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  var sorted = view.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   var now = new Date(), cutoff;
   if (eqTf === '1W') cutoff = new Date(now - 7*864e5);
   else if (eqTf === '1M') cutoff = new Date(now - 30*864e5);
