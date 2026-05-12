@@ -4998,6 +4998,102 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   color:var(--n-text-3);
 }
 
+/* ── Early Access status pill — softer pulse than the prior "In dev" treatment ── */
+#pg-sync .lock-status.early .pulse{
+  animation:lockPulseSoft 3s ease-in-out infinite;
+}
+@keyframes lockPulseSoft{0%,100%{opacity:1}50%{opacity:0.7}}
+
+/* ── Primary sage CTA — visually matches the Log Trade redesign +Log Trade button ── */
+#pg-sync .bs-join-cta{
+  margin-top:8px;padding:13px 22px;border-radius:7px;
+  border:none;cursor:pointer;
+  background:var(--n-profit);color:#0a1a12;
+  font-family:var(--n-font-sans);font-size:13.5px;font-weight:600;
+  letter-spacing:0;text-shadow:none;
+  display:inline-flex;align-items:center;gap:10px;
+  box-shadow:0 0 0 1px rgba(95,179,137,0.4);transition:.15s;
+}
+#pg-sync .bs-join-cta:hover{
+  background:#6cc69a;
+  box-shadow:0 0 0 1px rgba(95,179,137,0.7),0 4px 18px rgba(95,179,137,0.18);
+}
+#pg-sync .bs-join-cta:active{transform:translateY(1px)}
+#pg-sync .bs-join-cta svg{
+  width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;
+}
+
+/* ── Secondary text link — gracefully steers users to CSV while waiting ── */
+#pg-sync .bs-csv-link{
+  margin-top:2px;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-3);text-decoration:none;
+  transition:color .12s;
+}
+#pg-sync .bs-csv-link:hover{color:var(--n-text-2)}
+
+/* ── Waitlist modal ─────────────────────────────────────────── */
+.bs-wl-modal{
+  position:fixed;inset:0;z-index:9990;
+  background:rgba(0,0,0,0.72);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+}
+.bs-wl-card{
+  position:relative;width:100%;max-width:420px;
+  background:var(--n-surface);border:1px solid var(--n-border-2);
+  border-radius:12px;padding:32px 28px 24px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+.bs-wl-close{
+  position:absolute;top:14px;right:14px;
+  width:28px;height:28px;border-radius:6px;
+  background:transparent;border:none;cursor:pointer;
+  color:var(--n-text-3);font-size:20px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:.12s;
+}
+.bs-wl-close:hover{color:var(--n-text);background:var(--n-surface-2)}
+.bs-wl-title{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:26px;line-height:1.1;letter-spacing:-0.01em;
+  color:var(--n-text);margin-bottom:8px;
+}
+.bs-wl-sub{
+  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);
+  line-height:1.5;margin-bottom:20px;
+}
+.bs-wl-input{
+  width:100%;padding:13px 14px;
+  background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:7px;color:var(--n-text);
+  font-family:var(--n-font-sans);font-size:13.5px;
+  outline:none;transition:.12s;margin-bottom:14px;
+}
+.bs-wl-input:focus{border-color:var(--n-border-3);background:var(--n-surface-3)}
+.bs-wl-input::placeholder{color:var(--n-text-4)}
+.bs-wl-submit{
+  width:100%;padding:14px;border-radius:7px;cursor:pointer;border:none;
+  background:var(--n-profit);color:#0a1a12;
+  font-family:var(--n-font-sans);font-size:13.5px;font-weight:600;letter-spacing:0;
+  box-shadow:0 0 0 1px rgba(95,179,137,0.4);transition:.15s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.bs-wl-submit:hover:not(:disabled){
+  background:#6cc69a;
+  box-shadow:0 0 0 1px rgba(95,179,137,0.7),0 4px 18px rgba(95,179,137,0.18);
+}
+.bs-wl-submit:disabled{
+  opacity:0.55;cursor:not-allowed;
+  box-shadow:0 0 0 1px rgba(95,179,137,0.25);
+}
+.bs-wl-submit-spinner{
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid rgba(10,26,18,0.25);border-top-color:#0a1a12;
+  animation:bsWlSpin 0.7s linear infinite;
+}
+@keyframes bsWlSpin{to{transform:rotate(360deg)}}
+
 /* ── COMMUNITY REDESIGN v3 ─────────────────────────────── */
 
 #pg-community.page.on{
@@ -8555,7 +8651,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     </div>
   </div>
 
-  <!-- LOCK OVERLAY -->
+  <!-- EARLY-ACCESS OVERLAY -->
   <div class="lock-overlay">
     <div class="lock-icon-wrap">
       <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
@@ -8563,19 +8659,23 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
     <div class="lock-title">Broker Sync</div>
 
-    <div class="lock-status">
+    <div class="lock-status early">
       <span class="pulse"></span>
-      In development
+      Early Access
     </div>
 
     <div class="lock-desc">
-      Auto-journaling from <strong>Tradovate</strong>, <strong>TopstepX</strong>, <strong>Rithmic</strong> and major prop firms &mdash; coming soon. Trades will sync the second they fill, no manual entry needed.
+      Auto-sync trades from your futures broker directly into Rewind. Currently in development &mdash; drop your email for early access.
     </div>
 
-    <button class="lock-cta" onclick="goTo('log');setTimeout(function(){setMode('ai',document.querySelectorAll('.mode-tab')[1]);},100);">
-      Use CSV Import in the meantime
+    <button class="bs-join-cta" onclick="openBrokerSyncWaitlist()">
+      Join the waitlist
       <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
     </button>
+
+    <a class="bs-csv-link" href="javascript:goTo('log');setTimeout(function(){setMode('ai',document.querySelectorAll('.mode-tab')[1]);},100);">
+      Use CSV import in the meantime &rarr;
+    </a>
 
     <div class="lock-supported">
       <span class="lock-pill">Apex</span>
@@ -8585,6 +8685,23 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       <span class="lock-pill">Tradeify</span>
       <span class="lock-pill">My Funded Futures</span>
       <span class="lock-pill">+ more</span>
+    </div>
+  </div>
+
+  <!-- BROKER SYNC WAITLIST MODAL -->
+  <div id="bs-wl-modal" class="bs-wl-modal" style="display:none" onclick="if(event.target===this)closeBrokerSyncWaitlist()">
+    <div class="bs-wl-card" role="dialog" aria-labelledby="bs-wl-title" aria-modal="true">
+      <button class="bs-wl-close" onclick="closeBrokerSyncWaitlist()" aria-label="Close">&times;</button>
+
+      <div class="bs-wl-title" id="bs-wl-title">Get early access to Broker Sync</div>
+      <div class="bs-wl-sub">Drop your email and we'll let you know when it's ready.</div>
+
+      <input type="email" id="bs-wl-email" class="bs-wl-input" placeholder="you@example.com" autocomplete="email"/>
+
+      <button class="bs-wl-submit" id="bs-wl-submit" onclick="submitBrokerSyncWaitlist()">
+        <span class="bs-wl-submit-label">Join waitlist</span>
+        <span class="bs-wl-submit-spinner" style="display:none"></span>
+      </button>
     </div>
   </div>
 
@@ -19643,6 +19760,103 @@ async function tierUpgradeFlow(plan){
 window.tierUpgradeFlow = tierUpgradeFlow;
 
 function doUpgrade(plan){ return tierUpgradeFlow(plan); }
+
+/* ── Broker Sync waitlist ───────────────────────────────────────
+   Modal open/close + POST to /api/broker-sync-waitlist. Pre-fills
+   the user's auth email if signed in. Auth is optional on the
+   server — anonymous signups are accepted. */
+
+function openBrokerSyncWaitlist(){
+  var modal = document.getElementById('bs-wl-modal');
+  var input = document.getElementById('bs-wl-email');
+  if(!modal || !input) return;
+  // Pre-fill from auth session if available; user can edit freely.
+  var prefill = (currentUser && currentUser.email) ? currentUser.email : '';
+  input.value = prefill;
+  // Reset submit button state in case of prior failure.
+  _bsWlSetSubmitting(false);
+  modal.style.display = 'flex';
+  // Defer focus so the modal layout settles first.
+  setTimeout(function(){ input.focus(); input.select(); }, 50);
+}
+window.openBrokerSyncWaitlist = openBrokerSyncWaitlist;
+
+function closeBrokerSyncWaitlist(){
+  var modal = document.getElementById('bs-wl-modal');
+  if(modal) modal.style.display = 'none';
+}
+window.closeBrokerSyncWaitlist = closeBrokerSyncWaitlist;
+
+function _bsWlSetSubmitting(isSubmitting){
+  var btn = document.getElementById('bs-wl-submit');
+  if(!btn) return;
+  btn.disabled = !!isSubmitting;
+  var lbl = btn.querySelector('.bs-wl-submit-label');
+  var spn = btn.querySelector('.bs-wl-submit-spinner');
+  if(lbl) lbl.style.display = isSubmitting ? 'none' : '';
+  if(spn) spn.style.display = isSubmitting ? '' : 'none';
+}
+
+// Client-side email check — server validates again, this is just to
+// keep the user from POSTing obviously bad input.
+var _BS_WL_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+async function submitBrokerSyncWaitlist(){
+  var input = document.getElementById('bs-wl-email');
+  if(!input) return;
+  var email = (input.value || '').trim().toLowerCase();
+  if(!email || !_BS_WL_EMAIL_RE.test(email)){
+    toast('Please enter a valid email address.');
+    input.focus();
+    return;
+  }
+
+  _bsWlSetSubmitting(true);
+
+  // Capture optional Bearer for user_id linkage. Anonymous flow still works.
+  var headers = { 'Content-Type': 'application/json' };
+  try {
+    if(_sb && _sb.auth && _sb.auth.getSession){
+      var s = await _sb.auth.getSession();
+      var token = s && s.data && s.data.session && s.data.session.access_token;
+      if(token) headers['Authorization'] = 'Bearer ' + token;
+    }
+  } catch(e) { /* anonymous fallback is fine */ }
+
+  try {
+    var r = await fetch('/api/broker-sync-waitlist', {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({ email: email }),
+    });
+    var d = await r.json().catch(function(){ return null; });
+    if(!r.ok || !d || !d.ok){
+      console.warn('[bs-waitlist] non-ok:', r.status, d);
+      toast("Couldn't add to waitlist. Try again.");
+      _bsWlSetSubmitting(false);
+      return;
+    }
+    if(d.alreadyOnList){
+      toast("You're already on the waitlist.");
+    } else {
+      toast("You're on the list. We'll be in touch.");
+    }
+    closeBrokerSyncWaitlist();
+  } catch(e){
+    console.warn('[bs-waitlist] fetch threw:', e && e.message);
+    toast("Couldn't reach server. Check your connection.");
+  } finally {
+    _bsWlSetSubmitting(false);
+  }
+}
+window.submitBrokerSyncWaitlist = submitBrokerSyncWaitlist;
+
+// ESC key closes the modal — only when it's open.
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Escape') return;
+  var modal = document.getElementById('bs-wl-modal');
+  if(modal && modal.style.display !== 'none') closeBrokerSyncWaitlist();
+});
 
 /* ── CANCEL — opens the 3-step cancellation modal ── */
 async function doCancelSubscription(){
