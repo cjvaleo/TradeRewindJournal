@@ -3384,6 +3384,16 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   #pg-log .lock-veil .sub{font-size:12px}
 }
 
+/* Live-calc strip — collapse to 2-col on typical phones and 1-col on
+   iPhone SE 1st gen (320px) so 4-digit P&L values stop overflowing
+   their cells. */
+@media (max-width:480px){
+  #pg-log #live-calc{grid-template-columns:1fr 1fr}
+}
+@media (max-width:340px){
+  #pg-log #live-calc{grid-template-columns:1fr}
+}
+
 /* ── CSV IMPORT V2 (compact rows) ─────────────────── */
 #pg-log .csv-bulk-fields{
   display:flex;align-items:center;gap:10px;
@@ -6751,10 +6761,11 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   /* Mode tabs (Manual / CSV Import) full-width 2-col */
   #pg-log .mode-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 
-  /* HISTORY — stack rows, hide secondary columns */
-  #pg-history table{font-size:12px}
-  #pg-history th:nth-child(n+5),
-  #pg-history td:nth-child(n+5){display:none}
+  /* HISTORY — readable text, full columns reachable via horizontal swipe.
+     .h-table-wrap has overflow-x:auto so users see all columns by swiping
+     the table sideways. Don't hide columns 5+ — losing Notes/Grade/R-mult
+     on mobile is worse than a 1-finger horizontal swipe. */
+  #pg-history table{font-size:13px}
   #pg-history .h-filters{flex-wrap:wrap;gap:6px}
 
   /* CALENDAR — collapsible side panel + tighter month grid */
@@ -6966,6 +6977,46 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   /* Toasts: lift above the mobile-nav (which is 56px tall) */
   #toast-container{bottom:72px!important}
   .toast{bottom:72px!important}
+
+  /* Reliable tap targets on every modal button — the SPA has many
+     inline-styled modals (cal-edit-modal, cem, share-modal, pb-modal,
+     edit-modal, pin-trade-modal, eg-modal, lg-confirm, etc.) where
+     buttons render at ~28-30px tall on phone. Bump every modal button
+     to a comfortable 36px+ regardless of its inline padding/font. */
+  .modal button,
+  [id$="-modal"] button{
+    min-height:36px;padding:8px 14px;
+  }
+
+  /* Community Trade-of-the-Day PIN TRADE / UNPIN button — JS-injected
+     into #feed-totd with hardcoded inline padding:3px 10px (~26px tall).
+     Lives outside any modal so the rule above misses it; target the
+     container directly. */
+  #feed-totd button{min-height:36px;padding:8px 12px}
+
+  /* Hide #mobile-nav while any modal is open. Every modal in the SPA is
+     DOM-nested inside its parent .page (pg-log, pg-community, pg-sync,
+     pg-account) which carries position:relative; z-index:1 — that creates
+     a stacking context. A z-index bump on the modal can never beat the
+     nav's z-index:99998 because the modal's z-index is compared INSIDE
+     the page's stacking context (which itself sits at z-index:1 at body
+     level). Cheaper than reparenting every modal: just hide the nav.
+     SPA modals toggle via inline style.display = 'flex' or 'block'. */
+  body:has(#log-confirm[style*="display:flex"]) #mobile-nav,
+  body:has(div[id$="-modal"][style*="display:flex"]) #mobile-nav,
+  body:has(div[id$="-modal"][style*="display:block"]) #mobile-nav,
+  body:has(.bs-wl-modal[style*="display:flex"]) #mobile-nav{
+    display:none!important;
+  }
+
+  /* Geometric belt-and-suspenders: even if :has() ever fails (new modal
+     pattern, browser bug), action buttons at the bottom of any modal sheet
+     sit 60px above viewport bottom — clear of the 56px mobile nav strip. */
+  .lg-confirm-card,
+  .eg-modal,
+  [id$="-modal"] > div{
+    padding-bottom:60px!important;
+  }
 }
 
 /* Small phone (≤480px) — final tightening */
@@ -6980,6 +7031,9 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   #pg-community .post-image img{height:160px!important}
   /* Heatmap: shrink min-width so 3M view fits without huge scroll */
   #pg-calendar .weeks-grid{min-width:420px}
+  /* Notification panel — overrides the inline width:300px so it fits
+     inside a 320px iPhone SE viewport without left-edge clipping. */
+  #notif-panel{left:12px!important;right:12px!important;width:auto!important}
 }
 
 /* ── COMMUNITY PAGE — phone tightening ───────────────── */
