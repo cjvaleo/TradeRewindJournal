@@ -1452,7 +1452,7 @@ body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backg
 .wrap{display:none;min-height:100vh;position:relative;z-index:1;width:100%;overflow:visible}
 
 /* SIDEBAR */
-.sb{width:var(--sw);background:rgba(10,0,28,.97);border-right:1px solid rgba(255,45,155,.3);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh}
+.sb{width:var(--sw);background:rgba(10,0,28,.97);border-right:1px solid var(--n-border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh}
 .sb-logo{padding:18px 18px 14px;border-bottom:1px solid var(--bord)}
 .sb-logo-text{font-family:'FreeLine',sans-serif;font-size:38px;color:#fff;text-shadow:-2px 0 rgba(255,0,170,.7),2px 0 rgba(0,255,231,.7),0 0 24px rgba(255,100,255,.4);letter-spacing:3px;line-height:.88;display:block}
 .sb-logo-text span{color:#00ffe7;text-shadow:-2px 0 rgba(255,0,170,.6),2px 0 rgba(0,255,231,.6),0 0 20px rgba(0,255,231,.5)}
@@ -1817,10 +1817,17 @@ input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;bo
 input[type=range]::-moz-range-track{height:4px;border-radius:2px;border:none;background:transparent}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(0,180,255,.9);cursor:pointer;border:2px solid var(--cyan);margin-top:-5px}
 input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(0,180,255,.9);cursor:pointer;border:2px solid var(--cyan)}
+/* Suppress legacy synthwave background overlays. body::before is the
+   CRT scanline pattern; bg-grid is a perspective-transformed pink road
+   whose left/right edges render as thin near-vertical pink strips on
+   the viewport edges; bg-horizon + bg-horizon2 are the magenta/cyan
+   sunset bands. The chrome/luxe redesign doesn't want any of them.
+   Hide globally — not just on mobile — so they never leak through. */
+body::before,.bg-grid,.bg-horizon,.bg-horizon2{display:none}
+
 /* MOBILE */
 @media(max-width:768px){
 :root{--sw:0px}
-body::before,.bg-grid,.bg-horizon,.bg-horizon2{display:none}
 .sb{display:none!important}
 .wrap{flex-direction:column}
 .main{width:100%;padding-bottom:60px}
