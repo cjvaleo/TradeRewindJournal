@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Refund Policy · Rewind</title>
+<meta name="description" content="Refund Policy for Rewind paid subscriptions. 7-day full refund window on Stripe-billed plans.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --n-bg:#0a0a0a; --n-surface:#121212; --n-border:rgba(255,255,255,0.06);
+  --n-text:#f5f5f5; --n-text-2:#a1a1a1; --n-text-3:#6b6b6b; --n-text-4:#4a4a4a;
+  --n-accent-cool:#6ea8ff;
+  --n-font-sans:'Geist',-apple-system,sans-serif;
+  --n-font-mono:'Geist Mono',monospace;
+  --n-font-display:'Instrument Serif',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--n-bg);color:var(--n-text-2);font-family:var(--n-font-sans);min-height:100vh;display:flex;flex-direction:column}
+.lg-wrap{max-width:760px;margin:0 auto;padding:56px 28px 24px;flex:1;width:100%}
+.lg-crumb{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--n-text-4);margin-bottom:14px}
+.lg-crumb a{color:var(--n-text-3);text-decoration:none;transition:color .12s}
+.lg-crumb a:hover{color:var(--n-text-2)}
+.lg-title{font-family:var(--n-font-display);font-style:italic;font-size:44px;line-height:1.05;letter-spacing:-0.01em;color:var(--n-text);margin-bottom:8px}
+.lg-sub{font-family:var(--n-font-mono);font-size:10.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);margin-bottom:32px}
+.lg-meta{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;padding:18px 22px;background:var(--n-surface);border:1px solid var(--n-border);border-radius:8px;margin-bottom:36px}
+.lg-meta > div{display:flex;flex-direction:column;gap:2px}
+.lg-meta-label{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--n-text-4)}
+.lg-meta a{color:var(--n-text-2);text-decoration:none;border-bottom:1px solid var(--n-border)}
+.lg-meta a:hover{color:var(--n-text);border-bottom-color:var(--n-accent-cool)}
+.lg-body h1{font-family:var(--n-font-display);font-style:italic;font-size:30px;line-height:1.1;letter-spacing:-0.01em;color:var(--n-text);margin:24px 0 14px}
+.lg-body h1:first-child{margin-top:0}
+.lg-body h2{font-family:var(--n-font-sans);font-size:17px;font-weight:500;color:var(--n-text);letter-spacing:0;margin:28px 0 10px}
+.lg-body h3{font-family:var(--n-font-sans);font-size:14px;font-weight:500;color:var(--n-text);margin:18px 0 8px}
+.lg-body p{margin-bottom:12px;line-height:1.65;font-size:14.5px}
+.lg-body ul,.lg-body ol{margin:8px 0 16px 22px;line-height:1.65;font-size:14.5px}
+.lg-body li{margin-bottom:6px}
+.lg-body strong{color:var(--n-text);font-weight:500}
+.lg-body a{color:var(--n-text-2);text-decoration:none;border-bottom:1px solid var(--n-border)}
+.lg-body a:hover{color:var(--n-text);border-bottom-color:var(--n-accent-cool)}
+.lg-body hr{margin:24px 0;border:0;border-top:1px solid var(--n-border)}
+.lg-body em{color:var(--n-text-3);font-style:italic}
+.lg-foot{padding:24px 28px;border-top:1px solid var(--n-border);display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:var(--n-text-4)}
+.lg-foot a{color:var(--n-text-3);text-decoration:none;transition:color .12s}
+.lg-foot a:hover{color:var(--n-text-2)}
+.lg-foot .sep{user-select:none}
+@media (max-width:560px){
+  .lg-wrap{padding:40px 18px 24px}
+  .lg-title{font-size:34px}
+  .lg-meta{grid-template-columns:1fr}
+  .lg-body h1{font-size:24px}
+}
+</style>
+</head>
+<body>
+<main class="lg-wrap">
+  <div class="lg-crumb"><a href="/">Rewind</a> &middot; Legal</div>
+  <h1 class="lg-title">Refund Policy</h1>
+  <div class="lg-sub">Last updated &middot; May 12, 2026</div>
+
+  <div class="lg-meta">
+    <div><span class="lg-meta-label">Operator</span><span>Christian Valeo (individual)</span></div>
+    <div><span class="lg-meta-label">Refund window</span><span>7 days from first charge</span></div>
+    <div><span class="lg-meta-label">Contact</span><a href="mailto:cjvaleo@gmail.com">cjvaleo@gmail.com</a></div>
+    <div><span class="lg-meta-label">Jurisdiction</span><span>New Jersey, USA</span></div>
+  </div>
+
+  <div class="lg-body">
+    <p>Rewind offers paid subscriptions billed monthly through Stripe (Pro &middot; Direct, Pro &middot; Premium) or Whop (Pro &middot; Elite). This policy covers when and how to get money back.</p>
+
+    <h2>7-day refund window &mdash; Pro &middot; Direct and Pro &middot; Premium</h2>
+    <p>Within <strong>7 days of your first charge</strong>, you can request a full refund of your most recent payment, no questions asked. Email us at <a href="mailto:cjvaleo@gmail.com">cjvaleo@gmail.com</a> from the email address on your account. We'll process the refund through Stripe within 2 business days; it typically returns to your card within 5&ndash;10 business days after that.</p>
+
+    <h2>After the 7-day window</h2>
+    <p>All Stripe charges are final after 7 days. We don't issue partial refunds for unused subscription days &mdash; instead, you can cancel anytime to stop future charges, and your Pro features remain active through the end of your current billing period.</p>
+
+    <h2>Pro &middot; Elite (Whop)</h2>
+    <p>Pro &middot; Elite is bundled with your Trading Ark Elite membership on Whop. Refunds for Elite are governed by <strong>Whop's policy, not ours</strong> &mdash; contact Whop support to request a refund. Once your Whop subscription ends, your Rewind Elite role expires automatically on the next daily Discord check.</p>
+
+    <h2>Subscription cancellations</h2>
+    <p>You can cancel a Stripe subscription anytime through Account &rarr; Subscription. Canceling stops future billing; it does not retroactively refund prior charges (except within the 7-day window). Your Pro features stay active through the end of the current paid period.</p>
+
+    <h2>How to request a refund</h2>
+    <p>Email <a href="mailto:cjvaleo@gmail.com">cjvaleo@gmail.com</a> with:</p>
+    <ul>
+      <li>The email address on your Rewind account</li>
+      <li>The Stripe charge date you'd like refunded</li>
+      <li>(Optional) what didn't work &mdash; feedback helps us improve</li>
+    </ul>
+    <p>We review every request and respond within 2 business days.</p>
+
+    <h2>Chargebacks</h2>
+    <p>If you'd like a refund, please email us first &mdash; we'll handle it directly and faster than a card dispute. Filing a chargeback while we're already processing your refund may result in your Rewind account being closed and you being blocked from re-subscribing.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about refunds? Email <strong><a href="mailto:cjvaleo@gmail.com">cjvaleo@gmail.com</a></strong>.</p>
+  </div>
+</main>
+
+<footer class="lg-foot">
+  <span>&copy; 2026 Rewind</span>
+  <span class="sep">&middot;</span>
+  <a href="/terms">Terms</a>
+  <span class="sep">&middot;</span>
+  <a href="/privacy">Privacy</a>
+  <span class="sep">&middot;</span>
+  <a href="/refund">Refund</a>
+</footer>
+</body>
+</html>

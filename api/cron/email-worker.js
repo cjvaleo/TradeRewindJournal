@@ -72,9 +72,32 @@ async function getFirstName(sb, userId) {
   return 'there';
 }
 
+// Standardized email footer — appended to every template via the
+// renderBody wrapper. Three lines: divider, Rewind + legal links,
+// unsubscribe address. Plain-text format because the renderBody
+// templates are plain-text bodies (we send via Resend with the
+// `text` field, not `html`).
+function _legalFooter(siteUrl) {
+  return `
+
+————
+Rewind  ·  ${siteUrl}/terms  ·  ${siteUrl}/privacy
+Unsubscribe: mailto:cjvaleo@gmail.com?subject=Unsubscribe%20me`;
+}
+
+// Public wrapper — calls the raw body renderer then appends the legal
+// footer so every outgoing email carries the same Terms / Privacy /
+// Unsubscribe block. Templates not defined in _renderBodyRaw return
+// null and skip the footer.
+function renderBody(templateId, ctx) {
+  const body = _renderBodyRaw(templateId, ctx);
+  if (!body) return null;
+  return body + _legalFooter(ctx.siteUrl);
+}
+
 // Plain-text bodies. Voice matched to rewind-email-copy.md.
 // Only references data we actually have in scope (firstName + env URLs).
-function renderBody(templateId, ctx) {
+function _renderBodyRaw(templateId, ctx) {
   switch (templateId) {
 
     case 'subscription-canceled':
@@ -94,11 +117,10 @@ Two things might be useful:
 
 Thanks for trying Rewind. Hope to see you back.
 
-— Christian
-  Rewind
+Manage your account anytime: ${ctx.siteUrl}/account
 
-————
-Manage account: ${ctx.siteUrl}/index-6_22.html`;
+— Christian
+  Rewind`;
 
     case 'payment-failed':
       return `Hey ${ctx.firstName},
