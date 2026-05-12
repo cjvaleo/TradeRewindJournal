@@ -20860,13 +20860,12 @@ async function refreshActiveSubCard(){
 
 /* ── Billing tab — /api/me-driven, mirrors refreshActiveSubCard pattern ──
    Tier × hasStripe matrix:
-     free                    → Free copy + Upgrade CTA
-     pro_direct              → Stripe portal CTA
-     pro_premium             → Stripe portal CTA
-     pro_elite + hasStripe   → Stripe portal CTA (dual-state — Elite covers
-                               Pro free; the optional Stripe sub is the one
-                               the portal manages)
-     pro_elite + !hasStripe  → Whop link (no Stripe billing to manage) */
+     free                       → Free copy + Upgrade CTA
+     pro_elite (any hasStripe)  → Whop link only (Elite is Discord/Whop-
+                                  managed; Stripe portal would 500 in LIVE
+                                  mode for dangling test-mode subs)
+     pro_direct                 → Stripe portal CTA
+     pro_premium                → Stripe portal CTA */
 async function refreshBillingTab(){
   var sumTitle = document.getElementById('billing-summary-title');
   var sumSub   = document.getElementById('billing-summary-sub');
@@ -20905,33 +20904,37 @@ async function refreshBillingTab(){
       return;
     }
 
-    // State 4: Pro Elite via Discord only (no Stripe)
-    if (me.tier === 'pro_elite' && !me.hasStripe) {
-      setSummary('Elite via Trading Ark', 'Free through Discord',
-        '<div style="' + bodyStyle + '">Your Pro &middot; Elite access is provided free through Trading Ark Discord. There\'s no Stripe billing to manage &mdash; handle your Trading Ark membership on Whop.</div>' +
+    // State 2: Pro Elite — ALWAYS Whop path, never Stripe portal.
+    // Discord/Whop role check is the source of truth for Elite, regardless
+    // of hasStripe. A dangling test-mode Stripe sub from earlier signups
+    // would still register hasStripe=true on the legacy /api/me payload,
+    // but in LIVE mode the portal lookup throws 500 because the customer
+    // doesn't exist in live Stripe. Always route Elite through Whop.
+    if (me.tier === 'pro_elite') {
+      var dualStateNote = me.hasStripe
+        ? ' If you also have a Stripe subscription from a previous Premium signup, contact us at cjvaleo@gmail.com to cancel — Elite keeps you Pro regardless.'
+        : '';
+      setSummary('Elite via Trading Ark', 'Managed via Whop',
+        '<div style="' + bodyStyle + '">Your Pro &middot; Elite access is provided free through Trading Ark Discord. There\'s no Stripe billing to manage &mdash; handle your Trading Ark membership on Whop.' + dualStateNote + '</div>' +
         '<a href="' + whopEliteUrl + '" target="_blank" rel="noopener" style="' + linkStyle + ' rgba(110,168,255,0.4);color:var(--n-cool)">Open Whop &rarr;</a>');
       return;
     }
 
-    // States 2 + 3: any paid Stripe tier (Direct, Premium, or Elite-with-Stripe)
+    // State 3: Direct or Premium with Stripe → portal CTA.
+    // Elite handled above (returns early) so never reaches here.
     if (me.hasStripe) {
       var titleByTier =
         me.tier === 'pro_direct'  ? 'Pro &middot; Direct'  :
-        me.tier === 'pro_premium' ? 'Pro &middot; Premium' :
-        me.tier === 'pro_elite'   ? 'Pro &middot; Elite'   : 'Billing';
+        me.tier === 'pro_premium' ? 'Pro &middot; Premium' : 'Billing';
       var subByTier =
         me.tier === 'pro_direct'  ? '$20 / month' :
-        me.tier === 'pro_premium' ? '$10 / month' :
-        me.tier === 'pro_elite'   ? 'Elite (free) + Stripe sub' : 'Active';
-      var eliteNote = me.tier === 'pro_elite'
-        ? ' Your Discord-Elite role covers Pro for free; the Stripe subscription is optional and can be canceled anytime without losing access.'
-        : '';
+        me.tier === 'pro_premium' ? '$10 / month' : 'Active';
       // Title is set via innerHTML so the &middot; entity renders.
       // Strings here are constants — no user input flows through.
       sumTitle.innerHTML = titleByTier;
       sumSub.textContent = subByTier;
       sumBody.innerHTML =
-        '<div style="' + bodyStyle + '">Update your card, download invoices, and view past charges through Stripe, our payment provider.' + eliteNote + '</div>' +
+        '<div style="' + bodyStyle + '">Update your card, download invoices, and view past charges through Stripe, our payment provider.</div>' +
         '<button class="btn-stripe-portal" onclick="openStripePortal(this)">' +
           '<span class="btn-stripe-portal-label">Open Stripe Portal</span>' +
           '<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>' +
