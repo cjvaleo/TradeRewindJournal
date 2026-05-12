@@ -133,6 +133,10 @@ async function onCheckoutCompleted(sb, event) {
   const { error: upErr } = await sb
     .from('profiles')
     .update({
+      // Persist customer_id so /api/billing/portal can skip the lazy backfill
+      // path. Stripe always populates session.customer for subscription-mode
+      // checkouts; storing null is harmless if it's ever missing.
+      stripe_customer_id: session.customer,
       stripe_subscription_id: subscriptionId,
       is_pro: true,
       pro_source: newProSource,

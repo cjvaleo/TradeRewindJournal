@@ -4755,6 +4755,22 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 #pg-account .billing-value.cool{color:var(--n-accent-cool)}
 
+/* Stripe portal CTA — sage green, matches +Log Trade / Join-the-waitlist */
+#pg-account .btn-stripe-portal{
+  display:inline-flex;align-items:center;gap:10px;
+  margin-top:14px;padding:11px 18px;border-radius:7px;
+  border:none;cursor:pointer;text-decoration:none;
+  background:var(--n-profit);color:#0a1a12;
+  font-family:var(--n-font-sans);font-size:13px;font-weight:600;letter-spacing:0;
+  box-shadow:0 0 0 1px rgba(95,179,137,0.4);transition:.15s;
+}
+#pg-account .btn-stripe-portal:hover:not(:disabled){
+  background:#6cc69a;
+  box-shadow:0 0 0 1px rgba(95,179,137,0.7),0 4px 18px rgba(95,179,137,0.18);
+}
+#pg-account .btn-stripe-portal:disabled{opacity:0.55;cursor:not-allowed}
+#pg-account .btn-stripe-portal svg{width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none}
+
 /* Notifications */
 #pg-account .notif-row{
   display:flex;justify-content:space-between;align-items:center;
@@ -9511,38 +9527,17 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       </div>
 
       <!-- BILLING (locked — in development) -->
-      <div class="acct-tab locked-tab" id="tab-billing">
-        <div class="panel-card max-460">
-          <div class="peek-content">
-            <div class="panel-card-head">
-              <div class="panel-card-title">Billing</div>
-              <div class="panel-card-sub">Payment method &amp; history</div>
-            </div>
-            <div class="billing-row">
-              <span class="billing-label">Current Plan</span>
-              <span class="billing-value cool">Free</span>
-            </div>
-            <div class="billing-row">
-              <span class="billing-label">Payment Method</span>
-              <span class="billing-value">No card on file</span>
-            </div>
-            <div class="billing-row">
-              <span class="billing-label">Next Charge</span>
-              <span class="billing-value">&mdash;</span>
-            </div>
-            <div class="billing-row">
-              <span class="billing-label">Last Invoice</span>
-              <span class="billing-value">&mdash;</span>
-            </div>
-            <div class="form-divider"></div>
-            <button class="btn-primary ghost">Update Payment Method</button>
-            <button class="btn-primary ghost-quiet" style="margin-top:8px">View Invoice History</button>
+      <div class="acct-tab" id="tab-billing">
+        <!-- Populated by refreshBillingTab() from /api/me — same pattern as
+             #tab-subscription. Branches by tier × hasStripe per the matrix
+             in api/billing/portal.js. -->
+        <div class="panel-card" style="max-width:460px">
+          <div class="panel-card-head">
+            <div class="panel-card-title" id="billing-summary-title">Billing</div>
+            <div class="panel-card-sub"   id="billing-summary-sub">Loading&hellip;</div>
           </div>
-          <div class="tab-lock">
-            <div class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
-            <div class="ttl">Billing</div>
-            <div class="status"><span class="pulse"></span>In development</div>
-            <div class="desc">Billing isn't live yet. Will activate alongside paid plans.</div>
+          <div style="padding:14px 16px 16px" id="billing-summary-body">
+            <div style="font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-3);letter-spacing:0.04em">Checking your plan&hellip;</div>
           </div>
         </div>
       </div>
@@ -12897,7 +12892,15 @@ function goTo(pg){
   const map=['dashboard','log','history','calendar','equity','analytics','sync','community','upgrade','risk','propfirms','rules','goals','account'];
   document.querySelectorAll('.ni')[map.indexOf(pg)]?.classList.add('on');
   document.querySelector('.main').scrollTop=0;
-  if(pg==='account'){refreshAcctUI();showTab('profile');return;}
+  if(pg==='account'){
+    refreshAcctUI();
+    // Honor /account#billing return URL from Stripe portal (and any other
+    // future deep links). Falls back to the Profile tab for unknown hashes.
+    var hashTab = (window.location.hash || '').replace(/^#/, '');
+    var validTabs = ['profile','security','subscription','billing','notifications','danger','legal'];
+    showTab(validTabs.indexOf(hashTab) >= 0 ? hashTab : 'profile');
+    return;
+  }
   if(pg==='dashboard'){renderDashboard();setTimeout(drawMiniChart,80);}
   if(pg==='history')renderHistory();if(pg==='propfirms')pfRender();if(pg==='calendar')renderCalPage();if(pg==='analytics')renderAnalytics();if(pg==='community')renderCommunity();if(pg==='rules')renderRules();if(pg==='goals')renderGoals();
   if(pg==='log' && typeof applyLogTradeTier === 'function') applyLogTradeTier();
@@ -17529,6 +17532,8 @@ function showTab(tab){
   var l=document.getElementById('atl-'+tab);if(l)l.classList.add('on');
   // Subscription tab: re-fetch /api/me to show/hide the Active-subscription card.
   if (tab === 'subscription' && typeof refreshActiveSubCard === 'function') refreshActiveSubCard();
+  // Billing tab: same /api/me-driven render, branched by tier × hasStripe.
+  if (tab === 'billing' && typeof refreshBillingTab === 'function') refreshBillingTab();
 }
 function onPfpInput(el){
   el.value=el.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,2);
@@ -17941,7 +17946,12 @@ async function onSignedIn(user) {
   try { await loadUserSettings(); refreshCustomRulesFromSettings(); } catch(e) { console.warn('Settings load skipped:', e.message); }
   try { await loadSentInvitesFromDB(user); } catch(e) { console.warn('Sent invites load skipped:', e.message); }
   init();
-  goTo('dashboard');
+  // Path-aware initial route — honors deep links like /account#billing
+  // (from Stripe portal returns) and /upgrade (from any internal link).
+  // Falls back to dashboard for the default '/' landing.
+  var _pathToPage = { '/account': 'account', '/upgrade': 'upgrade' };
+  var _initialPage = _pathToPage[window.location.pathname] || 'dashboard';
+  goTo(_initialPage);
   handleStripeReturn();
 }
 
@@ -20752,6 +20762,143 @@ async function refreshActiveSubCard(){
     if (card) card.style.display = 'none';
   }
 }
+
+/* ── Billing tab — /api/me-driven, mirrors refreshActiveSubCard pattern ──
+   Tier × hasStripe matrix:
+     free                    → Free copy + Upgrade CTA
+     pro_direct              → Stripe portal CTA
+     pro_premium             → Stripe portal CTA
+     pro_elite + hasStripe   → Stripe portal CTA (dual-state — Elite covers
+                               Pro free; the optional Stripe sub is the one
+                               the portal manages)
+     pro_elite + !hasStripe  → Whop link (no Stripe billing to manage) */
+async function refreshBillingTab(){
+  var sumTitle = document.getElementById('billing-summary-title');
+  var sumSub   = document.getElementById('billing-summary-sub');
+  var sumBody  = document.getElementById('billing-summary-body');
+  if (!sumTitle || !sumSub || !sumBody) return;
+
+  function setSummary(title, sub, bodyHtml) {
+    sumTitle.textContent = title;
+    sumSub.textContent   = sub;
+    sumBody.innerHTML    = bodyHtml;
+  }
+  var bodyStyle = 'font-family:var(--n-font-sans);font-size:14px;color:var(--n-text-2);line-height:1.5';
+  var linkStyle = 'display:inline-block;text-decoration:none;margin-top:14px;background:transparent;font-family:var(--n-font-sans);font-size:12px;padding:7px 14px;border-radius:6px;border:1px solid';
+
+  try {
+    var session = await _cancelModalGetSession();
+    if (!session) {
+      setSummary('Billing', 'Sign in required',
+        '<div style="' + bodyStyle + '">Sign in to manage billing.</div>');
+      return;
+    }
+    var r = await fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + session.access_token } });
+    if (!r.ok) {
+      setSummary('Billing', 'Unavailable',
+        '<div style="' + bodyStyle + ';color:var(--n-loss)">Couldn\'t load billing info. Refresh to retry.</div>');
+      return;
+    }
+    var me = await r.json();
+    var whopEliteUrl = 'https://whop.com/checkout/plan_KY7CY81vHFic1?a=christianvaleo';
+
+    // State 1: Free
+    if (me.tier === 'free') {
+      setSummary('Free plan', 'No billing to manage',
+        '<div style="' + bodyStyle + '">You\'re on the Free plan &mdash; no billing to manage. Upgrade for unlimited trades, full analytics, and broker sync.</div>' +
+        '<a href="javascript:goTo(\'upgrade\')" style="' + linkStyle + ' rgba(245,215,124,0.4);color:var(--n-gold)">Upgrade &rarr;</a>');
+      return;
+    }
+
+    // State 4: Pro Elite via Discord only (no Stripe)
+    if (me.tier === 'pro_elite' && !me.hasStripe) {
+      setSummary('Elite via Trading Ark', 'Free through Discord',
+        '<div style="' + bodyStyle + '">Your Pro &middot; Elite access is provided free through Trading Ark Discord. There\'s no Stripe billing to manage &mdash; handle your Trading Ark membership on Whop.</div>' +
+        '<a href="' + whopEliteUrl + '" target="_blank" rel="noopener" style="' + linkStyle + ' rgba(110,168,255,0.4);color:var(--n-cool)">Open Whop &rarr;</a>');
+      return;
+    }
+
+    // States 2 + 3: any paid Stripe tier (Direct, Premium, or Elite-with-Stripe)
+    if (me.hasStripe) {
+      var titleByTier =
+        me.tier === 'pro_direct'  ? 'Pro &middot; Direct'  :
+        me.tier === 'pro_premium' ? 'Pro &middot; Premium' :
+        me.tier === 'pro_elite'   ? 'Pro &middot; Elite'   : 'Billing';
+      var subByTier =
+        me.tier === 'pro_direct'  ? '$20 / month' :
+        me.tier === 'pro_premium' ? '$10 / month' :
+        me.tier === 'pro_elite'   ? 'Elite (free) + Stripe sub' : 'Active';
+      var eliteNote = me.tier === 'pro_elite'
+        ? ' Your Discord-Elite role covers Pro for free; the Stripe subscription is optional and can be canceled anytime without losing access.'
+        : '';
+      // Title is set via innerHTML so the &middot; entity renders.
+      // Strings here are constants — no user input flows through.
+      sumTitle.innerHTML = titleByTier;
+      sumSub.textContent = subByTier;
+      sumBody.innerHTML =
+        '<div style="' + bodyStyle + '">Update your card, download invoices, and view past charges through Stripe, our payment provider.' + eliteNote + '</div>' +
+        '<button class="btn-stripe-portal" onclick="openStripePortal(this)">' +
+          '<span class="btn-stripe-portal-label">Open Stripe Portal</span>' +
+          '<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>' +
+        '</button>';
+      return;
+    }
+
+    // Defensive fallback — shouldn't reach here.
+    setSummary('Billing', 'Plan status unavailable',
+      '<div style="' + bodyStyle + ';color:var(--n-text-3)">&mdash;</div>');
+  } catch (e) {
+    console.warn('[billing-tab] refresh threw:', e && e.message);
+    setSummary('Billing', 'Network error',
+      '<div style="' + bodyStyle + ';color:var(--n-loss)">Couldn\'t reach server. Refresh to retry.</div>');
+  }
+}
+window.refreshBillingTab = refreshBillingTab;
+
+/* ── POST /api/billing/portal → window.location redirect (same tab) ── */
+async function openStripePortal(btn){
+  if (!btn) return;
+  var lbl = btn.querySelector('.btn-stripe-portal-label');
+  var originalText = lbl ? lbl.textContent : '';
+  btn.disabled = true;
+  if (lbl) lbl.textContent = 'Opening…';
+
+  function restoreBtn(){
+    btn.disabled = false;
+    if (lbl) lbl.textContent = originalText;
+  }
+
+  try {
+    var session = await _cancelModalGetSession();
+    if (!session) {
+      toast('Sign in to manage billing.');
+      restoreBtn();
+      return;
+    }
+    var r = await fetch('/api/billing/portal', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + session.access_token,
+        'Content-Type': 'application/json',
+      },
+    });
+    var d = await r.json().catch(function(){ return null; });
+    if (!r.ok || !d || !d.ok || !d.url) {
+      console.warn('[stripe-portal] non-ok:', r.status, d);
+      toast("Couldn't open Stripe portal. Try again.");
+      restoreBtn();
+      return;
+    }
+    // Same-tab redirect — Stripe handles its own back nav + the return URL
+    // brings the user back to /account#billing where they started.
+    window.location.href = d.url;
+  } catch (e) {
+    console.warn('[stripe-portal] fetch threw:', e && e.message);
+    toast("Couldn't reach server. Check your connection.");
+    restoreBtn();
+  }
+}
+window.openStripePortal = openStripePortal;
 </script>
 </body>
 </html>

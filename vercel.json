@@ -8,6 +8,7 @@
     { "source": "/welcome/premium", "destination": "/welcome/premium.html" },
     { "source": "/oauth-no-access", "destination": "/oauth-no-access.html" },
     { "source": "/oauth-error", "destination": "/oauth-error.html" },
+    { "source": "/account", "destination": "/index-6_22.html" },
     { "source": "/upgrade", "destination": "/index-6_22.html" }
   ],
   "crons": [
