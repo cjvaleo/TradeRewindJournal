@@ -15274,15 +15274,96 @@ function parseCsvLine(line){
   return result;
 }
 
-function parseDate(str){
-  // "04/14/2026 10:06:55" → "2026-04-14". Fallback to LOCAL today, not
-  // UTC — the rest of the app keys on local YYYY-MM-DD.
-  if(!str)return _localDate(new Date());
-  const m=str.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if(m)return `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
-  return _localDate(new Date());
+// Robust multi-format date parser used by the CSV import path.
+// Returns 'YYYY-MM-DD' (local) on success, or null on failure.
+//
+// IMPORTANT: returning null is deliberate — the caller decides the fallback
+// (try a different column, log a parse failure, or default to today). The
+// previous implementation silently returned today's date on any miss, which
+// caused every row from non-Tradovate brokers to lump into the upload date.
+//
+// Supported input formats:
+//   ISO date          2026-04-14
+//   ISO datetime      2026-04-14T10:06:55Z / 2026-04-14 10:06:55
+//   US slash          04/14/2026 / 4/14/2026  (Tradovate convention)
+//   US slash + time   04/14/2026 10:06:55
+//   US dash           04-14-2026
+//   US 2-digit year   4/14/26 → assumed 20YY
+//   Word date         Apr 14, 2026 / April 14, 2026 / 14 Apr 2026
+//                     (falls through to native Date parser)
+function parseDateRobust(str){
+  if(!str) return null;
+  str = String(str).trim();
+  if(!str) return null;
+
+  // ISO: YYYY-MM-DD or YYYY/MM/DD (anchored at start; optional time follows).
+  let m = str.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+  if(m){
+    const mo = parseInt(m[2],10), d = parseInt(m[3],10);
+    if(mo>=1 && mo<=12 && d>=1 && d<=31){
+      return `${m[1]}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    }
+  }
+
+  // US slash/dash, 4-digit year: MM/DD/YYYY (Tradovate happy path).
+  m = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if(m){
+    const mo = parseInt(m[1],10), d = parseInt(m[2],10);
+    if(mo>=1 && mo<=12 && d>=1 && d<=31){
+      return `${m[3]}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    }
+  }
+
+  // US slash/dash, 2-digit year: M/D/YY → 20YY.
+  m = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2})\b/);
+  if(m){
+    const mo = parseInt(m[1],10), d = parseInt(m[2],10), y = 2000 + parseInt(m[3],10);
+    if(mo>=1 && mo<=12 && d>=1 && d<=31){
+      return `${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    }
+  }
+
+  // Last resort — native Date parser. Handles 'Apr 14, 2026', RFC 2822, etc.
+  const native = new Date(str);
+  if(!isNaN(native.getTime())) return _localDate(native);
+
+  return null;
 }
 
+// CSV date column candidates — case-insensitive header matching, first match
+// wins. Ordered by authority: a dedicated 'Date' / 'Trade Date' column is
+// preferred over the 'Fill Time' timestamp which can be a partial-fill row.
+const _CSV_DATE_HEADERS = [
+  'Trade Date', 'Date', 'Closed At', 'Close Date', 'Order Date',
+  'Fill Time', 'Filled Time', 'Order Time', 'Entry Time',
+  'Date/Time', 'DateTime', 'Time'
+];
+function _findDateCol(headers){
+  for(const name of _CSV_DATE_HEADERS){
+    const i = headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
+    if(i >= 0) return i;
+  }
+  return -1;
+}
+
+// Parse a Tradovate-style filled-orders CSV into paired trades.
+//
+// Required columns (case-insensitive):  B/S, Product, Status
+// Date column — first matching header from _CSV_DATE_HEADERS wins:
+//   'Trade Date', 'Date', 'Closed At', 'Close Date', 'Order Date',
+//   'Fill Time', 'Filled Time', 'Order Time', 'Entry Time',
+//   'Date/Time', 'DateTime', 'Time'
+// Date value formats accepted by parseDateRobust:
+//   ISO            2026-04-14 or 2026-04-14T10:06:55
+//   US slash       04/14/2026 / 4/14/2026 (Tradovate)
+//   US dash        04-14-2026
+//   US 2-digit yr  4/14/26 → 2026
+//   Word date      Apr 14, 2026
+//
+// Per-row date resolution is a fallback chain:
+//   1. The chosen date column (first match from _CSV_DATE_HEADERS)
+//   2. The 'Fill Time' column (if different from #1 and still present)
+//   3. Local today + dateFallback=true (counted for a user-visible toast)
 function parseTradovateCsv(text){
   const lines=text.trim().split('\n').filter(l=>l.trim());
   if(lines.length<2){showAiError('CSV is empty or has no data rows.');return;}
@@ -15291,7 +15372,10 @@ function parseTradovateCsv(text){
   const idx=k=>headers.findIndex(h=>h.toLowerCase()===k.toLowerCase());
   const iBS=idx('B/S'), iProduct=idx('Product'), iStatus=idx('Status');
   const iFillTime=idx('Fill Time'), iAvgFill=idx('Avg Fill Price');
-  const iFilledQty=idx('Filled Qty'), iAccount=idx('Account'), iDate=idx('Date');
+  const iFilledQty=idx('Filled Qty'), iAccount=idx('Account');
+  // Use the broader date-column resolver so non-Tradovate brokers (Rithmic,
+  // NinjaTrader, ProjectX, Tradesea) with differently-named headers still work.
+  const iDate = _findDateCol(headers);
 
   if(iBS<0||iProduct<0||iStatus<0){
     showAiError('Could not find required columns (B/S, Product, Status).\nMake sure this is a Tradovate Orders export.');return;
@@ -15309,9 +15393,18 @@ function parseTradovateCsv(text){
     const avgFill=parseFloat((cols[iAvgFill]||'').replace(/[",]/g,''))||0;
     const filledQty=parseFloat((cols[iFilledQty]||'').replace(/[",]/g,''))||0;
     const account=(cols[iAccount]||'').trim();
-    const date=parseDate(iDate>=0?cols[iDate]:fillTime);
+    // 3-step date fallback chain (see header doc block).
+    let date = iDate >= 0 ? parseDateRobust(cols[iDate]) : null;
+    if(!date && iFillTime >= 0 && iFillTime !== iDate){
+      date = parseDateRobust(cols[iFillTime]);
+    }
+    let dateFallback = false;
+    if(!date){
+      date = _localDate(new Date());
+      dateFallback = true;
+    }
     if(avgFill&&filledQty&&product){
-      filled.push({bs,product,avgFill,filledQty,fillTime,account,date});
+      filled.push({bs,product,avgFill,filledQty,fillTime,account,date,dateFallback});
     }
   }
 
@@ -15351,7 +15444,9 @@ function parseTradovateCsv(text){
         const pnl=direction==='long'?(exitF.avgFill-entryF.avgFill)*qty*ptVal:(entryF.avgFill-exitF.avgFill)*qty*ptVal;
         csvParsedTrades.push({
           sym,direction,entry:entryF.avgFill,exit:exitF.avgFill,
-          qty,date:entryF.date,market:'Futures',account:entryF.account,pnl,
+          qty,date:entryF.date,
+          dateFallback:!!entryF.dateFallback,  // surface to the parse-end toast
+          market:'Futures',account:entryF.account,pnl,
           notes:'Imported from Tradovate CSV'
         });
         pending.shift();
@@ -15365,6 +15460,15 @@ function parseTradovateCsv(text){
 
   if(!csvParsedTrades.length){
     showAiError('Could not pair any complete trades.\nMake sure you have both entry and exit orders in the CSV.');return;
+  }
+
+  // Surface any trades that fell back to today because their date column was
+  // missing/unparseable. Fires once per import, before the user sees the
+  // enrichment UI — so they can choose to re-export or proceed knowingly.
+  const _dateFallbackCount = csvParsedTrades.filter(t => t.dateFallback).length;
+  if(_dateFallbackCount > 0 && typeof toast === 'function'){
+    toast(_dateFallbackCount + ' trade' + (_dateFallbackCount===1?'':'s') +
+          ' had no parseable date and were logged to today.');
   }
 
   // Show result panel
