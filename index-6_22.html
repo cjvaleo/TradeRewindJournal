@@ -8543,132 +8543,302 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
     </div><!-- /lg-card -->
   </div><!-- /mode-ai -->
 </div>
-<!-- CAL EDIT MODAL -->
-<div id="cal-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9990;align-items:center;justify-content:center">
-  <div style="background:#0a0520;border:1px solid rgba(0,180,255,.35);border-radius:14px;padding:26px 30px;max-width:680px;width:95%;max-height:92vh;overflow-y:auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div style="font-size:15px;letter-spacing:2px;color:var(--n-text-2)">Edit Trade</div>
-      <button onclick="closeCalEdit()" style="background:none;border:none;color:var(--n-text-2);font-size:18px;cursor:pointer;line-height:1">✕</button>
+<!-- CAL EDIT MODAL — Visual Redesign Chunk 3
+     Mirrors Log Trade's 4-section flow (Setup / Execution / Analysis /
+     Reflection) compacted ~15% for modal context. Reuses .rw-* design
+     tokens with .cem-modal scoping for compact overrides. Footer adds
+     a rose Delete left + neutral Cancel + sage Save Changes right.
+
+     Preserved IDs (saveCalEdit reads these): cem-sym, cem-mkt, cem-date,
+       cem-entry, cem-exit, cem-stop, cem-qty, cem-notes, cem-grade (now
+       hidden, 0-based GRADES idx), cem-emotion (hidden 1-5), cem-conf
+       (hidden 1-5), cem-session (hidden), cem-img-preview, cem-img-input,
+       cem-sym-dd, cem-long, cem-short.
+     New IDs:
+       cem-accounts (was missing — silently wiped on edit before this)
+       cem-pnl (manual override surface, parallels lg-pnl)
+       cem-rr (hidden R)  cem-r-chip  cem-r-helper
+       cem-account-type (hidden) + cem-acct-chips
+       cem-tv-link  cem-tv-ok  cem-tv-preview  cem-tv-preview-wrap
+       cem-side-chips  cem-grade-chips  cem-emotion-chips  cem-conf-chips
+       cem-session-chips
+       cem-grade-display  cem-emotion-display  cem-conf-display
+       cem-h-sym  cem-h-time  (eyebrow context line) -->
+<div id="cal-edit-modal" class="cem-backdrop" style="display:none"
+     onclick="if(event.target===this)closeCalEdit()">
+  <div class="cem-card" onclick="event.stopPropagation()">
+
+    <!-- HEADER -->
+    <div class="cem-header">
+      <div>
+        <div class="cem-eyebrow">EDIT &middot; <span id="cem-h-sym">&mdash;</span> &middot; <span id="cem-h-time">&mdash;</span></div>
+        <div class="cem-title">Edit Trade</div>
+      </div>
+      <button type="button" class="cem-close" onclick="closeCalEdit()" aria-label="Close">&times;</button>
     </div>
 
-    <!-- Long/Short -->
-    <div class="dir-tog" style="margin-bottom:16px">
-      <button class="dir-b long" id="cem-long" onclick="cemSetType('long')" style="font-size:15px;padding:10px 20px">Long</button>
-      <button class="dir-b short" id="cem-short" onclick="cemSetType('short')" style="font-size:15px;padding:10px 20px">Short</button>
+    <div class="cem-body">
+
+      <!-- ============ 01 SETUP — what + where ============ -->
+      <div class="rw-section cem-section">
+        <div class="rw-section-h">
+          <span class="rw-mono-num">01</span>
+          <span class="rw-section-name">Setup</span>
+          <span class="rw-mono-sub">&mdash; what + where</span>
+          <span class="rw-hr-trail"></span>
+        </div>
+
+        <!-- Row 1 — Side + Account Type -->
+        <div class="rw-grid rw-grid-side-acct">
+          <div class="rw-field">
+            <div class="rw-field-l">Side</div>
+            <div class="rw-chip-row rw-chip-row-side" id="cem-side-chips">
+              <button type="button" class="rw-chip rw-chip-side" data-tier="sage" data-side="long"  id="cem-long"  onclick="cemSetType('long')">
+                <span class="rw-chip-arrow">&#x2197;</span>Long
+              </button>
+              <button type="button" class="rw-chip rw-chip-side" data-tier="rose" data-side="short" id="cem-short" onclick="cemSetType('short')">
+                <span class="rw-chip-arrow">&#x2198;</span>Short
+              </button>
+            </div>
+          </div>
+          <div class="rw-field">
+            <div class="rw-field-l">Account Type <span class="rw-mod-opt">optional</span></div>
+            <div class="rw-chip-row" id="cem-acct-chips">
+              <button type="button" class="rw-chip rw-chip-acct" data-tier="muted" data-acct="paper"  onclick="cemSetAccountType('paper')"><span class="rw-acct-dot" style="background:rgba(255,255,255,0.35)"></span>Paper</button>
+              <button type="button" class="rw-chip rw-chip-acct" data-tier="gold"  data-acct="eval"   onclick="cemSetAccountType('eval')"><span class="rw-acct-dot" style="background:var(--n-gold,#f5d77c)"></span>Eval</button>
+              <button type="button" class="rw-chip rw-chip-acct" data-tier="sage"  data-acct="funded" onclick="cemSetAccountType('funded')"><span class="rw-acct-dot" style="background:var(--n-profit)"></span>Funded</button>
+              <button type="button" class="rw-chip rw-chip-acct" data-tier="cool"  data-acct="live"   onclick="cemSetAccountType('live')"><span class="rw-acct-dot" style="background:var(--n-accent-cool,#6ea8ff)"></span>Live</button>
+            </div>
+            <input type="hidden" id="cem-account-type" value=""/>
+          </div>
+        </div>
+
+        <!-- Row 2 — Symbol + Market -->
+        <div class="rw-grid rw-grid-sym-mkt">
+          <div class="rw-field" style="position:relative">
+            <div class="rw-field-l">Symbol</div>
+            <input type="text" id="cem-sym" class="rw-input rw-input-symbol" placeholder="Type to search&hellip;" autocomplete="off"
+              oninput="cemFilterSym();cemCalcLive()" onfocus="cemFilterSym()" onkeydown="cemSymNav(event)"/>
+            <div id="cem-sym-dd" class="cem-sym-dd" style="display:none"></div>
+          </div>
+          <div class="rw-field">
+            <div class="rw-field-l">Market</div>
+            <!-- Compact: select kept (no auto-detect like Log Trade's locked pill) so
+                 the user can correct it. Styled to read as a flat input. -->
+            <select id="cem-mkt" class="rw-input cem-mkt-select" onchange="cemCalcLive()">
+              <option>Futures</option>
+              <option>Stocks</option>
+              <option>Crypto</option>
+              <option>Options</option>
+              <option>Forex</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 3 — Date + Session -->
+        <div class="rw-grid rw-grid-date-sess">
+          <div class="rw-field">
+            <div class="rw-field-l">Date</div>
+            <input type="date" id="cem-date" class="rw-input"/>
+          </div>
+          <div class="rw-field">
+            <div class="rw-field-l">Session</div>
+            <div class="rw-chip-row" id="cem-session-chips">
+              <button type="button" class="rw-chip cem-sess-chip" data-tier="sage" data-session="Asia"     onclick="cemSetSession('Asia')">Asia</button>
+              <button type="button" class="rw-chip cem-sess-chip" data-tier="sage" data-session="London"   onclick="cemSetSession('London')">London</button>
+              <button type="button" class="rw-chip cem-sess-chip" data-tier="sage" data-session="NY AM"    onclick="cemSetSession('NY AM')">NY AM</button>
+              <button type="button" class="rw-chip cem-sess-chip" data-tier="sage" data-session="NY Lunch" onclick="cemSetSession('NY Lunch')">Lunch</button>
+              <button type="button" class="rw-chip cem-sess-chip" data-tier="sage" data-session="NY PM"    onclick="cemSetSession('NY PM')">NY PM</button>
+            </div>
+            <input type="hidden" id="cem-session" value=""/>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 02 EXECUTION — numbers ============ -->
+      <div class="rw-section cem-section">
+        <div class="rw-section-h">
+          <span class="rw-mono-num">02</span>
+          <span class="rw-section-name">Execution</span>
+          <span class="rw-mono-sub">&mdash; numbers</span>
+          <span class="rw-hr-trail"></span>
+        </div>
+
+        <div class="rw-grid rw-grid-triple">
+          <div class="rw-field">
+            <div class="rw-field-l">Entry</div>
+            <input class="rw-input rw-numeric" id="cem-entry" type="number" step="any" placeholder="0.00" oninput="cemCalcLive()"/>
+          </div>
+          <div class="rw-field">
+            <div class="rw-field-l">Exit</div>
+            <input class="rw-input rw-numeric" id="cem-exit" type="number" step="any" placeholder="0.00" oninput="cemCalcLive()"/>
+          </div>
+          <div class="rw-field">
+            <div class="rw-field-l">Stop <span class="rw-mod-opt">optional</span></div>
+            <input class="rw-input rw-numeric" id="cem-stop" type="number" step="any" placeholder="points" oninput="cemCalcLive()"/>
+          </div>
+        </div>
+
+        <div class="rw-grid rw-grid-exec-bottom">
+          <div class="rw-field">
+            <div class="rw-field-l">Contracts</div>
+            <input class="rw-input rw-numeric" id="cem-qty" type="number" step="any" min="1" value="1" oninput="cemCalcLive()"/>
+          </div>
+          <div class="rw-field">
+            <div class="rw-field-l"># of Accounts</div>
+            <input class="rw-input rw-numeric" id="cem-accounts" type="number" min="1" value="1" oninput="cemCalcLive()"/>
+          </div>
+          <div class="rw-field">
+            <div class="rw-field-l rw-field-l-flex">
+              <span>P&amp;L $</span>
+              <span class="rw-mod-auto" id="cem-pnl-hint">auto</span>
+              <span class="rw-r-chip" id="cem-r-chip" style="display:none">2.3R</span>
+            </div>
+            <input class="rw-input rw-numeric rw-input-pnl" id="cem-pnl" type="number" step="any" placeholder="auto-calc" oninput="cemOnPnlInput()"/>
+          </div>
+        </div>
+
+        <div class="rw-r-hint" id="cem-r-helper">
+          <span><i>+ Add stop to calculate R multiple</i></span>
+        </div>
+
+        <!-- Hidden compat target — cemCalcLive writes here. -->
+        <input type="hidden" id="cem-rr" value=""/>
+      </div>
+
+      <!-- ============ 03 ANALYSIS — why ============ -->
+      <div class="rw-section cem-section">
+        <div class="rw-section-h">
+          <span class="rw-mono-num">03</span>
+          <span class="rw-section-name">Analysis</span>
+          <span class="rw-mono-sub">&mdash; why</span>
+          <span class="rw-hr-trail"></span>
+        </div>
+
+        <div class="rw-field">
+          <div class="rw-field-l">Chart evidence</div>
+
+          <!-- Screenshot dropzone — preserves cem-img-input + cem-img-preview IDs
+               so cemHandleImgs / cemRenderImgPreview keep working unchanged. -->
+          <div id="cem-img-drop-zone" class="rw-dropzone"
+            onclick="document.getElementById('cem-img-input').click()">
+            <input type="file" id="cem-img-input" accept="image/*" multiple style="display:none" onchange="cemHandleImgs(this.files)"/>
+            <svg class="rw-dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
+            <div class="rw-dz-h">Drop screenshot</div>
+            <div class="rw-dz-sub">or click to browse</div>
+          </div>
+          <div id="cem-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+
+          <!-- TradingView link (Chunk 2.5 — editable in modal now) -->
+          <div class="rw-tv-wrap" style="margin-top:10px">
+            <svg class="rw-tv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <polyline points="3,17 9,11 13,15 21,7"/>
+              <polyline points="14,7 21,7 21,14"/>
+            </svg>
+            <input type="url" id="cem-tv-link" class="rw-tv-input" placeholder="Paste TradingView link&hellip;" oninput="cemOnTVLinkInput()" autocomplete="off"/>
+            <span class="rw-tv-ok" id="cem-tv-ok" style="display:none">&#10003; Linked</span>
+          </div>
+          <div class="rw-tv-preview-wrap" id="cem-tv-preview-wrap" style="display:none">
+            <img id="cem-tv-preview" class="rw-tv-preview" alt="TradingView snapshot" onerror="cemOnTVPreviewError(this)" onclick="if(this.src){openScreenshotLightbox(this.src);}"/>
+            <span class="rw-tv-preview-badge">TV Snapshot</span>
+          </div>
+          <div class="rw-helper">Paste your &ldquo;Copy link&rdquo; from TradingView&rsquo;s snapshot menu.</div>
+        </div>
+      </div>
+
+      <!-- ============ 04 REFLECTION — how it felt ============ -->
+      <div class="rw-section cem-section">
+        <div class="rw-section-h">
+          <span class="rw-mono-num">04</span>
+          <span class="rw-section-name">Reflection</span>
+          <span class="rw-mono-sub">&mdash; how it felt</span>
+          <span class="rw-hr-trail"></span>
+        </div>
+
+        <!-- Setup Grade — 6 chips F D C B A A+ -->
+        <div class="rw-field">
+          <div class="rw-field-l rw-field-l-display">
+            <span>Setup Grade</span>
+            <span class="rw-display-val" id="cem-grade-display" style="color:#e0e0e0">B</span>
+          </div>
+          <div class="rw-chip-row rw-chip-row-grade" id="cem-grade-chips">
+            <button type="button" class="rw-chip rw-chip-grade"        data-tier="rose"  data-grade="1" onclick="cemSetGrade(1)">F</button>
+            <button type="button" class="rw-chip rw-chip-grade"        data-tier="rose"  data-grade="2" onclick="cemSetGrade(2)">D</button>
+            <button type="button" class="rw-chip rw-chip-grade"        data-tier="muted" data-grade="3" onclick="cemSetGrade(3)">C</button>
+            <button type="button" class="rw-chip rw-chip-grade active" data-tier="muted" data-grade="4" onclick="cemSetGrade(4)">B</button>
+            <button type="button" class="rw-chip rw-chip-grade"        data-tier="sage"  data-grade="5" onclick="cemSetGrade(5)">A</button>
+            <button type="button" class="rw-chip rw-chip-grade"        data-tier="sage"  data-grade="6" onclick="cemSetGrade(6)">A+</button>
+          </div>
+          <!-- 0-based GRADES index, saveCalEdit reads this. -->
+          <input type="hidden" id="cem-grade" value="3"/>
+        </div>
+
+        <!-- Emotion — kept existing scale direction (1=worst → 5=best) for back-compat -->
+        <div class="rw-field">
+          <div class="rw-field-l rw-field-l-display">
+            <span>Emotion</span>
+            <span class="rw-display-val" id="cem-emotion-display">Neutral</span>
+          </div>
+          <div class="rw-chip-row" id="cem-emotion-chips">
+            <button type="button" class="rw-chip"        data-tier="rose"  data-emotion="1" onclick="cemSetEmotion(1)">1&middot;Tilt</button>
+            <button type="button" class="rw-chip"        data-tier="rose"  data-emotion="2" onclick="cemSetEmotion(2)">2</button>
+            <button type="button" class="rw-chip active" data-tier="muted" data-emotion="3" onclick="cemSetEmotion(3)">3&middot;Neutral</button>
+            <button type="button" class="rw-chip"        data-tier="sage"  data-emotion="4" onclick="cemSetEmotion(4)">4</button>
+            <button type="button" class="rw-chip"        data-tier="sage"  data-emotion="5" onclick="cemSetEmotion(5)">5&middot;Zone</button>
+          </div>
+          <input type="hidden" id="cem-emotion" value="3"/>
+        </div>
+
+        <!-- Confidence — 5 chips -->
+        <div class="rw-field">
+          <div class="rw-field-l rw-field-l-display">
+            <span>Confidence</span>
+            <span class="rw-display-val" id="cem-conf-display">3<span class="rw-display-suf"> / 5</span></span>
+          </div>
+          <div class="rw-chip-row" id="cem-conf-chips">
+            <button type="button" class="rw-chip"        data-tier="rose"  data-conf="1" onclick="cemSetConf(1)">1&middot;None</button>
+            <button type="button" class="rw-chip"        data-tier="cool"  data-conf="2" onclick="cemSetConf(2)">2</button>
+            <button type="button" class="rw-chip active" data-tier="cool"  data-conf="3" onclick="cemSetConf(3)">3</button>
+            <button type="button" class="rw-chip"        data-tier="cool"  data-conf="4" onclick="cemSetConf(4)">4</button>
+            <button type="button" class="rw-chip"        data-tier="sage"  data-conf="5" onclick="cemSetConf(5)">5&middot;Max</button>
+          </div>
+          <input type="hidden" id="cem-conf" value="3"/>
+        </div>
+
+        <!-- Notes -->
+        <div class="rw-field">
+          <div class="rw-field-l">Notes</div>
+          <textarea id="cem-notes" class="rw-input rw-textarea" placeholder="Setup, what worked, what didn&rsquo;t, lessons&hellip;"></textarea>
+        </div>
+      </div>
     </div>
 
-    <!-- Trade info grid -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-      <div class="f-row"><label>Market</label><select id="cem-mkt" style="padding:9px 12px;font-size:14px"><option>Futures</option><option>Stocks</option><option>Crypto</option><option>Options</option><option>Forex</option></select></div>
-      <div class="f-row" style="position:relative">
-        <label>Symbol</label>
-        <input type="text" id="cem-sym" placeholder="Type to search…" autocomplete="off"
-          oninput="cemFilterSym()" onfocus="cemFilterSym()" onkeydown="cemSymNav(event)"
-          style="padding:9px 12px;font-size:14px;border-radius:6px"/>
-        <div id="cem-sym-dd" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0a0520;border:1px solid rgba(0,180,255,.35);border-top:none;border-radius:0 0 7px 7px;max-height:180px;overflow-y:auto;z-index:9999;margin-top:-1px"></div>
-      </div>
-      <div class="f-row"><label>Date</label><input type="date" id="cem-date" style="padding:9px 12px;font-size:14px"/></div>
-      <div class="f-row"><label>Contracts / Qty</label><input type="number" id="cem-qty" step="1" min="1" style="padding:9px 12px;font-size:14px"/></div>
-      <div class="f-row"><label>Entry Price</label><input type="number" id="cem-entry" step="0.01" style="padding:9px 12px;font-size:14px"/></div>
-      <div class="f-row"><label>Exit Price</label><input type="number" id="cem-exit" step="0.01" style="padding:9px 12px;font-size:14px"/></div>
-      <div class="f-row" style="grid-column:1/-1"><label>Stop Loss Points <span style="font-size:15px;color:var(--n-text-2)">(optional)</span></label><input type="number" id="cem-stop" step="0.01" placeholder="e.g. 4" style="padding:9px 12px;font-size:14px"/></div>
-    </div>
-
-    <!-- Session -->
-    <div style="margin-bottom:14px">
-      <label style="display:block;font-size:15px;color:#fff;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Session</label>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-        <div onclick="cemSelectSession(this,'Asia','#3b82f6')" class="cem-sess" style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:6px;border:1px solid rgba(59,130,246,.35);background:rgba(0,0,0,.3);cursor:pointer">
-          <div style="width:6px;height:6px;border-radius:50%;background:#3b82f6;flex-shrink:0"></div>
-          <div><div style="font-size:14px;letter-spacing:1px;color:#3b82f6">ASIA</div><div style="font-size:6px;color:#fff;font-weight:700">8PM–12AM ET</div></div>
-        </div>
-        <div onclick="cemSelectSession(this,'London','#ef4444')" class="cem-sess" style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:6px;border:1px solid rgba(239,68,68,.35);background:rgba(0,0,0,.3);cursor:pointer">
-          <div style="width:6px;height:6px;border-radius:50%;background:#ef4444;flex-shrink:0"></div>
-          <div><div style="font-size:14px;letter-spacing:1px;color:#ef4444">LONDON</div><div style="font-size:6px;color:#fff;font-weight:700">2AM–5AM ET</div></div>
-        </div>
-        <div onclick="cemSelectSession(this,'NY AM','#10b981')" class="cem-sess" style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:6px;border:1px solid rgba(16,185,129,.35);background:rgba(0,0,0,.3);cursor:pointer">
-          <div style="width:6px;height:6px;border-radius:50%;background:#10b981;flex-shrink:0"></div>
-          <div><div style="font-size:14px;letter-spacing:1px;color:#10b981">NY AM</div><div style="font-size:6px;color:#fff;font-weight:700">9:30–11AM ET</div></div>
-        </div>
-        <div onclick="cemSelectSession(this,'NY Lunch','#eab308')" class="cem-sess" style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:6px;border:1px solid rgba(234,179,8,.35);background:rgba(0,0,0,.3);cursor:pointer">
-          <div style="width:6px;height:6px;border-radius:50%;background:#eab308;flex-shrink:0"></div>
-          <div><div style="font-size:14px;letter-spacing:1px;color:#eab308">NY LUNCH</div><div style="font-size:6px;color:#fff;font-weight:700">12–1PM ET</div></div>
-        </div>
-        <div onclick="cemSelectSession(this,'NY PM','#a855f7')" class="cem-sess" style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:6px;border:1px solid rgba(168,85,247,.35);background:rgba(0,0,0,.3);cursor:pointer">
-          <div style="width:6px;height:6px;border-radius:50%;background:#a855f7;flex-shrink:0"></div>
-          <div><div style="font-size:14px;letter-spacing:1px;color:#a855f7">NY PM</div><div style="font-size:6px;color:#fff;font-weight:700">1:30–4PM ET</div></div>
-        </div>
-        <div onclick="cemSelectSession(this,'Other','rgba(0,180,255,.6)')" class="cem-sess" style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.3);cursor:pointer">
-          <div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);flex-shrink:0"></div>
-          <div><div style="font-size:14px;letter-spacing:1px;color:var(--n-text-2)">OTHER</div><div style="font-size:6px;color:#fff;font-weight:700">Custom</div></div>
-        </div>
-      </div>
-      <input type="hidden" id="cem-session" value=""/>
-    </div>
-
-    <!-- Notes -->
-    <div class="f-row" style="margin-bottom:14px"><label>Notes / Setup</label><textarea id="cem-notes" style="min-height:70px;padding:9px 12px;font-size:14px;resize:vertical"></textarea></div>
-
-    <!-- Grade -->
-    <div style="margin-bottom:14px">
-      <label style="display:block;font-size:15px;color:#fff;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Trade Grade</label>
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-        <span id="cem-grade-lbl" style="font-size:20px;letter-spacing:2px;color:#00ffe7">B</span>
-        <span id="cem-grade-desc" style="font-size:14px;color:#fff;font-weight:700;align-self:center">Good trade</span>
-      </div>
-      <div style="margin:0 -2px"><input type="range" id="cem-grade" min="0" max="5" value="3" step="1" oninput="cemUpdateGrade(this.value)" style="width:calc(100% + 4px);-webkit-appearance:none;height:4px;border-radius:2px;outline:none;cursor:pointer;background:linear-gradient(90deg,#ff00aa,#bf00ff,#00b4ff,#00ffe7,#00ff88);display:block"/></div>
-      <div style="display:flex;justify-content:space-between;margin-top:6px">
-        <span style="font-size:15px;font-weight:900;color:#ff00aa">F</span>
-        <span style="font-size:15px;font-weight:900;color:#bf00ff">D</span>
-        <span style="font-size:15px;font-weight:900;color:#00b4ff">C</span>
-        <span style="font-size:15px;font-weight:900;color:#00ffe7">B</span>
-        <span style="font-size:15px;font-weight:900;color:#00ff88">A</span>
-        <span style="font-size:15px;font-weight:900;color:#00ff88">A+</span>
+    <!-- FOOTER — Delete (rose) left · Cancel + Save (sage) right -->
+    <div class="cem-footer">
+      <button type="button" class="cem-delete" onclick="cemConfirmDeleteShow()">
+        <span class="cem-delete-icon">&#9003;</span>
+        <span>Delete trade</span>
+      </button>
+      <div class="cem-footer-right">
+        <button type="button" class="cem-cancel" onclick="closeCalEdit()">Cancel</button>
+        <button type="button" class="cem-save"   onclick="saveCalEdit()">Save Changes</button>
       </div>
     </div>
+  </div>
 
-    <!-- Emotion -->
-    <div style="margin-bottom:14px">
-      <label style="display:block;font-size:15px;color:#fff;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Emotion Score</label>
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-        <span id="cem-emotion-lbl" style="font-size:20px;letter-spacing:2px;color:#00b4ff">3</span>
-        <span id="cem-emotion-desc" style="font-size:14px;color:#fff;font-weight:700;align-self:center">Moderately emotional</span>
+  <!-- DELETE CONFIRM MODAL — nested inside Edit Modal backdrop for z-index safety.
+       Click backdrop to dismiss; sage Cancel + rose Delete actions. -->
+  <div id="cem-delete-confirm" class="cem-del-backdrop" style="display:none"
+       onclick="if(event.target===this)cemCancelDelete()">
+    <div class="cem-del-card" onclick="event.stopPropagation()">
+      <div class="cem-del-title">Delete this trade?</div>
+      <div class="cem-del-body">
+        This permanently removes the trade from your journal, history, equity curve, and any shared community posts. <span class="cem-del-hint">This cannot be undone.</span>
       </div>
-      <div style="margin:0 -2px"><input type="range" id="cem-emotion" min="1" max="5" value="3" step="1" oninput="cemUpdateEmotion(this.value)" style="width:calc(100% + 4px);-webkit-appearance:none;height:4px;border-radius:2px;outline:none;cursor:pointer;background:linear-gradient(90deg,#00ff88,#00ffe7,#00b4ff,#bf00ff,#ff00aa);display:block"/></div>
-      <div style="display:flex;justify-content:space-between;margin-top:6px">
-        <span style="font-size:15px;font-weight:700;color:#00ff88">1 · Calm</span>
-        <span style="font-size:15px;font-weight:700;color:#00b4ff">3</span>
-        <span style="font-size:15px;font-weight:700;color:#ff00aa">5 · Max</span>
+      <div class="cem-del-actions">
+        <button type="button" class="cem-del-cancel" onclick="cemCancelDelete()">Cancel</button>
+        <button type="button" class="cem-del-go"     onclick="cemDoDelete()">Delete forever</button>
       </div>
-    </div>
-
-    <!-- Confidence -->
-    <div style="margin-bottom:20px">
-      <label style="display:block;font-size:15px;color:#fff;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Confidence</label>
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-        <span id="cem-conf-lbl" style="font-size:20px;letter-spacing:2px;color:#00b4ff">3</span>
-        <span id="cem-conf-desc" style="font-size:14px;color:#fff;font-weight:700;align-self:center">Moderate confidence</span>
-      </div>
-      <div style="margin:0 -2px"><input type="range" id="cem-conf" min="1" max="5" value="3" step="1" oninput="cemUpdateConf(this.value)" style="width:calc(100% + 4px);-webkit-appearance:none;height:4px;border-radius:2px;outline:none;cursor:pointer;background:linear-gradient(90deg,#ff00aa,#bf00ff,#00b4ff,#00ffe7,#00ff88);display:block"/></div>
-      <div style="display:flex;justify-content:space-between;margin-top:6px">
-        <span style="font-size:15px;font-weight:700;color:#ff00aa">1 · None</span>
-        <span style="font-size:15px;font-weight:700;color:#00b4ff">3</span>
-        <span style="font-size:15px;font-weight:700;color:#00ff88">5 · Max</span>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <!-- Screenshot upload -->
-      <div style="margin-bottom:14px">
-        <label style="display:block;font-size:15px;color:#fff;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Screenshots</label>
-        <div id="cem-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
-        <div onclick="document.getElementById('cem-img-input').click()" style="border:1px dashed rgba(0,180,255,.35);border-radius:8px;padding:12px;text-align:center;cursor:pointer;background:rgba(0,180,255,.03)">
-          <input type="file" id="cem-img-input" accept="image/*" multiple style="display:none" onchange="cemHandleImgs(this.files)"/>
-          <span style="font-size:12px;color:var(--n-text-2);letter-spacing:.5px">+ Tap to add chart screenshots</span>
-        </div>
-      </div>
-      <button onclick="closeCalEdit()" style="padding:11px;border-radius:7px;border:1px solid rgba(255,255,255,.2);background:transparent;color:var(--n-text-2);font-size:15px;letter-spacing:2px;cursor:pointer">Cancel</button>
-      <button onclick="saveCalEdit()" style="padding:11px;border-radius:7px;border:1px solid rgba(0,255,136,.35);background:rgba(0,255,136,.1);color:var(--n-profit);font-size:14px;letter-spacing:2px;cursor:pointer">Save Changes</button>
     </div>
   </div>
 </div>
@@ -14068,45 +14238,249 @@ document.addEventListener('click',function(e){
 });
 
 var _cemId=null, _cemType='long', _cemSession='';
+// Chunk 3 — manual-override flags mirror Log Trade's _pnlManual / _rrManual
+// so cemCalcLive doesn't clobber a user-typed P&L.
+var _cemPnlManual = false;
 
+/* ── Side toggle (chip-aware, Chunk 3) ─────────────────────── */
 function cemSetType(t){
-  _cemType=t;
-  var lb=document.getElementById('cem-long'), sb=document.getElementById('cem-short');
-  if(lb){lb.className=lb.className.replace(' on','');if(t==='long')lb.className+=' on';}
-  if(sb){sb.className=sb.className.replace(' on','');if(t==='short')sb.className+=' on';}
+  _cemType = t;
+  var lb = document.getElementById('cem-long'),  sb = document.getElementById('cem-short');
+  if(lb){ lb.classList.toggle('active', t==='long');  lb.classList.toggle('on', t==='long'); }
+  if(sb){ sb.classList.toggle('active', t==='short'); sb.classList.toggle('on', t==='short'); }
+  _cemPnlManual = false;
+  var hint = document.getElementById('cem-pnl-hint');
+  if(hint){ hint.textContent='auto'; hint.classList.add('hint-auto'); hint.classList.remove('hint-manual'); }
+  if(typeof cemCalcLive==='function') cemCalcLive();
 }
-function cemSelectSession(el,name,color){
-  document.querySelectorAll('.cem-sess').forEach(function(b){b.style.boxShadow='none';});
-  if(_cemSession===name){
-    _cemSession='';
-    document.getElementById('cem-session').value='';
-  } else {
-    _cemSession=name;
-    el.style.boxShadow='0 0 0 2px '+color;
-    document.getElementById('cem-session').value=name;
+
+/* ── Session chip selector (replaces cemSelectSession, Chunk 3) ───── */
+function cemSetSession(name){
+  // Click active again → clear (matches Log Trade pattern).
+  if(_cemSession === name) name = '';
+  _cemSession = name || '';
+  document.getElementById('cem-session').value = _cemSession;
+  document.querySelectorAll('#cem-session-chips .cem-sess-chip').forEach(function(c){
+    c.classList.toggle('active', c.dataset.session === _cemSession);
+  });
+}
+window.cemSetSession = cemSetSession;
+
+/* ── Account Type chip selector (Chunk 3) ─────────────────── */
+function cemSetAccountType(t){
+  var hidden = document.getElementById('cem-account-type');
+  var current = hidden ? hidden.value : '';
+  var next = (current === t) ? '' : (t || ''); // click-again toggles off
+  if(hidden) hidden.value = next;
+  document.querySelectorAll('#cem-acct-chips .rw-chip-acct').forEach(function(c){
+    c.classList.toggle('active', c.dataset.acct === next);
+  });
+}
+window.cemSetAccountType = cemSetAccountType;
+
+/* ── Grade chip selector (replaces cemUpdateGrade, Chunk 3) ──
+   Idx 1–6 → letter F D C B A A+. Writes 0-based idx to #cem-grade
+   hidden so saveCalEdit's existing GRADES[idx].label read still works.
+   Tier coloring matches Log Trade: F/D rose, C/B muted, A/A+ sage. */
+function cemSetGrade(idx){
+  idx = Math.max(1, Math.min(6, parseInt(idx)||4));
+  var IDX_TO_LETTER = {1:'F',2:'D',3:'C',4:'B',5:'A',6:'A+'};
+  var letter = IDX_TO_LETTER[idx];
+  var color = (typeof GRADE_COLORS !== 'undefined' && GRADE_COLORS[letter]) ||
+              (typeof GRADE_COLORS !== 'undefined' && GRADE_COLORS[letter==='A+'?'A':letter]) ||
+              '#e0e0e0';
+  // Chips
+  document.querySelectorAll('#cem-grade-chips .rw-chip-grade').forEach(function(c){
+    c.classList.toggle('active', parseInt(c.dataset.grade||'0') === idx);
+  });
+  // Display badge
+  var disp = document.getElementById('cem-grade-display');
+  if(disp){ disp.textContent = letter; disp.style.color = color; }
+  // Hidden value — 0-based GRADES index. _GRADE_TO_IDX already includes 'A+':5.
+  var hidden = document.getElementById('cem-grade');
+  if(hidden) hidden.value = (typeof _GRADE_TO_IDX !== 'undefined' && _GRADE_TO_IDX[letter] != null)
+    ? _GRADE_TO_IDX[letter] : 3;
+}
+window.cemSetGrade = cemSetGrade;
+
+/* ── Emotion chip selector (Chunk 3) ──
+   Existing scale direction preserved (1=Tilt worst → 5=Zone best) for
+   back-compat — same call as Log Trade's setEmotionDots design choice. */
+function cemSetEmotion(n){
+  var lvl = Math.max(1, Math.min(5, parseInt(n)||3));
+  document.querySelectorAll('#cem-emotion-chips .rw-chip').forEach(function(c){
+    c.classList.toggle('active', parseInt(c.dataset.emotion||'0') === lvl);
+  });
+  var disp = document.getElementById('cem-emotion-display');
+  if(disp){
+    disp.textContent = (typeof EMOTION_LABELS !== 'undefined' && EMOTION_LABELS[lvl]) || '';
+  }
+  var hidden = document.getElementById('cem-emotion');
+  if(hidden) hidden.value = String(lvl);
+}
+window.cemSetEmotion = cemSetEmotion;
+
+/* ── Confidence chip selector (Chunk 3) ─────────────────── */
+function cemSetConf(n){
+  n = Math.max(1, Math.min(5, parseInt(n)||3));
+  document.querySelectorAll('#cem-conf-chips .rw-chip').forEach(function(c){
+    c.classList.toggle('active', parseInt(c.dataset.conf||'0') === n);
+  });
+  var disp = document.getElementById('cem-conf-display');
+  if(disp) disp.innerHTML = n + '<span class="rw-display-suf"> / 5</span>';
+  var hidden = document.getElementById('cem-conf');
+  if(hidden) hidden.value = String(n);
+}
+window.cemSetConf = cemSetConf;
+
+/* ── Legacy shim — keep cemUpdateGrade/Emotion/Conf working in case
+   any other surface or test harness invokes them. Routes through the
+   new chip helpers so a single setter drives the modal state. */
+function cemUpdateGrade(v){ cemSetGrade(parseInt(v)+1); } // old idx was 0-based
+function cemUpdateEmotion(v){ cemSetEmotion(v); }
+function cemUpdateConf(v){ cemSetConf(v); }
+
+/* ── TV link validation + thumbnail preview (Chunk 3) ────── */
+function cemOnTVLinkInput(){
+  var inp = document.getElementById('cem-tv-link');
+  var ok  = document.getElementById('cem-tv-ok');
+  var preview = document.getElementById('cem-tv-preview');
+  var previewWrap = document.getElementById('cem-tv-preview-wrap');
+  if(!inp || !ok) return;
+  var v = (inp.value || '').trim();
+  // Reuse Log Trade regex (global _TV_LINK_RE defined alongside onTVLinkInput).
+  var isValid = !!(v && typeof _TV_LINK_RE !== 'undefined' && _TV_LINK_RE.test(v));
+  ok.style.display = isValid ? 'inline-flex' : 'none';
+  if(preview && previewWrap){
+    var snapUrl = (typeof getTVSnapshotImageUrl === 'function')
+      ? getTVSnapshotImageUrl(v) : null;
+    if(snapUrl){
+      previewWrap.style.display = 'block';
+      preview.style.display = 'block';
+      preview.dataset.fallback = '';
+      preview.src = snapUrl;
+    } else {
+      previewWrap.style.display = 'none';
+      preview.removeAttribute('src');
+    }
   }
 }
-function cemUpdateGrade(v){
-  const g=GRADES[parseInt(v)];
-  const l=document.getElementById('cem-grade-lbl'),d=document.getElementById('cem-grade-desc');
-  if(l){l.textContent=g.label;l.style.color=g.color;}
-  if(d)d.textContent=g.desc;
+window.cemOnTVLinkInput = cemOnTVLinkInput;
+
+function cemOnTVPreviewError(imgEl){
+  if(!imgEl) return;
+  if(imgEl.dataset.fallback === '1') return;
+  imgEl.dataset.fallback = '1';
+  var wrap = document.getElementById('cem-tv-preview-wrap');
+  if(wrap) wrap.style.display = 'none';
+  imgEl.style.display = 'none';
 }
-function cemUpdateEmotion(v){
-  const cols=['#00ff88','#00ffe7','#00b4ff','#bf00ff','#ff00aa'];
-  const descs=['Completely calm','Slightly emotional','Moderately emotional','Quite emotional','Very emotional'];
-  const i=parseInt(v)-1;
-  const l=document.getElementById('cem-emotion-lbl'),d=document.getElementById('cem-emotion-desc');
-  if(l){l.textContent=v;l.style.color=cols[i];}
-  if(d)d.textContent=descs[i]||'';
+window.cemOnTVPreviewError = cemOnTVPreviewError;
+
+/* ── R-multiple chip render (Chunk 3) ──
+   Reads #cem-rr (hidden, auto-written by cemCalcLive when stop is set)
+   and toggles the inline chip next to the P&L label. Cool blue for
+   positive R, rose-tinted for negative. */
+function cemRenderRChip(){
+  var chip = document.getElementById('cem-r-chip');
+  var hint = document.getElementById('cem-r-helper');
+  if(!chip) return;
+  var rrEl = document.getElementById('cem-rr');
+  var stopEl = document.getElementById('cem-stop');
+  var rr = parseFloat(rrEl && rrEl.value);
+  var stop = parseFloat(stopEl && stopEl.value);
+  if(!isNaN(rr) && isFinite(rr) && stop > 0){
+    var sign = rr >= 0 ? '+' : '';
+    chip.textContent = sign + rr.toFixed(1) + 'R';
+    chip.style.display = 'inline-flex';
+    if(rr < 0){
+      chip.style.background = 'rgba(201,95,95,0.12)';
+      chip.style.borderColor = 'rgba(201,95,95,0.36)';
+      chip.style.color = 'var(--n-loss)';
+    } else {
+      chip.style.background = '';
+      chip.style.borderColor = '';
+      chip.style.color = '';
+    }
+    if(hint) hint.style.display = 'none';
+  } else {
+    chip.style.display = 'none';
+    if(hint) hint.style.display = '';
+  }
 }
-function cemUpdateConf(v){
-  const cols=['','#ff00aa','#bf00ff','#00b4ff','#00ffe7','#00ff88'];
-  const descs=['','No confidence','Low confidence','Moderate confidence','Good confidence','Max — A+ setup'];
-  const l=document.getElementById('cem-conf-lbl'),d=document.getElementById('cem-conf-desc');
-  if(l){l.textContent=v;l.style.color=cols[parseInt(v)];}
-  if(d)d.textContent=descs[parseInt(v)]||'';
+window.cemRenderRChip = cemRenderRChip;
+
+/* ── Manual P&L override (Chunk 3) ──
+   Mirrors onPnlInput from Log Trade. When the user types in #cem-pnl,
+   we flip _cemPnlManual so cemCalcLive stops auto-filling it. */
+function cemOnPnlInput(){
+  _cemPnlManual = true;
+  var hint = document.getElementById('cem-pnl-hint');
+  if(hint){ hint.textContent='manual'; hint.classList.remove('hint-auto'); hint.classList.add('hint-manual'); }
+  // Color the input by sign
+  var el = document.getElementById('cem-pnl');
+  if(el){
+    el.classList.remove('pnl-positive','pnl-negative','pnl-zero');
+    var n = parseFloat(el.value);
+    if(el.value === '' || el.value == null){}
+    else if(isNaN(n) || n === 0) el.classList.add('pnl-zero');
+    else el.classList.add(n>0 ? 'pnl-positive' : 'pnl-negative');
+  }
+  // Recompute R from the manual P&L so the chip reflects the override.
+  cemCalcLive();
 }
+window.cemOnPnlInput = cemOnPnlInput;
+
+/* ── Live calc (Chunk 3) ──
+   Mirrors calcLivePnl from Log Trade. Reads entry/exit/stop/qty/accounts
+   and writes #cem-pnl (unless _cemPnlManual) + #cem-rr, then refreshes
+   the R-chip. PTS lookup respects the symbol so the math matches the
+   Log Trade auto-fill behavior. */
+function cemCalcLive(){
+  var entry = parseFloat((document.getElementById('cem-entry')||{}).value);
+  var exit  = parseFloat((document.getElementById('cem-exit')||{}).value);
+  var stop  = parseFloat((document.getElementById('cem-stop')||{}).value);
+  var qty   = parseFloat((document.getElementById('cem-qty')||{}).value) || 1;
+  var accts = parseFloat((document.getElementById('cem-accounts')||{}).value) || 1;
+  var totalQty = qty * accts;
+  var sym = ((document.getElementById('cem-sym')||{}).value || '').trim().toUpperCase();
+  var ptVal = (typeof PTS !== 'undefined' && PTS[sym]) ? PTS[sym] : 1;
+  var haveCore = !isNaN(entry) && !isNaN(exit) && entry !== 0;
+
+  var pnl = null, risk = null, rr = null;
+  if(haveCore){
+    pnl = (_cemType==='long' ? exit-entry : entry-exit) * totalQty * ptVal;
+    if(!isNaN(stop) && stop > 0){
+      risk = stop * totalQty * ptVal;
+      rr = risk > 0 ? Math.abs(pnl)/risk : null;
+    }
+  }
+
+  var pnlInput = document.getElementById('cem-pnl');
+  if(pnlInput && !_cemPnlManual){
+    pnlInput.value = pnl != null ? (Math.round(pnl*100)/100) : '';
+    pnlInput.classList.remove('pnl-positive','pnl-negative','pnl-zero');
+    if(pnl != null){
+      if(pnl === 0) pnlInput.classList.add('pnl-zero');
+      else pnlInput.classList.add(pnl>0 ? 'pnl-positive' : 'pnl-negative');
+    }
+  }
+
+  var rrInput = document.getElementById('cem-rr');
+  if(rrInput){
+    if(haveCore && risk != null){
+      // Honor a manual P&L override when computing R so the chip matches.
+      var userPnl = parseFloat(pnlInput && pnlInput.value);
+      var refPnl = !isNaN(userPnl) ? userPnl : pnl;
+      var r = risk > 0 ? refPnl/risk : null;
+      rrInput.value = r != null ? (Math.round(r*10)/10) : '';
+    } else {
+      rrInput.value = '';
+    }
+  }
+  cemRenderRChip();
+}
+window.cemCalcLive = cemCalcLive;
 
 var _cemImages = [];
 // Chunk 2.5 — read-only TV snapshot link captured on modal open so
@@ -14162,10 +14536,76 @@ function cemRenderImgPreview(){
   el.innerHTML = html;
 }
 
+/* ── Delete trade flow (Chunk 3) ──
+   Three-step pattern: Show confirm → user confirms → do delete.
+   Implementation inline (not calling deleteTrade(id) since that uses
+   confirm() native dialog — we already have our own styled modal). */
+function cemConfirmDeleteShow(){
+  if(_cemId == null) return; // nothing to delete
+  var modal = document.getElementById('cem-delete-confirm');
+  if(modal) modal.style.display = 'flex';
+}
+window.cemConfirmDeleteShow = cemConfirmDeleteShow;
+
+function cemCancelDelete(){
+  var modal = document.getElementById('cem-delete-confirm');
+  if(modal) modal.style.display = 'none';
+}
+window.cemCancelDelete = cemCancelDelete;
+
+async function cemDoDelete(){
+  // CAPTURE id BEFORE closing — closeCalEdit() nulls _cemId.
+  var tradeId = _cemId;
+  if(tradeId == null){ cemCancelDelete(); return; }
+
+  // Optimistically close both modals — the Supabase round-trip runs in
+  // the background. If it fails we toast + re-add the trade locally,
+  // matching the existing deleteTrade() resilience pattern.
+  cemCancelDelete();
+  closeCalEdit();
+
+  var snapshot = trades.find(function(t){ return t.id === tradeId; });
+  // Strip from local in-memory + localStorage immediately for snappy UI.
+  trades = trades.filter(function(t){ return t.id !== tradeId; });
+  try { localStorage.setItem(journalKey(activeJournal), JSON.stringify(trades)); } catch(e){}
+  try { renderAll(); } catch(e){}
+  try { if(typeof _comm !== 'undefined' && _comm && typeof renderFeedPosts==='function') renderFeedPosts(_comm); } catch(e){}
+
+  // Persist to Supabase + cascade community posts.
+  if(currentUser && _sb){
+    try {
+      var r = await _sb.from('trades').delete()
+        .eq('id', String(tradeId)).eq('user_id', currentUser.id);
+      if(r.error) throw r.error;
+    } catch(e){
+      console.error('[cem delete]', e);
+      // Restore the snapshot locally so the user doesn't lose the row.
+      if(snapshot){
+        trades.unshift(snapshot);
+        try { localStorage.setItem(journalKey(activeJournal), JSON.stringify(trades)); } catch(e2){}
+        try { renderAll(); } catch(e2){}
+      }
+      if(typeof showToast === 'function') showToast('Delete failed — '+(e.message||'try again'), 'error');
+      else if(typeof toast === 'function') toast('Delete failed', 'error');
+      return;
+    }
+    // Cascade — best-effort; trade row already gone either way.
+    try {
+      var c = await _sb.from('community_posts').delete().like('id', 'trade_'+String(tradeId)+'_%');
+      if(c && c.error) console.error('[cem delete cascade]', c.error);
+    } catch(e){ console.error('[cem delete cascade]', e); }
+  }
+  if(typeof toast === 'function') toast('Trade deleted', 'success');
+}
+window.cemDoDelete = cemDoDelete;
+
 function openCalEdit(id){
   var t=trades.find(function(x){return x.id===id;});
   if(!t)return;
   _cemId=id;
+  _cemPnlManual = false; // reset before populating fields so cemCalcLive can run
+
+  // Side, symbol, market, date, prices, qty
   cemSetType(t.type||'long');
   document.getElementById('cem-sym').value=t.sym||'';
   document.getElementById('cem-mkt').value=t.market||'Futures';
@@ -14175,48 +14615,149 @@ function openCalEdit(id){
   document.getElementById('cem-stop').value=t.stop||'';
   document.getElementById('cem-qty').value=t.qty||1;
   document.getElementById('cem-notes').value=t.notes||'';
-  // Session
-  _cemSession=t.session||'';
-  document.getElementById('cem-session').value=_cemSession;
-  document.querySelectorAll('.cem-sess').forEach(b=>b.style.boxShadow='none');
-  if(_cemSession) document.querySelectorAll('.cem-sess').forEach(function(b){
-    if(b.textContent.trim().toLowerCase().startsWith(_cemSession.toLowerCase().split(' ')[0].toLowerCase()))
-      b.style.boxShadow='0 0 0 2px rgba(0,180,255,.8)';
-  });
-  // Grade
-  const gi=GRADES.findIndex(function(g){return g.label===(t.grade||'B');}); 
-  const gv=gi>=0?gi:3;
-  document.getElementById('cem-grade').value=gv; cemUpdateGrade(gv);
-  // Emotion
-  const ev=parseInt(t.emotion)||3;
-  document.getElementById('cem-emotion').value=ev; cemUpdateEmotion(ev);
-  // Confidence
-  const cv=parseInt(t.confidence)||3;
-  document.getElementById('cem-conf').value=cv; cemUpdateConf(cv);
+  // Chunk 3 — accounts field. Previously not in the modal at all, which
+  // silently zeroed it back to 1 on every edit for multi-account trades.
+  var accountsEl = document.getElementById('cem-accounts');
+  if(accountsEl) accountsEl.value = (t.accounts && t.accounts > 1) ? t.accounts : 1;
+
+  // P&L manual override surface — show the saved value but mark it auto
+  // (cemCalcLive below will reconcile against the entry/exit math).
+  var pnlEl = document.getElementById('cem-pnl');
+  if(pnlEl){
+    pnlEl.value = (t.pnl != null) ? t.pnl : '';
+    pnlEl.classList.remove('pnl-positive','pnl-negative','pnl-zero');
+  }
+  var pnlHint = document.getElementById('cem-pnl-hint');
+  if(pnlHint){ pnlHint.textContent='auto'; pnlHint.classList.add('hint-auto'); pnlHint.classList.remove('hint-manual'); }
+
+  // Session (chip) — reset stale module-level state first so the
+  // toggle-clear branch in cemSetSession doesn't accidentally clear
+  // a re-opened same-session trade.
+  _cemSession = '';
+  cemSetSession(t.session || '');
+
+  // Chunk 3 — Account Type chip
+  cemSetAccountType(''); // clear first so toggle semantics work
+  var savedAcct = (t && typeof t.account_type === 'string') ? t.account_type.toLowerCase() : '';
+  if(['paper','eval','funded','live'].indexOf(savedAcct) >= 0){
+    cemSetAccountType(savedAcct);
+  }
+
+  // Reflection chips (Chunk 3 chip selectors replace dot rows)
+  var gi = (typeof GRADES !== 'undefined')
+    ? GRADES.findIndex(function(g){ return g.label === (t.grade || 'B'); }) : 3;
+  if(gi < 0) gi = 3;
+  cemSetGrade(gi + 1); // cemSetGrade takes 1-based idx, GRADES is 0-based
+
+  cemSetEmotion(parseInt(t.emotion) || 3);
+  cemSetConf(parseInt(t.confidence) || 3);
+
   // Load existing screenshots
   _cemImages = (t.images && t.images.length) ? t.images.slice() : [];
-  // Chunk 2.5 — capture TV link for read-only snapshot tile in cemRenderImgPreview.
-  _cemTVLink = (t && typeof t.tradingview_link === 'string') ? t.tradingview_link : '';
+
+  // Chunk 3 — TV link is now EDITABLE in the modal. Load into the input
+  // and trigger preview render. _cemTVLink kept as a fallback for the
+  // existing cemRenderImgPreview() read-only tile (so screenshots strip
+  // shows the snapshot alongside user uploads).
+  var savedTV = (t && typeof t.tradingview_link === 'string') ? t.tradingview_link : '';
+  _cemTVLink = savedTV;
+  var tvEl = document.getElementById('cem-tv-link');
+  if(tvEl) tvEl.value = savedTV;
+  if(typeof cemOnTVLinkInput === 'function') cemOnTVLinkInput();
+
   cemRenderImgPreview();
+
+  // Eyebrow context line — EDIT · {sym} · {time}
+  var hSym = document.getElementById('cem-h-sym');
+  if(hSym) hSym.textContent = (t.sym || '—').toUpperCase();
+  var hTime = document.getElementById('cem-h-time');
+  if(hTime){
+    var stamp = '';
+    if(t.created_at){
+      try {
+        var d = new Date(t.created_at);
+        if(!isNaN(d)) stamp = d.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:false});
+      } catch(e){}
+    }
+    hTime.textContent = stamp || (t.date || '—');
+  }
+
+  // Initial live calc so the R-chip lights up correctly on open.
+  if(typeof cemCalcLive === 'function') cemCalcLive();
+
+  // Belt-and-suspenders — clear stale delete-confirm state from a prior open.
+  var delModal = document.getElementById('cem-delete-confirm');
+  if(delModal) delModal.style.display = 'none';
+
   document.getElementById('cal-edit-modal').style.display='flex';
 }
 function closeCalEdit(){
   document.getElementById('cal-edit-modal').style.display='none';
   _cemId=null;
+  _cemSession=''; // Chunk 3 — prevent stale session in toggle-clear branch on next open
   _cemTVLink = ''; // Chunk 2.5 — prevent stale TV thumbnail on next modal open
+  _cemPnlManual = false;
+  // Chunk 3 — clear the editable TV link + preview so a subsequent open
+  // doesn't briefly show the previous trade's snapshot before populate.
+  var tvEl = document.getElementById('cem-tv-link');
+  if(tvEl) tvEl.value = '';
+  var tvOk = document.getElementById('cem-tv-ok');
+  if(tvOk) tvOk.style.display = 'none';
+  var tvPrevWrap = document.getElementById('cem-tv-preview-wrap');
+  if(tvPrevWrap) tvPrevWrap.style.display = 'none';
+  var tvPrev = document.getElementById('cem-tv-preview');
+  if(tvPrev) tvPrev.removeAttribute('src');
+  // Also clear the inline R-chip + reset hint so it doesn't briefly flash
+  // stale state on the next open before cemCalcLive recomputes.
+  var rChip = document.getElementById('cem-r-chip');
+  if(rChip) rChip.style.display = 'none';
+  var rHint = document.getElementById('cem-r-helper');
+  if(rHint) rHint.style.display = '';
+  // Dismiss the delete-confirm if it was left open somehow.
+  var delModal = document.getElementById('cem-delete-confirm');
+  if(delModal) delModal.style.display = 'none';
 }
 function saveCalEdit(){
   // CAPTURE the trade id BEFORE closing the modal — closeCalEdit()
   // nulls _cemId, so any later trades.find(x => x.id == _cemId) would
-  // match nothing and the whole save would silently bail. This was the
-  // root cause of "edit modal saves nothing".
+  // match nothing and the whole save would silently bail.
   var tradeId = _cemId;
   if (tradeId == null) return; // modal opened with no target
 
-  // Read all field values FIRST while the modal still has them set.
-  // (display:none doesn't affect .value reads, but ID nulling would.)
+  // Read all field values FIRST. Chunk 3 expanded closeCalEdit to clear
+  // some DOM field values (TV link, preview src) to prevent stale flashes
+  // on the next open — so we MUST snapshot every field before closing,
+  // otherwise post-close reads would see empty strings.
+  var sym = (document.getElementById('cem-sym').value || '').trim().toUpperCase();
+  var entry = parseFloat(document.getElementById('cem-entry').value);
+  var exit  = parseFloat(document.getElementById('cem-exit').value);
+  var qty   = parseFloat(document.getElementById('cem-qty').value) || 1;
+  var stop  = parseFloat(document.getElementById('cem-stop').value) || null;
+  // Chunk 3 — read the # of accounts (was missing → silently zeroed back
+  // to 1 on every edit for multi-account trades).
+  var accts = parseFloat((document.getElementById('cem-accounts')||{}).value) || 1;
+  var mktVal = document.getElementById('cem-mkt').value;
+  var dateVal = document.getElementById('cem-date').value;
+  var notesVal = document.getElementById('cem-notes').value || '';
+  var pnlOverride = parseFloat((document.getElementById('cem-pnl')||{}).value);
+  var gi = parseInt(document.getElementById('cem-grade').value) || 3;
+  var emotionVal = parseInt(document.getElementById('cem-emotion').value) || 3;
+  var confVal = parseInt(document.getElementById('cem-conf').value) || 3;
+  var atRaw = ((document.getElementById('cem-account-type')||{}).value || '').trim().toLowerCase();
+  var accountType = (['paper','eval','funded','live'].indexOf(atRaw) >= 0) ? atRaw : null;
+  var tvRaw = ((document.getElementById('cem-tv-link')||{}).value || '').trim();
+  var tvLink = (tvRaw && typeof _TV_LINK_RE !== 'undefined' && _TV_LINK_RE.test(tvRaw)) ? tvRaw : '';
+  var sessionVal = _cemSession || '';
+  var sideVal = _cemType;
+  var manualPnlFlag = _cemPnlManual; // snapshot before closeCalEdit resets
 
-  // Step 1: close modal and show toast immediately — guaranteed
+  // Now validate — if it fails, modal stays open with the user's edits intact.
+  if(!sym || isNaN(entry) || isNaN(exit)){
+    showToast('Symbol, entry, and exit are required', 'error');
+    return;
+  }
+
+  // Step 1: close modal — values are already captured above.
   closeCalEdit();
 
   // Step 2: find and update the trade
@@ -14226,34 +14767,45 @@ function saveCalEdit(){
     return;
   }
 
-  var sym=(document.getElementById('cem-sym').value||'').trim().toUpperCase();
-  var entry=parseFloat(document.getElementById('cem-entry').value);
-  var exit=parseFloat(document.getElementById('cem-exit').value);
-  var qty=parseFloat(document.getElementById('cem-qty').value)||1;
-  var stop=parseFloat(document.getElementById('cem-stop').value)||null;
-  if(!sym||isNaN(entry)||isNaN(exit)){
-    showToast('Symbol, entry, and exit are required', 'error');
-    return;
+  var ptVal=(typeof PTS!=='undefined'&&PTS[sym])?PTS[sym]:1;
+  var totalQty = qty * accts;
+  var autoPnl = (sideVal==='long' ? exit-entry : entry-exit) * totalQty * ptVal;
+  var risk = stop ? stop * totalQty * ptVal : null;
+  var autoRR = (risk && risk > 0) ? Math.abs(autoPnl)/risk : null;
+
+  // Chunk 3 — honor manual P&L override (mirrors Log Trade's _pnlManual path).
+  // If the user typed in #cem-pnl, that value wins and rr is recomputed
+  // against it so the saved R matches the saved P&L.
+  var pnl = autoPnl, rr = autoRR;
+  if(manualPnlFlag && !isNaN(pnlOverride)){
+    pnl = pnlOverride;
+    if(risk && risk > 0) rr = pnl / risk;
   }
 
-  var ptVal=(typeof PTS!=='undefined'&&PTS[sym])?PTS[sym]:1;
-  var pnl=(_cemType==='long'?exit-entry:entry-exit)*qty*ptVal;
-  var risk=stop?stop*qty*ptVal:null;
-  var rr=risk&&risk>0?Math.abs(pnl)/risk:null;
-  var gi=parseInt(document.getElementById('cem-grade').value)||3;
-
   t.sym=sym;
-  t.market=document.getElementById('cem-mkt').value||t.market;
-  t.type=_cemType;
-  t.date=document.getElementById('cem-date').value||t.date;
+  t.market=mktVal||t.market;
+  t.type=sideVal;
+  t.date=dateVal||t.date;
   t.entry=entry; t.exit=exit; t.stop=stop; t.qty=qty;
+  // Chunk 3 — preserve the accounts field. Match Log Trade's storage
+  // convention (omit when 1 to keep the JSON blob slim).
+  if(accts > 1) t.accounts = accts;
+  else delete t.accounts;
   t.pnl=pnl; t.rr=rr;
-  t.notes=document.getElementById('cem-notes').value||'';
-  t.session=_cemSession||'';
+  // Use snapshots captured before closeCalEdit (which resets _cemSession and
+  // clears some DOM values). Reading DOM here would silently zero them out.
+  t.notes=notesVal;
+  t.session=sessionVal;
   t.grade=(typeof GRADES!=='undefined'&&GRADES[gi]&&GRADES[gi].label)||'B';
-  t.emotion=parseInt(document.getElementById('cem-emotion').value)||3;
-  t.confidence=parseInt(document.getElementById('cem-conf').value)||3;
+  t.emotion=emotionVal;
+  t.confidence=confVal;
   t.images=_cemImages.slice();
+  // Chunk 3 — persist new fields. account_type is also sent as a top-level
+  // column by saveTradeToSupa (whitelisted there too); tradingview_link
+  // lives inside trade_data JSONB. Empty TV link → undefined so the JSON
+  // doesn't carry a useless empty-string property.
+  t.account_type = accountType;
+  t.tradingview_link = tvLink || undefined;
 
   // Step 3: save and re-render in next tick so UI stays responsive
   var savedDate=t.date;
@@ -21543,10 +22095,20 @@ async function loadTradesFromDB(user) {
   if (r.data && r.data.length) {
     trades = r.data.map(function(row) {
       try {
-        var t = JSON.parse(row.trade_data);
+        // Chunk 3 bug fix — trade_data can come back as either:
+        //   • A JSON object (new rows written after the saveTradeToSupa
+        //     double-serialize fix), OR
+        //   • A string of JSON (old rows from when saveTradeToSupa was
+        //     passing JSON.stringify(trade) into the upsert, which made
+        //     PostgREST store the value as a JSONB string rather than a
+        //     parsed object).
+        // Handle both so old rows keep loading until they get re-saved.
+        var raw = row.trade_data;
+        var t = (typeof raw === 'string') ? JSON.parse(raw) : raw;
+        if (!t || typeof t !== 'object') return null;
         // Visual redesign Chunk 2 — account_type lives on its own column.
         // Treat the column as authoritative so SQL-direct edits propagate to UI.
-        if (t && row.account_type) t.account_type = row.account_type;
+        if (row.account_type) t.account_type = row.account_type;
         return t;
       } catch(e) { return null; }
     }).filter(Boolean);
@@ -21579,11 +22141,31 @@ async function saveTradeToSupa(trade) {
     var _at = (trade && typeof trade.account_type === 'string') ? trade.account_type.toLowerCase() : null;
     var accountTypeCol = (_at && ['paper','eval','funded','live'].indexOf(_at) >= 0) ? _at : null;
 
+    // Chunk 3 bug fix — DO NOT pre-stringify trade_data.
+    //
+    // Old pattern:  trade_data: JSON.stringify(trade)
+    //   supabase-js serializes the whole request body, so this becomes
+    //   {"trade_data":"{\"sym\":\"NQ1!\",...}"} — a JSON-encoded STRING.
+    //   PostgREST then casts that string to JSONB and stores it as a JSONB
+    //   STRING value (not a parsed object). Result: trade_data->>'anykey'
+    //   returns NULL for every key because the value isn't an object.
+    //   account_type still works because it's a separate column.
+    //   The SPA round-trips fine because loadTradesFromDB's JSON.parse
+    //   silently unwraps the over-stringified value — masking the bug
+    //   from anyone not querying via ->> at the DB level.
+    //
+    // New pattern:  trade_data: trade
+    //   Supabase-js serializes the outer body to JSON. The trade object
+    //   becomes a real nested JSON object: {"trade_data":{"sym":"NQ1!",...}}.
+    //   PostgREST routes the object directly into the JSONB column, stored
+    //   as a parsed object. trade_data->>'tradingview_link' now works.
+    //   (Old rows that were stored as JSONB-strings keep loading via
+    //   loadTradesFromDB's both-shape handling; they get fixed on next save.)
     var r = await _sb.from('trades').upsert({
       id: String(trade.id),
       user_id: authUser.id,            // REQUIRED by RLS policy
-      trade_data: JSON.stringify(trade),
-      account_type: accountTypeCol,    // NEW (visual redesign Chunk 2)
+      trade_data: trade,               // OBJECT, not string — see comment above
+      account_type: accountTypeCol,    // top-level column (Chunk 2 migration)
       journal: activeJournal,
       updated_at: new Date().toISOString()
     }, { onConflict: 'id' });
@@ -22489,6 +23071,632 @@ function cookieDecline(){
 }
 
 /* End Chunk 2.6 */
+
+/* ============================================================================
+   VISUAL REDESIGN · Chunk 3 — Edit Trade Modal
+   Mirrors Log Trade's 4-section flow, compacted ~15% for modal context.
+   Re-applies all .rw-* design tokens scoped under .cem-card (since the
+   existing .rw-* rules are scoped to #pg-log and don't reach inside this
+   modal). Delete-confirm modal nests inside the Edit Modal backdrop.
+   ============================================================================ */
+
+/* Backdrop + card frame ----------------------------------------------------*/
+.cem-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.55);
+  backdrop-filter:blur(2px);
+  z-index:9990;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px 16px;
+}
+.cem-card{
+  background:var(--n-bg,#0a0a0a);
+  border:0.5px solid rgba(255,255,255,0.10);
+  border-radius:12px;
+  padding:22px 24px 0;
+  width:min(600px, 100%);
+  max-height:92vh;
+  display:flex;
+  flex-direction:column;
+  box-shadow:0 12px 56px rgba(0,0,0,0.55);
+  overflow:hidden;
+}
+
+/* Header */
+.cem-card .cem-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:18px;
+  flex-shrink:0;
+}
+.cem-card .cem-eyebrow{
+  font-family:var(--n-font-mono);
+  font-size:10px;
+  letter-spacing:0.16em;
+  color:var(--n-text-3);
+  text-transform:uppercase;
+}
+.cem-card .cem-title{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-size:22px;
+  font-weight:400;
+  color:var(--n-text);
+  letter-spacing:-0.01em;
+  margin-top:4px;
+}
+.cem-card .cem-close{
+  background:transparent;
+  border:none;
+  color:var(--n-text-3);
+  font-size:22px;
+  line-height:1;
+  cursor:pointer;
+  padding:2px 6px;
+  border-radius:6px;
+  transition:color 0.12s,background 0.12s;
+  flex-shrink:0;
+}
+.cem-card .cem-close:hover{
+  color:var(--n-text);
+  background:rgba(255,255,255,0.04);
+}
+
+/* Scrollable body */
+.cem-card .cem-body{
+  flex:1;
+  overflow-y:auto;
+  margin:0 -8px;
+  padding:0 8px 4px;
+}
+
+/* Compact section spacing (was 28px in #pg-log → 20px here) */
+.cem-card .rw-section{margin-bottom:20px}
+.cem-card .rw-section:last-of-type{margin-bottom:10px}
+
+/* Section header — slightly smaller than #pg-log */
+.cem-card .rw-section-h{
+  display:flex;
+  align-items:baseline;
+  gap:9px;
+  margin-bottom:12px;
+}
+.cem-card .rw-mono-num{
+  font-family:var(--n-font-mono);
+  font-size:9.5px;
+  letter-spacing:0.16em;
+  color:var(--n-text-3);
+  text-transform:uppercase;
+}
+.cem-card .rw-section-name{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-size:16px;
+  font-weight:400;
+  color:var(--n-text);
+  letter-spacing:-0.01em;
+}
+.cem-card .rw-mono-sub{
+  font-family:var(--n-font-mono);
+  font-size:9.5px;
+  letter-spacing:0.14em;
+  color:var(--n-text-4);
+  text-transform:uppercase;
+}
+.cem-card .rw-hr-trail{
+  flex:1;
+  height:1px;
+  background:rgba(255,255,255,0.05);
+  margin-left:6px;
+}
+
+/* Fields */
+.cem-card .rw-field{margin-bottom:12px;display:flex;flex-direction:column;position:relative}
+.cem-card .rw-field-l{
+  font-family:var(--n-font-mono);
+  font-size:9.5px;
+  letter-spacing:0.16em;
+  color:var(--n-text-3);
+  text-transform:uppercase;
+  margin-bottom:6px;
+}
+.cem-card .rw-field-l-flex{display:flex;align-items:center;gap:8px}
+.cem-card .rw-field-l-display{display:flex;justify-content:space-between;align-items:baseline}
+.cem-card .rw-display-val{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-weight:400;
+  font-size:17px;
+  color:var(--n-text);
+  text-transform:none;
+  letter-spacing:0;
+}
+.cem-card .rw-display-suf{
+  font-family:var(--n-font-mono);
+  font-style:normal;
+  font-size:10.5px;
+  color:var(--n-text-3);
+  margin-left:2px;
+}
+
+/* Grids (same proportions as #pg-log) */
+.cem-card .rw-grid{display:grid;gap:12px;margin-bottom:12px}
+.cem-card .rw-grid-side-acct{grid-template-columns:0.7fr 2fr}
+.cem-card .rw-grid-sym-mkt{grid-template-columns:1.8fr 1fr}
+.cem-card .rw-grid-date-sess{grid-template-columns:0.7fr 1.8fr}
+.cem-card .rw-grid-triple{grid-template-columns:1fr 1fr 1fr}
+.cem-card .rw-grid-exec-bottom{grid-template-columns:1fr 1fr 1.3fr}
+
+@media (max-width:600px){
+  .cem-card .rw-grid-side-acct,
+  .cem-card .rw-grid-sym-mkt,
+  .cem-card .rw-grid-date-sess,
+  .cem-card .rw-grid-triple,
+  .cem-card .rw-grid-exec-bottom{grid-template-columns:1fr}
+}
+
+/* Inputs — compact (was 10px 12px → 8px 11px per spec) */
+.cem-card .rw-input{
+  width:100%;
+  padding:8px 11px;
+  background:var(--n-surface);
+  border:0.5px solid rgba(255,255,255,0.08);
+  border-radius:7px;
+  color:var(--n-text);
+  font-family:var(--n-font-body);
+  font-size:13px;
+  outline:none;
+  transition:border-color 0.12s,background 0.12s;
+  box-sizing:border-box;
+}
+.cem-card .rw-input:focus{
+  border-color:rgba(255,255,255,0.18);
+  background:var(--n-surface-2);
+}
+.cem-card .rw-input::placeholder{color:var(--n-text-4)}
+
+/* Numeric values shrink 17px → 15px per spec */
+.cem-card .rw-numeric{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-weight:400;
+  font-size:15px;
+  letter-spacing:0.01em;
+}
+.cem-card .rw-input-pnl{font-size:17px}
+.cem-card .rw-input-pnl.pnl-positive{color:var(--n-profit)}
+.cem-card .rw-input-pnl.pnl-negative{color:var(--n-loss)}
+.cem-card .rw-input-pnl.pnl-zero{color:var(--n-text-2)}
+
+/* Symbol white */
+.cem-card .rw-input-symbol{
+  color:var(--n-text)!important;
+  font-family:var(--n-font-mono);
+  font-size:13px;
+  letter-spacing:0.04em;
+}
+
+/* Market select — strip native chrome so it reads as a flat input */
+.cem-card .cem-mkt-select{
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  background-image:linear-gradient(45deg, transparent 50%, var(--n-text-3) 50%),
+                   linear-gradient(135deg, var(--n-text-3) 50%, transparent 50%);
+  background-position:calc(100% - 16px) 50%, calc(100% - 11px) 50%;
+  background-size:5px 5px;
+  background-repeat:no-repeat;
+  padding-right:30px;
+  font-family:var(--n-font-mono);
+  font-size:12px;
+  letter-spacing:0.04em;
+  color:var(--n-text);
+}
+.cem-card .cem-mkt-select option{background:var(--n-surface);color:var(--n-text)}
+
+/* Textarea */
+.cem-card .rw-textarea{
+  min-height:66px;
+  resize:vertical;
+  font-family:var(--n-font-body);
+  font-style:normal;
+  font-size:13px;
+  line-height:1.5;
+}
+
+/* Label modifiers */
+.cem-card .rw-mod-opt,
+.cem-card .rw-mod-auto{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-size:9.5px;
+  color:var(--n-text-4);
+  text-transform:none;
+  letter-spacing:0;
+  margin-left:4px;
+}
+.cem-card .rw-mod-auto{color:var(--n-accent-cool,#6ea8ff)}
+.cem-card .rw-mod-auto.hint-manual{color:var(--n-text-3)}
+
+/* Chip primitives — same tier scheme as Log Trade, just sized for modal. */
+.cem-card .rw-chip-row{display:flex;flex-wrap:wrap;gap:4px}
+.cem-card .rw-chip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  padding:6px 11px;
+  background:rgba(255,255,255,0.03);
+  border:0.5px solid rgba(255,255,255,0.08);
+  border-radius:999px;
+  font-family:var(--n-font-mono);
+  font-size:10px;
+  letter-spacing:0.1em;
+  color:var(--n-text-2);
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:background 0.12s,border-color 0.12s,color 0.12s;
+  line-height:1.2;
+  white-space:nowrap;
+  user-select:none;
+}
+.cem-card .rw-chip:hover:not(.active){
+  background:rgba(255,255,255,0.05);
+  border-color:rgba(255,255,255,0.14);
+  color:var(--n-text);
+}
+.cem-card .rw-chip[data-tier="sage"].active{
+  background:rgba(95,179,137,0.14);
+  border-color:rgba(95,179,137,0.4);
+  color:var(--n-profit);
+}
+.cem-card .rw-chip[data-tier="rose"].active{
+  background:rgba(201,95,95,0.14);
+  border-color:rgba(201,95,95,0.4);
+  color:var(--n-loss);
+}
+.cem-card .rw-chip[data-tier="cool"].active{
+  background:rgba(110,168,255,0.14);
+  border-color:rgba(110,168,255,0.4);
+  color:var(--n-accent-cool,#6ea8ff);
+}
+.cem-card .rw-chip[data-tier="gold"].active{
+  background:rgba(245,215,124,0.14);
+  border-color:rgba(245,215,124,0.4);
+  color:var(--n-gold,#f5d77c);
+}
+.cem-card .rw-chip[data-tier="muted"].active{
+  background:rgba(255,255,255,0.08);
+  border-color:rgba(255,255,255,0.22);
+  color:var(--n-text);
+}
+.cem-card .rw-chip-side .rw-chip-arrow{font-size:11px;margin-right:2px;opacity:0.8}
+.cem-card .rw-chip-row-side .rw-chip{flex:1;padding:8px 12px;font-size:10.5px}
+.cem-card .rw-acct-dot{
+  display:inline-block;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+.cem-card .cem-sess-chip{padding:6px 9px;font-size:9.5px}
+.cem-card .rw-chip-row-grade{gap:3px}
+.cem-card .rw-chip-row-grade .rw-chip{flex:1;padding:7px 5px;font-size:10.5px;letter-spacing:0.08em}
+
+/* R-multiple chip + hint */
+.cem-card .rw-r-chip{
+  display:inline-flex;
+  align-items:center;
+  padding:2px 7px;
+  background:rgba(110,168,255,0.10);
+  border:0.5px solid rgba(110,168,255,0.32);
+  border-radius:999px;
+  font-family:var(--n-font-mono);
+  font-size:9px;
+  letter-spacing:0.08em;
+  color:var(--n-accent-cool,#6ea8ff);
+  text-transform:uppercase;
+  margin-left:auto;
+}
+.cem-card .rw-r-hint{
+  font-family:var(--n-font-mono);
+  font-size:9.5px;
+  letter-spacing:0.06em;
+  color:var(--n-text-4);
+  margin-top:4px;
+  margin-bottom:4px;
+}
+.cem-card .rw-r-hint i{font-style:italic}
+
+/* Screenshot dropzone (compact) */
+.cem-card .rw-dropzone{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  min-height:84px;
+  padding:14px 12px;
+  background:var(--n-surface);
+  border:1px dashed rgba(255,255,255,0.14);
+  border-radius:9px;
+  color:var(--n-text-3);
+  cursor:pointer;
+  transition:border-color 0.12s,background 0.12s;
+  text-align:center;
+}
+.cem-card .rw-dropzone:hover,
+.cem-card .rw-dropzone.drag-over{
+  border-color:rgba(255,255,255,0.28);
+  background:var(--n-surface-2);
+  color:var(--n-text-2);
+}
+.cem-card .rw-dz-icon{width:20px;height:20px;opacity:0.65}
+.cem-card .rw-dz-h{
+  font-family:var(--n-font-mono);
+  font-size:10px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--n-text-2);
+}
+.cem-card .rw-dz-sub{
+  font-family:var(--n-font-body);
+  font-size:10.5px;
+  color:var(--n-text-4);
+}
+
+/* TV link wrap + preview */
+.cem-card .rw-tv-wrap{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 11px;
+  background:var(--n-surface);
+  border:0.5px solid rgba(110,168,255,0.18);
+  border-radius:7px;
+  transition:border-color 0.12s;
+}
+.cem-card .rw-tv-wrap:focus-within{border-color:rgba(110,168,255,0.42)}
+.cem-card .rw-tv-icon{
+  width:14px;
+  height:14px;
+  color:var(--n-accent-cool,#6ea8ff);
+  opacity:0.78;
+  flex-shrink:0;
+}
+.cem-card .rw-tv-input{
+  flex:1;
+  background:transparent;
+  border:none;
+  outline:none;
+  color:var(--n-text);
+  font-family:var(--n-font-mono);
+  font-size:11px;
+  letter-spacing:0.02em;
+  min-width:0;
+}
+.cem-card .rw-tv-input::placeholder{color:var(--n-text-4);font-family:var(--n-font-body);font-style:italic;letter-spacing:0}
+.cem-card .rw-tv-ok{
+  font-family:var(--n-font-mono);
+  font-size:9px;
+  letter-spacing:0.12em;
+  color:var(--n-profit);
+  text-transform:uppercase;
+  flex-shrink:0;
+}
+.cem-card .rw-tv-preview-wrap{
+  position:relative;
+  margin-top:7px;
+  border-radius:7px;
+  overflow:hidden;
+  border:0.5px solid rgba(110,168,255,0.18);
+  background:#000;
+  line-height:0;
+}
+.cem-card .rw-tv-preview{
+  display:block;
+  width:100%;
+  max-height:140px;
+  object-fit:contain;
+  background:#0a0a0a;
+  cursor:zoom-in;
+}
+.cem-card .rw-tv-preview-badge{
+  position:absolute;
+  top:5px;
+  right:5px;
+  padding:2px 6px;
+  background:rgba(0,0,0,0.7);
+  border:0.5px solid rgba(110,168,255,0.3);
+  border-radius:999px;
+  font-family:var(--n-font-mono);
+  font-size:8px;
+  letter-spacing:0.12em;
+  color:var(--n-accent-cool,#6ea8ff);
+  text-transform:uppercase;
+  line-height:1.2;
+}
+.cem-card .rw-helper{
+  font-family:var(--n-font-body);
+  font-style:italic;
+  font-size:10.5px;
+  color:var(--n-text-4);
+  margin-top:7px;
+  padding:0 2px;
+  line-height:1.4;
+}
+
+/* Symbol dropdown */
+.cem-card .cem-sym-dd{
+  position:absolute;
+  top:100%;
+  left:0;
+  right:0;
+  background:var(--n-surface-2);
+  border:0.5px solid rgba(255,255,255,0.1);
+  border-top:none;
+  border-radius:0 0 7px 7px;
+  max-height:180px;
+  overflow-y:auto;
+  z-index:9999;
+  margin-top:-1px;
+}
+
+/* Footer — Delete left, Cancel + Save right ------------------------------*/
+.cem-card .cem-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:14px 0 18px;
+  margin-top:8px;
+  border-top:0.5px solid rgba(255,255,255,0.06);
+  flex-shrink:0;
+}
+.cem-card .cem-footer-right{display:flex;gap:8px}
+.cem-card .cem-delete{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 0;
+  background:transparent;
+  border:none;
+  font-family:var(--n-font-mono);
+  font-size:10.5px;
+  letter-spacing:0.14em;
+  color:var(--n-loss);
+  text-transform:uppercase;
+  cursor:pointer;
+  opacity:0.78;
+  transition:opacity 0.12s;
+}
+.cem-card .cem-delete:hover{opacity:1}
+.cem-card .cem-delete-icon{font-size:13px;line-height:1}
+.cem-card .cem-cancel,
+.cem-card .cem-save{
+  padding:9px 18px;
+  border-radius:8px;
+  font-family:var(--n-font-mono);
+  font-size:10.5px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:background 0.12s,border-color 0.12s,color 0.12s;
+}
+.cem-card .cem-cancel{
+  background:transparent;
+  border:0.5px solid rgba(255,255,255,0.14);
+  color:var(--n-text-2);
+}
+.cem-card .cem-cancel:hover{
+  background:rgba(255,255,255,0.04);
+  border-color:rgba(255,255,255,0.24);
+  color:var(--n-text);
+}
+.cem-card .cem-save{
+  background:rgba(95,179,137,0.14);
+  border:0.5px solid rgba(95,179,137,0.4);
+  color:var(--n-profit);
+}
+.cem-card .cem-save:hover{
+  background:rgba(95,179,137,0.22);
+  border-color:rgba(95,179,137,0.55);
+}
+
+/* Delete confirm — nested modal inside Edit Modal backdrop ----------------*/
+.cem-del-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  z-index:10;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+.cem-del-card{
+  background:var(--n-surface);
+  border:0.5px solid rgba(255,255,255,0.10);
+  border-radius:10px;
+  padding:20px 22px;
+  max-width:380px;
+  width:100%;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5);
+}
+.cem-del-title{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-size:18px;
+  font-weight:400;
+  color:var(--n-text);
+  margin-bottom:10px;
+  letter-spacing:-0.005em;
+}
+.cem-del-body{
+  font-family:var(--n-font-body);
+  font-size:12.5px;
+  color:var(--n-text-2);
+  line-height:1.55;
+  margin-bottom:16px;
+}
+.cem-del-hint{
+  color:var(--n-loss);
+  font-style:italic;
+  font-size:12px;
+}
+.cem-del-actions{
+  display:flex;
+  gap:8px;
+  justify-content:flex-end;
+}
+.cem-del-actions button{
+  padding:8px 14px;
+  border-radius:7px;
+  font-family:var(--n-font-mono);
+  font-size:10.5px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:background 0.12s,border-color 0.12s,color 0.12s;
+}
+.cem-del-actions .cem-del-cancel{
+  background:transparent;
+  border:0.5px solid rgba(255,255,255,0.14);
+  color:var(--n-text-2);
+}
+.cem-del-actions .cem-del-cancel:hover{
+  background:rgba(255,255,255,0.04);
+  border-color:rgba(255,255,255,0.24);
+  color:var(--n-text);
+}
+.cem-del-actions .cem-del-go{
+  background:rgba(201,95,95,0.16);
+  border:0.5px solid rgba(201,95,95,0.42);
+  color:var(--n-loss);
+}
+.cem-del-actions .cem-del-go:hover{
+  background:rgba(201,95,95,0.26);
+  border-color:rgba(201,95,95,0.58);
+}
+
+@media (max-width:480px){
+  .cem-card{padding:18px 16px 0;border-radius:10px}
+  .cem-card .cem-title{font-size:20px}
+  .cem-card .cem-footer{flex-direction:column-reverse;align-items:stretch;gap:8px}
+  .cem-card .cem-footer-right{flex-direction:column-reverse}
+  .cem-card .cem-cancel,
+  .cem-card .cem-save{width:100%}
+  .cem-del-card{padding:18px 16px}
+  .cem-del-actions{flex-direction:column-reverse}
+  .cem-del-actions button{width:100%}
+}
+
+/* End Chunk 3 — Edit Modal */
 </style>
 
 <div id="cancel-modal" class="cm-backdrop" style="display:none" onclick="cancelModalBackdropClick(event)">
