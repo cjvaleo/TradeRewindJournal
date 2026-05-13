@@ -2132,6 +2132,13 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 #pg-calendar .day-img-row .img-meta .pnl.pos{color:var(--n-profit)}
 #pg-calendar .day-img-row .img-meta .pnl.neg{color:var(--n-loss)}
+/* Chunk 2.5 — small TV badge on TradingView snapshot rows in the gallery. */
+#pg-calendar .day-img-row .img-meta .day-img-tv-badge{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.12em;
+  padding:2px 6px;border-radius:999px;
+  background:rgba(110,168,255,0.12);border:0.5px solid rgba(110,168,255,0.32);
+  color:var(--n-accent-cool,#6ea8ff);text-transform:uppercase;margin-left:6px;
+}
 #pg-calendar .day-img-row img{
   width:100%;max-height:200px;object-fit:contain;background:#000;display:block;
 }
@@ -3387,6 +3394,232 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.18em;
   color:#f5d77c;margin-left:6px;
 }
+
+/* ═══ Confluences picker (Phase 1 of build spec, May 13 2026) ═════
+   Visual fidelity per CONFLUENCES_MOCKUP_REF.html. Free-tier feature —
+   no lock veil. cf-* prefix throughout to avoid colliding with the
+   SPA's existing .pill / .dropdown / .tf-chip generic class names. */
+
+/* Section header — reuses existing .lt-section-h, just add a right-aligned count */
+#pg-log #lt-sec-confluences .cf-count{
+  margin-left:auto;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--n-text-4);
+}
+
+/* Pill row + click-to-open trigger */
+#pg-log .cf-pills{
+  display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+  padding:10px 12px;min-height:44px;
+  background:var(--n-surface);
+  border:1px solid var(--n-border);border-radius:8px;
+  cursor:pointer;transition:border-color .12s;
+}
+#pg-log .cf-pills:hover{border-color:var(--n-border-2)}
+#pg-log .cf-pills.open{border-color:var(--n-border-3)}
+#pg-log .cf-hint{
+  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-3);
+  pointer-events:none;
+}
+#pg-log .cf-pills.has-pills .cf-hint{font-size:11.5px;opacity:0.65}
+
+/* Pills — TF-tier-colored */
+#pg-log .cf-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:999px;
+  font-family:var(--n-font-sans);font-size:12px;line-height:1;
+  cursor:default;
+}
+#pg-log .cf-pill .cf-tf-prefix{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.1em;
+  text-transform:uppercase;
+}
+#pg-log .cf-pill .cf-dot{opacity:0.4}
+#pg-log .cf-pill .cf-x{
+  opacity:0.55;font-size:14px;cursor:pointer;line-height:1;
+  padding:0 2px;margin-left:2px;
+}
+#pg-log .cf-pill .cf-x:hover{opacity:1}
+#pg-log .cf-pill-htf {background:rgba(245,215,124,0.08);border:1px solid rgba(245,215,124,0.26);color:var(--n-gold)}
+#pg-log .cf-pill-mid {background:rgba(110,168,255,0.08);border:1px solid rgba(110,168,255,0.26);color:var(--n-cool)}
+#pg-log .cf-pill-ltf {background:rgba(95,179,137,0.10);border:1px solid rgba(95,179,137,0.26);color:var(--n-profit)}
+#pg-log .cf-pill-none{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);color:var(--n-text-2)}
+
+/* Picker dropdown */
+#pg-log .cf-dropdown{
+  margin-top:6px;
+  background:var(--n-surface);
+  border:1px solid var(--n-border);border-radius:8px;
+  overflow:hidden;
+}
+#pg-log .cf-dropdown-section{
+  padding:12px 14px 10px;
+  border-bottom:1px solid var(--n-border);
+}
+#pg-log .cf-dropdown-section .lt-field-l{margin-bottom:8px}
+
+/* TF chips */
+#pg-log .cf-tf-chips{display:flex;flex-wrap:wrap;gap:6px}
+#pg-log .cf-tf-chip{
+  padding:4px 9px;border-radius:999px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.08em;
+  color:var(--n-text-2);cursor:pointer;user-select:none;transition:.12s;
+}
+#pg-log .cf-tf-chip:hover{border-color:var(--n-border-2);color:var(--n-text)}
+#pg-log .cf-tf-chip.active.htf{background:rgba(245,215,124,0.14);border-color:rgba(245,215,124,0.40);color:var(--n-gold)}
+#pg-log .cf-tf-chip.active.mid{background:rgba(110,168,255,0.14);border-color:rgba(110,168,255,0.40);color:var(--n-cool)}
+#pg-log .cf-tf-chip.active.ltf{background:rgba(95,179,137,0.14);border-color:rgba(95,179,137,0.40);color:var(--n-profit)}
+#pg-log .cf-tf-chip.no-tf{
+  background:transparent;border-style:dashed;
+  border-color:rgba(255,255,255,0.10);color:var(--n-text-3);
+}
+#pg-log .cf-tf-chip.no-tf.active{
+  border-color:var(--n-border-3);color:var(--n-text-2);
+  background:rgba(255,255,255,0.03);
+}
+
+/* Search input */
+#pg-log .cf-search{
+  display:flex;align-items:center;gap:8px;
+  padding:0 14px;
+  border-bottom:1px solid var(--n-border);
+}
+#pg-log .cf-search svg{
+  width:14px;height:14px;stroke:var(--n-text-3);stroke-width:1.6;fill:none;flex-shrink:0;
+}
+#pg-log .cf-search input{
+  flex:1;padding:11px 0;
+  background:transparent;border:none;outline:none;
+  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text);
+}
+#pg-log .cf-search input::placeholder{color:var(--n-text-3)}
+
+/* Library list */
+#pg-log .cf-lib-header{padding:10px 14px 6px}
+#pg-log .cf-lib-list{
+  max-height:220px;overflow-y:auto;
+}
+#pg-log .cf-lib-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;cursor:pointer;transition:background .12s;
+  gap:12px;
+}
+#pg-log .cf-lib-row:hover{background:rgba(255,255,255,0.02)}
+#pg-log .cf-lib-row .cf-lib-name{
+  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text);
+}
+#pg-log .cf-lib-row .cf-lib-preview{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.08em;
+  color:var(--n-text-3);text-align:right;white-space:nowrap;
+}
+#pg-log .cf-lib-empty{
+  padding:24px 14px;text-align:center;
+  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-3);
+  line-height:1.5;
+}
+#pg-log .cf-lib-empty .cf-emph{color:var(--n-text-2)}
+
+/* Inline add-input (shown when user clicks "Add new") */
+#pg-log .cf-add-input-row{
+  display:flex;align-items:center;gap:6px;
+  padding:11px 14px;border-top:1px solid var(--n-border);
+  background:rgba(255,255,255,0.015);
+}
+#pg-log .cf-add-input-row input{
+  flex:1;padding:7px 10px;
+  background:var(--n-surface-2);border:1px solid var(--n-border-2);
+  border-radius:6px;color:var(--n-text);
+  font-family:var(--n-font-sans);font-size:13px;outline:none;
+}
+#pg-log .cf-add-input-row input:focus{border-color:var(--n-border-3)}
+#pg-log .cf-add-input-row button{
+  width:30px;height:30px;border-radius:6px;cursor:pointer;
+  background:transparent;border:1px solid var(--n-border-2);color:var(--n-text-2);
+  font-size:14px;line-height:1;flex-shrink:0;transition:.12s;
+}
+#pg-log .cf-add-input-row .cf-add-confirm:hover{
+  color:var(--n-profit);border-color:rgba(95,179,137,0.4);
+}
+#pg-log .cf-add-input-row .cf-add-cancel:hover{
+  color:var(--n-loss);border-color:rgba(201,95,95,0.4);
+}
+
+/* Footer: "+ Add new confluence to library" */
+#pg-log .cf-dropdown-footer{
+  display:flex;align-items:center;gap:8px;
+  padding:11px 14px;
+  border-top:1px solid var(--n-border);
+  background:rgba(255,255,255,0.015);
+  cursor:pointer;transition:.12s;
+  font-family:var(--n-font-sans);font-size:12px;color:var(--n-text-2);
+}
+#pg-log .cf-dropdown-footer:hover{
+  background:rgba(255,255,255,0.04);color:var(--n-text);
+}
+#pg-log .cf-dropdown-footer svg{
+  width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0;
+}
+
+/* Mobile: dropdown is narrower but still inline (no bottom-sheet
+   for v1 — picker sits under the input as on desktop, scroll the
+   page naturally). */
+@media (max-width:768px){
+  #pg-log .cf-pills{padding:9px 10px}
+  #pg-log .cf-dropdown-section{padding:10px 12px}
+  #pg-log .cf-search{padding:0 12px}
+  #pg-log .cf-search input{font-size:16px}   /* prevent iOS zoom */
+  #pg-log .cf-add-input-row{padding:10px 12px}
+  #pg-log .cf-add-input-row input{font-size:16px}
+  #pg-log .cf-lib-row{padding:10px 12px}
+  #pg-log .cf-dropdown-footer{padding:12px 12px;font-size:13px}
+}
+
+/* ═══ Confluence mini-pills (Chunk 4 — History rows + day review) ═══
+   Compact pill variant for displaying read-only confluences in tight
+   surfaces. Same TF-tier color encoding as the picker pills, just
+   smaller. Reused in History table cells and the Calendar day-review
+   modal. Not scoped to #pg-log because they render in multiple pages. */
+.cf-pill-mini{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 7px;border-radius:999px;
+  font-family:var(--n-font-sans);font-size:11px;line-height:1.3;
+  white-space:nowrap;
+}
+.cf-pill-mini .cf-mini-tf{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.08em;
+  text-transform:uppercase;
+}
+.cf-pill-mini .cf-mini-dot{opacity:0.4;margin:0 1px}
+.cf-more-badge{
+  display:inline-flex;align-items:center;
+  padding:2px 7px;border-radius:999px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.10);
+  color:var(--n-text-3);
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.05em;
+}
+
+/* History "Confluences" column cell */
+#pg-history .h-table .cell-conf{
+  vertical-align:middle;
+}
+#pg-history .h-table .cell-conf .cf-mini-row{
+  display:flex;flex-wrap:wrap;gap:4px;align-items:center;
+  max-width:240px;   /* nudge wrapping at this column width */
+}
+#pg-history .h-table .cell-conf.empty{
+  color:var(--n-text-4);text-align:center;
+}
+
+/* Calendar day-review: pills row underneath each trade entry */
+#cal-day-body .day-trade-pills{
+  display:flex;flex-wrap:wrap;gap:4px;
+  padding:0 2px 8px;
+  margin-top:-4px;   /* tighten against the trade row above */
+}
+#cal-day-body .day-trade-pills:empty{display:none}
 
 /* ── Free-tier gating — Pattern A across the SPA ─────────────
    Driven by body[data-tier="free"] set by applyTierGating(). When the
@@ -7840,194 +8073,329 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
     </div>
   </div>
 
-  <!-- MANUAL MODE -->
+  <!-- MANUAL MODE — Visual Redesign Chunk 2 · 4-section flow + chip language
+       Sections: 01 Setup → 02 Execution → 03 Analysis → 04 Reflection
+       New fields: account_type (top-level col), tradingview_link (trade_data JSONB)
+       Preserved IDs (save handler reads): lg-sym, lg-entry, lg-exit, lg-stop,
+         lg-qty, lg-accounts, lg-pnl, lg-rr (hidden), lg-mkt, lg-date, lg-session,
+         lg-grade (hidden 0-5), lg-emotion (hidden 1-5), lg-conf (hidden 1-5), lg-notes
+       New IDs: lg-account-type (hidden), lg-tv-link, lg-r-chip, rw-grade-display,
+         rw-emotion-display, rw-conf-display, rw-grade-chips, rw-emotion-chips,
+         rw-conf-chips, rw-acct-chips, lg-tv-ok -->
   <div id="mode-manual" class="mode-panel on">
     <div class="lt-grid">
       <div class="lt-form">
 
-        <!-- 01 SETUP -->
-        <div class="lt-section">
-          <div class="lt-section-h"><span class="lt-section-num">01</span><span>Setup</span></div>
+        <!-- ============ 01 SETUP — what + where ============ -->
+        <div class="rw-section">
+          <div class="rw-section-h">
+            <span class="rw-mono-num">01</span>
+            <span class="rw-section-name">Setup</span>
+            <span class="rw-mono-sub">— what + where</span>
+            <span class="rw-hr-trail"></span>
+          </div>
 
-          <div class="lt-field">
-            <div class="lt-field-l">Side</div>
-            <div class="lt-side-cards">
-              <div class="lt-side-card long on" id="lg-long" onclick="setLgType('long')">
-                <div class="lt-side-arrow">&#x2197;</div>
-                <div class="lt-side-name">Long</div>
+          <!-- Row 1 (categorical): Side + Account Type -->
+          <div class="rw-grid rw-grid-side-acct">
+            <div class="rw-field">
+              <div class="rw-field-l">Side</div>
+              <div class="rw-chip-row rw-chip-row-side">
+                <button type="button" class="rw-chip rw-chip-side active" data-tier="sage" data-side="long"
+                        id="lg-long" onclick="setLgType('long')">
+                  <span class="rw-chip-arrow">&#x2197;</span>Long
+                </button>
+                <button type="button" class="rw-chip rw-chip-side" data-tier="rose" data-side="short"
+                        id="lg-short" onclick="setLgType('short')">
+                  <span class="rw-chip-arrow">&#x2198;</span>Short
+                </button>
               </div>
-              <div class="lt-side-card short" id="lg-short" onclick="setLgType('short')">
-                <div class="lt-side-arrow">&#x2198;</div>
-                <div class="lt-side-name">Short</div>
+            </div>
+            <div class="rw-field">
+              <div class="rw-field-l">Account Type <span class="rw-mod-opt">optional</span></div>
+              <div class="rw-chip-row" id="rw-acct-chips">
+                <button type="button" class="rw-chip rw-chip-acct" data-tier="muted" data-acct="paper"
+                        onclick="setAccountType('paper')">
+                  <span class="rw-acct-dot" style="background:rgba(255,255,255,0.35)"></span>Paper
+                </button>
+                <button type="button" class="rw-chip rw-chip-acct" data-tier="gold" data-acct="eval"
+                        onclick="setAccountType('eval')">
+                  <span class="rw-acct-dot" style="background:var(--n-gold,#f5d77c)"></span>Eval
+                </button>
+                <button type="button" class="rw-chip rw-chip-acct" data-tier="sage" data-acct="funded"
+                        onclick="setAccountType('funded')">
+                  <span class="rw-acct-dot" style="background:var(--n-profit)"></span>Funded
+                </button>
+                <button type="button" class="rw-chip rw-chip-acct" data-tier="cool" data-acct="live"
+                        onclick="setAccountType('live')">
+                  <span class="rw-acct-dot" style="background:var(--n-accent-cool,#6ea8ff)"></span>Live
+                </button>
               </div>
+              <input type="hidden" id="lg-account-type" value=""/>
             </div>
           </div>
 
-          <div class="lt-dual">
-            <div class="lt-field" style="position:relative">
-              <div class="lt-field-l">Symbol</div>
-              <input type="text" id="lg-sym" class="lt-input" placeholder="Type to search&hellip;" autocomplete="off"
+          <!-- Row 2 (what): Symbol + Market -->
+          <div class="rw-grid rw-grid-sym-mkt">
+            <div class="rw-field" style="position:relative">
+              <div class="rw-field-l">Symbol</div>
+              <input type="text" id="lg-sym" class="rw-input rw-input-symbol" placeholder="Type to search&hellip;" autocomplete="off"
                 oninput="filterSymbols();calcLivePnl()" onfocus="filterSymbols()" onkeydown="symKeyNav(event)"/>
               <div id="sym-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;z-index:200;margin-top:-1px"></div>
             </div>
-            <div class="lt-field">
-              <div class="lt-field-l">Market</div>
-              <div class="lt-market-pill" title="Rewind is futures-only">
-                <span class="ic"></span>
-                <span>Futures</span>
-                <span class="note">Locked</span>
+            <div class="rw-field">
+              <div class="rw-field-l">Market</div>
+              <div class="rw-market-pill" title="Rewind is futures-only">
+                <span class="rw-acct-dot" style="background:var(--n-accent-cool,#6ea8ff)"></span>
+                <span class="rw-market-name">Futures</span>
+                <span class="rw-locked-tag">Locked</span>
               </div>
-              <!-- Hidden source-of-truth so existing JS reading lg-mkt.value still works. -->
               <input type="hidden" id="lg-mkt" value="Futures"/>
             </div>
           </div>
 
-          <div class="lt-dual">
-            <div class="lt-field">
-              <div class="lt-field-l">Date</div>
-              <input type="date" id="lg-date" class="lt-input" oninput="updateLogPreview()"/>
+          <!-- Row 3 (when): Date + Session -->
+          <div class="rw-grid rw-grid-date-sess">
+            <div class="rw-field">
+              <div class="rw-field-l">Date</div>
+              <input type="date" id="lg-date" class="rw-input" oninput="updateLogPreview()"/>
             </div>
-            <div class="lt-field">
-              <div class="lt-field-l">Session</div>
-              <div class="lt-session-pills" id="lt-session-pills">
-                <button type="button" class="lt-session-pill sess-asia"     data-session="Asia"     onclick="setSessionPill('Asia')">Asia</button>
-                <button type="button" class="lt-session-pill sess-london"   data-session="London"   onclick="setSessionPill('London')">London</button>
-                <button type="button" class="lt-session-pill sess-ny-am"    data-session="NY AM"    onclick="setSessionPill('NY AM')">NY AM</button>
-                <button type="button" class="lt-session-pill sess-ny-lunch" data-session="NY Lunch" onclick="setSessionPill('NY Lunch')">NY Lunch</button>
-                <button type="button" class="lt-session-pill sess-ny-pm"    data-session="NY PM"    onclick="setSessionPill('NY PM')">NY PM</button>
-                <button type="button" class="lt-session-pill sess-other"    data-session="Other"    onclick="setSessionPill('Other')">Other</button>
+            <div class="rw-field">
+              <div class="rw-field-l">Session</div>
+              <div class="rw-chip-row" id="lt-session-pills">
+                <button type="button" class="rw-chip lt-session-pill" data-tier="sage" data-session="Asia"     onclick="setSessionPill('Asia')">Asia</button>
+                <button type="button" class="rw-chip lt-session-pill" data-tier="sage" data-session="London"   onclick="setSessionPill('London')">London</button>
+                <button type="button" class="rw-chip lt-session-pill" data-tier="sage" data-session="NY AM"    onclick="setSessionPill('NY AM')">NY AM</button>
+                <button type="button" class="rw-chip lt-session-pill" data-tier="sage" data-session="NY Lunch" onclick="setSessionPill('NY Lunch')">Lunch</button>
+                <button type="button" class="rw-chip lt-session-pill" data-tier="sage" data-session="NY PM"    onclick="setSessionPill('NY PM')">NY PM</button>
               </div>
               <input type="hidden" id="lg-session" value=""/>
             </div>
           </div>
         </div>
 
-        <!-- 02 EXECUTION -->
-        <div class="lt-section">
-          <div class="lt-section-h"><span class="lt-section-num">02</span><span>Execution</span></div>
+        <!-- ============ 02 EXECUTION — numbers ============ -->
+        <div class="rw-section">
+          <div class="rw-section-h">
+            <span class="rw-mono-num">02</span>
+            <span class="rw-section-name">Execution</span>
+            <span class="rw-mono-sub">— numbers</span>
+            <span class="rw-hr-trail"></span>
+          </div>
 
-          <div class="lt-triple">
-            <div class="lt-field">
-              <div class="lt-field-l">Entry</div>
-              <input class="lt-input" id="lg-entry" type="number" step="any" placeholder="0.00" oninput="calcLivePnl()"/>
+          <div class="rw-grid rw-grid-triple">
+            <div class="rw-field">
+              <div class="rw-field-l">Entry</div>
+              <input class="rw-input rw-numeric" id="lg-entry" type="number" step="any" placeholder="0.00" oninput="calcLivePnl()"/>
             </div>
-            <div class="lt-field">
-              <div class="lt-field-l">Exit</div>
-              <input class="lt-input" id="lg-exit" type="number" step="any" placeholder="0.00" oninput="calcLivePnl()"/>
+            <div class="rw-field">
+              <div class="rw-field-l">Exit</div>
+              <input class="rw-input rw-numeric" id="lg-exit" type="number" step="any" placeholder="0.00" oninput="calcLivePnl()"/>
             </div>
-            <div class="lt-field">
-              <div class="lt-field-l">Stop <span class="lt-hint">optional</span></div>
-              <input class="lt-input" id="lg-stop" type="number" step="any" placeholder="points" oninput="calcLivePnl()"/>
+            <div class="rw-field">
+              <div class="rw-field-l">Stop <span class="rw-mod-opt">optional</span></div>
+              <input class="rw-input rw-numeric" id="lg-stop" type="number" step="any" placeholder="points" oninput="calcLivePnl()"/>
             </div>
           </div>
 
-          <div class="lt-triple">
-            <div class="lt-field">
-              <div class="lt-field-l">Contracts</div>
-              <input class="lt-input" id="lg-qty" type="number" step="any" min="1" value="1" oninput="calcLivePnl()"/>
+          <div class="rw-grid rw-grid-exec-bottom">
+            <div class="rw-field">
+              <div class="rw-field-l">Contracts</div>
+              <input class="rw-input rw-numeric" id="lg-qty" type="number" step="any" min="1" value="1" oninput="calcLivePnl()"/>
             </div>
-            <div class="lt-field">
-              <div class="lt-field-l"># of Accounts</div>
-              <input class="lt-input" id="lg-accounts" type="number" min="1" value="1" oninput="calcLivePnl()"/>
+            <div class="rw-field">
+              <div class="rw-field-l"># of Accounts</div>
+              <input class="rw-input rw-numeric" id="lg-accounts" type="number" min="1" value="1" oninput="calcLivePnl()"/>
             </div>
-            <div class="lt-field">
-              <div class="lt-field-l">P&amp;L $ <span class="lt-hint hint-auto" id="lt-pnl-hint">auto</span></div>
-              <input class="lt-input" id="lg-pnl" type="number" step="any" placeholder="auto-calc" oninput="onPnlInput()"/>
+            <div class="rw-field">
+              <div class="rw-field-l rw-field-l-flex">
+                <span>P&amp;L $</span>
+                <span class="rw-mod-auto" id="lt-pnl-hint">auto</span>
+                <span class="rw-r-chip" id="lg-r-chip" style="display:none">2.3R</span>
+              </div>
+              <input class="rw-input rw-numeric rw-input-pnl" id="lg-pnl" type="number" step="any" placeholder="auto-calc" oninput="onPnlInput()"/>
             </div>
           </div>
 
-          <!-- Hidden field — JS still reads/writes lg-rr; UI surface is the calc strip + helper. -->
+          <!-- R-multiple inline hint (visible only when stop empty) -->
+          <div class="rw-r-hint" id="lt-r-helper">
+            <span id="lt-r-helper-text"><i>+ Add stop to calculate R multiple</i></span>
+          </div>
+
+          <!-- Hidden / off-screen compat targets — JS continues to read/write these. -->
           <input type="hidden" id="lg-rr" value=""/>
-          <!-- Off-DOM target for legacy onRrInput hint writes — harmless if updated. -->
           <span id="lt-rr-hint" style="display:none"></span>
-
-          <!-- LIVE CALC strip (auto-lit by existing calcLivePnl() — fix #9 polish) -->
           <div id="live-calc" style="display:none">
-            <div class="cell">
-              <div class="lbl">P&amp;L</div>
-              <div class="val" id="calc-pnl">—</div>
-              <div id="calc-acct-note" style="font-family:var(--n-font-mono);font-size:9px;color:var(--n-text-4);letter-spacing:0.05em;margin-top:3px"></div>
-            </div>
-            <div class="cell">
-              <div class="lbl">Risk $</div>
-              <div class="val" id="calc-risk">—</div>
-            </div>
-            <div class="cell">
-              <div class="lbl">R Multiple</div>
-              <div class="val" id="calc-rr-disp">—</div>
-            </div>
+            <div class="cell"><div class="lbl">P&amp;L</div><div class="val" id="calc-pnl">&mdash;</div><div id="calc-acct-note"></div></div>
+            <div class="cell"><div class="lbl">Risk $</div><div class="val" id="calc-risk">&mdash;</div></div>
+            <div class="cell"><div class="lbl">R</div><div class="val" id="calc-rr-disp">&mdash;</div></div>
           </div>
-
-          <!-- R Multiple conditional helper (fix #5) -->
-          <div class="r-helper" id="lt-r-helper">
-            <span id="lt-r-helper-text">Add a stop loss to calculate your R multiple.</span>
-          </div>
-
           <div id="lt-acct-note" class="lt-acct-note" style="display:none"></div>
         </div>
 
-        <!-- 03 REFLECTION (lock-gated for Free tier) -->
-        <div class="lt-section" id="lt-sec-reflection">
-          <div class="lt-section-h"><span class="lt-section-num">03</span><span>Reflection</span></div>
+        <!-- ============ 03 ANALYSIS — why ============ -->
+        <div class="rw-section">
+          <div class="rw-section-h">
+            <span class="rw-mono-num">03</span>
+            <span class="rw-section-name">Analysis</span>
+            <span class="rw-mono-sub">— why</span>
+            <span class="rw-hr-trail"></span>
+          </div>
 
-          <div class="lt-field">
-            <div class="lt-field-l">Setup Grade</div>
-            <div class="lt-grade-dots-row" id="lt-grade-dots-row" style="--grade-color:#e0e0e0;--grade-pct:80%">
-              <div class="lt-grade-dots">
-                <div class="lt-grade-dot on" data-grade-idx="1" onclick="setGradeDots(1)"></div>
-                <div class="lt-grade-dot on" data-grade-idx="2" onclick="setGradeDots(2)"></div>
-                <div class="lt-grade-dot on" data-grade-idx="3" onclick="setGradeDots(3)"></div>
-                <div class="lt-grade-dot on" data-grade-idx="4" onclick="setGradeDots(4)"></div>
-                <div class="lt-grade-dot" data-grade-idx="5" onclick="setGradeDots(5)"></div>
+          <div class="rw-grid rw-grid-analysis">
+
+            <!-- Left: chart evidence (screenshot + TV link) -->
+            <div class="rw-field">
+              <div class="rw-field-l">Chart evidence</div>
+
+              <div id="img-drop-zone" class="rw-dropzone"
+                onclick="document.getElementById('img-file-input').click()"
+                ondragover="event.preventDefault();this.classList.add('drag-over')"
+                ondragleave="this.classList.remove('drag-over')"
+                ondrop="handleImgDrop(event);this.classList.remove('drag-over')">
+                <input type="file" id="img-file-input" accept="image/*" multiple style="display:none" onchange="handleImgFiles(this.files)"/>
+                <svg class="rw-dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
+                <div class="rw-dz-h">Drop screenshot</div>
+                <div class="rw-dz-sub">or click to browse</div>
               </div>
-              <div class="lt-grade-dots-lbl" id="lt-grade-dots-lbl" style="color:#e0e0e0">B</div>
+              <div id="note-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+
+              <!-- TradingView link paste -->
+              <div class="rw-tv-wrap">
+                <svg class="rw-tv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <polyline points="3,17 9,11 13,15 21,7"/>
+                  <polyline points="14,7 21,7 21,14"/>
+                </svg>
+                <input type="url" id="lg-tv-link" class="rw-tv-input" placeholder="Paste TradingView link&hellip;" oninput="onTVLinkInput()" autocomplete="off"/>
+                <span class="rw-tv-ok" id="lg-tv-ok" style="display:none">&#10003; Linked</span>
+              </div>
+              <!-- Chunk 2.5: inline snapshot preview (only for /x/ URLs).
+                   The S3 image can 404 if the snapshot has expired — onerror
+                   hides the wrap entirely, falling back to the link + ✓ badge. -->
+              <div class="rw-tv-preview-wrap" id="lg-tv-preview-wrap" style="display:none">
+                <img id="lg-tv-preview" class="rw-tv-preview" alt="TradingView snapshot preview" onerror="onTVPreviewError(this)" onclick="if(this.src){openScreenshotLightbox(this.src);}"/>
+                <span class="rw-tv-preview-badge">TV Snapshot</span>
+              </div>
+              <div class="rw-helper">Paste your &ldquo;Copy link&rdquo; from TradingView&rsquo;s snapshot menu.</div>
             </div>
+
+            <!-- Right: confluences (tagged analysis) -->
+            <div class="rw-field" id="lt-sec-confluences">
+              <div class="rw-field-l rw-field-l-flex">
+                <span>Tagged analysis</span>
+                <span class="cf-count" id="cf-count">0 added</span>
+              </div>
+
+              <!-- Confluences picker (preserved from Confluences Chunks 1-4) -->
+              <div class="cf-pills" id="cf-pills" onclick="cfTogglePicker()">
+                <span class="cf-hint" id="cf-hint">+ click to add confluences</span>
+              </div>
+
+              <div class="cf-dropdown" id="cf-dropdown" style="display:none">
+                <div class="cf-dropdown-section">
+                  <div class="rw-field-l">Timeframe</div>
+                  <div class="cf-tf-chips" id="cf-tf-chips">
+                    <span class="cf-tf-chip" data-tf="1m"  onclick="cfSetTF('1m',this,event)">1m</span>
+                    <span class="cf-tf-chip" data-tf="5m"  onclick="cfSetTF('5m',this,event)">5m</span>
+                    <span class="cf-tf-chip" data-tf="15m" onclick="cfSetTF('15m',this,event)">15m</span>
+                    <span class="cf-tf-chip" data-tf="30m" onclick="cfSetTF('30m',this,event)">30m</span>
+                    <span class="cf-tf-chip active htf" data-tf="1hr" onclick="cfSetTF('1hr',this,event)">1hr</span>
+                    <span class="cf-tf-chip" data-tf="4h"  onclick="cfSetTF('4h',this,event)">4h</span>
+                    <span class="cf-tf-chip" data-tf="D"   onclick="cfSetTF('D',this,event)">D</span>
+                    <span class="cf-tf-chip" data-tf="W"   onclick="cfSetTF('W',this,event)">W</span>
+                    <span class="cf-tf-chip no-tf" data-tf="" onclick="cfSetTF(null,this,event)">No TF</span>
+                  </div>
+                </div>
+
+                <div class="cf-search">
+                  <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+                  <input type="text" id="cf-search-input" placeholder="Type to filter or create new" oninput="cfOnSearchInput(this.value)"/>
+                </div>
+
+                <div class="cf-lib-header">
+                  <div class="rw-field-l">Your library</div>
+                </div>
+                <div class="cf-lib-list" id="cf-lib-list"></div>
+
+                <div class="cf-add-input-row" id="cf-add-input-row" style="display:none">
+                  <input type="text" id="cf-add-input" placeholder="New confluence name" maxlength="48"
+                    onkeydown="if(event.key==='Enter')cfConfirmAddLibrary();if(event.key==='Escape')cfCancelAddLibrary()"/>
+                  <button class="cf-add-confirm" onclick="cfConfirmAddLibrary()" aria-label="Add">&#10003;</button>
+                  <button class="cf-add-cancel" onclick="cfCancelAddLibrary()" aria-label="Cancel">&times;</button>
+                </div>
+
+                <div class="cf-dropdown-footer" id="cf-add-footer" onclick="cfShowAddInput()">
+                  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <span id="cf-add-footer-text">Add new confluence</span>
+                </div>
+              </div>
+              <div class="rw-helper">Tag your read on the chart &mdash; filterable in History &amp; Analytics.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ 04 REFLECTION — how it felt (Free-tier veiled) ============ -->
+        <div class="rw-section" id="lt-sec-reflection">
+          <div class="rw-section-h">
+            <span class="rw-mono-num">04</span>
+            <span class="rw-section-name">Reflection</span>
+            <span class="rw-mono-sub">— how it felt</span>
+            <span class="rw-hr-trail"></span>
+          </div>
+
+          <!-- Setup Grade (6-chip: F D C B A A+) -->
+          <div class="rw-field">
+            <div class="rw-field-l rw-field-l-display">
+              <span>Setup Grade</span>
+              <span class="rw-display-val" id="rw-grade-display" style="color:#e0e0e0">B</span>
+            </div>
+            <div class="rw-chip-row rw-chip-row-grade" id="rw-grade-chips">
+              <button type="button" class="rw-chip rw-chip-grade"        data-tier="rose"  data-grade="1" onclick="setGradeDots(1)">F</button>
+              <button type="button" class="rw-chip rw-chip-grade"        data-tier="rose"  data-grade="2" onclick="setGradeDots(2)">D</button>
+              <button type="button" class="rw-chip rw-chip-grade"        data-tier="muted" data-grade="3" onclick="setGradeDots(3)">C</button>
+              <button type="button" class="rw-chip rw-chip-grade active" data-tier="muted" data-grade="4" onclick="setGradeDots(4)">B</button>
+              <button type="button" class="rw-chip rw-chip-grade"        data-tier="sage"  data-grade="5" onclick="setGradeDots(5)">A</button>
+              <button type="button" class="rw-chip rw-chip-grade"        data-tier="sage"  data-grade="6" onclick="setGradeDots(6)">A+</button>
+            </div>
+            <!-- 0-based GRADES index (B=3 default). setGradeDots writes this. -->
             <input type="hidden" id="lg-grade" value="3"/>
           </div>
 
-          <div class="lt-field">
-            <div class="lt-field-l">Emotion</div>
-            <div class="emotion-row" id="lt-emotion-row">
-              <div class="em-dot" data-emotion="1" title="Tilted" onclick="setEmotionDots(1)"></div>
-              <div class="em-dot" data-emotion="2" title="Off" onclick="setEmotionDots(2)"></div>
-              <div class="em-dot on" data-emotion="3" title="Neutral" onclick="setEmotionDots(3)"></div>
-              <div class="em-dot" data-emotion="4" title="Focused" onclick="setEmotionDots(4)"></div>
-              <div class="em-dot" data-emotion="5" title="In the zone" onclick="setEmotionDots(5)"></div>
-              <span class="em-label" id="lt-em-label">Neutral</span>
+          <!-- Emotion (5-chip, scale = existing 1=worst → 5=best for back-compat) -->
+          <div class="rw-field">
+            <div class="rw-field-l rw-field-l-display">
+              <span>Emotion</span>
+              <span class="rw-display-val" id="rw-emotion-display">Neutral</span>
+            </div>
+            <div class="rw-chip-row" id="rw-emotion-chips">
+              <button type="button" class="rw-chip"        data-tier="rose"  data-emotion="1" onclick="setEmotionDots(1)">1&middot;Tilt</button>
+              <button type="button" class="rw-chip"        data-tier="rose"  data-emotion="2" onclick="setEmotionDots(2)">2</button>
+              <button type="button" class="rw-chip active" data-tier="muted" data-emotion="3" onclick="setEmotionDots(3)">3&middot;Neutral</button>
+              <button type="button" class="rw-chip"        data-tier="sage"  data-emotion="4" onclick="setEmotionDots(4)">4</button>
+              <button type="button" class="rw-chip"        data-tier="sage"  data-emotion="5" onclick="setEmotionDots(5)">5&middot;Zone</button>
             </div>
             <input type="hidden" id="lg-emotion" value="3"/>
           </div>
 
-          <div class="lt-field">
-            <div class="lt-field-l">Confidence</div>
-            <div class="lt-confidence-row" id="lt-confidence-row">
-              <div class="lt-conf-dot" data-conf="1" title="Unsure" onclick="setConfidenceDots(1)"></div>
-              <div class="lt-conf-dot" data-conf="2" title="Hesitant" onclick="setConfidenceDots(2)"></div>
-              <div class="lt-conf-dot on" data-conf="3" title="Comfortable" onclick="setConfidenceDots(3)"></div>
-              <div class="lt-conf-dot" data-conf="4" title="Confident" onclick="setConfidenceDots(4)"></div>
-              <div class="lt-conf-dot" data-conf="5" title="Conviction" onclick="setConfidenceDots(5)"></div>
-              <span class="lt-conf-label" id="lt-conf-label">Comfortable</span>
+          <!-- Confidence (5-chip) -->
+          <div class="rw-field">
+            <div class="rw-field-l rw-field-l-display">
+              <span>Confidence</span>
+              <span class="rw-display-val" id="rw-conf-display">3<span class="rw-display-suf"> / 5</span></span>
             </div>
+            <div class="rw-chip-row" id="rw-conf-chips">
+              <button type="button" class="rw-chip"        data-tier="rose"  data-conf="1" onclick="setConfidenceDots(1)">1&middot;None</button>
+              <button type="button" class="rw-chip"        data-tier="cool"  data-conf="2" onclick="setConfidenceDots(2)">2</button>
+              <button type="button" class="rw-chip active" data-tier="cool"  data-conf="3" onclick="setConfidenceDots(3)">3</button>
+              <button type="button" class="rw-chip"        data-tier="cool"  data-conf="4" onclick="setConfidenceDots(4)">4</button>
+              <button type="button" class="rw-chip"        data-tier="sage"  data-conf="5" onclick="setConfidenceDots(5)">5&middot;Max</button>
+            </div>
+            <input type="hidden" id="lg-conf" value="3"/>
           </div>
 
-          <div class="lt-field">
-            <div class="lt-field-l">Notes</div>
-            <textarea id="lg-notes" class="lt-input lt-textarea" placeholder="Setup, what worked, what didn't, lessons&hellip;" oninput="updateLogPreview()"></textarea>
-          </div>
-
-          <div class="lt-field">
-            <div class="lt-field-l">Screenshot</div>
-            <div id="img-drop-zone" class="lt-dropzone"
-              onclick="document.getElementById('img-file-input').click()"
-              ondragover="event.preventDefault();this.classList.add('drag-over')"
-              ondragleave="this.classList.remove('drag-over')"
-              ondrop="handleImgDrop(event);this.classList.remove('drag-over')">
-              <input type="file" id="img-file-input" accept="image/*" multiple style="display:none" onchange="handleImgFiles(this.files)"/>
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
-              <div class="dz-h">Drop screenshot here</div>
-              <div class="dz-sub">or click to browse</div>
-            </div>
-            <div id="note-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+          <!-- Notes (prose) -->
+          <div class="rw-field">
+            <div class="rw-field-l">Notes</div>
+            <textarea id="lg-notes" class="rw-input rw-textarea" placeholder="Setup, what worked, what didn&rsquo;t, lessons&hellip;" oninput="updateLogPreview()"></textarea>
           </div>
 
           <!-- LOCK VEIL (free tier only — toggled by applyLogTradeTier) -->
@@ -8037,7 +8405,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
               Pro
             </div>
             <div class="head">Unlock the journal</div>
-            <div class="sub">Track your mindset, add notes, and attach screenshots. The Pro tier turns Rewind from a tracker into a journal.</div>
+            <div class="sub">Track your mindset and notes. The Pro tier turns Rewind from a tracker into a journal.</div>
             <a href="javascript:goTo('upgrade')" class="cta">Upgrade <span>&rarr;</span></a>
           </div>
         </div>
@@ -8047,9 +8415,6 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
           <button class="lt-submit" onclick="confirmLog()">+ Log Trade</button>
           <button class="lt-reset" onclick="resetLogForm()">&#8634; Reset</button>
         </div>
-
-        <!-- compat hidden — confidence dropped from UI; default 3 keeps fullLog intact -->
-        <input type="hidden" id="lg-conf" value="3"/>
       </div>
 
       <!-- LIVE COMMUNITY PREVIEW -->
@@ -8070,6 +8435,23 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         <div class="lg-confirm-actions">
           <button class="lg-confirm-cancel" onclick="discardLog()">Cancel</button>
           <button class="lg-confirm-go" onclick="confirmLogFinal()">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chunk 2.6 — CONFLUENCE LIBRARY DELETE CONFIRM -->
+    <div id="cf-delete-modal" class="cf-del-backdrop" style="display:none"
+         onclick="if(event.target===this)cfCancelLibDelete()">
+      <div class="cf-del-card" onclick="event.stopPropagation()">
+        <div class="cf-del-title">Delete &ldquo;<span id="cf-delete-name">this confluence</span>&rdquo; from your library?</div>
+        <div class="cf-del-body">
+          Existing trades tagged with this confluence will keep the tag, but you won&rsquo;t be able to add it to new trades.
+          <br><br>
+          <span class="cf-del-hint">You can restore by re-typing the same name later.</span>
+        </div>
+        <div class="cf-del-actions">
+          <button type="button" class="cf-del-cancel" onclick="cfCancelLibDelete()">Cancel</button>
+          <button type="button" class="cf-del-go"     onclick="cfConfirmLibDelete()">Delete</button>
         </div>
       </div>
     </div>
@@ -8359,6 +8741,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             <th>Qty</th>
             <th class="right">P&amp;L</th>
             <th class="center">Notes</th>
+            <th>Confluences</th>
             <th></th>
           </tr>
         </thead>
@@ -10609,11 +10992,12 @@ function renderTOTW(g) {
   html += '</div>';
   html += '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:28px;color:' + pnlCol + ';text-shadow:0 0 12px ' + pnlCol + '">' + (pnl >= 0 ? '+' : '-') + '$' + Math.abs(pnl).toFixed(2) + '</div>';
   html += '</div>';
-  // Screenshot if available
-  if (t.images && t.images.length) {
-    var safePinImg = safeURL(t.images[0]);
+  // Screenshot if available (Chunk 2.5 — augmented with TV /x/ snapshot).
+  var _totwImgs = (typeof getTradeImagesWithTV === 'function') ? getTradeImagesWithTV(t) : (t.images||[]);
+  if (_totwImgs.length) {
+    var safePinImg = safeURL(_totwImgs[0]);
     if (safePinImg) {
-      html += '<img src="' + safePinImg + '" style="width:100%;max-height:180px;object-fit:contain;background:#000;display:block;border-top:1px solid rgba(255,200,0,.1);cursor:pointer" onclick="openImgLightbox(this.src)">';
+      html += '<img src="' + safePinImg + '" style="width:100%;max-height:180px;object-fit:contain;background:#000;display:block;border-top:1px solid rgba(255,200,0,.1);cursor:pointer" onclick="openImgLightbox(this.src)" onerror="this.style.display=\'none\'">';
     }
   }
   // Details
@@ -10633,7 +11017,9 @@ function openPinTrade() {
   document.getElementById('pin-trade-list').innerHTML = sorted.map(function(t){
     var pnl = t.pnl||0;
     var col = pnl>0?'var(--grn)':pnl<0?'var(--red)':'rgba(255,255,255,.4)';
-    var hasImg = t.images && t.images.length;
+    // Chunk 2.5 — flag TV-only trades with the 📸 icon too.
+    var _ptImgs = (typeof getTradeImagesWithTV === 'function') ? getTradeImagesWithTV(t) : (t.images||[]);
+    var hasImg = _ptImgs.length > 0;
     var safeTid = safeText(t.id);
     return '<div data-tid="'+safeTid+'" onclick="pinTradeOfWeek(this.dataset.tid);document.getElementById(\'pin-trade-modal\').style.display=\'none\'" style="display:flex;align-items:center;gap:10px;padding:9px 12px;margin-bottom:6px;background:rgba(0,0,0,.3);border-radius:8px;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:.15s" onmouseover="this.style.borderColor=\'rgba(255,200,0,.3)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,.08)\'">'
       + '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:16px;letter-spacing:1px;color:var(--cyan);flex-shrink:0">' + safeText(t.sym||'—') + '</div>'
@@ -10963,10 +11349,12 @@ function renderFeedPosts(g){
     }
     var sessTxt = t.session ? safeText(String(t.session).toUpperCase()) : '';
 
-    var hasImg = t.images && t.images[0];
-    var imgUrl = hasImg ? safeURL(t.images[0]) : '';
+    // Chunk 2.5 — augmented with TV /x/ snapshot if no upload but link present.
+    var _feedImgs = (typeof getTradeImagesWithTV === 'function') ? getTradeImagesWithTV(t) : (t.images||[]);
+    var hasImg = _feedImgs.length > 0;
+    var imgUrl = hasImg ? safeURL(_feedImgs[0]) : '';
     var thumbHtml = hasImg
-      ? '<img class="post-thumb" src="'+imgUrl+'" alt="Trade screenshot" onclick="openScreenshotLightbox(\''+imgUrl+'\')">'
+      ? '<img class="post-thumb" src="'+imgUrl+'" alt="Trade screenshot" onclick="openScreenshotLightbox(\''+imgUrl+'\')" onerror="this.style.display=\'none\'">'
       : '';
 
     // Normalize content into a v6 trade-body pill (sym + side badge +
@@ -12051,8 +12439,10 @@ function renderTOTD(g){
   var sideRaw = (t.type||'').toLowerCase();
   var sideTxt = sideRaw ? sideRaw.charAt(0).toUpperCase()+sideRaw.slice(1) : '';
   var sideClass = (sideRaw==='long' || sideRaw==='short') ? sideRaw : '';
-  var hasImg = t.images && t.images[0];
-  var imgUrl = hasImg ? safeURL(t.images[0]) : '';
+  // Chunk 2.5 — augmented with TV /x/ snapshot.
+  var _cardImgs = (typeof getTradeImagesWithTV === 'function') ? getTradeImagesWithTV(t) : (t.images||[]);
+  var hasImg = _cardImgs.length > 0;
+  var imgUrl = hasImg ? safeURL(_cardImgs[0]) : '';
   var avHtml = renderUserAvatar({
     avatar_finish: top.avatar_finish,
     avatar_image_url: top.avatar_image_url,
@@ -12928,6 +13318,18 @@ function goTo(pg){
   if(pg==='dashboard'){renderDashboard();setTimeout(drawMiniChart,80);}
   if(pg==='history')renderHistory();if(pg==='propfirms')pfRender();if(pg==='calendar')renderCalPage();if(pg==='analytics')renderAnalytics();if(pg==='community')renderCommunity();if(pg==='rules')renderRules();if(pg==='goals')renderGoals();
   if(pg==='log' && typeof applyLogTradeTier === 'function') applyLogTradeTier();
+  // Confluences picker: warm the library cache + render the (possibly
+  // empty) pill row when the user lands on Log Trade. Lazy-load is also
+  // wired in cfTogglePicker for the case where the user goes straight
+  // to the picker without us having pre-fetched.
+  if(pg==='log' && typeof confluencesState !== 'undefined'){
+    if (confluencesState.library === null) {
+      confluencesState.loadLibrary().then(function(){
+        if (typeof cfRenderLibrary === 'function') cfRenderLibrary();
+      });
+    }
+    if (typeof cfRenderPills === 'function') cfRenderPills();
+  }
   if(pg==='equity'){requestAnimationFrame(function(){requestAnimationFrame(function(){renderEquity();});});}
   if(pg==='upgrade' && typeof refreshUpgradePage === 'function') refreshUpgradePage();
 }
@@ -13707,6 +14109,11 @@ function cemUpdateConf(v){
 }
 
 var _cemImages = [];
+// Chunk 2.5 — read-only TV snapshot link captured on modal open so
+// cemRenderImgPreview can render a TV thumbnail tile alongside the
+// editable images list. The user can't edit the link from the current
+// Edit Modal — full TV-link editing comes in Chunk 3 (modal redesign).
+var _cemTVLink = '';
 
 async function cemHandleImgs(files){
   for(var i=0;i<files.length;i++){
@@ -13730,16 +14137,29 @@ function cemRemoveImg(i){
 function cemRenderImgPreview(){
   var el=document.getElementById('cem-img-preview');
   if(!el)return;
-  el.innerHTML=_cemImages.map(function(src,i){
+  var html = _cemImages.map(function(src,i){
     if(typeof src==='string' && src.indexOf('UPLOADING:')===0){
       return '<div style="display:inline-flex;align-items:center;justify-content:center;width:80px;height:60px;background:rgba(0,180,255,.08);border:1px dashed rgba(0,180,255,.4);border-radius:6px;color:var(--cyan);font-size:9px;font-family:Orbitron,monospace;letter-spacing:1px;margin-right:4px">UPLOADING…</div>';
     }
     var safeSrc = safeURL(src);
-    return '<div style="position:relative;display:inline-block">'
-      +'<img src="'+safeSrc+'" style="width:80px;height:60px;object-fit:cover;border-radius:6px;border:1px solid rgba(0,180,255,.3);cursor:pointer" onclick="openImgLightbox(this.src)"/>'
+    return '<div style="position:relative;display:inline-block;margin-right:4px;margin-bottom:4px">'
+      +'<img src="'+safeSrc+'" style="width:80px;height:60px;object-fit:cover;border-radius:6px;border:1px solid rgba(0,180,255,.3);cursor:pointer" onclick="openImgLightbox(this.src)" onerror="this.parentElement.style.display=\'none\'"/>'
       +'<button onmousedown="cemRemoveImg('+i+')" style="position:absolute;top:-5px;right:-5px;background:var(--red);border:none;color:#fff;width:16px;height:16px;border-radius:50%;font-size:14px;cursor:pointer;line-height:16px;text-align:center">&#10005;</button>'
       +'</div>';
   }).join('');
+  // Chunk 2.5 — read-only TV /x/ snapshot tile appended after user uploads.
+  // No remove button; deleting requires clearing the link itself, which the
+  // current modal doesn't expose (Chunk 3 will add that field).
+  var tvUrl = (typeof getTVSnapshotImageUrl === 'function')
+    ? getTVSnapshotImageUrl(_cemTVLink) : null;
+  if (tvUrl){
+    var safeTV = safeURL(tvUrl);
+    html += '<div style="position:relative;display:inline-block;margin-right:4px;margin-bottom:4px" title="TradingView snapshot — read-only">'
+         +  '<img src="'+safeTV+'" style="width:80px;height:60px;object-fit:cover;border-radius:6px;border:1px solid rgba(110,168,255,0.35);cursor:pointer" onclick="openImgLightbox(this.src)" onerror="this.parentElement.style.display=\'none\'"/>'
+         +  '<span style="position:absolute;bottom:3px;left:3px;padding:1px 5px;border-radius:999px;background:rgba(0,0,0,0.75);font-family:var(--n-font-mono);font-size:8px;letter-spacing:0.1em;color:#6ea8ff;text-transform:uppercase">TV</span>'
+         +  '</div>';
+  }
+  el.innerHTML = html;
 }
 
 function openCalEdit(id){
@@ -13775,12 +14195,15 @@ function openCalEdit(id){
   document.getElementById('cem-conf').value=cv; cemUpdateConf(cv);
   // Load existing screenshots
   _cemImages = (t.images && t.images.length) ? t.images.slice() : [];
+  // Chunk 2.5 — capture TV link for read-only snapshot tile in cemRenderImgPreview.
+  _cemTVLink = (t && typeof t.tradingview_link === 'string') ? t.tradingview_link : '';
   cemRenderImgPreview();
   document.getElementById('cal-edit-modal').style.display='flex';
 }
 function closeCalEdit(){
   document.getElementById('cal-edit-modal').style.display='none';
   _cemId=null;
+  _cemTVLink = ''; // Chunk 2.5 — prevent stale TV thumbnail on next modal open
 }
 function saveCalEdit(){
   // CAPTURE the trade id BEFORE closing the modal — closeCalEdit()
@@ -14019,8 +14442,8 @@ function setMode(m,el){document.querySelectorAll('.mode-tab').forEach(x=>x.class
 function setLgType(t){
   lgType=t;
   var l=document.getElementById('lg-long'),s=document.getElementById('lg-short');
-  if(l) l.classList.toggle('on',t==='long');
-  if(s) s.classList.toggle('on',t==='short');
+  if(l){ l.classList.toggle('on',t==='long');     l.classList.toggle('active',t==='long'); }
+  if(s){ s.classList.toggle('on',t==='short');    s.classList.toggle('active',t==='short'); }
   // Direction change invalidates any auto-filled PnL — only respect a true manual override
   _pnlManual = false;
   var hint=document.getElementById('lt-pnl-hint');
@@ -14030,7 +14453,7 @@ function setLgType(t){
 
 // ── LOG TRADE V2 — pill handlers, manual-override flags, live preview ──
 let _pnlManual=false, _rrManual=false;
-const _GRADE_TO_IDX={F:0,D:1,C:2,B:3,A:4}; // existing GRADES is 0=F..5=A+; A+ unused in pill UI
+const _GRADE_TO_IDX={F:0,D:1,C:2,B:3,A:4,'A+':5}; // Visual redesign: A+ now exposed via 6-chip selector
 
 // Reflection-bar palettes (shared by manual + CSV minis)
 const GRADE_COLORS={A:'#5fb389',B:'#e0e0e0',C:'#888',D:'#d49a6a',F:'#c95f5f'};
@@ -14047,36 +14470,39 @@ function setGradePill(letter){
   setGradeDots(idx);
 }
 
-// Setup Grade dot meter (fix #7): mirrors .emotion-row / .lt-confidence-row
-// structurally — gradient panel, cumulative dot fill via --grade-color, bottom
-// progress bar via --grade-pct, mono-caps letter label pushed right.
-// Idx → letter map: 1=F 2=D 3=C 4=B 5=A. Persists 0-based idx to #lg-grade
-// (via _GRADE_TO_IDX) so fullLog continues to read the grade correctly.
+// Setup Grade chip row (visual redesign Chunk 2).
+// 6 chips total — F D C B A A+. Tier coloring: F/D=rose, C/B=muted, A/A+=sage.
+// Idx → letter map: 1=F 2=D 3=C 4=B 5=A 6=A+. Persists 0-based idx to #lg-grade
+// (via _GRADE_TO_IDX, now {F:0,D:1,C:2,B:3,A:4,'A+':5}) so fullLog continues
+// to read the grade correctly via GRADES[idx].label.
+// The legacy dot row (#lt-grade-dots-row / .lt-grade-dot) is also updated if
+// still present — keeps Edit Modal / quick-fill calls working until Chunk 3.
 function setGradeDots(idx){
-  idx = Math.max(1, Math.min(5, parseInt(idx)||4));
-  var GRADE_IDX_TO_LETTER = { 1:'F', 2:'D', 3:'C', 4:'B', 5:'A' };
+  idx = Math.max(1, Math.min(6, parseInt(idx)||4));
+  var GRADE_IDX_TO_LETTER = { 1:'F', 2:'D', 3:'C', 4:'B', 5:'A', 6:'A+' };
   var letter = GRADE_IDX_TO_LETTER[idx];
-  var color  = (typeof GRADE_COLORS !== 'undefined' && GRADE_COLORS[letter]) || '#e0e0e0';
+  var color  = (typeof GRADE_COLORS !== 'undefined' && GRADE_COLORS[letter]) || GRADE_COLORS[letter==='A+'?'A':letter] || '#e0e0e0';
 
-  // Cumulative dot fill — color comes from --grade-color set on the row.
+  // Chip selector — new primary UI (visual redesign).
+  document.querySelectorAll('#rw-grade-chips .rw-chip-grade').forEach(function(c){
+    var v = parseInt(c.dataset.grade||'0');
+    c.classList.toggle('active', v === idx);
+  });
+  var disp = document.getElementById('rw-grade-display');
+  if (disp) { disp.textContent = letter; disp.style.color = color; }
+
+  // Legacy dot row — keep updated for Edit Modal compat (Chunk 3 will move it).
   document.querySelectorAll('#pg-log .lt-grade-dot').forEach(function(d){
     var v = parseInt(d.dataset.gradeIdx||'0');
     d.classList.toggle('on', v <= idx);
   });
-
-  // Row drives the dot fill color + bottom progress bar (matches em-row pattern).
   var row = document.getElementById('lt-grade-dots-row');
   if (row) {
     row.style.setProperty('--grade-color', color);
-    row.style.setProperty('--grade-pct',   (idx * 20) + '%');
+    row.style.setProperty('--grade-pct',   (idx * (100/6)) + '%');
   }
-
-  // Label: just the letter, mono caps via CSS, color-shifted via inline style.
   var lbl = document.getElementById('lt-grade-dots-lbl');
-  if (lbl) {
-    lbl.textContent = letter;
-    lbl.style.color = color;
-  }
+  if (lbl) { lbl.textContent = letter; lbl.style.color = color; }
 
   // Persist — fullLog reads #lg-grade as 0-based index (_GRADE_TO_IDX)
   var hidden = document.getElementById('lg-grade');
@@ -14145,6 +14571,620 @@ async function applyLogTradeTier(){
   if (pin) pin.style.display = isFree ? '' : 'none';
 }
 window.applyLogTradeTier = applyLogTradeTier;
+
+/* ─────────────────────────────────────────────────────────────
+   CONFLUENCES PICKER — Phase 1 (Chunk 2 of CONFLUENCES_SPEC)
+
+   State + library CRUD + DOM rendering. No persistence to
+   trade_confluences in this chunk — pills live in
+   confluencesState.selected and reset when the form resets.
+   Chunk 3 will wire save/load to the trade row.
+
+   Auth: writes use session-derived userId per Amendment 2.
+   Library reads rely on RLS (auth.uid() filter) so no explicit
+   user_id filter is sent.
+   ───────────────────────────────────────────────────────────── */
+
+const CF_TF_TIER = {
+  '1m':'ltf','5m':'ltf',
+  '15m':'mid','30m':'mid',
+  '1hr':'htf','4h':'htf','D':'htf','W':'htf',
+};
+function cfTierFor(tf){ return tf ? (CF_TF_TIER[tf] || 'none') : 'none'; }
+
+const confluencesState = {
+  library: null,            // [{id, name}] — null = not loaded; [] = empty
+  selected: [],             // [{confluence_id, name, timeframe}]
+  activeTF: '1hr',          // null = no TF
+  searchQuery: '',
+  addInputOpen: false,
+  pickerOpen: false,
+  loadingLibrary: false,
+
+  async loadLibrary(){
+    if (this.loadingLibrary) return;
+    this.loadingLibrary = true;
+    try {
+      if (!window._sb) { this.library = []; return; }
+      const r = await window._sb
+        .from('confluences')
+        .select('id, name')
+        .is('archived_at', null)
+        .order('name', { ascending: true });
+      if (r.error) {
+        console.warn('[confluences] loadLibrary failed:', r.error.message);
+        this.library = [];
+        return;
+      }
+      this.library = r.data || [];
+    } finally {
+      this.loadingLibrary = false;
+    }
+  },
+
+  async addToLibrary(rawName){
+    const name = (rawName || '').trim();
+    if (!name) return null;
+    // Case-insensitive check against the LOCAL cache (active rows only).
+    // If an active row already matches, surface it — no DB roundtrip needed.
+    const existing = (this.library || []).find(
+      c => c.name.toLowerCase() === name.toLowerCase()
+    );
+    if (existing) return existing;
+    if (!window._sb) { toast('Not connected — try again'); return null; }
+    // Get authoritative user_id from the session (Amendment 2 pattern).
+    let userId = null;
+    try {
+      const sess = await window._sb.auth.getSession();
+      userId = sess && sess.data && sess.data.session && sess.data.session.user && sess.data.session.user.id;
+    } catch(e){}
+    if (!userId) { toast('Sign in to save confluences'); return null; }
+
+    // Chunk 2.6 — true-restore path. Before INSERTing, look for an existing
+    // row by (user_id, name) IGNORING archived_at. If found archived, clear
+    // archived_at so the user's trade_confluences attribution naturally
+    // re-resurfaces with the same id. If found active, the local cache was
+    // stale — refresh and surface it. Only INSERT when no row exists.
+    const lookup = await window._sb
+      .from('confluences')
+      .select('id, name, archived_at')
+      .eq('user_id', userId)
+      .ilike('name', name)
+      .limit(1)
+      .maybeSingle();
+
+    if (lookup && !lookup.error && lookup.data) {
+      if (lookup.data.archived_at) {
+        // Resurrect — single UPDATE, preserves id + all trade_confluences refs.
+        const upd = await window._sb
+          .from('confluences')
+          .update({ archived_at: null })
+          .eq('id', lookup.data.id)
+          .eq('user_id', userId)
+          .select('id, name')
+          .single();
+        if (upd.error) {
+          console.warn('[confluences] restore failed:', upd.error.message);
+          toast('Failed to restore confluence');
+          return null;
+        }
+        if (!this.library) this.library = [];
+        this.library.push(upd.data);
+        this.library.sort((a,b) => a.name.localeCompare(b.name));
+        toast('Restored "' + upd.data.name + '" to library');
+        return upd.data;
+      }
+      // Found active row — local cache missed it; sync and return.
+      await this.loadLibrary();
+      return (this.library || []).find(c => c.id === lookup.data.id) || null;
+    }
+
+    // No existing row — fresh INSERT.
+    const r = await window._sb
+      .from('confluences')
+      .insert({ user_id: userId, name })
+      .select('id, name')
+      .single();
+    if (r.error) {
+      console.warn('[confluences] insert failed:', r.error.message);
+      // 23505 = unique violation — defensive fallback if the lookup above
+      // raced with a concurrent insert. Refresh and surface.
+      if (r.error.code === '23505') {
+        await this.loadLibrary();
+        return (this.library || []).find(c => c.name.toLowerCase() === name.toLowerCase()) || null;
+      }
+      toast('Failed to add confluence');
+      return null;
+    }
+    if (!this.library) this.library = [];
+    this.library.push(r.data);
+    this.library.sort((a,b) => a.name.localeCompare(b.name));
+    return r.data;
+  },
+
+  /* Chunk 2.6 — soft-archive a confluence. trade_confluences rows pointing
+     at this id continue to JOIN and resolve the name, so historical trade
+     pills keep rendering. Local cache strips the row so the picker hides
+     it immediately. The user can resurrect by re-typing the same name
+     (see addToLibrary's true-restore path). */
+  async archiveLibrary(confluenceId){
+    if (!confluenceId) return false;
+    if (!window._sb) { toast('Not connected — try again'); return false; }
+    let userId = null;
+    try {
+      const sess = await window._sb.auth.getSession();
+      userId = sess && sess.data && sess.data.session && sess.data.session.user && sess.data.session.user.id;
+    } catch(e){}
+    if (!userId) { toast('Sign in to delete confluences'); return false; }
+
+    const r = await window._sb
+      .from('confluences')
+      .update({ archived_at: new Date().toISOString() })
+      .eq('id', confluenceId)
+      .eq('user_id', userId);
+    if (r.error) {
+      console.warn('[confluences] archive failed:', r.error.message);
+      toast('Failed to delete confluence');
+      return false;
+    }
+    // Strip from local cache so the picker hides it immediately.
+    if (Array.isArray(this.library)) {
+      this.library = this.library.filter(c => c.id !== confluenceId);
+    }
+    // Also strip any in-flight pills referencing this confluence so the
+    // user's current draft trade doesn't ship a now-archived tag.
+    if (Array.isArray(this.selected)) {
+      this.selected = this.selected.filter(p => p.confluence_id !== confluenceId);
+    }
+    return true;
+  },
+
+  addPill(confluence){
+    if (!confluence) return false;
+    // Prevent UI-level dupe (same confluence + same TF). DB unique index
+    // would also reject in Chunk 3, but blocking here keeps state clean.
+    const tf = this.activeTF; // null for No-TF
+    const dupe = this.selected.find(
+      p => p.confluence_id === confluence.id && p.timeframe === tf
+    );
+    if (dupe) return false;
+    this.selected.push({
+      confluence_id: confluence.id,
+      name: confluence.name,
+      timeframe: tf,
+    });
+    return true;
+  },
+
+  removePill(idx){
+    if (idx < 0 || idx >= this.selected.length) return;
+    this.selected.splice(idx, 1);
+  },
+
+  setTF(tf){
+    this.activeTF = tf;  // null means No TF
+  },
+
+  reset(){
+    this.selected = [];
+    this.activeTF = '1hr';
+    this.searchQuery = '';
+    this.addInputOpen = false;
+  },
+};
+window.confluencesState = confluencesState;
+
+/* ─── Render functions ──────────────────────────────────────── */
+
+function cfRenderPills(){
+  const wrap = document.getElementById('cf-pills');
+  const hint = document.getElementById('cf-hint');
+  const count = document.getElementById('cf-count');
+  if (!wrap || !hint) return;
+  // Clear existing pills, keep the hint span at the end.
+  Array.from(wrap.querySelectorAll('.cf-pill')).forEach(el => el.remove());
+  const list = confluencesState.selected;
+  list.forEach((pill, idx) => {
+    const tier = cfTierFor(pill.timeframe);
+    const el = document.createElement('span');
+    el.className = 'cf-pill cf-pill-' + tier;
+    const safeName = _cfEsc(pill.name);
+    el.innerHTML = pill.timeframe
+      ? '<span class="cf-tf-prefix">' + _cfEsc(pill.timeframe) + '</span>' +
+        '<span class="cf-dot">·</span>' +
+        '<span>' + safeName + '</span>' +
+        '<span class="cf-x" data-idx="' + idx + '">&times;</span>'
+      : '<span>' + safeName + '</span>' +
+        '<span class="cf-x" data-idx="' + idx + '">&times;</span>';
+    wrap.insertBefore(el, hint);
+  });
+  wrap.classList.toggle('has-pills', list.length > 0);
+  if (count) count.textContent = list.length + ' added';
+  hint.textContent = list.length > 0 ? '+ add more' : '+ click to add confluences';
+}
+
+function cfRenderLibrary(){
+  const list = document.getElementById('cf-lib-list');
+  if (!list) return;
+  const lib = confluencesState.library || [];
+  const q = (confluencesState.searchQuery || '').trim().toLowerCase();
+  const filtered = q ? lib.filter(c => c.name.toLowerCase().includes(q)) : lib;
+  const tf = confluencesState.activeTF;
+  const previewPrefix = tf ? (tf + ' · ') : '';
+
+  if (lib.length === 0) {
+    list.innerHTML = '<div class="cf-lib-empty">' +
+      'Your library is empty.<br>' +
+      'Tap <span class="cf-emph">+ Add new confluence</span> to create your first tag.' +
+      '</div>';
+    return;
+  }
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="cf-lib-empty">No matches.</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(c =>
+    '<div class="cf-lib-row" data-id="' + c.id + '" data-name="' + _cfEsc(c.name) + '">' +
+      '<span class="cf-lib-name">' + _cfEsc(c.name) + '</span>' +
+      '<span class="cf-lib-preview">+ add as ' + _cfEsc(previewPrefix + c.name) + '</span>' +
+      // Chunk 2.6 — small × button to soft-archive this library entry.
+      // stopPropagation prevents the row's body click (cfOnLibRowClick)
+      // from firing simultaneously and adding the pill we're about to delete.
+      '<button type="button" class="cf-lib-x" title="Remove from library" aria-label="Remove ' + _cfEsc(c.name) + ' from library" ' +
+              'onclick="event.stopPropagation();cfOnLibDeleteClick(this.parentNode.dataset.id, this.parentNode.dataset.name)">' +
+        '&times;' +
+      '</button>' +
+    '</div>'
+  ).join('');
+  // Wire row body clicks (× has its own stopPropagation'd handler above).
+  list.querySelectorAll('.cf-lib-row').forEach(row => {
+    row.addEventListener('click', () => cfOnLibRowClick(row.dataset.id));
+  });
+}
+
+function cfRenderTFChips(){
+  document.querySelectorAll('#cf-tf-chips .cf-tf-chip').forEach(chip => {
+    const tf = chip.dataset.tf || null;
+    const isActive = (confluencesState.activeTF === (tf || null));
+    chip.classList.remove('active','htf','mid','ltf');
+    if (isActive) {
+      chip.classList.add('active');
+      chip.classList.add(cfTierFor(tf));
+    }
+  });
+}
+
+function _cfEsc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ─── Event handlers ────────────────────────────────────────── */
+
+function cfTogglePicker(forceOpen){
+  const dd = document.getElementById('cf-dropdown');
+  const pills = document.getElementById('cf-pills');
+  if (!dd) return;
+  const willOpen = (typeof forceOpen === 'boolean') ? forceOpen : (dd.style.display === 'none');
+  if (willOpen) {
+    // Lazy-load library on first open.
+    if (confluencesState.library === null) {
+      confluencesState.loadLibrary().then(cfRenderLibrary);
+    }
+    dd.style.display = '';
+    pills.classList.add('open');
+    confluencesState.pickerOpen = true;
+    cfRenderLibrary();
+    cfRenderTFChips();
+  } else {
+    dd.style.display = 'none';
+    pills.classList.remove('open');
+    confluencesState.pickerOpen = false;
+    cfCancelAddLibrary();
+  }
+}
+window.cfTogglePicker = cfTogglePicker;
+
+function cfSetTF(tf, el, event){
+  if (event) event.stopPropagation();
+  // Click active chip again → unset (back to "No TF" state).
+  if (confluencesState.activeTF === tf) {
+    confluencesState.setTF(null);
+  } else {
+    confluencesState.setTF(tf);
+  }
+  cfRenderTFChips();
+  cfRenderLibrary();   // preview text updates
+}
+window.cfSetTF = cfSetTF;
+
+function cfOnSearchInput(value){
+  confluencesState.searchQuery = value || '';
+  cfRenderLibrary();
+  // Pre-fill the "+ Add new" footer text when search has no matches.
+  const lib = confluencesState.library || [];
+  const q = confluencesState.searchQuery.trim();
+  const footerText = document.getElementById('cf-add-footer-text');
+  if (!footerText) return;
+  if (q.length >= 2 && !lib.some(c => c.name.toLowerCase().includes(q.toLowerCase()))) {
+    footerText.textContent = 'Add "' + q + '" to library';
+  } else {
+    footerText.textContent = 'Add new confluence to library';
+  }
+}
+window.cfOnSearchInput = cfOnSearchInput;
+
+function cfOnLibRowClick(confluenceId){
+  const c = (confluencesState.library || []).find(x => x.id === confluenceId);
+  if (!c) return;
+  const added = confluencesState.addPill(c);
+  if (added) cfRenderPills();
+}
+window.cfOnLibRowClick = cfOnLibRowClick;
+
+function cfShowAddInput(){
+  confluencesState.addInputOpen = true;
+  const row = document.getElementById('cf-add-input-row');
+  const footer = document.getElementById('cf-add-footer');
+  const input = document.getElementById('cf-add-input');
+  if (row) row.style.display = '';
+  if (footer) footer.style.display = 'none';
+  if (input) {
+    // Prefill with the current search query if it has no matches in lib.
+    const q = (confluencesState.searchQuery || '').trim();
+    const lib = confluencesState.library || [];
+    const noMatch = q.length >= 2 && !lib.some(c => c.name.toLowerCase().includes(q.toLowerCase()));
+    input.value = noMatch ? q : '';
+    setTimeout(() => { input.focus(); input.select(); }, 30);
+  }
+}
+window.cfShowAddInput = cfShowAddInput;
+
+function cfCancelAddLibrary(){
+  confluencesState.addInputOpen = false;
+  const row = document.getElementById('cf-add-input-row');
+  const footer = document.getElementById('cf-add-footer');
+  const input = document.getElementById('cf-add-input');
+  if (row) row.style.display = 'none';
+  if (footer) footer.style.display = '';
+  if (input) input.value = '';
+}
+window.cfCancelAddLibrary = cfCancelAddLibrary;
+
+async function cfConfirmAddLibrary(){
+  const input = document.getElementById('cf-add-input');
+  if (!input) return;
+  const name = (input.value || '').trim();
+  if (!name) { input.focus(); return; }
+  const c = await confluencesState.addToLibrary(name);
+  if (!c) return;  // toast already raised on failure
+  // Auto-add a pill with the current TF
+  const added = confluencesState.addPill(c);
+  cfCancelAddLibrary();
+  // Clear search so the newly-added row is visible in the unfiltered list.
+  confluencesState.searchQuery = '';
+  const searchInput = document.getElementById('cf-search-input');
+  if (searchInput) searchInput.value = '';
+  cfRenderLibrary();
+  if (added) cfRenderPills();
+}
+window.cfConfirmAddLibrary = cfConfirmAddLibrary;
+
+/* ─── Chunk 2.6 — Library entry delete (soft-archive) ─────── */
+
+// Module-level holder so cfConfirmLibDelete knows which row to archive
+// when the modal's primary action fires. Cleared on cancel + on success.
+var _cfPendingDeleteId = null;
+
+function cfOnLibDeleteClick(confluenceId, name){
+  if (!confluenceId) return;
+  _cfPendingDeleteId = confluenceId;
+  var modal = document.getElementById('cf-delete-modal');
+  var nameEl = document.getElementById('cf-delete-name');
+  if (nameEl) nameEl.textContent = name || 'this confluence';
+  if (modal) modal.style.display = 'flex';
+}
+window.cfOnLibDeleteClick = cfOnLibDeleteClick;
+
+function cfCancelLibDelete(){
+  _cfPendingDeleteId = null;
+  var modal = document.getElementById('cf-delete-modal');
+  if (modal) modal.style.display = 'none';
+}
+window.cfCancelLibDelete = cfCancelLibDelete;
+
+async function cfConfirmLibDelete(){
+  var id = _cfPendingDeleteId;
+  if (!id) { cfCancelLibDelete(); return; }
+  // Close the modal optimistically — the await below runs in the background
+  // and either way we don't want the user staring at a modal mid-network.
+  cfCancelLibDelete();
+  var ok = await confluencesState.archiveLibrary(id);
+  if (!ok) return; // toast already raised by archiveLibrary on failure
+  // Re-render library list (row strips out) + the pill row (if the user
+  // had a draft pill for this confluence, archiveLibrary already removed it).
+  if (typeof cfRenderLibrary === 'function') cfRenderLibrary();
+  if (typeof cfRenderPills === 'function')   cfRenderPills();
+  toast('Removed from library');
+}
+window.cfConfirmLibDelete = cfConfirmLibDelete;
+
+/* ─── Pill X click (event delegation on the pill row) ─────── */
+
+document.addEventListener('click', function(e){
+  // Pill X — remove from selected
+  const x = e.target.closest && e.target.closest('#cf-pills .cf-x');
+  if (x) {
+    e.stopPropagation();   // don't toggle picker open
+    const idx = parseInt(x.dataset.idx, 10);
+    if (!isNaN(idx)) {
+      confluencesState.removePill(idx);
+      cfRenderPills();
+    }
+    return;
+  }
+  // Click outside picker → close (preserves selected pills in state)
+  if (!confluencesState.pickerOpen) return;
+  const section = document.getElementById('lt-sec-confluences');
+  if (section && !section.contains(e.target)) {
+    cfTogglePicker(false);
+  }
+});
+
+// ESC closes picker
+document.addEventListener('keydown', function(e){
+  if (e.key !== 'Escape') return;
+  if (confluencesState.pickerOpen) cfTogglePicker(false);
+});
+
+/* ─── Persistence to trade_confluences (Chunk 3) ─────────────
+   FK constraint requires the parent trade row to exist in
+   public.trades before we can insert. fullLog() kicks off
+   saveTradeToSupa() directly (bypassing the 800ms debounce in
+   save()) and chains the confluences write after the trade
+   upsert resolves. Failures are non-fatal — log + toast, never
+   abort the trade save.
+
+   DELETE-then-INSERT pattern: simplest correct semantics for
+   "this is the full set of pills for this trade right now".
+   Edit-mode updates work identically — old rows wiped, new
+   rows inserted in one logical step.
+
+   Auth: writes flow through RLS via auth.uid() check against
+   trades.user_id. user_id is implicit on confluences inserts
+   (separate flow, in addToLibrary). */
+
+async function saveTradeConfluences(tradeId, pills){
+  if (!window._sb) return;
+  const tid = String(tradeId);
+  // Wipe existing rows for this trade (covers edits + repeat saves)
+  const del = await window._sb
+    .from('trade_confluences')
+    .delete()
+    .eq('trade_id', tid);
+  if (del.error) {
+    console.warn('[confluences] delete-existing failed:', del.error.message);
+    // Don't throw — try the insert anyway. UNIQUE index will reject
+    // exact dupes; non-dupes will land cleanly.
+  }
+  if (!pills || pills.length === 0) return;
+  const rows = pills.map(function(p, idx){
+    return {
+      trade_id: tid,
+      confluence_id: p.confluence_id,
+      timeframe: p.timeframe || null,
+      position: idx,
+    };
+  });
+  const ins = await window._sb.from('trade_confluences').insert(rows);
+  if (ins.error) {
+    console.warn('[confluences] insert failed:', ins.error.message, ins.error);
+    throw new Error(ins.error.message);
+  }
+}
+window.saveTradeConfluences = saveTradeConfluences;
+
+async function loadTradeConfluences(tradeId){
+  if (!window._sb) return [];
+  const tid = String(tradeId);
+  const r = await window._sb
+    .from('trade_confluences')
+    .select('confluence_id, timeframe, position, confluences(name)')
+    .eq('trade_id', tid)
+    .order('position', { ascending: true });
+  if (r.error) {
+    console.warn('[confluences] load failed:', r.error.message);
+    return [];
+  }
+  return (r.data || []).map(function(row){
+    return {
+      confluence_id: row.confluence_id,
+      name: (row.confluences && row.confluences.name) || '',
+      timeframe: row.timeframe,
+    };
+  });
+}
+window.loadTradeConfluences = loadTradeConfluences;
+
+/* Batch fetch: load confluences for many trades in a single query.
+   Returns { tradeIdString → [{confluence_id, name, timeframe, position}] }.
+   Used by History row rendering + Calendar day-review modal so we
+   don't fire N round-trips. */
+async function _cfLoadAllForView(tradeIds){
+  if (!window._sb || !tradeIds || !tradeIds.length) return {};
+  const ids = tradeIds.map(String);
+  const r = await window._sb
+    .from('trade_confluences')
+    .select('trade_id, confluence_id, timeframe, position, confluences(name)')
+    .in('trade_id', ids)
+    .order('position', { ascending: true });
+  if (r.error) {
+    console.warn('[confluences] batch load failed:', r.error.message);
+    return {};
+  }
+  const byTrade = {};
+  (r.data || []).forEach(function(row){
+    if (!byTrade[row.trade_id]) byTrade[row.trade_id] = [];
+    byTrade[row.trade_id].push({
+      confluence_id: row.confluence_id,
+      name: (row.confluences && row.confluences.name) || '',
+      timeframe: row.timeframe,
+    });
+  });
+  return byTrade;
+}
+window._cfLoadAllForView = _cfLoadAllForView;
+
+/* Build the mini-pills HTML for a list of confluences.
+   options.limit       — max pills before showing "+N" badge (default 3)
+   options.wrapClass   — CSS class for the outer wrapper (default '')
+   Returns a string ready to drop into innerHTML / template literals. */
+function cfRenderMiniPillsHtml(pills, options){
+  options = options || {};
+  const limit = (typeof options.limit === 'number') ? options.limit : 3;
+  const wrapClass = options.wrapClass || '';
+  if (!pills || pills.length === 0) return '';
+  const shown = pills.slice(0, limit);
+  const more = pills.length - shown.length;
+  const inner = shown.map(function(p){
+    const tier = cfTierFor(p.timeframe);
+    const name = _cfEsc(p.name);
+    const tf = p.timeframe
+      ? '<span class="cf-mini-tf">'+_cfEsc(p.timeframe)+'</span><span class="cf-mini-dot">·</span>'
+      : '';
+    return '<span class="cf-pill-mini cf-pill-'+tier+'">'+tf+'<span>'+name+'</span></span>';
+  }).join('');
+  const moreBadge = more > 0
+    ? '<span class="cf-more-badge">+'+more+'</span>'
+    : '';
+  return wrapClass
+    ? '<div class="'+wrapClass+'">'+inner+moreBadge+'</div>'
+    : inner + moreBadge;
+}
+window.cfRenderMiniPillsHtml = cfRenderMiniPillsHtml;
+
+// Wrapper for fullLog: snapshot the current pills, fire the trade
+// upsert + confluences insert in series, then return. Caller is
+// responsible for resetting confluencesState + re-rendering the
+// picker UI afterward (synchronously, for snappy UX).
+async function _cfPersistForTrade(trade, pills){
+  if (!trade || typeof saveTradeToSupa !== 'function') return;
+  try {
+    // Direct upsert (bypasses save()'s 800ms debounce) so the parent
+    // trade row lands in Supabase before the FK-bound child write.
+    await saveTradeToSupa(trade);
+    if (pills && pills.length > 0) {
+      await saveTradeConfluences(String(trade.id), pills);
+    }
+  } catch (e) {
+    console.warn('[confluences] _cfPersistForTrade failed:', e && e.message);
+    // Non-fatal — trade is already saved locally + via the debounced
+    // sync. Confluences are recoverable on the next edit-save round.
+    if (typeof toast === 'function') toast('Saved trade — tags will retry on next edit');
+  }
+}
+window._cfPersistForTrade = _cfPersistForTrade;
 
 /* ─────────────────────────────────────────────────────────────
    FREE-TIER GATING — shared infrastructure (Phase 8 launch gate)
@@ -14268,15 +15308,21 @@ window.toggleFreeCapBanner = toggleFreeCapBanner;
 
 function setEmotionDots(n){
   var lvl = Math.max(1, Math.min(5, parseInt(n)||3));
-  // Cumulative fill — every dot ≤ lvl gets .on
+  // Visual redesign Chunk 2: chip row is primary UI; legacy dot row updated for compat.
+  document.querySelectorAll('#rw-emotion-chips .rw-chip').forEach(function(c){
+    var v = parseInt(c.dataset.emotion||'0');
+    c.classList.toggle('active', v === lvl);
+  });
+  var disp = document.getElementById('rw-emotion-display');
+  if (disp) disp.textContent = EMOTION_LABELS[lvl] || '';
+
+  // Legacy dot row — keep updated for Edit Modal compat (Chunk 3).
   document.querySelectorAll('#pg-log .em-dot').forEach(function(d){
     var v = parseInt(d.dataset.emotion||'0');
     d.classList.toggle('on', v <= lvl);
   });
-  // Label on right side ("Neutral", "In Zone", etc.)
   var lbl=document.getElementById('lt-em-label');
   if(lbl) lbl.textContent = EMOTION_LABELS[lvl] || '';
-  // Drive the row's bar fill + color and the dot ::after color via --em-*.
   var row=document.getElementById('lt-emotion-row');
   if(row){
     row.style.setProperty('--em-color', EMOTION_COLORS[lvl] || EMOTION_COLORS[3]);
@@ -14306,13 +15352,21 @@ function initReflectionBars(){
 const CONF_LABELS=['','Unsure','Hesitant','Comfortable','Confident','Conviction'];
 function setConfidenceDots(n){
   n = Math.max(1, Math.min(5, parseInt(n)||3));
+  // Visual redesign Chunk 2: chip row is primary UI; legacy dot row updated for compat.
+  document.querySelectorAll('#rw-conf-chips .rw-chip').forEach(function(c){
+    var v = parseInt(c.dataset.conf||'0');
+    c.classList.toggle('active', v === n);
+  });
+  var disp = document.getElementById('rw-conf-display');
+  if (disp) disp.innerHTML = n + '<span class="rw-display-suf"> / 5</span>';
+
+  // Legacy dot row — keep updated for Edit Modal compat (Chunk 3).
   document.querySelectorAll('#pg-log .lt-conf-dot').forEach(function(d){
     var v = parseInt(d.dataset.conf||'0');
     d.classList.toggle('on', v <= n);
   });
   var lbl=document.getElementById('lt-conf-label');
   if(lbl) lbl.textContent = CONF_LABELS[n] || '';
-  // Drive the row's animated bottom-border fill (n=1 → 20%, n=5 → 100%).
   var row=document.querySelector('#pg-log .lt-confidence-row');
   if(row) row.style.setProperty('--conf-pct', (n*20)+'%');
   var hidden=document.getElementById('lg-conf');
@@ -14320,6 +15374,127 @@ function setConfidenceDots(n){
   if(typeof updateConf==='function'){ try{ updateConf(n); }catch(e){} }
   updateLogPreview();
 }
+
+/* ── ACCOUNT TYPE chip selector (Visual redesign Chunk 2) ──
+   Toggle-on-click, click-active-to-clear. Persists value to #lg-account-type
+   hidden input. fullLog reads it and saves to trades.account_type column. */
+function setAccountType(t){
+  var hidden = document.getElementById('lg-account-type');
+  var current = hidden ? hidden.value : '';
+  var next = (current === t) ? '' : (t || ''); // click-again toggles off
+  if (hidden) hidden.value = next;
+  document.querySelectorAll('#rw-acct-chips .rw-chip-acct').forEach(function(c){
+    c.classList.toggle('active', c.dataset.acct === next);
+  });
+  if (typeof updateLogPreview === 'function') updateLogPreview();
+}
+window.setAccountType = setAccountType;
+
+/* ── TRADINGVIEW LINK validate + ✓ badge + inline thumbnail (Chunk 2 + 2.5) ──
+   Accepts /x/{ID} (snapshot) or /chart/{ID} (saved chart) URLs.
+   /x/{ID} URLs additionally drive an inline thumbnail preview (Chunk 2.5)
+   and get embedded as a screenshot on display surfaces. /chart URLs stay
+   link-only (the saved-chart page is interactive; no static image). */
+var _TV_LINK_RE = /^https?:\/\/(www\.)?tradingview\.com\/(x|chart)\/[A-Za-z0-9_-]+\/?(\?.*)?$/i;
+var _TV_SNAPSHOT_RE = /^https?:\/\/(?:www\.)?tradingview\.com\/x\/([A-Za-z0-9_-]+)\/?(?:\?.*)?$/i;
+
+/* ── TV SNAPSHOT image URL builder (Chunk 2.5) ──
+   Returns the S3 URL for a /x/{ID} snapshot, or null for /chart, non-TV,
+   or malformed input. The TV CDN buckets snapshots by their ID's first
+   character (lowercased), e.g. AbCdEf12 → /a/AbCdEf12.png. */
+function getTVSnapshotImageUrl(tvLink){
+  if (!tvLink) return null;
+  var m = String(tvLink).match(_TV_SNAPSHOT_RE);
+  if (!m) return null;
+  var id = m[1];
+  return 'https://s3.tradingview.com/snapshots/' + id.charAt(0).toLowerCase() + '/' + id + '.png';
+}
+window.getTVSnapshotImageUrl = getTVSnapshotImageUrl;
+
+/* ── Augmented image list (Chunk 2.5) ──
+   Returns the trade's user-uploaded images with the TV snapshot appended
+   if the trade has a /x/ link. Snapshot URL goes LAST so user uploads
+   remain the primary thumb on single-thumb cards. Never mutates trade.images. */
+function getTradeImagesWithTV(trade){
+  var base = (trade && Array.isArray(trade.images)) ? trade.images.slice() : [];
+  var tv = trade && getTVSnapshotImageUrl(trade.tradingview_link);
+  if (tv) base.push(tv);
+  return base;
+}
+window.getTradeImagesWithTV = getTradeImagesWithTV;
+
+function onTVLinkInput(){
+  var inp = document.getElementById('lg-tv-link');
+  var ok  = document.getElementById('lg-tv-ok');
+  var preview = document.getElementById('lg-tv-preview');
+  var previewWrap = document.getElementById('lg-tv-preview-wrap');
+  if (!inp || !ok) return;
+  var v = (inp.value || '').trim();
+  var isValidLink = !!(v && _TV_LINK_RE.test(v));
+  ok.style.display = isValidLink ? 'inline-flex' : 'none';
+
+  // Chunk 2.5 — inline thumbnail preview for /x/ snapshots only.
+  if (preview && previewWrap){
+    var snapUrl = getTVSnapshotImageUrl(v);
+    if (snapUrl){
+      previewWrap.style.display = 'block';
+      preview.style.display = 'block';
+      preview.dataset.fallback = '';
+      preview.src = snapUrl;
+    } else {
+      previewWrap.style.display = 'none';
+      preview.removeAttribute('src');
+    }
+  }
+  if (typeof updateLogPreview === 'function') updateLogPreview();
+}
+window.onTVLinkInput = onTVLinkInput;
+
+/* TV preview <img> error fallback — TradingView snapshots can expire (404).
+   When that happens, hide the preview wrap so the user only sees the link
+   + ✓ Linked badge, not a broken-image icon. */
+function onTVPreviewError(imgEl){
+  if (!imgEl) return;
+  if (imgEl.dataset.fallback === '1') return; // already faded
+  imgEl.dataset.fallback = '1';
+  var wrap = document.getElementById('lg-tv-preview-wrap');
+  if (wrap) wrap.style.display = 'none';
+  imgEl.style.display = 'none';
+}
+window.onTVPreviewError = onTVPreviewError;
+
+/* ── R-MULTIPLE chip render (Visual redesign Chunk 2) ──
+   Reads #lg-rr (hidden, auto-filled by calcLivePnl when stop is set) and
+   shows/hides the inline chip next to the P&L label. Called from calcLivePnl. */
+function renderRChip(){
+  var chip = document.getElementById('lg-r-chip');
+  var hint = document.getElementById('lt-r-helper');
+  if (!chip) return;
+  var rrEl = document.getElementById('lg-rr');
+  var stopEl = document.getElementById('lg-stop');
+  var rr = parseFloat(rrEl && rrEl.value);
+  var stop = parseFloat(stopEl && stopEl.value);
+  if (!isNaN(rr) && isFinite(rr) && stop > 0) {
+    var sign = rr >= 0 ? '+' : '';
+    chip.textContent = sign + rr.toFixed(1) + 'R';
+    chip.style.display = 'inline-flex';
+    // Tint chip rose when R is negative (loss-relative-to-risk).
+    if (rr < 0) {
+      chip.style.background = 'rgba(201,95,95,0.12)';
+      chip.style.borderColor = 'rgba(201,95,95,0.36)';
+      chip.style.color = 'var(--n-loss)';
+    } else {
+      chip.style.background = '';
+      chip.style.borderColor = '';
+      chip.style.color = '';
+    }
+    if (hint) hint.style.display = 'none';
+  } else {
+    chip.style.display = 'none';
+    if (hint) hint.style.display = '';
+  }
+}
+window.renderRChip = renderRChip;
 
 function onPnlInput(){
   _pnlManual = true;
@@ -14349,13 +15524,17 @@ function onLtSessionChange(v){
   updateLogPreview();
 }
 
-// Session pill — set .on on the matching pill (or clear all if name
-// is empty / unknown), write the canonical name to hidden lg-session.
+// Session pill — set .on (legacy) + .active (visual redesign Chunk 2) on the
+// matching pill (or clear all if name is empty / unknown), write canonical
+// name to hidden lg-session.
 function setSessionPill(name){
-  document.querySelectorAll('#pg-log .lt-session-pill').forEach(function(p){ p.classList.remove('on'); });
+  document.querySelectorAll('#pg-log .lt-session-pill').forEach(function(p){
+    p.classList.remove('on');
+    p.classList.remove('active');
+  });
   if(name){
     var pill = document.querySelector('#pg-log .lt-session-pill[data-session="'+name+'"]');
-    if(pill) pill.classList.add('on');
+    if(pill){ pill.classList.add('on'); pill.classList.add('active'); }
   }
   var hidden = document.getElementById('lg-session');
   if(hidden) hidden.value = name || '';
@@ -14508,6 +15687,12 @@ function _extractTradeScreenshot(t){
       || (Array.isArray(td.images) && td.images[0])
       || (Array.isArray(inline.screenshots) && inline.screenshots[0])
       || (Array.isArray(td.screenshots) && td.screenshots[0])
+      // Chunk 2.5 — TradingView /x/{ID} snapshot as a screenshot fallback.
+      // Only the in-memory or trade_data-stored tradingview_link counts;
+      // /chart URLs return null (no static image).
+      || (typeof getTVSnapshotImageUrl === 'function'
+          && (getTVSnapshotImageUrl(inline.tradingview_link)
+              || getTVSnapshotImageUrl(td.tradingview_link)))
       || null;
 }
 
@@ -14667,7 +15852,10 @@ async function backfillTradesToCommunity(communityId){
     var contentStr = parts.join(' · ') + (t.notes ? '\n' + t.notes : '');
     var screenshot = (typeof _extractTradeScreenshot === 'function')
       ? _extractTradeScreenshot(t)
-      : (Array.isArray(t.images) ? t.images[0] : null);
+      // Defensive fallback — preserves TV /x/ snapshot if helper missing.
+      : (Array.isArray(t.images) && t.images[0])
+        || (typeof getTVSnapshotImageUrl === 'function' && getTVSnapshotImageUrl(t.tradingview_link))
+        || null;
 
     var meta = {
       grade:      t.grade != null ? t.grade : null,
@@ -14730,6 +15918,11 @@ function fullLog(){
   const grade=GRADES[gradeIdx]?.label||'B';
   const emotion=parseInt(document.getElementById('lg-emotion')?.value??3);
   const confidence=parseInt(document.getElementById('lg-conf')?.value??3);
+  // Visual redesign Chunk 2 — new fields.
+  const acctTypeRaw=(document.getElementById('lg-account-type')?.value||'').trim().toLowerCase();
+  const accountType=['paper','eval','funded','live'].indexOf(acctTypeRaw)>=0 ? acctTypeRaw : null;
+  const tvLinkRaw=(document.getElementById('lg-tv-link')?.value||'').trim();
+  const tradingviewLink=(tvLinkRaw && _TV_LINK_RE.test(tvLinkRaw)) ? tvLinkRaw : '';
   if(!sym||isNaN(entry)||isNaN(exit)){toast('Fill Symbol, Entry & Exit');return;}
 
   // Compute the auto-derived values, then prefer user-typed overrides
@@ -14749,13 +15942,31 @@ function fullLog(){
   // override so the saved rr matches the saved pnl.
   if(_pnlManual && !_rrManual && risk && risk>0) rr = pnl/risk;
 
-  var newTrade = {id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,pnl,rr,grade,emotion,confidence,images:[...noteImages],created_at:new Date().toISOString()};
+  var newTrade = {id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,pnl,rr,grade,emotion,confidence,images:[...noteImages],created_at:new Date().toISOString(),account_type:accountType,tradingview_link:tradingviewLink||undefined};
   trades.unshift(newTrade);
   save();renderAll();
   shareTradeToCommunity(newTrade);
 
+  // Confluences persistence (Chunk 3) — snapshot pills now BEFORE the
+  // form reset clears them, then fire-and-forget the FK-ordered writes.
+  // Local UI reset happens immediately for snappy UX; the Supabase
+  // round-trip races in the background.
+  var _cfPillsSnapshot = (typeof confluencesState !== 'undefined' && confluencesState.selected)
+    ? confluencesState.selected.slice()
+    : [];
+  if (typeof _cfPersistForTrade === 'function') {
+    _cfPersistForTrade(newTrade, _cfPillsSnapshot);
+  }
+  if (typeof confluencesState !== 'undefined') {
+    confluencesState.reset();
+    if (typeof cfRenderPills === 'function') cfRenderPills();
+    if (typeof cfRenderTFChips === 'function') cfRenderTFChips();
+    var cfSearchInput = document.getElementById('cf-search-input');
+    if (cfSearchInput) cfSearchInput.value = '';
+  }
+
   // Reset form for the next trade
-  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-pnl','lg-rr'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-pnl','lg-rr','lg-tv-link'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('lg-qty').value='1';
   if(document.getElementById('lg-accounts'))document.getElementById('lg-accounts').value='1';
   document.getElementById('lg-date').value=_localDate(new Date());
@@ -14769,11 +15980,23 @@ function fullLog(){
   if(typeof setEmotionPill==='function') setEmotionPill(3);
   if(typeof setConfidenceDots==='function') setConfidenceDots(3);
   if(typeof setSessionPill==='function') setSessionPill('');
+  // Visual redesign Chunk 2 — clear new fields.
+  if(typeof setAccountType==='function') setAccountType('');
+  var _tvOk=document.getElementById('lg-tv-ok'); if(_tvOk) _tvOk.style.display='none';
+  var _rChip=document.getElementById('lg-r-chip'); if(_rChip) _rChip.style.display='none';
+  var _rHint=document.getElementById('lt-r-helper'); if(_rHint) _rHint.style.display='';
   if(typeof _colorPnlInput==='function') _colorPnlInput(document.getElementById('lg-pnl'));
   if(typeof _resetLtAutoFlags==='function') _resetLtAutoFlags();
   updateGrade(3);updateEmotion(3);
   const lc=document.getElementById('live-calc');if(lc)lc.style.display='none';
-  noteImages=[];renderNoteImages();
+  // Chunk 2 fix — full screenshot reset (state + preview + file input + dropzone).
+  // Was: noteImages=[];renderNoteImages(); — missed the file input value and
+  // had a race with in-flight uploads. See clearLogTradeScreenshots() doc.
+  if(typeof clearLogTradeScreenshots==='function') clearLogTradeScreenshots();
+  else { noteImages=[]; renderNoteImages(); }
+  // Chunk 2.5 — clear inline TV thumbnail preview alongside the user screenshot.
+  var _tvPrev=document.getElementById('lg-tv-preview'); if(_tvPrev) _tvPrev.removeAttribute('src');
+  var _tvWrap=document.getElementById('lg-tv-preview-wrap'); if(_tvWrap) _tvWrap.style.display='none';
   if(typeof updateLogPreview==='function') updateLogPreview();
   toast('Trade logged', 'success');setTimeout(drawMiniChart,100);
 }
@@ -14829,7 +16052,7 @@ function confirmLogFinal(){
 }
 
 function resetLogForm(){
-  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-pnl','lg-rr'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-pnl','lg-rr','lg-tv-link'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('lg-qty').value='1';
   if(document.getElementById('lg-accounts'))document.getElementById('lg-accounts').value='1';
   document.getElementById('lg-date').value=_localDate(new Date());
@@ -14844,12 +16067,31 @@ function resetLogForm(){
   if(typeof setEmotionPill==='function') setEmotionPill(3);
   if(typeof setConfidenceDots==='function') setConfidenceDots(3);
   if(typeof setSessionPill==='function') setSessionPill('');
+  // Visual redesign Chunk 2 — clear new fields.
+  if(typeof setAccountType==='function') setAccountType('');
+  var _tvOk=document.getElementById('lg-tv-ok'); if(_tvOk) _tvOk.style.display='none';
+  var _rChip=document.getElementById('lg-r-chip'); if(_rChip) _rChip.style.display='none';
+  var _rHint=document.getElementById('lt-r-helper'); if(_rHint) _rHint.style.display='';
   if(typeof _colorPnlInput==='function') _colorPnlInput(document.getElementById('lg-pnl'));
   if(typeof _resetLtAutoFlags==='function') _resetLtAutoFlags();
   const lc=document.getElementById('live-calc');if(lc)lc.style.display='none';
   var note=document.getElementById('lt-acct-note'); if(note) note.style.display='none';
-  noteImages=[];renderNoteImages();
+  // Chunk 2 fix — full screenshot reset (state + preview + file input + dropzone).
+  if(typeof clearLogTradeScreenshots==='function') clearLogTradeScreenshots();
+  else { noteImages=[]; renderNoteImages(); }
+  // Chunk 2.5 — clear inline TV thumbnail preview alongside the user screenshot.
+  var _tvPrev=document.getElementById('lg-tv-preview'); if(_tvPrev) _tvPrev.removeAttribute('src');
+  var _tvWrap=document.getElementById('lg-tv-preview-wrap'); if(_tvWrap) _tvWrap.style.display='none';
   setLgType('long');
+  // Confluences reset (Chunk 3) — wipe pills + restore default TF.
+  if (typeof confluencesState !== 'undefined') {
+    confluencesState.reset();
+    if (typeof cfRenderPills === 'function') cfRenderPills();
+    if (typeof cfRenderTFChips === 'function') cfRenderTFChips();
+    var cfSearch = document.getElementById('cf-search-input');
+    if (cfSearch) cfSearch.value = '';
+    if (typeof cfTogglePicker === 'function') cfTogglePicker(false);
+  }
   if(typeof updateLogPreview==='function') updateLogPreview();
   toast('Form cleared');
 }
@@ -15961,7 +17203,7 @@ async function deleteTrade(id){
   if(_comm && typeof syncAndLoadCommFeed==='function') syncAndLoadCommFeed(_comm);
   toast('Trade deleted', 'success');
 }
-function renderHistory(){
+async function renderHistory(){
   const fm=document.getElementById('h-mkt').value,fd=document.getElementById('h-dir').value,fr=document.getElementById('h-res').value;
   // Free tier sees the last 30 days only; Pro sees everything.
   const view = _visibleTrades();
@@ -16005,9 +17247,18 @@ function renderHistory(){
   // ── ROWS ───────────────────────────────────────────────────────
   const tb=document.getElementById('hist-body');
   if(!ft.length){
-    tb.innerHTML = '<tr><td colspan="10" class="h-empty">No trades found</td></tr>';
+    tb.innerHTML = '<tr><td colspan="11" class="h-empty">No trades found</td></tr>';
     return;
   }
+  // Batch-load confluences for every trade in the current view in one
+  // round-trip (avoids N+1 when filter results have many rows). Empty
+  // object on failure — rows just show "—" in the cell.
+  let cfByTrade = {};
+  try {
+    if (typeof _cfLoadAllForView === 'function') {
+      cfByTrade = await _cfLoadAllForView(ft.map(t => t.id));
+    }
+  } catch(e){ console.warn('[history] cf batch load failed:', e && e.message); }
   function _esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   function _fmtDate(iso){
     if(!iso) return '—';
@@ -16033,6 +17284,12 @@ function renderHistory(){
         + '<div class="notes-tooltip">'+_esc(t.notes)+'</div>'
         + '</td>'
       : '<td class="cell-notes empty">—</td>';
+    // Confluences column — up to 3 mini-pills + "+N" badge if more.
+    // Empty trades fall through to a dash.
+    const cf = cfByTrade[String(t.id)] || [];
+    const confCell = cf.length
+      ? '<td class="cell-conf">'+cfRenderMiniPillsHtml(cf, {limit:3, wrapClass:'cf-mini-row'})+'</td>'
+      : '<td class="cell-conf empty">—</td>';
     return '<tr>'
       + '<td class="cell-date">'+_fmtDate(t.date)+'</td>'
       + '<td class="cell-sym">'+_esc(t.sym||'—')+'</td>'
@@ -16043,6 +17300,7 @@ function renderHistory(){
       + '<td class="cell-qty">'+_esc(t.qty!=null?t.qty:'—')+acctSpan+'</td>'
       + '<td class="cell-pnl '+pnlCls+'">'+_money(pnl, true)+'</td>'
       + notesCell
+      + confCell
       + '<td class="cell-actions"><button class="del-btn" onclick="deleteTrade('+t.id+')">&times;</button></td>'
       + '</tr>';
   }).join('');
@@ -17305,6 +18563,8 @@ function calcLivePnl(){
       rrInput.value = '';
     }
   }
+  // Visual redesign Chunk 2 — refresh the inline R-chip next to P&L label.
+  if (typeof renderRChip === 'function') renderRChip();
 
   // Legacy live-calc panel (still rendered if some path adds it back)
   const lc=document.getElementById('live-calc');
@@ -17381,13 +18641,20 @@ async function handleImgFiles(files){
   for(var i=0;i<files.length;i++){
     var file=files[i];
     if(!file.type.startsWith('image/')) continue;
-    // Show placeholder immediately while uploading
-    var idx = noteImages.length;
-    noteImages.push('UPLOADING:'+file.name);
+    // Race-safe placeholder: unique token so we can verify ownership of the
+    // slot after the await — if the form was reset (or the user removed
+    // this entry) the placeholder will be gone and we drop the upload.
+    // Without this, a fast "upload → save → reset" sequence would write
+    // the late-arriving URL back into the cleared noteImages array and
+    // visually re-populate the preview after fullLog already cleared it.
+    var token = 'UPLOADING:'+file.name+'#'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    noteImages.push(token);
     renderNoteImages();
     var url = await uploadTradeImage(file);
-    if(url){ noteImages[idx] = url; }
-    else   { noteImages.splice(idx,1); }
+    var currentIdx = noteImages.indexOf(token);
+    if (currentIdx < 0) continue; // placeholder gone — form was reset / item removed
+    if(url){ noteImages[currentIdx] = url; }
+    else   { noteImages.splice(currentIdx,1); }
     renderNoteImages();
   }
 }
@@ -17405,6 +18672,30 @@ function renderNoteImages(){
 }
 
 function removeNoteImg(i){noteImages.splice(i,1);renderNoteImages();}
+
+/* Chunk 2 fix — full screenshot reset.
+   `noteImages=[]; renderNoteImages();` alone left two latent problems:
+     1. The file input retained its `.value`, so picking the same file
+        again wouldn't fire onchange and the upload would silently fail.
+     2. Any in-flight uploadTradeImage() would resolve after reset and
+        write back via the OLD index — visually re-populating an emptied
+        preview. The token check in handleImgFiles closes that race.
+   This helper centralises all three pieces (state, DOM, file input)
+   so fullLog AND resetLogForm both call one thing. Drop-zone classes
+   (drag-over) also cleared in case the user dropped + saved in one motion. */
+function clearLogTradeScreenshots(){
+  noteImages.length = 0; // preserve array reference; safer across closures
+  var preview = document.getElementById('note-img-preview');
+  if (preview) preview.innerHTML = '';
+  var fileInput = document.getElementById('img-file-input');
+  if (fileInput) fileInput.value = '';
+  var dropZone = document.getElementById('img-drop-zone');
+  if (dropZone) dropZone.classList.remove('drag-over');
+  // Belt-and-suspenders: invoke the renderer once more in case some other
+  // code path pushed into noteImages between our clear and now.
+  if (typeof renderNoteImages === 'function') renderNoteImages();
+}
+window.clearLogTradeScreenshots = clearLogTradeScreenshots;
 
 function openEditDayDash(d,e){e&&e.stopPropagation();openEditModal(d,dashCalY,dashCalM);}
 function openEditDay(d,e){e&&e.stopPropagation();openEditModal(d,calYear,calMonth);}
@@ -18423,12 +19714,21 @@ function showWeekSummary(y,m,dayStart){
 }
 
 
-function openDayReview(dateStr, dayTrades) {
+async function openDayReview(dateStr, dayTrades) {
   var el = document.getElementById('cal-day-title');
   var body = document.getElementById('cal-day-body');
   if (!el || !body) return;
   var d = new Date(dateStr + 'T12:00:00');
   el.textContent = d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+
+  // Batch-load confluences for every trade in this day in one round-trip.
+  // Empty object on failure — pills row just renders empty (hidden via CSS).
+  var cfByTrade = {};
+  try {
+    if (typeof _cfLoadAllForView === 'function') {
+      cfByTrade = await _cfLoadAllForView(dayTrades.map(function(t){return t.id;}));
+    }
+  } catch(e){ console.warn('[day-review] cf batch load failed:', e && e.message); }
 
   var pnl = dayTrades.reduce(function(s,t){return s+(t.pnl||0);},0);
   var wins = dayTrades.filter(function(t){return (t.pnl||0)>0;}).length;
@@ -18473,20 +19773,32 @@ function openDayReview(dateStr, dayTrades) {
            + '<span class="pnl '+pnlCls(p)+'">'+fmtShort(p)+'</span>'
            + '<button class="edit-btn" onclick="openCalEdit('+t.id+')">Edit</button>'
            + '</div>';
+      // Confluences pills (full list, no truncation) under each trade row.
+      // Empty when trade has no tags — :empty selector hides the wrapper.
+      var cf = cfByTrade[String(t.id)] || [];
+      html += '<div class="day-trade-pills">'
+           + (cf.length ? cfRenderMiniPillsHtml(cf, {limit:99}) : '')
+           + '</div>';
     });
   }
 
   var allImgs = [];
   dayTrades.forEach(function(t){
-    (t.images||[]).forEach(function(img){allImgs.push({src:img, sym:t.sym||'', pnl:t.pnl||0});});
+    // Chunk 2.5 — TV /x/ snapshot rolls into the day screenshots gallery.
+    var imgs = (typeof getTradeImagesWithTV === 'function') ? getTradeImagesWithTV(t) : (t.images||[]);
+    var tvUrl = (typeof getTVSnapshotImageUrl === 'function') ? getTVSnapshotImageUrl(t.tradingview_link) : null;
+    imgs.forEach(function(img){
+      allImgs.push({src:img, sym:t.sym||'', pnl:t.pnl||0, isTV: (tvUrl && img===tvUrl)});
+    });
   });
   if(allImgs.length){
     html += '<div class="day-section-lbl">Screenshots ('+allImgs.length+')</div>';
     allImgs.forEach(function(im){
+      var tvBadge = im.isTV ? '<span class="day-img-tv-badge">TV</span>' : '';
       html += '<div class="day-img-row" onclick="openImgLightbox(this.querySelector(\'img\').src)">'
            + '<div class="img-meta"><span class="sym">'+escapeHtml(im.sym||'Trade')+'</span>'
-           + '<span class="pnl '+pnlCls(im.pnl)+'">'+fmtPlain(im.pnl)+'</span></div>'
-           + '<img src="'+escapeHtml(im.src)+'">'
+           + '<span class="pnl '+pnlCls(im.pnl)+'">'+fmtPlain(im.pnl)+'</span>' + tvBadge + '</div>'
+           + '<img src="'+escapeHtml(im.src)+'" onerror="this.parentElement.style.display=\'none\'">'
            + '</div>';
     });
   }
@@ -20230,7 +21542,13 @@ async function loadTradesFromDB(user) {
   // current user and gets overwritten by the DB response below.
   if (r.data && r.data.length) {
     trades = r.data.map(function(row) {
-      try { return JSON.parse(row.trade_data); } catch(e) { return null; }
+      try {
+        var t = JSON.parse(row.trade_data);
+        // Visual redesign Chunk 2 — account_type lives on its own column.
+        // Treat the column as authoritative so SQL-direct edits propagate to UI.
+        if (t && row.account_type) t.account_type = row.account_type;
+        return t;
+      } catch(e) { return null; }
     }).filter(Boolean);
     try{localStorage.setItem(journalKey(activeJournal), JSON.stringify(trades));}catch(e){}
   } else {
@@ -20254,10 +21572,18 @@ async function saveTradeToSupa(trade) {
     var authUser = sess && sess.data && sess.data.session && sess.data.session.user;
     if (!authUser || !authUser.id) throw new Error('Not authenticated');
 
+    // Visual redesign Chunk 2 — account_type lives on its own column for
+    // filterable/indexable queries (migration: visual-redesign-migration.sql).
+    // Whitelist on the client too so a malformed trade.account_type can't
+    // trigger the CHECK constraint and bubble back as an RLS-shaped error.
+    var _at = (trade && typeof trade.account_type === 'string') ? trade.account_type.toLowerCase() : null;
+    var accountTypeCol = (_at && ['paper','eval','funded','live'].indexOf(_at) >= 0) ? _at : null;
+
     var r = await _sb.from('trades').upsert({
       id: String(trade.id),
       user_id: authUser.id,            // REQUIRED by RLS policy
       trade_data: JSON.stringify(trade),
+      account_type: accountTypeCol,    // NEW (visual redesign Chunk 2)
       journal: activeJournal,
       updated_at: new Date().toISOString()
     }, { onConflict: 'id' });
@@ -20605,6 +21931,564 @@ function cookieDecline(){
   .cm-actions{flex-direction:column-reverse}
   .cm-btn{width:100%;flex:none;min-width:0}
 }
+
+/* ============================================================================
+   VISUAL REDESIGN · Chunk 2 design tokens (.rw-* prefix)
+   Reusable across Log Trade, Edit Modal, Calendar Sidebar, CSV Import, History.
+   Reference: VISUAL_REDESIGN_SPEC.md §8 + CONFLUENCES_MOCKUP_REF.html
+   ============================================================================ */
+
+/* Section frame -------------------------------------------------------------*/
+#pg-log .rw-section{margin-bottom:28px}
+#pg-log .rw-section:last-of-type{margin-bottom:18px}
+
+#pg-log .rw-section-h{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  margin-bottom:14px;
+}
+#pg-log .rw-mono-num{
+  font-family:var(--n-font-mono);
+  font-size:10px;
+  letter-spacing:0.16em;
+  color:var(--n-text-3);
+  text-transform:uppercase;
+}
+#pg-log .rw-section-name{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-size:18px;
+  font-weight:400;
+  color:var(--n-text);
+  letter-spacing:-0.01em;
+}
+#pg-log .rw-mono-sub{
+  font-family:var(--n-font-mono);
+  font-size:10px;
+  letter-spacing:0.14em;
+  color:var(--n-text-4);
+  text-transform:uppercase;
+}
+#pg-log .rw-hr-trail{
+  flex:1;
+  height:1px;
+  background:rgba(255,255,255,0.05);
+  margin-left:6px;
+}
+
+/* Field shell ---------------------------------------------------------------*/
+#pg-log .rw-field{margin-bottom:14px;display:flex;flex-direction:column;position:relative}
+#pg-log .rw-field-l{
+  font-family:var(--n-font-mono);
+  font-size:10px;
+  letter-spacing:0.16em;
+  color:var(--n-text-3);
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+#pg-log .rw-field-l-flex{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+#pg-log .rw-field-l-display{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+}
+#pg-log .rw-display-val{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-weight:400;
+  font-size:18px;
+  color:var(--n-text);
+  text-transform:none;
+  letter-spacing:0;
+}
+#pg-log .rw-display-suf{
+  font-family:var(--n-font-mono);
+  font-style:normal;
+  font-size:11px;
+  color:var(--n-text-3);
+  margin-left:2px;
+}
+
+/* Grid layouts --------------------------------------------------------------*/
+#pg-log .rw-grid{display:grid;gap:14px;margin-bottom:14px}
+#pg-log .rw-grid-side-acct{grid-template-columns:0.7fr 2fr}
+#pg-log .rw-grid-sym-mkt{grid-template-columns:1.8fr 1fr}
+#pg-log .rw-grid-date-sess{grid-template-columns:0.7fr 1.8fr}
+#pg-log .rw-grid-triple{grid-template-columns:1fr 1fr 1fr}
+#pg-log .rw-grid-exec-bottom{grid-template-columns:1fr 1fr 1.3fr}
+#pg-log .rw-grid-analysis{grid-template-columns:0.95fr 1.3fr;align-items:start}
+
+@media (max-width:720px){
+  #pg-log .rw-grid-side-acct,
+  #pg-log .rw-grid-sym-mkt,
+  #pg-log .rw-grid-date-sess,
+  #pg-log .rw-grid-triple,
+  #pg-log .rw-grid-exec-bottom,
+  #pg-log .rw-grid-analysis{grid-template-columns:1fr}
+}
+
+/* Inputs (generic + numeric serif italic) -----------------------------------*/
+#pg-log .rw-input{
+  width:100%;
+  padding:10px 12px;
+  background:var(--n-surface);
+  border:0.5px solid rgba(255,255,255,0.08);
+  border-radius:8px;
+  color:var(--n-text);
+  font-family:var(--n-font-body);
+  font-size:13px;
+  outline:none;
+  transition:border-color 0.12s,background 0.12s;
+  box-sizing:border-box;
+}
+#pg-log .rw-input:focus{
+  border-color:rgba(255,255,255,0.18);
+  background:var(--n-surface-2);
+}
+#pg-log .rw-input::placeholder{color:var(--n-text-4)}
+
+#pg-log .rw-numeric{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-weight:400;
+  font-size:17px;
+  letter-spacing:0.01em;
+}
+#pg-log .rw-input-pnl{font-size:19px}
+#pg-log .rw-input-pnl.pnl-positive{color:var(--n-profit)}
+#pg-log .rw-input-pnl.pnl-negative{color:var(--n-loss)}
+#pg-log .rw-input-pnl.pnl-zero{color:var(--n-text-2)}
+
+/* Symbol field is white (was cool blue) */
+#pg-log .rw-input-symbol{
+  color:var(--n-text)!important;
+  font-family:var(--n-font-mono);
+  font-size:13px;
+  letter-spacing:0.04em;
+}
+
+#pg-log .rw-textarea{
+  min-height:78px;
+  resize:vertical;
+  font-family:var(--n-font-body);
+  font-style:normal;
+  font-size:13px;
+  line-height:1.5;
+}
+
+/* Label modifiers (auto / optional / manual) --------------------------------*/
+#pg-log .rw-mod-opt,
+#pg-log .rw-mod-auto{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-size:10px;
+  color:var(--n-text-4);
+  text-transform:none;
+  letter-spacing:0;
+  margin-left:4px;
+}
+#pg-log .rw-mod-auto{color:var(--n-accent-cool,#6ea8ff)}
+#pg-log .rw-mod-auto.hint-manual{color:var(--n-text-3)}
+
+/* Chip primitives (.rw-chip + active by data-tier) --------------------------*/
+#pg-log .rw-chip-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+}
+#pg-log .rw-chip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  padding:7px 12px;
+  background:rgba(255,255,255,0.03);
+  border:0.5px solid rgba(255,255,255,0.08);
+  border-radius:999px;
+  font-family:var(--n-font-mono);
+  font-size:10.5px;
+  letter-spacing:0.1em;
+  color:var(--n-text-2);
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:background 0.12s,border-color 0.12s,color 0.12s;
+  line-height:1.2;
+  white-space:nowrap;
+  user-select:none;
+}
+#pg-log .rw-chip:hover:not(.active){
+  background:rgba(255,255,255,0.05);
+  border-color:rgba(255,255,255,0.14);
+  color:var(--n-text);
+}
+
+#pg-log .rw-chip[data-tier="sage"].active{
+  background:rgba(95,179,137,0.14);
+  border-color:rgba(95,179,137,0.4);
+  color:var(--n-profit);
+}
+#pg-log .rw-chip[data-tier="rose"].active{
+  background:rgba(201,95,95,0.14);
+  border-color:rgba(201,95,95,0.4);
+  color:var(--n-loss);
+}
+#pg-log .rw-chip[data-tier="cool"].active{
+  background:rgba(110,168,255,0.14);
+  border-color:rgba(110,168,255,0.4);
+  color:var(--n-accent-cool,#6ea8ff);
+}
+#pg-log .rw-chip[data-tier="gold"].active{
+  background:rgba(245,215,124,0.14);
+  border-color:rgba(245,215,124,0.4);
+  color:var(--n-gold,#f5d77c);
+}
+#pg-log .rw-chip[data-tier="muted"].active{
+  background:rgba(255,255,255,0.08);
+  border-color:rgba(255,255,255,0.22);
+  color:var(--n-text);
+}
+
+/* Side chips get a leading arrow glyph */
+#pg-log .rw-chip-side .rw-chip-arrow{
+  font-size:12px;
+  margin-right:2px;
+  opacity:0.8;
+}
+#pg-log .rw-chip-row-side .rw-chip{flex:1;padding:9px 14px;font-size:11px}
+
+/* Account-type chips get a leading colored dot */
+#pg-log .rw-acct-dot{
+  display:inline-block;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+
+/* Session chips: condensed (5 chips share a row) */
+#pg-log .lt-session-pill{padding:7px 10px;font-size:10px}
+
+/* Market locked pill --------------------------------------------------------*/
+#pg-log .rw-market-pill{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 12px;
+  background:var(--n-surface);
+  border:0.5px solid rgba(255,255,255,0.08);
+  border-radius:8px;
+  color:var(--n-text);
+  font-size:13px;
+  box-sizing:border-box;
+}
+#pg-log .rw-market-name{flex:1;font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.06em}
+#pg-log .rw-locked-tag{
+  font-family:var(--n-font-mono);
+  font-size:9px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--n-text-4);
+}
+
+/* R-multiple chip inline next to P&L label ----------------------------------*/
+#pg-log .rw-r-chip{
+  display:inline-flex;
+  align-items:center;
+  padding:2px 7px;
+  background:rgba(110,168,255,0.10);
+  border:0.5px solid rgba(110,168,255,0.32);
+  border-radius:999px;
+  font-family:var(--n-font-mono);
+  font-size:9.5px;
+  letter-spacing:0.08em;
+  color:var(--n-accent-cool,#6ea8ff);
+  text-transform:uppercase;
+  margin-left:auto;
+}
+
+/* R-multiple hint ("+ Add stop…") -------------------------------------------*/
+#pg-log .rw-r-hint{
+  font-family:var(--n-font-mono);
+  font-size:10px;
+  letter-spacing:0.06em;
+  color:var(--n-text-4);
+  margin-top:4px;
+  margin-bottom:6px;
+}
+#pg-log .rw-r-hint i{font-style:italic}
+
+/* Analysis section: dropzone + TV link --------------------------------------*/
+#pg-log .rw-dropzone{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-height:104px;
+  padding:18px 14px;
+  background:var(--n-surface);
+  border:1px dashed rgba(255,255,255,0.14);
+  border-radius:10px;
+  color:var(--n-text-3);
+  cursor:pointer;
+  transition:border-color 0.12s,background 0.12s;
+  text-align:center;
+}
+#pg-log .rw-dropzone:hover,
+#pg-log .rw-dropzone.drag-over{
+  border-color:rgba(255,255,255,0.28);
+  background:var(--n-surface-2);
+  color:var(--n-text-2);
+}
+#pg-log .rw-dz-icon{width:22px;height:22px;opacity:0.65}
+#pg-log .rw-dz-h{
+  font-family:var(--n-font-mono);
+  font-size:10.5px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--n-text-2);
+}
+#pg-log .rw-dz-sub{
+  font-family:var(--n-font-body);
+  font-size:11px;
+  color:var(--n-text-4);
+}
+
+#pg-log .rw-tv-wrap{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:10px;
+  padding:9px 12px;
+  background:var(--n-surface);
+  border:0.5px solid rgba(110,168,255,0.18);
+  border-radius:8px;
+  transition:border-color 0.12s;
+}
+#pg-log .rw-tv-wrap:focus-within{border-color:rgba(110,168,255,0.42)}
+#pg-log .rw-tv-icon{
+  width:15px;
+  height:15px;
+  color:var(--n-accent-cool,#6ea8ff);
+  opacity:0.78;
+  flex-shrink:0;
+}
+#pg-log .rw-tv-input{
+  flex:1;
+  background:transparent;
+  border:none;
+  outline:none;
+  color:var(--n-text);
+  font-family:var(--n-font-mono);
+  font-size:11.5px;
+  letter-spacing:0.02em;
+  min-width:0;
+}
+#pg-log .rw-tv-input::placeholder{color:var(--n-text-4);font-family:var(--n-font-body);font-style:italic;letter-spacing:0}
+#pg-log .rw-tv-ok{
+  font-family:var(--n-font-mono);
+  font-size:9.5px;
+  letter-spacing:0.12em;
+  color:var(--n-profit);
+  text-transform:uppercase;
+  flex-shrink:0;
+}
+
+/* TV snapshot inline preview (Chunk 2.5) ------------------------------------*/
+#pg-log .rw-tv-preview-wrap{
+  position:relative;
+  margin-top:8px;
+  border-radius:8px;
+  overflow:hidden;
+  border:0.5px solid rgba(110,168,255,0.18);
+  background:#000;
+  line-height:0;
+}
+#pg-log .rw-tv-preview{
+  display:block;
+  width:100%;
+  max-height:160px;
+  object-fit:contain;
+  background:#0a0a0a;
+  cursor:zoom-in;
+}
+#pg-log .rw-tv-preview-badge{
+  position:absolute;
+  top:6px;
+  right:6px;
+  padding:3px 7px;
+  background:rgba(0,0,0,0.7);
+  border:0.5px solid rgba(110,168,255,0.3);
+  border-radius:999px;
+  font-family:var(--n-font-mono);
+  font-size:8.5px;
+  letter-spacing:0.12em;
+  color:var(--n-accent-cool,#6ea8ff);
+  text-transform:uppercase;
+  line-height:1.2;
+}
+
+/* Generic helper line -------------------------------------------------------*/
+#pg-log .rw-helper{
+  font-family:var(--n-font-body);
+  font-style:italic;
+  font-size:11px;
+  color:var(--n-text-4);
+  margin-top:8px;
+  padding:0 2px;
+  line-height:1.4;
+}
+
+/* Reflection display values (top-right of label) ----------------------------*/
+#pg-log .rw-field-l-display .rw-display-val{font-size:20px}
+
+/* Grade chip row — slightly tighter so 6 chips fit */
+#pg-log .rw-chip-row-grade{gap:4px}
+#pg-log .rw-chip-row-grade .rw-chip{flex:1;padding:8px 6px;font-size:11px;letter-spacing:0.08em}
+
+/* Sym dropdown styling (was inline before — keep dark surface) --------------*/
+#pg-log #sym-dropdown{
+  background:var(--n-surface-2);
+  border:0.5px solid rgba(255,255,255,0.1);
+  border-radius:0 0 8px 8px;
+}
+
+/* ----------------------------------------------------------------------------
+   end .rw-* tokens
+   --------------------------------------------------------------------------- */
+
+/* ============================================================================
+   Chunk 2.6 — Confluences library delete (soft-archive) affordance
+   ============================================================================ */
+
+/* × button on each library row.
+   The existing .cf-lib-row is `display:flex; justify-content:space-between`,
+   so we tuck the × at the end with margin-left:auto. Keep it visually quiet
+   until the row is hovered, then surface it. */
+#pg-log .cf-lib-row{position:relative}
+#pg-log .cf-lib-x{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin-left:8px;
+  width:18px;
+  height:18px;
+  padding:0;
+  background:transparent;
+  border:none;
+  border-radius:50%;
+  color:var(--n-text-4);
+  font-size:14px;
+  line-height:1;
+  cursor:pointer;
+  opacity:0;
+  transition:opacity 0.12s,color 0.12s,background 0.12s;
+  flex-shrink:0;
+}
+#pg-log .cf-lib-row:hover .cf-lib-x{opacity:0.7}
+#pg-log .cf-lib-x:hover{
+  opacity:1;
+  color:var(--n-loss);
+  background:rgba(201,95,95,0.10);
+}
+/* Touch fallback — devices that don't honor :hover get the × always visible. */
+@media (hover:none){
+  #pg-log .cf-lib-x{opacity:0.55}
+}
+
+/* Confirm modal — full-viewport backdrop, centered card. Lighter than the
+   cancel-subscription modal (different visual weight for a library scrub). */
+#pg-log .cf-del-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.55);
+  backdrop-filter:blur(2px);
+  z-index:10000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+#pg-log .cf-del-card{
+  background:var(--n-surface);
+  border:0.5px solid rgba(255,255,255,0.10);
+  border-radius:12px;
+  padding:22px 24px;
+  max-width:420px;
+  width:100%;
+  box-shadow:0 12px 48px rgba(0,0,0,0.5);
+}
+#pg-log .cf-del-title{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-size:18px;
+  font-weight:400;
+  color:var(--n-text);
+  line-height:1.35;
+  margin-bottom:12px;
+  letter-spacing:-0.005em;
+}
+#pg-log .cf-del-title span#cf-delete-name{color:var(--n-text)}
+#pg-log .cf-del-body{
+  font-family:var(--n-font-body);
+  font-size:13px;
+  color:var(--n-text-2);
+  line-height:1.55;
+  margin-bottom:18px;
+}
+#pg-log .cf-del-hint{
+  font-style:italic;
+  color:var(--n-text-4);
+  font-size:12px;
+}
+#pg-log .cf-del-actions{
+  display:flex;
+  gap:8px;
+  justify-content:flex-end;
+}
+#pg-log .cf-del-actions button{
+  padding:9px 16px;
+  border-radius:8px;
+  font-family:var(--n-font-mono);
+  font-size:11px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:background 0.12s,border-color 0.12s,color 0.12s;
+}
+#pg-log .cf-del-cancel{
+  background:transparent;
+  border:0.5px solid rgba(255,255,255,0.14);
+  color:var(--n-text-2);
+}
+#pg-log .cf-del-cancel:hover{
+  background:rgba(255,255,255,0.04);
+  border-color:rgba(255,255,255,0.24);
+  color:var(--n-text);
+}
+#pg-log .cf-del-go{
+  background:rgba(201,95,95,0.14);
+  border:0.5px solid rgba(201,95,95,0.4);
+  color:var(--n-loss);
+}
+#pg-log .cf-del-go:hover{
+  background:rgba(201,95,95,0.22);
+  border-color:rgba(201,95,95,0.55);
+}
+
+@media (max-width:480px){
+  #pg-log .cf-del-card{padding:20px 18px;border-radius:10px}
+  #pg-log .cf-del-title{font-size:17px}
+  #pg-log .cf-del-actions{flex-direction:column-reverse}
+  #pg-log .cf-del-actions button{width:100%}
+}
+
+/* End Chunk 2.6 */
 </style>
 
 <div id="cancel-modal" class="cm-backdrop" style="display:none" onclick="cancelModalBackdropClick(event)">
