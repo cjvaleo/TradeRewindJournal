@@ -13503,6 +13503,44 @@ function _eodResolveCard(btn){
   return null;
 }
 
+// Safari detection — Apple WebKit on macOS/iOS. We need it because
+// anchor-based blob downloads work everywhere EXCEPT Safari, where
+// they hit "WebKitBlobResource error 1". On Safari we route Download
+// to navigator.share as a fallback (which includes "Save Image" /
+// "Save to Files" in the sheet) since direct download is broken.
+// On every other browser Download must save directly — no share sheet.
+function _eodIsSafari(){
+  var ua = navigator.userAgent || '';
+  // Standard Safari sniff: has "Safari" but not "Chrome"/"Chromium"/"Android".
+  // Apple WebViews (iOS Chrome, etc.) are also caught — they share the same
+  // blob bug, so treating them as Safari is correct.
+  return /^((?!chrome|chromium|android).)*safari/i.test(ua);
+}
+
+// Directly download a File via anchor + download attr. Works on every
+// non-Safari browser. Returns true on success path attempted, false
+// if no attempt could be made (e.g. browser blocks dynamic clicks).
+function _eodDirectDownload(file){
+  try {
+    var url = URL.createObjectURL(file);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    a.rel = 'noopener';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    var ev = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
+    a.dispatchEvent(ev);
+    // Generous revoke window so the browser has time to write the file
+    // to disk before the URL invalidates.
+    setTimeout(function(){ a.remove(); URL.revokeObjectURL(url); }, 60000);
+    return true;
+  } catch(e){
+    console.warn('[eod download] direct anchor failed:', e && e.message);
+    return false;
+  }
+}
+
 async function eodDownloadCard(btn){
   console.log('[eod download] click — btn:', btn);
   var card = _eodResolveCard(btn);
@@ -13516,10 +13554,7 @@ async function eodDownloadCard(btn){
   if(btn){ btn.disabled = true; btn.textContent = '…'; }
   try {
     // Prefer the pre-baked File from modal open. Synchronous lookup
-    // = the navigator.share branch below stays inside the user
-    // gesture window. If pre-bake hasn't finished or got cleared,
-    // capture inline (slower path, may risk gesture expiration but
-    // the share branch below is wrapped in a graceful fallback).
+    // when present, full capture otherwise.
     var file = _eodPrebakedFile;
     if(file){
       console.log('[eod download] using pre-baked file —', file.size, 'bytes');
@@ -13529,53 +13564,54 @@ async function eodDownloadCard(btn){
       console.log('[eod download] capture done, file size:', file && file.size, 'bytes');
     }
 
-    // PRIMARY PATH: route through navigator.share when available.
-    // Safari downloads via <a href="blob:…" download> hit
-    // "WebKitBlobResource error 1" — instead, hand the file to the
-    // OS share-sheet which includes "Save to Files" / "Save Image".
-    // This sidesteps blob URLs entirely. On desktop Chrome with
-    // canShare support, the same path opens the system share-sheet.
+    var isSafari = _eodIsSafari();
+    console.log('[eod download] isSafari:', isSafari);
+
+    // PRIMARY PATH: every non-Safari browser. Direct anchor download
+    // saves the file straight to the OS's download folder — no share
+    // sheet, distinct UX from the Share button.
+    if(!isSafari){
+      console.log('[eod download] → direct anchor (non-Safari)');
+      if(_eodDirectDownload(file)){
+        if(typeof toast === 'function') toast('Saved · check your downloads');
+      } else {
+        if(typeof toast === 'function') toast('Download failed — try again');
+      }
+      return;
+    }
+
+    // SAFARI PATH: anchor download triggers WebKitBlobResource error 1
+    // on every recent Safari version. The only reliable save path is
+    // the OS share-sheet ("Save to Files" / "Save Image" actions).
+    // Distinct-action argument: on Safari it's the best the platform
+    // allows; Chrome/Firefox/Edge still get a direct download above.
     if(navigator.canShare && navigator.canShare({ files: [file] })){
-      console.log('[eod download] → navigator.share (file API)');
+      console.log('[eod download] → navigator.share (Safari fallback)');
       try {
         await navigator.share({
           files: [file],
           title: 'My PnL Card',
           text: 'My trading recap'
         });
-        if(typeof toast === 'function') toast('Saved');
+        // No toast — the share sheet is the confirmation UI.
         return;
       } catch(err){
-        // AbortError = user cancelled the share sheet — silent.
         if(err && (err.name === 'AbortError' || /abort/i.test(err.message||''))){
           console.log('[eod download] user cancelled share sheet');
           return;
         }
-        // NotAllowedError = gesture expired (capture took too long).
-        // Fall through to anchor download — that path doesn't
-        // require a gesture token.
-        console.warn('[eod download] share rejected, falling back to anchor:', err && err.message);
+        console.warn('[eod download] safari share rejected:', err && err.message);
       }
     }
 
-    // FALLBACK PATH: anchor + download attr. Browsers without
-    // navigator.canShare({files}) (mostly older desktop Chrome /
-    // Firefox / non-Safari) hit this. Still uses the MouseEvent +
-    // 60s revoke from the previous attempt — works on every browser
-    // EXCEPT macOS Safari (which now goes through navigator.share
-    // above so this branch never runs on Safari).
-    console.log('[eod download] → anchor fallback (no canShare support)');
-    var url = URL.createObjectURL(file);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = file.name;
-    a.rel = 'noopener';
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    var ev = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
-    a.dispatchEvent(ev);
-    setTimeout(function(){ a.remove(); URL.revokeObjectURL(url); }, 60000);
-    if(typeof toast === 'function') toast('Saved · check your downloads');
+    // LAST-RESORT: Safari without canShare-files (older versions).
+    // Try the anchor anyway and surface whatever error to the user.
+    console.log('[eod download] → last-resort anchor (Safari, no canShare)');
+    if(_eodDirectDownload(file)){
+      if(typeof toast === 'function') toast('Saved · check your downloads');
+    } else {
+      if(typeof toast === 'function') toast('Download failed — try Share instead');
+    }
   } catch(err){
     console.warn('[eod download] failed:', err && err.message, err);
     if(typeof toast === 'function') toast('Download failed — ' + ((err && err.message) || 'try again'));
