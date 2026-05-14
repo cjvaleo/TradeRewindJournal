@@ -11310,15 +11310,26 @@ function init(){
   renderAll();calcRisk();renderNews();refreshAcctUI();
   rtAutoReset();
   rtScheduleMidnightReset();
-  // EOD widget ticker \u2014 60s cadence keeps the countdown current and
-  // flips the dash bar from Pending \u2192 Ready the moment 4:30pm ET hits
-  // (instead of waiting for a manual refresh). Cheap render; bails
-  // early on hidden tab via the document.hidden check. Also re-paints
-  // the per-community badges so any community that crosses the 4:30
-  // cutoff or gets a fresh trade post auto-updates without a refresh.
+  // EOD widget ticker \u2014 detects ET-date rollover at midnight and
+  // refreshes the dashboard bar + community badges so the recap
+  // advances to the newly-completed day without a page refresh.
+  // 60s cadence is more than fine since the only thing that changes
+  // is "which date is yesterday" \u2014 once-per-day work, with a one-
+  // minute worst-case lag at midnight ET.
   if(!window._eodTicker){
+    window._eodLastEtDate = _eodEtDate();
     window._eodTicker = setInterval(function(){
       if(document.hidden) return;
+      var nowEt = _eodEtDate();
+      var rolled = nowEt !== window._eodLastEtDate;
+      if(rolled){
+        // Midnight ET crossed \u2014 invalidate cached group data so the
+        // next fetch hits the new "yesterday".
+        _eodBadgeCache = {};
+        window._eodLastEtDate = nowEt;
+      }
+      // Always repaint so a fresh trade share lands on the next tick
+      // and any DOM remount (e.g. settings panel toggle) gets re-bound.
       if(typeof renderEodDashBar === 'function') renderEodDashBar();
       if(typeof renderEodCommBadges === 'function') renderEodCommBadges();
     }, 60*1000);
@@ -12508,7 +12519,16 @@ function _eodEtDate(d){
   }).format(d);
 }
 
-/* Current minute-of-day in America/New_York (0..1439). 16:30 = 990. */
+/* Yesterday in ET — the EOD recap surface represents the LAST FULLY
+   COMPLETED ET calendar day. Stepping 24h back from now and re-coercing
+   to ET works across DST since Intl handles the zone math. */
+function _eodYesterdayEt(){
+  return _eodEtDate(new Date(Date.now() - 24*3600*1000));
+}
+
+/* Current minute-of-day in America/New_York (0..1439). Kept around for
+   the ticker's date-rollover detection — no longer used for any
+   auto-pop / widget gating. */
 function _eodEtMinutes(){
   var parts = new Intl.DateTimeFormat('en-US', {
     timeZone: 'America/New_York',
@@ -12771,7 +12791,7 @@ function _eodRenderPersonalCard(data){
     +   '</div>'
     +   '<div class="ev2-head-meta">'
     +     '<span class="ev2-head-date">'+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
-    +     '<span class="ev2-head-time">EOD &middot; 5:00pm ET</span>'
+    +     '<span class="ev2-head-time">Last completed day</span>'
     +   '</div>'
     + '</div>'
     // (2) Body — 2 cols + vertical divider
@@ -12865,7 +12885,7 @@ function _eodRenderGroupCard(data){
     +   '</div>'
     +   '<div class="ev2-head-meta">'
     +     '<span class="ev2-head-date">'+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
-    +     '<span class="ev2-head-time">EOD &middot; 5:00pm ET</span>'
+    +     '<span class="ev2-head-time">Last completed day</span>'
     +   '</div>'
     + '</div>'
     // (2) Body
@@ -13012,18 +13032,6 @@ function eodShareCard(btn){
    dismiss flag, so widget clicks are pure "replay" actions.
    ────────────────────────────────────────────────────────────────── */
 
-function _eodCountdownLabel(){
-  // Minutes from now until 4:30pm ET. Negative = already past cutoff.
-  var nowMin = _eodEtMinutes();
-  var cutoff = 16*60 + 30;
-  var diff = cutoff - nowMin;
-  if(diff <= 0) return '';
-  var h = Math.floor(diff / 60);
-  var m = diff % 60;
-  if(h > 0) return 'Live in ' + h + 'h ' + m + 'm';
-  return 'Live in ' + m + 'm';
-}
-
 /* Compact money — used inside the widgets where space is tight.
    Same int/cents split as the modal so the typography lines up. */
 function _eodMoneyCompact(v){
@@ -13031,8 +13039,10 @@ function _eodMoneyCompact(v){
   return p.sign + '$' + p.int + '<span class="eod-mini-cents">' + p.cents + '</span>';
 }
 
-/* Dashboard pill — Pending / Ready / Yesterday / hidden. Tone follows
-   the day's P&L sign so the border shifts sage / rose / dashed. */
+/* Dashboard pill — two states only: Ready (has trades yesterday) or
+   Empty (no trades yesterday). The "Pending" / "Awaiting close" state
+   from the 4:30pm-cutoff era is gone — yesterday's data is always
+   complete since midnight ET has already passed. */
 function renderEodDashBar(){
   var el = document.getElementById('eod-dash-bar');
   if(!el) return;
@@ -13040,53 +13050,31 @@ function renderEodDashBar(){
   // and let renderAll fire us again once data arrives.
   if(!Array.isArray(trades)) { el.style.display = 'none'; return; }
 
-  var nowMin   = _eodEtMinutes();
-  var todayET  = _eodEtDate();
-  var yetDate  = new Date(Date.now() - 24*3600*1000);
-  var yesterdayET = _eodEtDate(yetDate);
-  var todayHas    = _eodTodaysTrades(todayET).length > 0;
-  var yesterdayHas= _eodTodaysTrades(yesterdayET).length > 0;
-  var afterCutoff = nowMin >= (16*60 + 30);
+  var pickedDate = _eodYesterdayEt();
+  var data = _eodPersonalData(pickedDate);
 
-  // Pick the visible date by state:
-  //   after cutoff → today if has data, else yesterday
-  //   before cutoff → yesterday if has data, else null (Pending)
-  var pickedDate = null;
-  if(afterCutoff){
-    pickedDate = todayHas ? todayET : (yesterdayHas ? yesterdayET : null);
-  } else if(yesterdayHas){
-    pickedDate = yesterdayET;
-  }
-
-  // PENDING — pre-cutoff with no yesterday data. Show forward-looking
-  // pill with the live countdown so the user knows when the recap fires.
-  if(!pickedDate && !afterCutoff){
-    var todaysCount = _eodTodaysTrades(todayET).length;
-    el.className = 'eod-mini-bar is-pending';
-    el.onclick = null;
+  // Empty — no trades yesterday. Dashed border + outlined dot + em-dash
+  // P&L, still clickable so the user can pop the full empty-state modal.
+  if(!data.tradeCount){
+    el.className = 'eod-mini-bar is-empty';
     el.innerHTML =
-        '<span class="eod-mini-pulse pending"></span>'
-      + '<span class="eod-mini-label">EOD &middot; ' + _eodSafe(_eodDateLabel(todayET)) + '</span>'
+        '<span class="eod-mini-pulse empty"></span>'
+      + '<span class="eod-mini-label">EOD &middot; ' + _eodSafe(_eodDateLabel(pickedDate)) + '</span>'
       + '<span class="eod-mini-sep"></span>'
-      + '<span class="eod-mini-await">' + (todaysCount ? todaysCount + ' trade' + (todaysCount===1?'':'s') + ' &middot; awaiting close' : 'Awaiting close') + '</span>'
-      + '<span class="eod-mini-sep"></span>'
-      + '<span class="eod-mini-countdown">' + _eodCountdownLabel() + '</span>';
+      + '<span class="eod-mini-await">No activity yesterday</span>'
+      + '<span class="eod-mini-view">View ' + _EOD_SVG.expand + '</span>';
+    el.onclick = function(){ eodInflatePersonalFromWidget(); };
     el.style.display = 'flex';
     return;
   }
 
-  // Nothing to show — hide entirely (post-cutoff with no data anywhere).
-  if(!pickedDate){ el.style.display = 'none'; return; }
-
-  var isYesterday = pickedDate !== todayET;
-  var data = _eodPersonalData(pickedDate);
   var tone = data.totalPnl > 0 ? 'pos' : data.totalPnl < 0 ? 'neg' : 'zero';
   var trendSvg = data.totalPnl >= 0 ? _EOD_SVG.trendUp : _EOD_SVG.trendDown;
 
-  el.className = 'eod-mini-bar is-ready tone-' + tone + (isYesterday ? ' is-yesterday' : '');
+  el.className = 'eod-mini-bar is-ready tone-' + tone;
   el.innerHTML =
       '<span class="eod-mini-pulse ' + tone + '"></span>'
-    + '<span class="eod-mini-label">' + (isYesterday ? 'Yesterday' : 'EOD') + ' &middot; ' + _eodSafe(_eodDateLabel(pickedDate)) + '</span>'
+    + '<span class="eod-mini-label">EOD &middot; ' + _eodSafe(_eodDateLabel(pickedDate)) + '</span>'
     + '<span class="eod-mini-sep"></span>'
     + '<span class="eod-mini-pnl ' + tone + '">' + _eodMoneyCompact(data.totalPnl)
     +    '<span class="eod-mini-trend">' + trendSvg + '</span></span>'
@@ -13210,28 +13198,18 @@ function _eodBadgeSkeletonHtml(gid){
     + '</div>';
 }
 
-// Async — populates one badge with real data. Reuses _eodGroupData.
+// Async — populates one badge with real data. Always queries yesterday
+// (last completed ET day) — no time-of-day branching anymore.
 async function _eodPopulateBadge(community){
   var gid = community.id;
-  var nowMin = _eodEtMinutes();
-  var todayET = _eodEtDate();
-  var yetDate = new Date(Date.now() - 24*3600*1000);
-  var yesterdayET = _eodEtDate(yetDate);
-  var afterCutoff = nowMin >= (16*60 + 30);
-  var pickedDate = afterCutoff ? todayET : yesterdayET;
+  var pickedDate = _eodYesterdayEt();
 
-  // Check cache first.
+  // Check cache first. _eodBadgeCache is keyed by gid|etDate so once a
+  // new ET day rolls the next render fetches fresh.
   var cacheKey = gid + '|' + pickedDate;
   var data = _eodBadgeCache[cacheKey];
   if(data === undefined){
     data = await _eodGroupData(community, pickedDate);
-    // After-cutoff fallback: if today has nothing, try yesterday so
-    // the badge can show last session's recap instead of an em-dash.
-    if(afterCutoff && (!data || !data.tradeCount)){
-      data = await _eodGroupData(community, yesterdayET);
-      pickedDate = yesterdayET;
-      cacheKey = gid + '|' + pickedDate;
-    }
     _eodBadgeCache[cacheKey] = data || null;
   }
 
@@ -13413,20 +13391,23 @@ async function maybeShowEodRecap(){
   var personalEnabled = userSettingGet('eod_personal_enabled', true) !== false;
   if(!personalEnabled) return;
 
-  // Gate 2 — already shown today (personal scope)
+  // Gate 2 — already shown for this ET calendar day
   var todayET = _eodEtDate();
   var lastShown = null;
   try { lastShown = localStorage.getItem('rw_eod_last_shown'); } catch(e){}
   if(lastShown === todayET) return;
 
-  // Gate 3 — must be after 4:30pm ET
-  if(_eodEtMinutes() < (16*60 + 30)) return;
+  // The recap always represents the LAST FULLY COMPLETED ET day —
+  // that's "yesterday" relative to the current ET date. No time-of-day
+  // gate any more (used to require ≥ 4:30pm ET); yesterday's data is
+  // always complete since midnight ET has passed by definition.
+  var recapDate = _eodYesterdayEt();
 
-  // Gate 4 — must have at least one trade today
-  var todays = _eodTodaysTrades(todayET);
+  // Gate 3 — yesterday must have at least one trade in scope
+  var todays = _eodTodaysTrades(recapDate);
   if(!todays.length) return;
 
-  var personalData = _eodPersonalData(todayET);
+  var personalData = _eodPersonalData(recapDate);
   if(!personalData.tradeCount) return;
   var html = _eodRenderPersonalCard(personalData);
   if(!html) return;
@@ -13434,7 +13415,7 @@ async function maybeShowEodRecap(){
 }
 
 /* Per-community group auto-pop — fires from openCommFeed when the
-   user opens a community feed for the first time today. Independent
+   user opens a community feed for the first time today (ET). Independent
    localStorage key per community so visiting one doesn't suppress
    the other. */
 async function eodMaybeShowGroupForCommunity(community){
@@ -13450,11 +13431,9 @@ async function eodMaybeShowGroupForCommunity(community){
   try { lastShown = localStorage.getItem(lsKey); } catch(e){}
   if(lastShown === todayET) return;
 
-  // Gate 3 — after 4:30pm ET
-  if(_eodEtMinutes() < (16*60 + 30)) return;
-
-  // Gate 4 — community had activity today
-  var data = await _eodGroupData(community, todayET);
+  // Always recap yesterday (last completed ET day). No time-of-day gate.
+  var recapDate = _eodYesterdayEt();
+  var data = await _eodGroupData(community, recapDate);
   if(!data || !data.tradeCount || !data.traders.length) return;
 
   var html = _eodRenderGroupCard(data);
@@ -13498,32 +13477,17 @@ async function eodInflateGroupFromWidget(community){
   if(html) _eodShowModal([{ flavor:'group', html:html, communityId:community.id }], 'widget');
 }
 
-/* Pick the most-recent EOD date that has data for the given scope.
-   "personal" → checks in-memory trades.
-   "group"    → no synchronous probe (group data is a DB fetch);
-                returns today if after cutoff, else yesterday. The
-                caller's _eodGroupData fetch is the source of truth.
-   Returns null if neither today nor yesterday has data. */
-function _eodPickRelevantDate(scope, community){
-  var todayET = _eodEtDate();
-  var nowMin  = _eodEtMinutes();
-  // Compute yesterday-ET safely by stepping back 24h then re-coercing.
-  var yetDate = new Date(Date.now() - 24*3600*1000);
-  var yesterdayET = _eodEtDate(yetDate);
-
+/* Pick the EOD recap date. Always yesterday in ET — the last fully
+   completed calendar day. Used by widget inflate handlers + render
+   helpers. Returns null only for personal scope when yesterday had
+   zero trades (so the widget can hide instead of rendering empty).
+   Group scope always returns yesterday since the caller's async fetch
+   is the source of truth for empty/has-data. */
+function _eodPickRelevantDate(scope /*, community */){
+  var yesterdayET = _eodYesterdayEt();
   if(scope === 'personal'){
-    var todayHas    = _eodTodaysTrades(todayET).length > 0;
-    var yesterdayHas= _eodTodaysTrades(yesterdayET).length > 0;
-    if(nowMin >= (16*60 + 30)){
-      if(todayHas) return todayET;
-      if(yesterdayHas) return yesterdayET;
-      return null;
-    }
-    // Pre-cutoff: today is still in-progress; only show yesterday.
-    return yesterdayHas ? yesterdayET : null;
+    return _eodTodaysTrades(yesterdayET).length ? yesterdayET : null;
   }
-  // Group scope — no cheap probe; defer to caller's async fetch.
-  if(nowMin >= (16*60 + 30)) return todayET;
   return yesterdayET;
 }
 
@@ -26541,18 +26505,10 @@ function cookieDecline(){
   color:var(--n-text);
   overflow:hidden;
 }
-/* Radial glow top-right — pseudo-element keeps the markup clean.
-   Personal flavor = sage. Group flavor = gold. Painted INSIDE the
-   card so html2canvas's overflow:hidden clip captures it cleanly. */
-.eod-card::before{
-  content:'';position:absolute;
-  top:-80px;right:-80px;width:340px;height:340px;
-  background:radial-gradient(closest-side, rgba(95,179,137,0.18) 0%, transparent 70%);
-  pointer-events:none;
-}
-.eod-card.eod-card-group::before{
-  background:radial-gradient(closest-side, rgba(245,215,124,0.22) 0%, transparent 70%);
-}
+/* Radial spotlight glows removed per design — borders + content
+   carry the visual weight now without the decorative top-right
+   gradient. Z-index lift on direct children kept since it costs
+   nothing and the card may grow decorative pseudo-elements later. */
 .eod-card > *{position:relative;z-index:1}
 
 /* (1) Header row ────────────────────────────────────────────────
@@ -26907,31 +26863,16 @@ function cookieDecline(){
   transition:transform .15s, border-color .15s, box-shadow .15s;
   overflow:hidden;
 }
-/* Elliptical glow behind the bar — tone-aware. */
-.eod-mini-bar::before{
-  content:'';position:absolute;
-  inset:-30% -10%;
-  background:radial-gradient(ellipse at center, rgba(255,255,255,0.04) 0%, transparent 60%);
-  pointer-events:none;
-}
+/* Radial glow removed per design — border tone carries the signal. */
 .eod-mini-bar > *{position:relative;z-index:1}
 .eod-mini-bar:hover{transform:translateY(-1px)}
 
-/* Tone-aware borders + glows */
+/* Tone-aware borders — no fill glow, just border + hover lift. */
 .eod-mini-bar.tone-pos{border-color:rgba(95,179,137,0.32)}
-.eod-mini-bar.tone-pos::before{background:radial-gradient(ellipse at center, rgba(95,179,137,0.08) 0%, transparent 65%)}
 .eod-mini-bar.tone-pos:hover{border-color:rgba(95,179,137,0.55);box-shadow:0 6px 20px rgba(95,179,137,0.08)}
 .eod-mini-bar.tone-neg{border-color:rgba(201,95,95,0.32)}
-.eod-mini-bar.tone-neg::before{background:radial-gradient(ellipse at center, rgba(201,95,95,0.08) 0%, transparent 65%)}
 .eod-mini-bar.tone-neg:hover{border-color:rgba(201,95,95,0.55);box-shadow:0 6px 20px rgba(201,95,95,0.08)}
 .eod-mini-bar.tone-zero{border-color:var(--n-border)}
-
-/* Pending — dashed border, not clickable */
-.eod-mini-bar.is-pending{
-  border-style:dashed;border-color:rgba(255,255,255,0.16);
-  cursor:default;
-}
-.eod-mini-bar.is-pending:hover{transform:none;box-shadow:none}
 
 /* Dividers between segments */
 .eod-mini-sep{
@@ -26940,11 +26881,18 @@ function cookieDecline(){
   flex-shrink:0;
 }
 
-/* Pulse dot — pending = hollow ring, ready = filled tone color */
+/* Empty-state dash bar — dashed border, hollow pulse, still clickable. */
+.eod-mini-bar.is-empty{
+  border-style:dashed;border-color:rgba(255,255,255,0.16);
+}
+.eod-mini-bar.is-empty:hover{border-color:rgba(255,255,255,0.30);box-shadow:none}
+
+/* Pulse dot — empty/pending = hollow ring, ready = filled tone color */
 .eod-mini-pulse{
   width:8px;height:8px;border-radius:50%;flex-shrink:0;
 }
-.eod-mini-pulse.pending{
+.eod-mini-pulse.pending,
+.eod-mini-pulse.empty{
   background:transparent;border:1px solid var(--n-text-3);
 }
 .eod-mini-pulse.pos{
@@ -26968,11 +26916,6 @@ function cookieDecline(){
   white-space:nowrap;
 }
 .eod-mini-await{
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
-  text-transform:uppercase;color:var(--n-text-3);
-  white-space:nowrap;
-}
-.eod-mini-countdown{
   font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
   text-transform:uppercase;color:var(--n-text-3);
   white-space:nowrap;
