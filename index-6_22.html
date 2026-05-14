@@ -11822,9 +11822,11 @@ function openCommFeed(gid){
   renderFeedPosts(g);renderFeedLeaderboard(g);renderFeedMembers(g);renderTOTD(g);renderHeroPnl(g,_commPeriod);
   // EOD community widget (sidebar card above TOTD) — populated for the
   // active community on every openCommFeed call. Internal state machine
-  // handles Pending / Ready / Yesterday / hidden. Fire-and-forget; the
-  // card is hidden by default so a fetch failure just leaves it that way.
+  // handles Pending / Ready / Yesterday / Empty. The card now ALWAYS
+  // renders something post-cutoff (Empty state covers no-activity days)
+  // so the surface is discoverable even when the group has been quiet.
   if(typeof renderEodCommCard === 'function'){
+    console.log('[openCommFeed] firing renderEodCommCard for', g.name || g.id);
     try { renderEodCommCard(g); } catch(e){ console.warn('[eod comm card]', e && e.message); }
   }
   // Per-community group EOD auto-pop — first visit per day per community
@@ -13062,7 +13064,7 @@ function renderEodDashBar(){
       + '<span class="eod-mini-await">' + (todaysCount ? todaysCount + ' trade' + (todaysCount===1?'':'s') + ' &middot; awaiting close' : 'Awaiting close') + '</span>'
       + '<span class="eod-mini-sep"></span>'
       + '<span class="eod-mini-countdown">' + _eodCountdownLabel() + '</span>';
-    el.style.display = 'inline-flex';
+    el.style.display = 'flex';
     return;
   }
 
@@ -13085,7 +13087,7 @@ function renderEodDashBar(){
     + '<span class="eod-mini-meta">' + data.tradeCount + ' trade' + (data.tradeCount===1?'':'s') + ' &middot; ' + data.winRate + '% wr</span>'
     + '<span class="eod-mini-view">View ' + _EOD_SVG.expand + '</span>';
   el.onclick = function(){ eodInflatePersonalFromWidget(); };
-  el.style.display = 'inline-flex';
+  el.style.display = 'flex';
 }
 window.renderEodDashBar = renderEodDashBar;
 
@@ -13094,7 +13096,10 @@ window.renderEodDashBar = renderEodDashBar;
    it's the community brand color. */
 async function renderEodCommCard(community){
   var el = document.getElementById('eod-comm-card');
-  if(!el || !community || !community.id) return;
+  if(!el || !community || !community.id){
+    console.log('[eod comm card] bail — el?', !!el, '| community id?', community && community.id);
+    return;
+  }
 
   var nowMin   = _eodEtMinutes();
   var todayET  = _eodEtDate();
@@ -13119,6 +13124,14 @@ async function renderEodCommCard(community){
     pickedDate = yesterdayET;
   }
 
+  // Diagnostic — surfaces in DevTools so the user can verify the hook
+  // is firing with a valid community ID and see what the DB query
+  // returned. Cheap; leave it in until the widget settles in prod.
+  console.log('[eod comm card]', community.name || community.id,
+    '| afterCutoff:', afterCutoff,
+    '| pickedDate:', pickedDate,
+    '| tradeCount:', data ? data.tradeCount : 0);
+
   // Pending — pre-cutoff with no yesterday data to fall back to.
   if((!data || !data.tradeCount) && !afterCutoff){
     el.className = 'eod-mini-card is-pending';
@@ -13135,8 +13148,24 @@ async function renderEodCommCard(community){
     return;
   }
 
-  // Nothing to show
-  if(!data || !data.tradeCount){ el.style.display = 'none'; return; }
+  // Empty/quiet — post-cutoff with no recent activity. Keep the card
+  // visible so the surface is discoverable; just show a "no activity
+  // yet" sub-label instead of disappearing. Not clickable since there
+  // is nothing to inflate. This also matches the visual rhythm of the
+  // dashboard bar's Pending state for the same situation on personal.
+  if(!data || !data.tradeCount){
+    el.className = 'eod-mini-card is-empty';
+    el.onclick = null;
+    el.innerHTML =
+        '<div class="eod-mini-card-head">'
+      +   '<span class="eod-mini-pulse pending"></span>'
+      +   '<span class="eod-mini-label">EOD &middot; ' + _eodSafe(_eodDateLabel(todayET)) + '</span>'
+      + '</div>'
+      + '<div class="eod-mini-card-hero zero">No activity yet</div>'
+      + '<div class="eod-mini-card-foot">Be the first to log a trade today</div>';
+    el.style.display = 'block';
+    return;
+  }
 
   var isYesterday = pickedDate !== todayET;
   var tone = data.totalPnl > 0 ? 'pos' : data.totalPnl < 0 ? 'neg' : 'zero';
@@ -26821,12 +26850,17 @@ function cookieDecline(){
   border-color:rgba(245,215,124,0.55);
   box-shadow:0 8px 24px rgba(245,215,124,0.08);
 }
-.eod-mini-card.is-pending{
+.eod-mini-card.is-pending,
+.eod-mini-card.is-empty{
   border-style:dashed;border-color:rgba(255,255,255,0.14);
   cursor:default;
 }
-.eod-mini-card.is-pending:hover{transform:none;box-shadow:none;border-color:rgba(255,255,255,0.14)}
-.eod-mini-card.is-pending::before{display:none}
+.eod-mini-card.is-pending:hover,
+.eod-mini-card.is-empty:hover{
+  transform:none;box-shadow:none;border-color:rgba(255,255,255,0.14);
+}
+.eod-mini-card.is-pending::before,
+.eod-mini-card.is-empty::before{display:none}
 
 .eod-mini-card-head{
   display:flex;align-items:center;gap:8px;margin-bottom:8px;
