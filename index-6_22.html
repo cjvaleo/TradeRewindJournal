@@ -27065,13 +27065,28 @@ function cookieDecline(){
 /* Mobile — 2-col grid collapses to 1-col, divider hidden, hero still big.
    Also reposition the modal: switch from align-items:center to
    flex-start with a top inset so the card sits clear of the mobile
-   topbar (~56px) instead of jamming under it on short viewports. */
+   topbar (~54px) instead of jamming under it on short viewports.
+   The `.eod-stage` rule below MUST override margin:auto from the
+   desktop block — auto margin on a flex item wins over the parent's
+   align-items, which is what was re-centering the card vertically
+   despite the backdrop's flex-start change. */
 @media (max-width: 720px){
   .eod-backdrop{
-    align-items:flex-start;
-    padding:72px 14px 24px;  /* top clears mobile topbar + breathing room */
+    align-items:flex-start !important;
+    padding:72px 14px 24px !important;
+    /* Belt-and-suspenders against iOS notches / dynamic islands that
+       could otherwise crop the card top. env() falls back to the 72px
+       baseline on devices/browsers without safe-area support. */
+    padding-top:calc(env(safe-area-inset-top, 0px) + 72px) !important;
   }
-  .eod-stage{max-width:480px}
+  .eod-stage{
+    max-width:480px;
+    margin:0 auto !important;  /* horizontal-only auto; kills vertical re-centering */
+  }
+  /* Explicit top margin on the first card too — defense in depth in
+     case some downstream override sneaks the stage back into a
+     centered position. */
+  #eod-cards > .eod-card:first-child{margin-top:0 !important}
   .eod-card{padding:20px 18px 16px;gap:14px}
   .ev2-body{grid-template-columns:1fr;gap:14px}
   .ev2-divider{display:none}
