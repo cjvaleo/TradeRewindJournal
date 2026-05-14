@@ -10268,14 +10268,6 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
       </div>
 
       <aside class="rail">
-        <!-- EOD COMMUNITY CARD — gold-bordered widget at the top of the
-             right rail. Populated by renderEodCommCard(_comm) in the same
-             three states as the dashboard bar, but bound to the active
-             community (sums today's posts across this community's members).
-             Click anywhere on the card → inflates the GROUP EOD modal for
-             THIS community only. Hidden until openCommFeed runs with data. -->
-        <div id="eod-comm-card" class="eod-mini-card" style="display:none"></div>
-
         <!-- Trade of the Day — populated by renderTOTD when today has trades -->
         <div id="feed-totd" style="display:none"></div>
 
@@ -11321,17 +11313,14 @@ function init(){
   // EOD widget ticker \u2014 60s cadence keeps the countdown current and
   // flips the dash bar from Pending \u2192 Ready the moment 4:30pm ET hits
   // (instead of waiting for a manual refresh). Cheap render; bails
-  // early on hidden tab via the document.hidden check.
+  // early on hidden tab via the document.hidden check. Also re-paints
+  // the per-community badges so any community that crosses the 4:30
+  // cutoff or gets a fresh trade post auto-updates without a refresh.
   if(!window._eodTicker){
     window._eodTicker = setInterval(function(){
       if(document.hidden) return;
       if(typeof renderEodDashBar === 'function') renderEodDashBar();
-      // Also tick the community card if it's currently visible \u2014 the
-      // pending-state countdown is the only thing that changes per-minute.
-      var cc = document.getElementById('eod-comm-card');
-      if(cc && cc.style.display !== 'none' && _comm && typeof renderEodCommCard === 'function'){
-        renderEodCommCard(_comm);
-      }
+      if(typeof renderEodCommBadges === 'function') renderEodCommBadges();
     }, 60*1000);
   }
 }
@@ -11768,19 +11757,28 @@ function renderCommSidebar(){
     el.innerHTML='<div class="notif-empty">No groups yet<br>Create one below</div>';
     return;
   }
+  // Layout per row: [avatar] [name + member count] [EOD badge — right]
+  // Badge starts as a loading skeleton; renderEodCommBadges (fired
+  // below + by the 60s ticker) upgrades each one in place once its
+  // async _eodGroupData fetch resolves.
   el.innerHTML=groups.map(function(g){
     var isActive=_activeCommId===g.id;
     var safeId=safeText(g.id);
     var safeName=safeText(g.name||'');
     var memberCount = (g.members && g.members.length) || 0;
+    var badgeHtml = (typeof _eodBadgeSkeletonHtml === 'function') ? _eodBadgeSkeletonHtml(g.id) : '';
     return '<div class="gitem'+(isActive?' on':'')+'" data-gid="'+safeId+'" onclick="setActiveGroup(\''+safeId+'\')">'
       + renderGroupAvatar(g, 'md')
       + '<div class="gmeta">'
       +   '<div class="gname">'+safeName+'</div>'
       +   '<div class="gsub">'+memberCount+(memberCount===1?' member':' members')+'</div>'
       + '</div>'
+      + badgeHtml
       + '</div>';
   }).join('');
+  // Populate badges with real data — fire-and-forget. Cached so
+  // repeated renderCommSidebar calls within a minute reuse results.
+  if(typeof renderEodCommBadges === 'function') renderEodCommBadges();
 }
 
 function setActiveGroup(gid){
@@ -11821,17 +11819,11 @@ function openCommFeed(gid){
     editBtn.title = (currentUser&&g.owner_id===currentUser.id) ? 'Edit group' : 'Group info';
   }
   renderFeedPosts(g);renderFeedLeaderboard(g);renderFeedMembers(g);renderTOTD(g);renderHeroPnl(g,_commPeriod);
-  // EOD community widget (sidebar card above TOTD) — populated for the
-  // active community on every openCommFeed call. Internal state machine
-  // handles Pending / Ready / Yesterday / Empty. The card now ALWAYS
-  // renders something post-cutoff (Empty state covers no-activity days)
-  // so the surface is discoverable even when the group has been quiet.
-  if(typeof renderEodCommCard === 'function'){
-    console.log('[openCommFeed] firing renderEodCommCard for', g.name || g.id);
-    try { renderEodCommCard(g); } catch(e){ console.warn('[eod comm card]', e && e.message); }
-  }
   // Per-community group EOD auto-pop — first visit per day per community
   // after 4:30pm ET. Internal gates handle opt-out + already-shown flag.
+  // The persistent surface for this community lives as a badge inside
+  // the left sidebar's .gitem row (see renderCommSidebar), not as a
+  // card in the right rail.
   if(typeof eodMaybeShowGroupForCommunity === 'function'){
     eodMaybeShowGroupForCommunity(g);
   }
@@ -13092,115 +13084,151 @@ function renderEodDashBar(){
 }
 window.renderEodDashBar = renderEodDashBar;
 
-/* Community card — vertical layout: pulse+label row, hero P&L row,
-   footer meta row. Always gold-bordered regardless of P&L tone since
-   it's the community brand color. */
-async function renderEodCommCard(community){
-  var el = document.getElementById('eod-comm-card');
-  if(!el || !community || !community.id){
-    console.log('[eod comm card] bail — el?', !!el, '| community id?', community && community.id);
-    return;
-  }
+/* ─── EOD COMMUNITY BADGES (left sidebar) ───────────────────────
+   Each row in the left "Communities" list (#comm-sidebar-list .gitem)
+   carries a small EOD badge on its right edge. The badge summarizes
+   the community's most recent EOD P&L (today if past 4:30pm ET, else
+   yesterday). Click → inflates the full group EOD modal for THAT
+   community, stopPropagation so the parent .gitem nav handler doesn't
+   also fire.
 
-  var nowMin   = _eodEtMinutes();
-  var todayET  = _eodEtDate();
-  var yetDate  = new Date(Date.now() - 24*3600*1000);
+   Async data flow:
+     1. renderCommSidebar() paints the row markup synchronously with
+        a placeholder/empty badge (so layout is stable from frame 1).
+     2. renderEodCommBadges() runs after, fires _eodGroupData fetches
+        for every community in parallel, then upgrades each badge
+        in-place once its data resolves.
+     3. The 60s ticker calls renderEodCommBadges() so badges stay
+        fresh as the day evolves (4:30pm flip, fresh shares).
+   ───────────────────────────────────────────────────────────── */
+
+// Cache so repeated paints don't refetch within the same minute.
+// Keyed by `${gid}|${etDate}` — invalidated implicitly when the ET
+// date rolls or the ticker calls renderEodCommBadges (which always
+// refetches anyway).
+var _eodBadgeCache = {};
+
+// Synchronous skeleton — emitted by renderCommSidebar so the row
+// has a fixed-width slot for the badge even before async data lands.
+function _eodBadgeSkeletonHtml(gid){
+  return '<div class="eod-comm-badge is-loading" data-gid="' + _eodSafe(gid) + '">'
+    +   '<div class="eod-comm-badge-top">'
+    +     '<span class="eod-comm-badge-dot"></span>'
+    +     '<span class="eod-comm-badge-label">EOD</span>'
+    +   '</div>'
+    +   '<div class="eod-comm-badge-pnl">&mdash;</div>'
+    + '</div>';
+}
+
+// Async — populates one badge with real data. Reuses _eodGroupData.
+async function _eodPopulateBadge(community){
+  var gid = community.id;
+  var nowMin = _eodEtMinutes();
+  var todayET = _eodEtDate();
+  var yetDate = new Date(Date.now() - 24*3600*1000);
   var yesterdayET = _eodEtDate(yetDate);
   var afterCutoff = nowMin >= (16*60 + 30);
+  var pickedDate = afterCutoff ? todayET : yesterdayET;
 
-  // Fetch the relevant slice:
-  //   after cutoff → today first, fall back to yesterday on empty
-  //   before cutoff → yesterday only (today's still in-progress)
-  var data = null;
-  var pickedDate = null;
-  if(afterCutoff){
-    data = await _eodGroupData(community, todayET);
-    pickedDate = todayET;
-    if(!data || !data.tradeCount){
+  // Check cache first.
+  var cacheKey = gid + '|' + pickedDate;
+  var data = _eodBadgeCache[cacheKey];
+  if(data === undefined){
+    data = await _eodGroupData(community, pickedDate);
+    // After-cutoff fallback: if today has nothing, try yesterday so
+    // the badge can show last session's recap instead of an em-dash.
+    if(afterCutoff && (!data || !data.tradeCount)){
       data = await _eodGroupData(community, yesterdayET);
       pickedDate = yesterdayET;
+      cacheKey = gid + '|' + pickedDate;
     }
-  } else {
-    data = await _eodGroupData(community, yesterdayET);
-    pickedDate = yesterdayET;
+    _eodBadgeCache[cacheKey] = data || null;
   }
 
-  // Diagnostic — surfaces in DevTools so the user can verify the hook
-  // is firing with a valid community ID and see what the DB query
-  // returned. Cheap; leave it in until the widget settles in prod.
-  console.log('[eod comm card]', community.name || community.id,
-    '| afterCutoff:', afterCutoff,
-    '| pickedDate:', pickedDate,
-    '| tradeCount:', data ? data.tradeCount : 0);
+  // Find the row's badge — the gitem may have re-rendered since the
+  // fetch fired, so re-query rather than holding the original node.
+  var badge = document.querySelector(
+    '#comm-sidebar-list .gitem[data-gid="' + _cssEsc(gid) + '"] .eod-comm-badge'
+  );
+  if(!badge) return;
 
-  // Pending — pre-cutoff with no yesterday data to fall back to.
-  if((!data || !data.tradeCount) && !afterCutoff){
-    el.className = 'eod-mini-card is-pending';
-    el.onclick = null;
-    el.innerHTML =
-        '<div class="eod-mini-card-head">'
-      +   '<span class="eod-mini-pulse pending"></span>'
-      +   '<span class="eod-mini-label">EOD &middot; ' + _eodSafe(_eodDateLabel(todayET)) + '</span>'
-      +   '<span class="eod-mini-expand">' + _EOD_SVG.expand + '</span>'
-      + '</div>'
-      + '<div class="eod-mini-card-hero zero">Awaiting close</div>'
-      + '<div class="eod-mini-card-foot">' + _eodCountdownLabel() + '</div>';
-    el.style.display = 'block';
-    return;
-  }
+  badge.classList.remove('is-loading');
 
-  // Empty/quiet — post-cutoff with no recent activity. Keep the card
-  // visible so the surface is discoverable; show an "intentional, not
-  // broken" placeholder instead of disappearing.
-  //
-  // Inline styles are intentional: we previously shipped class-based
-  // styling that rendered as just the header in production. Inline +
-  // !important beats any external cascade short of another !important,
-  // so the body always paints. Both lines are flat sibling divs (not
-  // wrapped in a flex container) to keep the markup as boring as
-  // possible — fewer moving parts that could collapse.
-  //
-  // data-eod-state="empty" lets you verify the branch in DevTools.
   if(!data || !data.tradeCount){
-    console.log('[eod comm card] EMPTY branch — community has no posts today/yesterday in ET');
-    el.className = 'eod-mini-card is-empty';
-    el.setAttribute('data-eod-state', 'empty');
-    el.onclick = null;
-    el.innerHTML =
-        '<div class="eod-mini-card-head">'
-      +   '<span class="eod-mini-pulse pending"></span>'
-      +   '<span class="eod-mini-label">EOD &middot; ' + _eodSafe(_eodDateLabel(todayET)) + '</span>'
+    // Empty — no activity today (or yesterday). Outlined dot, em-dash
+    // P&L, no click target.
+    badge.className = 'eod-comm-badge is-empty';
+    badge.removeAttribute('onclick');
+    badge.onclick = null;
+    badge.innerHTML =
+        '<div class="eod-comm-badge-top">'
+      +   '<span class="eod-comm-badge-dot empty"></span>'
+      +   '<span class="eod-comm-badge-label">EOD</span>'
       + '</div>'
-      + '<div style="font-family:\'Instrument Serif\',Georgia,serif !important;font-style:italic !important;font-size:18px !important;line-height:1.15 !important;letter-spacing:-0.01em !important;color:#a1a1a1 !important;display:block !important;margin-top:10px !important">No activity yet</div>'
-      + '<div style="font-family:\'Geist Mono\',ui-monospace,monospace !important;font-size:9px !important;letter-spacing:0.14em !important;text-transform:uppercase !important;color:#6b6b6b !important;display:block !important;margin-top:6px !important">Be the first to share a trade today</div>';
-    el.style.display = 'block';
+      + '<div class="eod-comm-badge-pnl">&mdash;</div>';
     return;
   }
 
-  var isYesterday = pickedDate !== todayET;
   var tone = data.totalPnl > 0 ? 'pos' : data.totalPnl < 0 ? 'neg' : 'zero';
-  var trendSvg = data.totalPnl >= 0 ? _EOD_SVG.trendUp : _EOD_SVG.trendDown;
-
-  el.className = 'eod-mini-card is-ready' + (isYesterday ? ' is-yesterday' : '');
-  el.innerHTML =
-      '<div class="eod-mini-card-head">'
-    +   '<span class="eod-mini-pulse gold"></span>'
-    +   '<span class="eod-mini-label">' + (isYesterday ? 'Yesterday' : 'EOD') + ' &middot; ' + _eodSafe(_eodDateLabel(pickedDate)) + '</span>'
-    +   '<span class="eod-mini-expand">' + _EOD_SVG.expand + '</span>'
+  badge.className = 'eod-comm-badge is-ready tone-' + tone;
+  badge.innerHTML =
+      '<div class="eod-comm-badge-top">'
+    +   '<span class="eod-comm-badge-dot ' + tone + '"></span>'
+    +   '<span class="eod-comm-badge-label">EOD</span>'
     + '</div>'
-    + '<div class="eod-mini-card-hero ' + tone + '">'
-    +   _eodMoneyCompact(data.totalPnl)
-    +   '<span class="eod-mini-trend">' + trendSvg + '</span>'
-    + '</div>'
-    + '<div class="eod-mini-card-foot">'
-    +   data.tradeCount + ' trade' + (data.tradeCount===1?'':'s')
-    +   ' &middot; ' + data.winRate + '% wr'
-    +   ' &middot; tap to view'
-    + '</div>';
-  el.onclick = function(){ eodInflateGroupFromWidget(community); };
-  el.style.display = 'block';
+    + '<div class="eod-comm-badge-pnl ' + tone + '">' + _eodBadgeMoney(data.totalPnl) + '</div>';
+  // Click — open the group EOD modal for this community. The wrapper
+  // function looks up `community` by gid because closures over the
+  // outer `community` arg would go stale if _comms reloads.
+  badge.onclick = function(ev){
+    if(ev) ev.stopPropagation();
+    eodOpenGroupModalById(gid);
+  };
 }
-window.renderEodCommCard = renderEodCommCard;
+
+// Compact money string for the badge — no cents to save horizontal
+// space; "k" suffix when |v| >= 1000 to keep the line under ~70px.
+function _eodBadgeMoney(v){
+  var sign = v > 0 ? '+' : v < 0 ? '−' : '';
+  var abs = Math.abs(v);
+  var body;
+  if(abs >= 1000){
+    body = (abs/1000).toFixed(abs >= 10000 ? 0 : 1).replace(/\.0$/,'') + 'k';
+  } else {
+    body = Math.round(abs).toLocaleString('en-US');
+  }
+  return sign + '$' + body;
+}
+
+// CSS-safe escape for the gid attribute selector. PostgREST UUIDs are
+// fine without escaping but defending against future legacy IDs is
+// cheap insurance.
+function _cssEsc(s){ return String(s||'').replace(/["\\]/g, '\\$&'); }
+
+// Public — repaints all badges in the sidebar. Cheap; async fetches
+// run in parallel. Called from the 60s ticker and renderCommSidebar.
+function renderEodCommBadges(){
+  if(!Array.isArray(_comms) || !_comms.length) return;
+  _comms.forEach(function(g){ _eodPopulateBadge(g); });
+}
+window.renderEodCommBadges = renderEodCommBadges;
+window._eodBadgeSkeletonHtml = _eodBadgeSkeletonHtml;
+
+// Wrapper invoked from the badge's onclick — looks up the community
+// by gid (so the closure stays fresh across _comms reloads) and forwards
+// to the existing eodInflateGroupFromWidget path.
+function eodOpenGroupModalById(gid){
+  if(!Array.isArray(_comms)) return;
+  var community = _comms.find(function(c){ return c.id === gid; });
+  if(!community){
+    console.warn('[eod badge] community not found for gid:', gid);
+    return;
+  }
+  if(typeof eodInflateGroupFromWidget === 'function'){
+    eodInflateGroupFromWidget(community);
+  }
+}
+window.eodOpenGroupModalById = eodOpenGroupModalById;
 
 /* ── Modal scaffold ─────────────────────────────────────────────
    Single source of truth for opening the EOD modal with a list of
@@ -26839,110 +26867,101 @@ function cookieDecline(){
 .eod-mini-bar:hover .eod-mini-view{background:rgba(95,179,137,0.20)}
 .eod-mini-bar.tone-neg:hover .eod-mini-view{background:rgba(201,95,95,0.20)}
 
-/* Community card — vertical layout, gold-bordered, sits above TOTD */
-.eod-mini-card{
-  display:none;
-  position:relative;
-  padding:14px 16px;margin-bottom:12px;
-  background:linear-gradient(135deg, #0f0f0f 0%, #161616 100%);
-  border:0.5px solid rgba(245,215,124,0.32);
-  border-radius:10px;
+/* ─── EOD COMMUNITY BADGE (left sidebar .gitem rows) ──────────
+   Compact right-aligned chip inside each community list card.
+   Two stacked rows: pulse + "EOD" label, then a 13px serif italic
+   P&L. Tone-aware bg/border (sage / rose / empty-dashed). Click
+   inflates the group EOD modal for THAT community — stopPropagation
+   keeps the click from also firing the row's nav handler.
+   ───────────────────────────────────────────────────────────── */
+.eod-comm-badge{
+  display:flex;flex-direction:column;align-items:flex-end;justify-content:center;
+  gap:3px;
+  width:80px;flex-shrink:0;
+  margin-left:auto;
+  padding:6px 8px;
+  border-radius:6px;
+  border:0.5px solid transparent;
+  background:rgba(255,255,255,0.02);
   font-family:var(--n-font-sans);color:var(--n-text);
-  cursor:pointer;overflow:hidden;
-  transition:transform .15s, border-color .15s, box-shadow .15s;
+  cursor:pointer;
+  transition:border-color .15s, background .15s;
 }
-.eod-mini-card::before{
-  content:'';position:absolute;
-  top:-40px;right:-40px;width:160px;height:160px;
-  background:radial-gradient(closest-side, rgba(245,215,124,0.18) 0%, transparent 70%);
-  pointer-events:none;
-}
-.eod-mini-card > *{position:relative;z-index:1}
-.eod-mini-card:hover{
-  transform:translateY(-1px);
-  border-color:rgba(245,215,124,0.55);
-  box-shadow:0 8px 24px rgba(245,215,124,0.08);
-}
-.eod-mini-card.is-pending{
-  border-style:dashed;border-color:rgba(255,255,255,0.14);
+.eod-comm-badge.is-loading{opacity:0.4}
+
+/* Empty (no activity today/yesterday) — outlined dot, em-dash P&L,
+   dashed faint border, not clickable. */
+.eod-comm-badge.is-empty{
+  background:rgba(255,255,255,0.02);
+  border:0.5px dashed rgba(255,255,255,0.15);
   cursor:default;
 }
-.eod-mini-card.is-pending:hover{
-  transform:none;box-shadow:none;border-color:rgba(255,255,255,0.14);
-}
-.eod-mini-card.is-pending::before{display:none}
-
-/* Empty state — keeps the gold border but dashes it so the visual
-   reads as "intentional, not broken". The radial glow stays so the
-   card retains the community brand color even when quiet. Cursor
-   reverts to default since there's nothing to inflate.
-   min-height enforces the Ready-state footprint so the card never
-   collapses to a single header row (we saw that in prod even with
-   the body markup present; suspected a CSS-rule cache shadow). */
-.eod-mini-card.is-empty{
-  border-style:dashed;border-color:rgba(245,215,124,0.28);
-  cursor:default;
-  min-height:110px;
-}
-.eod-mini-card.is-empty:hover{
-  transform:none;box-shadow:none;
-  border-color:rgba(245,215,124,0.28);
-}
-.eod-mini-card.is-empty::before{
-  /* Dimmer gold glow than the Ready state so the card still reads
-     as "quiet day". */
-  background:radial-gradient(closest-side, rgba(245,215,124,0.10) 0%, transparent 70%);
+.eod-comm-badge.is-empty:hover{
+  border-color:rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.02);
 }
 
-/* Empty-state body — matches the vertical footprint of the Ready
-   state's hero+foot block so the card height stays stable when
-   activity lands. Title (italic serif, muted) + subtitle (mono caps).
-   Lives in its own classes so the .eod-mini-card-hero rules can't
-   accidentally clip or restyle it. */
-.eod-mini-card-empty{
-  display:flex;flex-direction:column;gap:6px;
-  padding:6px 0 2px;
+/* Ready states — tone-aware. Hover bumps border opacity. */
+.eod-comm-badge.tone-pos{
+  background:rgba(95,179,137,0.08);
+  border-color:rgba(95,179,137,0.28);
 }
-.eod-mini-card-empty-title{
+.eod-comm-badge.tone-pos:hover{
+  border-color:rgba(95,179,137,0.55);
+  background:rgba(95,179,137,0.12);
+}
+.eod-comm-badge.tone-neg{
+  background:rgba(201,95,95,0.06);
+  border-color:rgba(201,95,95,0.24);
+}
+.eod-comm-badge.tone-neg:hover{
+  border-color:rgba(201,95,95,0.55);
+  background:rgba(201,95,95,0.10);
+}
+.eod-comm-badge.tone-zero{
+  background:rgba(255,255,255,0.03);
+  border-color:rgba(255,255,255,0.10);
+}
+
+/* Top row — pulse + EOD mono caps label */
+.eod-comm-badge-top{
+  display:flex;align-items:center;gap:5px;
+}
+.eod-comm-badge-dot{
+  width:6px;height:6px;border-radius:50%;flex-shrink:0;
+  background:var(--n-text-4);
+}
+.eod-comm-badge-dot.pos{
+  background:var(--n-profit);
+  box-shadow:0 0 0 2px rgba(95,179,137,0.10), 0 0 6px rgba(95,179,137,0.55);
+}
+.eod-comm-badge-dot.neg{
+  background:var(--n-loss);
+  box-shadow:0 0 0 2px rgba(201,95,95,0.10), 0 0 6px rgba(201,95,95,0.55);
+}
+.eod-comm-badge-dot.empty{
+  background:transparent;
+  border:0.5px solid rgba(255,255,255,0.30);
+}
+.eod-comm-badge-label{
+  font-family:var(--n-font-mono);font-size:7px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-3);line-height:1;
+}
+
+/* Bottom row — 13px serif italic P&L */
+.eod-comm-badge-pnl{
   font-family:var(--n-font-display);font-style:italic;
-  font-size:20px;line-height:1.1;letter-spacing:-0.01em;
-  color:var(--n-text-2);
+  font-size:13px;line-height:1;letter-spacing:-0.01em;
+  color:var(--n-text-3);
 }
-.eod-mini-card-empty-sub{
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;
-  text-transform:uppercase;color:var(--n-text-3);
-}
+.eod-comm-badge-pnl.pos{color:var(--n-profit)}
+.eod-comm-badge-pnl.neg{color:var(--n-loss)}
+.eod-comm-badge-pnl.zero{color:var(--n-text-2)}
 
-.eod-mini-card-head{
-  display:flex;align-items:center;gap:8px;margin-bottom:8px;
-}
-.eod-mini-card-head .eod-mini-pulse{margin-right:2px}
-.eod-mini-card-head .eod-mini-label{flex:1;min-width:0}
-.eod-mini-expand{
-  display:inline-flex;align-items:center;justify-content:center;
-  color:var(--n-text-3);transition:.15s;
-}
-.eod-mini-expand svg{
-  width:14px;height:14px;stroke:currentColor;stroke-width:1.6;fill:none;
-  stroke-linecap:round;stroke-linejoin:round;
-}
-.eod-mini-card:hover .eod-mini-expand{color:var(--n-text-2)}
-
-.eod-mini-card-hero{
-  display:flex;align-items:baseline;gap:8px;
-  font-family:var(--n-font-display);font-style:italic;
-  font-size:24px;line-height:1;letter-spacing:-0.01em;
-  margin-bottom:8px;
-}
-.eod-mini-card-hero.pos{color:var(--n-profit)}
-.eod-mini-card-hero.neg{color:var(--n-loss)}
-.eod-mini-card-hero.zero{color:var(--n-text-2);font-size:18px}
-.eod-mini-card-hero .eod-mini-trend{width:18px;height:18px}
-.eod-mini-card-hero .eod-mini-trend svg{width:11px;height:11px}
-
-.eod-mini-card-foot{
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;
-  text-transform:uppercase;color:var(--n-text-3);
+/* Tighten on narrow sidebar / collapsed mode */
+#pg-community .csb.collapsed .eod-comm-badge{display:none}
+@media (max-width: 768px){
+  .eod-comm-badge{display:none}
 }
 
 /* Mobile — dashboard bar wraps gracefully on narrow screens */
