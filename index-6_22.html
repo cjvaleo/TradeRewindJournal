@@ -6304,11 +6304,17 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 #pg-community .hero-stat-value.profit{color:var(--n-profit)}
 #pg-community .hero-stat-value.loss{color:var(--n-loss)}
 
-/* ── COLLAPSIBLE COMMUNITIES SUB-SIDEBAR ── */
+/* ── COLLAPSIBLE COMMUNITIES SUB-SIDEBAR ──
+   IMPORTANT: keep position:sticky (set on the base .csb rule at line
+   ~5932). Earlier versions of this rule used position:relative which
+   silently overrode the base sticky (same selector specificity, later
+   wins) — that's why the left column was scrolling away with the feed
+   on ultra-wide. The transition + sticky compose fine; sticky doesn't
+   block width/padding animation. */
 #pg-community .csb{
   transition:width .3s cubic-bezier(0.4,0,0.2,1),
              padding .3s cubic-bezier(0.4,0,0.2,1);
-  position:relative;
+  position:sticky;top:0;
 }
 #pg-community .csb.collapsed{width:64px!important;padding:24px 8px!important}
 #pg-community .csb.collapsed .csb-head,
@@ -12519,14 +12525,15 @@ function renderFeedPosts(g){
         + '</div>'
       : '';
 
-    // ── (6) Engagement bar — heart + reply + share. No trophy/TOTD. ─
+    // ── (6) Engagement bar — heart + share. Reply removed this release;
+    //    feedReply / feedSubmitReply / feedRenderReplies + the realtime
+    //    sub remain in code but neutered so the table + data stay
+    //    untouched and we can flip replies back on without re-stitching
+    //    the renderer. No trophy/TOTD.
     var actionsHtml = '<div class="fp-actions">'
       + '<button class="fp-act'+(youLiked?' liked':'')+'" onclick="feedLike(this)" data-id="'+safePid+'"'+(youLiked?' data-liked="1"':'')+'>'
       +   '<svg viewBox="0 0 24 24" fill="'+(youLiked?'currentColor':'none')+'" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
       +   '<span id="like-count-'+safePid+'">'+likes+'</span>'
-      + '</button>'
-      + '<button class="fp-act" onclick="feedReply(\''+safePid+'\',this)">'
-      +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
       + '</button>'
       + '<button class="fp-act fp-act-share" onclick="event.stopPropagation()" title="Share">'
       +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>'
@@ -12553,14 +12560,11 @@ function renderFeedPosts(g){
       + postImgHtml
       // (6) Engagement bar
       + actionsHtml
-      // Inline reply expansion (preserves existing feedReply / feedSubmitReply wiring)
-      + '<div id="reply-box-'+safePid+'" class="reply-box" style="display:none">'
-      +   '<div id="replies-'+safePid+'"></div>'
-      +   '<div class="reply-input-row">'
-      +     '<input type="text" class="reply-input" id="reply-input-'+safePid+'" placeholder="Write a reply…"/>'
-      +     '<button class="reply-send" onclick="feedSubmitReply(\''+safePid+'\')">Send</button>'
-      +   '</div>'
-      + '</div>'
+      // Reply box markup intentionally removed this release. The
+      // existing feedReply / feedSubmitReply / feedRenderReplies
+      // handlers + the realtime sub on community_post_replies stay
+      // wired so the data path is reversible — just no UI to trigger
+      // them.
       + '</div>';
   }).join('');
 
@@ -13989,6 +13993,14 @@ function feedRenderReplies(id) {
 }
 
 async function feedSubmitReply(id) {
+  // Replies disabled this release — write path neutered, body left
+  // intact below so flipping replies back on is a one-line revert
+  // (just delete this guard). community_post_replies table + existing
+  // data untouched in Supabase. See feedReply() + the renderer template
+  // for the UI removal sites.
+  console.log('[reply submit] noop — replies disabled this release');
+  return;
+  /* eslint-disable no-unreachable */
   var inp = document.getElementById('reply-input-' + id); if (!inp) return;
   var txt = inp.value.trim(); if (!txt) return;
   if (!_sb || !currentUser || !_comm) { toast('Not connected'); return; }
@@ -14024,6 +14036,7 @@ async function feedSubmitReply(id) {
     inp.value = txt;
     showToast('Couldn\'t post reply — '+(e.message||'try again'), 'error');
   }
+  /* eslint-enable no-unreachable */
 }
 
 // ── TRADING RULES ──────────────────────────────────────
