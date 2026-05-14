@@ -13040,7 +13040,6 @@ function _eodRenderPersonalCard(data){
     // funnel through _eodCaptureCard() so the html2canvas render
     // happens ONCE per click.
     + '<div class="ev2-actions">'
-    +   '<button class="ev2-download" onclick="eodDownloadCard(this)">Download</button>'
     +   (_eodCanShareFiles()
         ? '<button class="ev2-share" onclick="eodShareCard(this)">Share</button>'
         : '')
@@ -13143,7 +13142,6 @@ function _eodRenderGroupCard(data){
     // [Share?] [Dismiss]. Share is feature-detected via
     // _eodCanShareFiles(). Both funnel through _eodCaptureCard().
     + '<div class="ev2-actions">'
-    +   '<button class="ev2-download" onclick="eodDownloadCard(this)">Download</button>'
     +   (_eodCanShareFiles()
         ? '<button class="ev2-share" onclick="eodShareCard(this)">Share</button>'
         : '')
@@ -13176,11 +13174,10 @@ function eodDismiss(){
   // opens regardless.
   var container = document.getElementById('eod-cards');
   if(container) container.innerHTML = '';
-  // Invalidate the pre-baked artifacts — they're tied to the now-
-  // dismissed card's data, so the next modal open should re-bake fresh.
-  _eodPrebakedFile    = null;
-  _eodPrebakedDataUrl = null;
-  _eodPrebakedFor     = null;
+  // Invalidate the pre-baked File — it's tied to the now-dismissed
+  // card's data, so the next modal open should re-bake fresh.
+  _eodPrebakedFile = null;
+  _eodPrebakedFor  = null;
   // Only write the dismiss flag when the modal was auto-popped. Widget
   // inflates are "replay" — they shouldn't suppress the natural auto-pop
   // that may still be due. The flag write is the personal-scope key only;
@@ -13206,109 +13203,9 @@ function eodOpenDayReview(etDate){
   } catch(e){ console.warn('[eod] day review open failed:', e && e.message); }
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   EOD DIAG INFRASTRUCTURE
-   Safari navigates the entire tab to data: URLs when the download
-   attribute is ignored, destroying console state. To survive that,
-   every diag entry is mirrored to localStorage and rendered into
-   an on-screen panel the next time the page loads. This lets us
-   read the diag output even after Safari hijacks the tab.
-   ───────────────────────────────────────────────────────────────── */
-function _eodSerialize(v){
-  if(v == null) return String(v);
-  if(typeof v === 'string') return v;
-  if(typeof v !== 'object') return String(v);
-  try { return JSON.stringify(v); } catch(e){ return Object.prototype.toString.call(v); }
-}
-function _eodLog(/* ...args */){
-  // Always mirror to console for normal dev flow.
-  try { console.log.apply(console, arguments); } catch(e){}
-  // Append to localStorage so navigation can't destroy it.
-  try {
-    var parts = [];
-    for(var i = 0; i < arguments.length; i++) parts.push(_eodSerialize(arguments[i]));
-    var msg = parts.join(' ');
-    var raw = localStorage.getItem('eod_diag_log') || '[]';
-    var arr = JSON.parse(raw);
-    arr.push({ t: Date.now(), msg: msg });
-    if(arr.length > 400) arr = arr.slice(-400);  // cap size
-    localStorage.setItem('eod_diag_log', JSON.stringify(arr));
-  } catch(e){}
-  // If panel is already on screen, append live too.
-  try {
-    var pre = document.getElementById('eod-diag-pre');
-    if(pre){
-      var ts = new Date().toISOString().slice(11, 23);
-      var line = ts + '  ' + (msg || (parts && parts.join(' ')) || '');
-      pre.textContent += line + '\n';
-      pre.scrollTop = pre.scrollHeight;
-    }
-  } catch(e){}
-}
-window._eodDiagClear = function(){
-  try { localStorage.removeItem('eod_diag_log'); } catch(e){}
-  var p = document.getElementById('eod-diag-panel'); if(p) p.remove();
-};
-window._eodDiagCopy = function(){
-  var pre = document.getElementById('eod-diag-pre');
-  if(!pre) return;
-  var text = pre.textContent || '';
-  var done = function(ok){
-    var btn = document.getElementById('eod-diag-copy-btn');
-    if(btn){ btn.textContent = ok ? 'COPIED ✓' : 'COPY FAILED'; setTimeout(function(){ btn.textContent = 'COPY'; }, 1500); }
-  };
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ done(false); });
-  } else {
-    // Fallback: select the pre so the user can Cmd+C manually.
-    var r = document.createRange(); r.selectNodeContents(pre);
-    var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
-    done(true);
-  }
-};
-function _eodDiagRender(){
-  if(!window.localStorage) return;
-  var raw; try { raw = localStorage.getItem('eod_diag_log'); } catch(e){ return; }
-  if(!raw) return;
-  var log; try { log = JSON.parse(raw); } catch(e){ return; }
-  if(!log || !log.length) return;
-
-  var mount = function(){
-    if(document.getElementById('eod-diag-panel')) return;
-    var panel = document.createElement('div');
-    panel.id = 'eod-diag-panel';
-    panel.style.cssText = [
-      'position:fixed','bottom:12px','right:12px','z-index:2147483647',
-      'background:#0a0a0a','color:#e5e5e5',
-      'font-family:ui-monospace,Menlo,monospace','font-size:10px','line-height:1.45',
-      'border:1px solid #f5d77c','border-radius:6px',
-      'max-width:560px','max-height:60vh','overflow:hidden',
-      'padding:8px 10px','box-shadow:0 6px 24px rgba(0,0,0,0.7)'
-    ].join(';');
-    var header =
-        '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">'
-      +   '<strong style="color:#f5d77c;font-family:ui-monospace,monospace;font-size:10px;letter-spacing:0.12em">EOD DIAG · ' + log.length + ' entries</strong>'
-      +   '<div style="display:flex;gap:4px">'
-      +     '<button id="eod-diag-copy-btn"  onclick="_eodDiagCopy()"  style="background:transparent;border:1px solid #444;color:#e5e5e5;font:inherit;padding:2px 7px;border-radius:3px;cursor:pointer">COPY</button>'
-      +     '<button                          onclick="_eodDiagClear()" style="background:transparent;border:1px solid #444;color:#888;font:inherit;padding:2px 7px;border-radius:3px;cursor:pointer">CLEAR</button>'
-      +   '</div>'
-      + '</div>';
-    panel.innerHTML = header
-      + '<pre id="eod-diag-pre" style="margin:0;padding:0;font:inherit;color:inherit;white-space:pre-wrap;word-break:break-all;max-height:calc(60vh - 36px);overflow:auto"></pre>';
-    document.body.appendChild(panel);
-    var pre = document.getElementById('eod-diag-pre');
-    var lines = log.map(function(e){
-      var ts = new Date(e.t).toISOString().slice(11, 23);
-      return ts + '  ' + (e.msg || '');
-    });
-    pre.textContent = lines.join('\n');
-    pre.scrollTop = pre.scrollHeight;
-  };
-  if(document.body) mount();
-  else document.addEventListener('DOMContentLoaded', mount);
-}
-// Render any persisted diag log as soon as we can.
-_eodDiagRender();
+// Clear any stale diag-panel state left over from the Download
+// debugging deploys. Safe no-op if the key isn't present.
+try { localStorage.removeItem('eod_diag_log'); } catch(e){}
 
 /* Lazy-load modern-screenshot from CDN on first Share click.
    Was html2canvas 1.4.1 — confirmed-hanging on this card despite
@@ -13370,44 +13267,28 @@ function _eodLoadHtml2Canvas(){
 // browser is actually claiming file-share support (macOS Chrome 100+
 // DOES return true via the system share-sheet — that's a feature,
 // not a false positive; the click should still work).
-// Module-level pre-baked artifacts so the click → save/share paths
-// can run SYNCHRONOUSLY within the user-gesture window:
-//   _eodPrebakedFile     — File object for navigator.share()
-//   _eodPrebakedDataUrl  — data:image/png;base64 URL for Safari
-//                          downloads (FileReader is async and would
-//                          otherwise expire the gesture token; pre-
-//                          baking lets the anchor.click() chain stay
-//                          fully synchronous when the user clicks).
-// Populated on modal open via _eodPrebake(), cleared on dismiss.
-var _eodPrebakedFile    = null;
-var _eodPrebakedDataUrl = null;
-var _eodPrebakedFor     = null;  // tracks which card the artifacts were baked for
+// Module-level pre-baked File so the Share click can pass it to
+// navigator.share() SYNCHRONOUSLY inside the user-gesture window.
+// Capturing on click is too slow on iOS Safari — the gesture token
+// expires by the time the capture finishes and navigator.share()
+// throws NotAllowedError. Pre-baking on modal open keeps the click
+// → share chain synchronous.
+var _eodPrebakedFile = null;
+var _eodPrebakedFor  = null;  // tracks which card the file was baked for
 async function _eodPrebake(){
   var card = _eodResolveCard();
   if(!card) return;
-  if(_eodPrebakedFor === card && _eodPrebakedFile && _eodPrebakedDataUrl) return;
+  if(_eodPrebakedFor === card && _eodPrebakedFile) return;
   _eodPrebakedFor = card;
   try {
-    _eodLog('[eod prebake] capturing for', card.dataset.eodDate || '(no date)');
+    console.log('[eod prebake] capturing for', card.dataset.eodDate || '(no date)');
     var file = await _eodCaptureCard(card);
-    if(_eodPrebakedFor !== card) return;
+    if(_eodPrebakedFor !== card) return;  // user switched cards mid-bake
     _eodPrebakedFile = file;
-    _eodLog('[eod prebake] File ready —', file.size, 'bytes; converting to data URL…');
-    var reader = new FileReader();
-    reader.onload = function(){
-      if(_eodPrebakedFor === card){
-        _eodPrebakedDataUrl = reader.result;
-        _eodLog('[eod prebake] dataUrl ready —', reader.result.length, 'chars');
-      }
-    };
-    reader.onerror = function(){
-      _eodLog('[eod prebake] FileReader error — Safari download will fall back');
-    };
-    reader.readAsDataURL(file);
+    console.log('[eod prebake] File ready —', file.size, 'bytes');
   } catch(e){
-    _eodLog('[eod prebake] failed:', e && e.message);
+    console.warn('[eod prebake] failed (live click will retry):', e && e.message);
     _eodPrebakedFile = null;
-    _eodPrebakedDataUrl = null;
   }
 }
 
@@ -13517,70 +13398,6 @@ async function _eodCaptureCard(card){
       });
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // DIAG BLOCK — exact dimensions + the trend-arrow CSS at capture
-    // time. Helps tell whether the arrow overlap in the PNG is a
-    // pre-capture layout problem (visible here) or a clone-time
-    // miscomputation by modern-screenshot (live looks fine, log says
-    // fine, but the rendered PNG disagrees).
-    // ─────────────────────────────────────────────────────────────────
-    var _capDiagRect = card.getBoundingClientRect();
-    _eodLog('═══ [eod capture] DIMS DIAG ═══');
-    _eodLog('  card.getBoundingClientRect():', {
-      x: _capDiagRect.x, y: _capDiagRect.y,
-      width: _capDiagRect.width, height: _capDiagRect.height
-    });
-    _eodLog('  card.offsetWidth / offsetHeight:', card.offsetWidth + ' / ' + card.offsetHeight);
-    _eodLog('  passing to domToBlob — width:', capW, ' height:', capH);
-    _eodLog('  match? rect.w==capW:', Math.round(_capDiagRect.width) === capW,
-            ' rect.h==capH:', Math.round(_capDiagRect.height) === capH);
-
-    var _hero = card.querySelector('.ev2-hero');
-    var _pnlNum = card.querySelector('.ev2-pnl-num');
-    var _trend = card.querySelector('.ev2-trend');
-    if(_hero && _trend && _pnlNum){
-      var _heroCS  = getComputedStyle(_hero);
-      var _numCS   = getComputedStyle(_pnlNum);
-      var _trendCS = getComputedStyle(_trend);
-      var _heroR   = _hero.getBoundingClientRect();
-      var _numR    = _pnlNum.getBoundingClientRect();
-      var _trendR  = _trend.getBoundingClientRect();
-      _eodLog('═══ [eod capture] ARROW DIAG ═══');
-      _eodLog('  .ev2-hero  cs: display=' + _heroCS.display +
-              ' align-items=' + _heroCS.alignItems +
-              ' gap=' + _heroCS.gap +
-              ' flex-wrap=' + _heroCS.flexWrap +
-              ' white-space=' + _heroCS.whiteSpace);
-      _eodLog('  .ev2-hero  rect: x=' + Math.round(_heroR.x) + ' y=' + Math.round(_heroR.y) +
-              ' w=' + Math.round(_heroR.width) + ' h=' + Math.round(_heroR.height));
-      _eodLog('  .ev2-pnl-num cs: display=' + _numCS.display +
-              ' font-size=' + _numCS.fontSize +
-              ' position=' + _numCS.position);
-      _eodLog('  .ev2-pnl-num rect: x=' + Math.round(_numR.x) + ' y=' + Math.round(_numR.y) +
-              ' w=' + Math.round(_numR.width) + ' h=' + Math.round(_numR.height) +
-              ' right=' + Math.round(_numR.right));
-      _eodLog('  .ev2-trend cs: display=' + _trendCS.display +
-              ' position=' + _trendCS.position +
-              ' w=' + _trendCS.width + ' h=' + _trendCS.height +
-              ' flex=' + (_trendCS.flex || (_trendCS.flexGrow+' '+_trendCS.flexShrink+' '+_trendCS.flexBasis)) +
-              ' ml=' + _trendCS.marginLeft +
-              ' left=' + _trendCS.left + ' top=' + _trendCS.top +
-              ' transform=' + _trendCS.transform +
-              ' align-self=' + _trendCS.alignSelf);
-      _eodLog('  .ev2-trend rect: x=' + Math.round(_trendR.x) + ' y=' + Math.round(_trendR.y) +
-              ' w=' + Math.round(_trendR.width) + ' h=' + Math.round(_trendR.height));
-      var _gap = Math.round(_trendR.left - _numR.right);
-      _eodLog('  num.right=' + Math.round(_numR.right) + '  trend.left=' + Math.round(_trendR.left) +
-              '  GAP=' + _gap + 'px',
-              _gap < 0 ? '⚠ OVERLAP (live DOM, pre-capture)' : '(no overlap)');
-      _eodLog('  num inside hero?', _numR.left >= _heroR.left && _numR.right <= _heroR.right,
-              ' trend inside hero?', _trendR.left >= _heroR.left && _trendR.right <= _heroR.right);
-    } else {
-      _eodLog('[eod capture] ARROW DIAG: missing elements',
-              'hero?', !!_hero, 'pnlNum?', !!_pnlNum, 'trend?', !!_trend);
-    }
-    _eodLog('═══════════════════════════════');
-
     console.log('[eod capture] step 3 — invoking modern-screenshot.domToBlob on card',
       'pinned-width:', capW, 'pinned-height:', capH);
     // modern-screenshot's domToBlob returns Promise<Blob> directly —
@@ -13626,12 +13443,8 @@ async function _eodCaptureCard(card){
   }
 }
 
-// Download path — capture → object URL → anchor click. Works on every
-// browser; on iOS Safari the user gets a Save Image / Open in Photos
-// affordance instead of a true filesystem download.
-// Every bail surfaces a toast — silent failure was reported in prod.
 // Resolve the active .eod-card without depending on a button reference.
-// Used by eodDownloadCard / eodShareCard so they work whether called:
+// Used by eodShareCard so it works whether called:
 //   (a) via the inline button onclick (btn = this, btn.closest works)
 //   (b) bare from the console: eodShareCard()  — no btn, fall back to
 //       the visible card in the open #eod-modal
@@ -13685,181 +13498,6 @@ function _eodResolveCard(btn){
   }
   console.warn('[eod resolve] no .eod-card anywhere');
   return null;
-}
-
-// Safari detection — Apple WebKit on macOS/iOS. We need it because
-// anchor-based blob downloads work everywhere EXCEPT Safari, where
-// they hit "WebKitBlobResource error 1". On Safari we route Download
-// to navigator.share as a fallback (which includes "Save Image" /
-// "Save to Files" in the sheet) since direct download is broken.
-// On every other browser Download must save directly — no share sheet.
-function _eodIsSafari(){
-  var ua = navigator.userAgent || '';
-  // Standard Safari sniff: has "Safari" but not "Chrome"/"Chromium"/"Android".
-  // Apple WebViews (iOS Chrome, etc.) are also caught — they share the same
-  // blob bug, so treating them as Safari is correct.
-  return /^((?!chrome|chromium|android).)*safari/i.test(ua);
-}
-
-// Directly download a File via anchor + download attr. Works on every
-// non-Safari browser. Returns true on success path attempted, false
-// if no attempt could be made (e.g. browser blocks dynamic clicks).
-function _eodDirectDownload(file){
-  try {
-    var url = URL.createObjectURL(file);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = file.name;
-    a.rel = 'noopener';
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    var ev = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
-    a.dispatchEvent(ev);
-    // Generous revoke window so the browser has time to write the file
-    // to disk before the URL invalidates.
-    setTimeout(function(){ a.remove(); URL.revokeObjectURL(url); }, 60000);
-    return true;
-  } catch(e){
-    console.warn('[eod download] direct anchor failed:', e && e.message);
-    return false;
-  }
-}
-
-// Safari-specific download — SYNCHRONOUS path using a pre-baked
-// data URL. Safari's two constraints:
-//   1. Anchor + blob: URL = WebKitBlobResource error 1 (broken).
-//   2. download attribute is only honored when:
-//        - the click is "trusted" (NOT MouseEvent dispatchEvent)
-//        - AND the click runs inside the user-gesture window
-// FileReader.readAsDataURL is async, so reading the data URL on
-// click breaks (1) → (2) since the gesture expires by onload time.
-// Fix: pre-bake the data URL on modal open (see _eodPrebake), so
-// this function is purely synchronous — no FileReader, no await,
-// just create anchor + native .click() inside the gesture.
-function _eodSafariDownloadSync(dataUrl, filename){
-  var a = document.createElement('a');
-  a.href = dataUrl;
-  a.download = filename;
-  a.rel = 'noopener';
-  // Don't display:none — Safari occasionally drops trusted-click
-  // status on display:none anchors. Push it off-screen instead.
-  a.style.cssText = 'position:fixed;top:-9999px;left:-9999px';
-  document.body.appendChild(a);
-  // Native .click() — inherits the calling context's gesture
-  // trust. MouseEvent dispatchEvent does NOT inherit trust; it
-  // produces isTrusted:false events which Safari treats as
-  // non-user clicks and ignores the download attribute on.
-  a.click();
-  setTimeout(function(){ a.remove(); }, 1000);
-}
-
-async function eodDownloadCard(btn){
-  // ─────────────────────────────────────────────────────────────────
-  // DIAG BLOCK — runtime state at the instant of click. No fix logic
-  // depends on these reads; if anything looks wrong in the resulting
-  // log, the next iteration is targeted at the bad value.
-  // ─────────────────────────────────────────────────────────────────
-  var _ev = window.event;
-  var _ua = (navigator.userActivation && {
-    hasBeen: navigator.userActivation.hasBeenActive,
-    isActive: navigator.userActivation.isActive
-  }) || '(unsupported)';
-  _eodLog('═══ [eod download] CLICK DIAG ═══');
-  _eodLog('  event.isTrusted    :', _ev ? _ev.isTrusted : '(no window.event)');
-  _eodLog('  event.type         :', _ev ? _ev.type : '(no window.event)');
-  _eodLog('  navigator.userActivation:', _ua);
-  _eodLog('  _eodIsSafari()     :', _eodIsSafari());
-  _eodLog('  userAgent          :', navigator.userAgent);
-  _eodLog('  _eodPrebakedFile   :', _eodPrebakedFile
-    ? { name: _eodPrebakedFile.name, size: _eodPrebakedFile.size, type: _eodPrebakedFile.type }
-    : 'NULL — pre-bake never finished');
-  _eodLog('  _eodPrebakedDataUrl:', _eodPrebakedDataUrl
-    ? { length: _eodPrebakedDataUrl.length, head: _eodPrebakedDataUrl.slice(0, 40) + '…' }
-    : 'NULL — pre-bake never finished');
-  _eodLog('  _eodPrebakedFor    :', _eodPrebakedFor ? '(card element ' + (_eodPrebakedFor.dataset && _eodPrebakedFor.dataset.eodDate || '?') + ')' : 'null');
-  _eodLog('  document.hasFocus():', document.hasFocus());
-  _eodLog('  btn arg            :', btn && btn.tagName);
-  _eodLog('═══════════════════════════════');
-
-  var card = _eodResolveCard(btn);
-  _eodLog('[eod download] resolved card; matches _eodPrebakedFor?', card === _eodPrebakedFor);
-  if(!card){
-    if(typeof toast === 'function') toast('Download failed — no PnL Card open');
-    return;
-  }
-
-  var isSafari = _eodIsSafari();
-  _eodLog('[eod download] isSafari:', isSafari);
-
-  if(isSafari && _eodPrebakedDataUrl && _eodPrebakedFile){
-    _eodLog('[eod download] >>> BRANCH: Safari sync path (pre-baked data URL)');
-    try {
-      _eodSafariDownloadSync(_eodPrebakedDataUrl, _eodPrebakedFile.name);
-      _eodLog('[eod download] Safari sync .click() returned (no throw)');
-      if(typeof toast === 'function') toast('Saved · check your downloads');
-      return;
-    } catch(e){
-      _eodLog('[eod download] Safari sync path threw:', e && e.message);
-    }
-  } else {
-    _eodLog('[eod download] >>> skipping Safari sync path because:',
-      !isSafari ? 'not Safari'
-      : !_eodPrebakedDataUrl ? 'no pre-baked data URL'
-      : !_eodPrebakedFile ? 'no pre-baked file'
-      : 'unknown');
-  }
-
-  // btn is optional — used only for the disable/loading UI nicety.
-  var origText = btn && btn.textContent;
-  if(btn){ btn.disabled = true; btn.textContent = '…'; }
-  try {
-    // Pre-baked File lookup, then capture if missing.
-    var file = _eodPrebakedFile;
-    if(file){
-      console.log('[eod download] using pre-baked file —', file.size, 'bytes');
-    } else {
-      console.log('[eod download] no pre-baked file — capturing now');
-      file = await _eodCaptureCard(card);
-      console.log('[eod download] capture done, file size:', file && file.size, 'bytes');
-    }
-
-    // PRIMARY PATH: every non-Safari browser. Direct anchor download.
-    if(!isSafari){
-      console.log('[eod download] >>> BRANCH: non-Safari direct anchor');
-      if(_eodDirectDownload(file)){
-        if(typeof toast === 'function') toast('Saved · check your downloads');
-      } else {
-        if(typeof toast === 'function') toast('Download failed — try again');
-      }
-      return;
-    }
-
-    // SAFARI SLOW PATH: pre-bake wasn't ready, we had to await capture
-    // (gesture is likely already expired). Read to data URL inline
-    // and click anyway — best-effort. If Safari ignores the download
-    // attr at this point (gesture gone), the file shows in a new tab
-    // and the user can right-click → Save Image As. Acceptable
-    // degradation given pre-bake usually saves us first.
-    console.log('[eod download] >>> BRANCH: Safari async fallback (post-gesture, likely to fail)');
-    var reader = new FileReader();
-    var dataUrl = await new Promise(function(resolve, reject){
-      reader.onload  = function(){ resolve(reader.result); };
-      reader.onerror = function(){ reject(reader.error || new Error('FileReader failed')); };
-      reader.readAsDataURL(file);
-    });
-    try {
-      _eodSafariDownloadSync(dataUrl, file.name);
-      if(typeof toast === 'function') toast('Saved · check your downloads (or right-click image → Save As)');
-    } catch(e){
-      console.warn('[eod download] Safari async path threw:', e && e.message);
-      if(typeof toast === 'function') toast('Couldn’t save — right-click the image → Save Image As');
-    }
-  } catch(err){
-    console.warn('[eod download] failed:', err && err.message, err);
-    if(typeof toast === 'function') toast('Download failed — ' + ((err && err.message) || 'try again'));
-  } finally {
-    if(btn){ btn.disabled = false; btn.textContent = origText || 'Download'; }
-  }
 }
 
 // Share path — capture → File → navigator.share. Must run in the same
@@ -14302,9 +13940,8 @@ function _eodShowModal(cards, source){
   // gesture token and throws NotAllowedError). 250ms tick gives the
   // browser time to paint the modal first so getBoundingClientRect
   // returns the final dimensions.
-  _eodPrebakedFile    = null;
-  _eodPrebakedDataUrl = null;
-  _eodPrebakedFor     = null;
+  _eodPrebakedFile = null;
+  _eodPrebakedFor  = null;
   setTimeout(function(){
     if(typeof _eodPrebake === 'function') _eodPrebake();
   }, 250);
@@ -14417,7 +14054,6 @@ window.eodInflateGroupFromWidget     = eodInflateGroupFromWidget;
 window.eodDismiss                    = eodDismiss;
 window.eodNext                       = eodNext;
 window.eodShareCard                  = eodShareCard;
-window.eodDownloadCard               = eodDownloadCard;
 window.eodOpenDayReview              = eodOpenDayReview;
 
 /* Settings toggle handler — flips the .on class for immediate feedback,
@@ -27723,17 +27359,8 @@ function cookieDecline(){
   text-transform:uppercase;transition:.15s;
 }
 
-/* Download — neutral secondary, mirrors Dismiss treatment */
-.ev2-download{
-  background:transparent;color:var(--n-text-2);
-  border:1px solid var(--n-border);
-}
-.ev2-download:hover{color:var(--n-text);border-color:var(--n-border-2);background:rgba(255,255,255,0.02)}
-.ev2-download:disabled{opacity:0.5;cursor:wait}
-
-/* Share — primary cool-blue (#6ea8ff / --n-accent-cool). Pushes itself
-   to the right with margin-left:auto so when both Download + Share
-   render, Share sits adjacent to Dismiss on the right edge. */
+/* Share — primary cool-blue (#6ea8ff / --n-accent-cool). Pushes
+   itself + Dismiss to the right with margin-left:auto. */
 .ev2-share{
   margin-left:auto;
   background:rgba(110,168,255,0.16);
@@ -27746,18 +27373,16 @@ function cookieDecline(){
 }
 .ev2-share:disabled{opacity:0.5;cursor:wait}
 
-/* Dismiss — neutral, pushed to the right edge when Share is hidden
-   (no margin-left:auto needed since Download's right neighbor is
-   either Share or Dismiss). */
+/* Dismiss — neutral. Stays flush right of Share. When Share is
+   absent (desktops without canShare for files), Dismiss is the
+   only child → pin it to the right edge so the row doesn't
+   bunch left. */
 .ev2-dismiss{
   background:transparent;color:var(--n-text-3);
   border:1px solid var(--n-border);
 }
 .ev2-dismiss:hover{color:var(--n-text);border-color:var(--n-border)}
-
-/* When Share is missing (desktop browsers), Dismiss takes the right
-   edge instead so the row doesn't bunch left. */
-.ev2-actions .ev2-download + .ev2-dismiss{margin-left:auto}
+.ev2-actions .ev2-dismiss:only-child{margin-left:auto}
 /* During PNG capture we hide the action row so the export reads
    like a finished poster, not a dialog. */
 .eod-card.is-capturing .ev2-actions{display:none}
