@@ -6588,10 +6588,20 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
   /* Grid swap: feed column (1fr) + rail column (300px fixed).
      align-items: flex-start preserves the sticky-right-rail behavior
-     (rail anchors to top of its cell, doesn't stretch to feed height). */
+     (rail anchors to top of its cell, doesn't stretch to feed height).
+     IMPORTANT: 1fr is actually `minmax(auto, 1fr)` in CSS Grid — the
+     `auto` floor means the track grows to fit its min-content if that
+     exceeds the track's fair share. Inside .feed the .fhead row has
+     flex-shrink:0 children (.fhead-right + .fhead-actions) totaling
+     ~400px, plus the hero P&L card padding, so the min-content of the
+     feed column can easily exceed 1100px at 1920px viewport. Without
+     `minmax(0, 1fr)` the column grows past its share, the rail track
+     gets shoved right past its 300px slot, and rail's right edge ends
+     up past the viewport — exactly the symptom the user reported
+     (rail box_right 2010 vs viewport 1920, an ~98px overflow). */
   #pg-community #comm-feed-view{
     display: grid;
-    grid-template-columns: 1fr 300px;
+    grid-template-columns: minmax(0, 1fr) 300px;
     align-items: flex-start;
   }
 
