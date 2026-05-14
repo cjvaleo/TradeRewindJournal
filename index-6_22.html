@@ -12704,7 +12704,9 @@ async function _eodGroupData(community, etToday){
     var losses = posts.filter(function(p){ return (Number(p.pnl_today)||0) < 0; }).length;
     var decided = wins + losses;
     var wr = decided > 0 ? Math.round((wins / decided) * 100) : 0;
-    var avgPerTrader = traders.length ? (totalPnl / traders.length) : 0;
+    // avgPerTrade = collective P&L ÷ total number of trades (not
+    // distinct traders). Matches the stat-strip label "Avg / trade".
+    var avgPerTrade = totalTrades ? (totalPnl / totalTrades) : 0;
     return {
       flavor: 'group',
       etDate: etToday,
@@ -12712,7 +12714,7 @@ async function _eodGroupData(community, etToday){
       totalPnl: totalPnl,
       tradeCount: totalTrades,
       winRate: wr,
-      avgPerTrader: avgPerTrader,
+      avgPerTrade: avgPerTrade,
       traders: traders.slice(0, 3)
     };
   } catch(e){
@@ -12887,7 +12889,7 @@ function _eodRenderGroupCard(data){
   // recap" version of the card with the same chrome but a quiet body.
   var isEmpty = !data.tradeCount || !data.traders || !data.traders.length;
   var heroTone = isEmpty ? 'zero' : (data.totalPnl > 0 ? 'pos' : data.totalPnl < 0 ? 'neg' : 'zero');
-  var avgTone  = isEmpty ? '' : (data.avgPerTrader > 0 ? 'pos' : data.avgPerTrader < 0 ? 'neg' : '');
+  var avgTone  = isEmpty ? '' : (data.avgPerTrade > 0 ? 'pos' : data.avgPerTrade < 0 ? 'neg' : '');
 
   // Leaderboard rows OR empty-state placeholder — same .ev2-right slot.
   var lbRowsHtml;
@@ -12950,7 +12952,7 @@ function _eodRenderGroupCard(data){
     +     '<div class="ev2-stats">'
     +       '<div class="ev2-stat"><span class="lbl">Trades</span><span class="val">'+data.tradeCount+'</span></div>'
     +       '<div class="ev2-stat"><span class="lbl">Group WR</span><span class="val">'+data.winRate+'<span class="unit">%</span></span></div>'
-    +       '<div class="ev2-stat"><span class="lbl">Avg / trader</span><span class="val '+avgTone+'">'+_eodMoneyHtml(data.avgPerTrader)+'</span></div>'
+    +       '<div class="ev2-stat"><span class="lbl">Avg / trade</span><span class="val '+avgTone+'">'+_eodMoneyHtml(data.avgPerTrade)+'</span></div>'
     +     '</div>'
     +   '</div>'
     +   '<div class="ev2-divider"></div>'
@@ -13547,7 +13549,7 @@ async function eodInflateGroupFromWidget(community){
   if(!data){
     data = {
       flavor:'group', etDate:etDate, community:community,
-      totalPnl:0, tradeCount:0, winRate:0, avgPerTrader:0, traders:[]
+      totalPnl:0, tradeCount:0, winRate:0, avgPerTrade:0, traders:[]
     };
   }
   var html = _eodRenderGroupCard(data);
