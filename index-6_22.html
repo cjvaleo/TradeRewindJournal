@@ -12570,14 +12570,21 @@ function _eodMoneyHtml(v){
   return p.sign + '$' + p.int + '<span class="eod-pnl-cents">' + p.cents + '</span>';
 }
 
-/* Filter trades to today's (ET). Trades carry .date as YYYY-MM-DD in
-   the user's local time, so we compare directly. Trades whose .date
-   is empty fall back to ET-coercing created_at. */
+/* Filter trades to target ET date. Trades carry .date as YYYY-MM-DD
+   in BROWSER LOCAL time, while the target is ET. For users east of
+   ET those align; for users west, they can be off by a day depending
+   on time of day. So we accept a match on EITHER:
+     1. t.date == target (covers users whose local TZ matches ET)
+     2. _eodEtDate(t.created_at) == target (canonical ET match)
+   The OR is intentional — the previous `if(t.date) return t.date===X`
+   short-circuit hid trades whose date was set in a far-off TZ that
+   didn't align with ET, even when their created_at clearly placed
+   them on the target ET day. */
 function _eodTodaysTrades(etToday){
   if(!Array.isArray(trades)) return [];
   return trades.filter(function(t){
-    if(t.date) return t.date === etToday;
-    if(t.created_at) return _eodEtDate(new Date(t.created_at)) === etToday;
+    if(t.date === etToday) return true;
+    if(t.created_at && _eodEtDate(new Date(t.created_at)) === etToday) return true;
     return false;
   });
 }
@@ -12725,53 +12732,69 @@ function _eodInitialsFor(handle){
 }
 
 function _eodRenderPersonalCard(data){
-  if(!data || !data.tradeCount) return '';
+  if(!data) return '';
+  // Empty-state path — when there are no trades for the recap date we
+  // still want the widget click to open SOMETHING. Same chrome as the
+  // populated path; the trades list slot becomes a "No trades yet"
+  // placeholder. Stats strip stays in place at zero values.
+  var isEmpty = !data.tradeCount || !data.trades || !data.trades.length;
 
-  var heroTone = data.totalPnl > 0 ? 'pos' : data.totalPnl < 0 ? 'neg' : 'zero';
-  var avgRTone = data.avgR > 0 ? 'pos' : data.avgR < 0 ? 'neg' : '';
-  var avgRTxt  = data.avgRCount
+  var heroTone = isEmpty ? 'zero' : (data.totalPnl > 0 ? 'pos' : data.totalPnl < 0 ? 'neg' : 'zero');
+  var avgRTone = isEmpty ? '' : (data.avgR > 0 ? 'pos' : data.avgR < 0 ? 'neg' : '');
+  var avgRTxt  = (!isEmpty && data.avgRCount)
     ? ((data.avgR>0?'+':'') + data.avgR.toFixed(1) + 'R')
     : '—';
 
   // Top 3 by P&L value (best first per spec — purely magnitude-positive sort
   // works for the "best" row but we want literal best-pnl-first, so sort
-  // by signed pnl descending). Personal users with 0 trades short-circuit
-  // above; <3 trade case naturally renders fewer rows.
-  var sortedByPnl = data.trades.slice().sort(function(a,b){
+  // by signed pnl descending). Empty case skips the sort entirely.
+  var sortedByPnl = isEmpty ? [] : data.trades.slice().sort(function(a,b){
     return (Number(b.pnl)||0) - (Number(a.pnl)||0);
   });
   var shown = sortedByPnl.slice(0, 3);
   var hidden = data.tradeCount - shown.length;
 
-  var tradeRowsHtml = shown.map(function(t, idx){
-    var pnl = Number(t.pnl)||0;
-    var tone = pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : 'zero';
-    var dir  = String(t.type||'').toLowerCase() === 'short' ? 'short' : 'long';
-    var dirLabel = dir === 'short' ? '↘ Short' : '↗ Long';
-    var hasStop = t.stop != null && t.stop !== '';
-    var rrNum   = Number(t.rr);
-    var rrHtml  = '<span class="ev2-rr empty">—</span>';
-    if(hasStop && isFinite(rrNum) && rrNum !== 0){
-      var rrSign = pnl < 0 ? -1 : 1;
-      var rrSigned = rrSign * Math.abs(rrNum);
-      var rrCls = rrSigned < 0 ? 'neg' : 'pos';
-      rrHtml = '<span class="ev2-rr '+rrCls+'">'+(rrSigned>0?'+':'')+rrSigned.toFixed(1)+'R</span>';
-    }
-    // "best" is purely position-based (top row), but we also tag the
-    // row tone so the CSS can soften the sage tint on an all-loss day
-    // (where the top row is still a loss). Without this, sage bg +
-    // rose pnl text reads visually as a bug.
-    var bestCls = idx === 0 ? ' best' : '';
-    return '<div class="ev2-trade'+bestCls+' '+tone+'">'
-      + '<span class="ev2-time">'+_eodSafe(_eodTimeOf(t))+'</span>'
-      + '<span class="ev2-sym">'+_eodSafe(t.sym||'—')+'</span>'
-      + '<span class="ev2-side '+dir+'">'+dirLabel+'</span>'
-      + rrHtml
-      + '<span class="ev2-trade-pnl '+tone+'">'+_eodMoneyHtml(pnl)+'</span>'
+  // Empty-state — render a "no trades yet" placeholder in the trades
+  // slot. Same dashed-border treatment as the group card's empty
+  // path so the two flavors read consistently.
+  var tradeRowsHtml;
+  if(isEmpty){
+    tradeRowsHtml =
+        '<div style="padding:18px 12px;border:0.5px dashed rgba(255,255,255,0.14);border-radius:6px;text-align:center">'
+      +   '<div style="font-family:\'Instrument Serif\',Georgia,serif;font-style:italic;font-size:18px;color:#a1a1a1;line-height:1.2">No trades yesterday</div>'
+      +   '<div style="margin-top:6px;font-family:\'Geist Mono\',ui-monospace,monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#6b6b6b">Log a trade today to populate tomorrow&rsquo;s card</div>'
       + '</div>';
-  }).join('');
+  } else {
+    tradeRowsHtml = shown.map(function(t, idx){
+      var pnl = Number(t.pnl)||0;
+      var tone = pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : 'zero';
+      var dir  = String(t.type||'').toLowerCase() === 'short' ? 'short' : 'long';
+      var dirLabel = dir === 'short' ? '↘ Short' : '↗ Long';
+      var hasStop = t.stop != null && t.stop !== '';
+      var rrNum   = Number(t.rr);
+      var rrHtml  = '<span class="ev2-rr empty">—</span>';
+      if(hasStop && isFinite(rrNum) && rrNum !== 0){
+        var rrSign = pnl < 0 ? -1 : 1;
+        var rrSigned = rrSign * Math.abs(rrNum);
+        var rrCls = rrSigned < 0 ? 'neg' : 'pos';
+        rrHtml = '<span class="ev2-rr '+rrCls+'">'+(rrSigned>0?'+':'')+rrSigned.toFixed(1)+'R</span>';
+      }
+      // "best" is purely position-based (top row), but we also tag the
+      // row tone so the CSS can soften the sage tint on an all-loss day
+      // (where the top row is still a loss). Without this, sage bg +
+      // rose pnl text reads visually as a bug.
+      var bestCls = idx === 0 ? ' best' : '';
+      return '<div class="ev2-trade'+bestCls+' '+tone+'">'
+        + '<span class="ev2-time">'+_eodSafe(_eodTimeOf(t))+'</span>'
+        + '<span class="ev2-sym">'+_eodSafe(t.sym||'—')+'</span>'
+        + '<span class="ev2-side '+dir+'">'+dirLabel+'</span>'
+        + rrHtml
+        + '<span class="ev2-trade-pnl '+tone+'">'+_eodMoneyHtml(pnl)+'</span>'
+        + '</div>';
+    }).join('');
+  }
 
-  var moreHtml = hidden > 0
+  var moreHtml = (!isEmpty && hidden > 0)
     ? '<button type="button" class="ev2-more" onclick="eodOpenDayReview(\''+_eodSafe(data.etDate)+'\')">+'+hidden+' more &rarr;</button>'
     : '';
 
@@ -12819,7 +12842,7 @@ function _eodRenderPersonalCard(data){
     + '<div class="ev2-foot">'
     +   '<div class="ev2-foot-brand">'+_EOD_SVG.rewind+'<span>Rewind</span></div>'
     +   '<span class="ev2-wm">traderewindjournal.com</span>'
-    +   '<span class="ev2-foot-meta">EOD &middot; '+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
+    +   '<span class="ev2-foot-meta">PnL Card &middot; '+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
     + '</div>'
     // Action row — hidden during PNG capture (see .is-capturing rule)
     + '<div class="ev2-actions">'
@@ -13053,13 +13076,25 @@ function renderEodDashBar(){
   var pickedDate = _eodYesterdayEt();
   var data = _eodPersonalData(pickedDate);
 
+  // Diagnostic — surfaces in DevTools so we can see what date the bar
+  // resolved to and whether trades were found. If the user reports
+  // "no previous days info", this log + the trade-filter log below
+  // will pinpoint whether it's a date mismatch or a genuinely-empty
+  // day. Cheap; leave in until the widget settles in prod.
+  console.log('[eod dash bar]',
+    '| pickedDate(ET-yesterday):', pickedDate,
+    '| tradeCount:', data.tradeCount,
+    '| totalPnl:', data.totalPnl,
+    '| trades-in-mem:', Array.isArray(trades) ? trades.length : 'n/a',
+    '| sample-date:', Array.isArray(trades) && trades[0] ? trades[0].date : 'n/a');
+
   // Empty — no trades yesterday. Dashed border + outlined dot + em-dash
   // P&L, still clickable so the user can pop the full empty-state modal.
   if(!data.tradeCount){
     el.className = 'eod-mini-bar is-empty';
     el.innerHTML =
         '<span class="eod-mini-pulse empty"></span>'
-      + '<span class="eod-mini-label">EOD &middot; ' + _eodSafe(_eodDateLabel(pickedDate)) + '</span>'
+      + '<span class="eod-mini-label">PnL Card &middot; ' + _eodSafe(_eodDateLabel(pickedDate)) + '</span>'
       + '<span class="eod-mini-sep"></span>'
       + '<span class="eod-mini-await">No activity yesterday</span>'
       + '<span class="eod-mini-view">View ' + _EOD_SVG.expand + '</span>';
@@ -13074,7 +13109,7 @@ function renderEodDashBar(){
   el.className = 'eod-mini-bar is-ready tone-' + tone;
   el.innerHTML =
       '<span class="eod-mini-pulse ' + tone + '"></span>'
-    + '<span class="eod-mini-label">EOD &middot; ' + _eodSafe(_eodDateLabel(pickedDate)) + '</span>'
+    + '<span class="eod-mini-label">PnL Card &middot; ' + _eodSafe(_eodDateLabel(pickedDate)) + '</span>'
     + '<span class="eod-mini-sep"></span>'
     + '<span class="eod-mini-pnl ' + tone + '">' + _eodMoneyCompact(data.totalPnl)
     +    '<span class="eod-mini-trend">' + trendSvg + '</span></span>'
@@ -13192,7 +13227,7 @@ function _eodBadgeSkeletonHtml(gid){
   return '<div class="eod-comm-badge is-loading" data-gid="' + _eodSafe(gid) + '" style="' + outer + '">'
     +   '<div class="eod-comm-badge-top" style="' + _EOD_BADGE_TOP_STYLE + '">'
     +     '<span class="eod-comm-badge-dot" style="' + _eodBadgeDotStyle('empty') + '"></span>'
-    +     '<span class="eod-comm-badge-label" style="' + _EOD_BADGE_LABEL_STYLE + '">EOD</span>'
+    +     '<span class="eod-comm-badge-label" style="' + _EOD_BADGE_LABEL_STYLE + '">PnL</span>'
     +   '</div>'
     +   '<div class="eod-comm-badge-pnl" style="' + _eodBadgePnlStyle('zero') + '">&mdash;</div>'
     + '</div>';
@@ -13238,7 +13273,7 @@ async function _eodPopulateBadge(community){
     badge.innerHTML =
         '<div style="' + _EOD_BADGE_TOP_STYLE + '">'
       +   '<span style="' + _eodBadgeDotStyle('empty') + '"></span>'
-      +   '<span style="' + _EOD_BADGE_LABEL_STYLE + '">EOD</span>'
+      +   '<span style="' + _EOD_BADGE_LABEL_STYLE + '">PnL</span>'
       + '</div>'
       + '<div style="' + _eodBadgePnlStyle('zero') + '">&mdash;</div>';
     badge.onclick = function(ev){
@@ -13271,7 +13306,7 @@ async function _eodPopulateBadge(community){
   badge.innerHTML =
       '<div style="' + _EOD_BADGE_TOP_STYLE + '">'
     +   '<span style="' + _eodBadgeDotStyle(tone) + '"></span>'
-    +   '<span style="' + _EOD_BADGE_LABEL_STYLE + '">EOD</span>'
+    +   '<span style="' + _EOD_BADGE_LABEL_STYLE + '">PnL</span>'
     + '</div>'
     + '<div style="' + _eodBadgePnlStyle(tone) + '">' + _eodBadgeMoney(data.totalPnl) + '</div>';
   // Click — open the group EOD modal for this community. Wrapper looks
@@ -13447,13 +13482,22 @@ async function eodMaybeShowGroupForCommunity(community){
    users can replay the recap on demand. source='widget' tells
    eodDismiss to skip writing the dismiss flag. */
 async function eodInflatePersonalFromWidget(){
-  var etDate = _eodPickRelevantDate('personal');
-  if(!etDate) return;
-  // Reuse the same data shape as the auto-pop path. _eodPersonalData
-  // pulls from in-memory trades filtered by ET date — we just pass
-  // the chosen date (today if ready, yesterday if pre-cutoff).
+  // Always open SOMETHING when the dashboard bar is clicked — even on
+  // a quiet day with no trades. _eodRenderPersonalCard now has an
+  // empty-state branch so we just synthesize the zero-data shape and
+  // let the renderer handle it.
+  var etDate = _eodYesterdayEt();
   var data = _eodPersonalData(etDate);
-  if(!data.tradeCount) return;
+  console.log('[eod dash bar click]',
+    '| etDate:', etDate,
+    '| tradeCount:', data.tradeCount,
+    '| totalPnl:', data.totalPnl);
+  if(!data || !data.tradeCount){
+    data = {
+      etDate: etDate, totalPnl: 0, tradeCount: 0,
+      winRate: 0, avgR: 0, avgRCount: 0, trades: []
+    };
+  }
   var html = _eodRenderPersonalCard(data);
   if(html) _eodShowModal([{ flavor:'personal', html:html }], 'widget');
 }
