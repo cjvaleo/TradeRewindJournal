@@ -12920,8 +12920,8 @@ function _eodRenderPersonalCard(data){
   if(isEmpty){
     tradeRowsHtml =
         '<div style="padding:18px 12px;border:0.5px dashed rgba(255,255,255,0.14);border-radius:6px;text-align:center">'
-      +   '<div style="font-family:\'Instrument Serif\',Georgia,serif;font-style:italic;font-size:18px;color:#a1a1a1;line-height:1.2">No trades yesterday</div>'
-      +   '<div style="margin-top:6px;font-family:\'Geist Mono\',ui-monospace,monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#6b6b6b">Log a trade today to populate tomorrow&rsquo;s card</div>'
+      +   '<div style="font-family:\'Instrument Serif\',Georgia,serif;font-style:italic;font-size:18px;color:#a1a1a1;line-height:1.2">No trades yet today</div>'
+      +   '<div style="margin-top:6px;font-family:\'Geist Mono\',ui-monospace,monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#6b6b6b">Log a trade and it&rsquo;ll show up here live</div>'
       + '</div>';
   } else {
     tradeRowsHtml = shown.map(function(t, idx){
@@ -12960,7 +12960,11 @@ function _eodRenderPersonalCard(data){
   var handle = (currentUser && acct && acct.username) ? acct.username
              : (currentUser && currentUser.email ? currentUser.email.split('@')[0] : 'you');
   var initials = _eodInitialsFor(handle);
-  var subtitle = 'Trading journal · Day recap';
+  // Personal card is LIVE/today now — mirrors the dashboard's "Total
+  // P&L · Today" hero. Subtitle reflects that; header sub-line shows
+  // "Live · Today" instead of the old "Last completed day". Group
+  // card keeps its yesterday-EOD framing (see _eodRenderGroupCard).
+  var subtitle = 'Trading journal · Today';
   var trendSvg = data.totalPnl >= 0 ? _EOD_SVG.trendUp : _EOD_SVG.trendDown;
 
   return '<div class="eod-card eod-card-personal" data-eod-date="'+_eodSafe(data.etDate)+'">'
@@ -12973,7 +12977,7 @@ function _eodRenderPersonalCard(data){
     +   '</div>'
     +   '<div class="ev2-head-meta">'
     +     '<span class="ev2-head-date">'+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
-    +     '<span class="ev2-head-time">Last completed day</span>'
+    +     '<span class="ev2-head-time">Live · Today</span>'
     +   '</div>'
     + '</div>'
     // (2) Body — 2 cols + vertical divider
@@ -13423,10 +13427,12 @@ function _eodMoneyCompact(v){
   return p.sign + '$' + p.int + '<span class="eod-mini-cents">' + p.cents + '</span>';
 }
 
-/* Dashboard pill — two states only: Ready (has trades yesterday) or
-   Empty (no trades yesterday). The "Pending" / "Awaiting close" state
-   from the 4:30pm-cutoff era is gone — yesterday's data is always
-   complete since midnight ET has already passed. */
+/* Dashboard pill — LIVE/today view (personal flavor only). Mirrors
+   the "Total P&L · Today" hero card on the dashboard. Two states:
+   Ready (has trades today) or Empty (no trades today yet). The bar
+   re-renders from renderAll(), so logging a trade updates it
+   immediately. Group PnL (community sidebar badges) keeps the old
+   yesterday-EOD framing — different surface, different lifecycle. */
 function renderEodDashBar(){
   var el = document.getElementById('eod-dash-bar');
   if(!el) return;
@@ -13434,22 +13440,22 @@ function renderEodDashBar(){
   // and let renderAll fire us again once data arrives.
   if(!Array.isArray(trades)) { el.style.display = 'none'; return; }
 
-  var pickedDate = _eodYesterdayEt();
+  // Today in BROWSER LOCAL — matches the dashboard hero's filterByPeriod
+  // which uses `new Date()` with local midnight. Critical that this
+  // matches the dashboard exactly: per spec the bar's number must
+  // always equal the dashboard "Total P&L · Today" number. ET coercion
+  // here would diverge for users west of ET in late-night hours.
+  var pickedDate = _localDate(new Date());
   var data = _eodPersonalData(pickedDate);
 
-  // Diagnostic — surfaces in DevTools so we can see what date the bar
-  // resolved to and whether trades were found. If the user reports
-  // "no previous days info", this log + the trade-filter log below
-  // will pinpoint whether it's a date mismatch or a genuinely-empty
-  // day. Cheap; leave in until the widget settles in prod.
   console.log('[eod dash bar]',
-    '| pickedDate(ET-yesterday):', pickedDate,
+    '| pickedDate(today-local):', pickedDate,
     '| tradeCount:', data.tradeCount,
     '| totalPnl:', data.totalPnl,
     '| trades-in-mem:', Array.isArray(trades) ? trades.length : 'n/a',
     '| sample-date:', Array.isArray(trades) && trades[0] ? trades[0].date : 'n/a');
 
-  // Empty — no trades yesterday. Dashed border + outlined dot + em-dash
+  // Empty — no trades today yet. Dashed border + outlined dot + em-dash
   // P&L, still clickable so the user can pop the full empty-state modal.
   if(!data.tradeCount){
     el.className = 'eod-mini-bar is-empty';
@@ -13457,7 +13463,7 @@ function renderEodDashBar(){
         '<span class="eod-mini-pulse empty"></span>'
       + '<span class="eod-mini-label">PnL Card &middot; ' + _eodSafe(_eodDateLabel(pickedDate)) + '</span>'
       + '<span class="eod-mini-sep"></span>'
-      + '<span class="eod-mini-await">No activity yesterday</span>'
+      + '<span class="eod-mini-await">No trades yet today</span>'
       + '<span class="eod-mini-view">View ' + _EOD_SVG.expand + '</span>';
     el.onclick = function(){ eodInflatePersonalFromWidget(); };
     el.style.display = 'flex';
@@ -13785,42 +13791,17 @@ function _eodShowModal(cards, source){
   }
 }
 
-/* App-open auto-pop — PERSONAL ONLY as of the widget redesign. Group
-   cards now auto-pop on first-visit-to-a-specific-community-per-day
-   via the openCommFeed hook below, and any time on demand via the
-   sidebar widget click. The group-card loop that used to live here
-   moved to eodMaybeShowGroupForCommunity(). */
+/* Personal auto-pop is RETIRED. The personal PnL Card is now a LIVE
+   intraday view (mirrors the dashboard hero), not a once-daily recap,
+   so a forced pop-up on app open is the wrong UX — the dashboard bar
+   is the entry point.
+   maybeShowEodRecap() remains as a no-op stub so existing callers
+   (onSignedIn's setTimeout) don't ReferenceError, and so it's a
+   one-line restore if we ever want auto-pop back. Group auto-pop on
+   community visit is unchanged — see eodMaybeShowGroupForCommunity. */
 async function maybeShowEodRecap(){
-  // Gate 1 — opt-out toggle (personal flavor only)
-  var personalEnabled = userSettingGet('eod_personal_enabled', true) !== false;
-  if(!personalEnabled){ console.log('[eod auto-pop] skip — disabled in settings'); return; }
-
-  // Gate 2 — already shown for this ET calendar day
-  var todayET = _eodEtDate();
-  var lastShown = null;
-  try { lastShown = localStorage.getItem('rw_eod_last_shown'); } catch(e){}
-  if(lastShown === todayET){ console.log('[eod auto-pop] skip — already shown today (ET):', todayET); return; }
-
-  // The recap always represents the LAST FULLY COMPLETED ET day —
-  // that's "yesterday" relative to the current ET date. No time-of-day
-  // gate any more (used to require ≥ 4:30pm ET); yesterday's data is
-  // always complete since midnight ET has passed by definition.
-  var recapDate = _eodYesterdayEt();
-  var todays = _eodTodaysTrades(recapDate);
-  console.log('[eod auto-pop] checking',
-    '| recapDate(yesterday-ET):', recapDate,
-    '| trades on that date:', todays.length,
-    '| in-mem total trades:', Array.isArray(trades) ? trades.length : 'n/a');
-
-  // Gate 3 — yesterday must have at least one trade in scope
-  if(!todays.length){ console.log('[eod auto-pop] skip — no trades yesterday'); return; }
-
-  var personalData = _eodPersonalData(recapDate);
-  if(!personalData.tradeCount){ console.log('[eod auto-pop] skip — personalData has 0 tradeCount'); return; }
-  var html = _eodRenderPersonalCard(personalData);
-  if(!html){ console.log('[eod auto-pop] skip — renderer returned empty'); return; }
-  console.log('[eod auto-pop] firing — pnl:', personalData.totalPnl, 'trades:', personalData.tradeCount);
-  _eodShowModal([{ flavor:'personal', html:html }], 'auto');
+  console.log('[eod auto-pop] skipped — personal card is now live/intraday, no auto-pop');
+  return;
 }
 
 /* Per-community group auto-pop — fires from openCommFeed when the
@@ -13856,14 +13837,15 @@ async function eodMaybeShowGroupForCommunity(community){
    users can replay the recap on demand. source='widget' tells
    eodDismiss to skip writing the dismiss flag. */
 async function eodInflatePersonalFromWidget(){
-  // Always open SOMETHING when the dashboard bar is clicked — even on
-  // a quiet day with no trades. _eodRenderPersonalCard now has an
-  // empty-state branch so we just synthesize the zero-data shape and
-  // let the renderer handle it.
-  var etDate = _eodYesterdayEt();
+  // Personal card is LIVE/today now — mirrors the dashboard hero.
+  // Uses browser-local date (same as dashboard's filterByPeriod) so
+  // the two surfaces always agree. Always open SOMETHING on click
+  // (even an empty day) — _eodRenderPersonalCard's empty branch
+  // handles zero-data gracefully.
+  var etDate = _localDate(new Date());
   var data = _eodPersonalData(etDate);
   console.log('[eod dash bar click]',
-    '| etDate:', etDate,
+    '| etDate(today-local):', etDate,
     '| tradeCount:', data.tradeCount,
     '| totalPnl:', data.totalPnl);
   if(!data || !data.tradeCount){
@@ -13895,18 +13877,18 @@ async function eodInflateGroupFromWidget(community){
   if(html) _eodShowModal([{ flavor:'group', html:html, communityId:community.id }], 'widget');
 }
 
-/* Pick the EOD recap date. Always yesterday in ET — the last fully
-   completed calendar day. Used by widget inflate handlers + render
-   helpers. Returns null only for personal scope when yesterday had
-   zero trades (so the widget can hide instead of rendering empty).
-   Group scope always returns yesterday since the caller's async fetch
-   is the source of truth for empty/has-data. */
+/* Pick the recap date by scope.
+     personal → TODAY in BROWSER LOCAL (live/intraday — mirrors dashboard
+                hero which uses local date; the two MUST agree)
+     group    → YESTERDAY in ET (last completed day — group is still EOD,
+                tied to a community-wide market session)
+   Caller's async fetch is the source of truth for empty/has-data on
+   group; personal callers handle empty inline via the renderer. */
 function _eodPickRelevantDate(scope /*, community */){
-  var yesterdayET = _eodYesterdayEt();
   if(scope === 'personal'){
-    return _eodTodaysTrades(yesterdayET).length ? yesterdayET : null;
+    return _localDate(new Date());
   }
-  return yesterdayET;
+  return _eodYesterdayEt();
 }
 
 window.maybeShowEodRecap            = maybeShowEodRecap;
