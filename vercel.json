@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
+    { "source": "/", "destination": "/index-6_22.html" },
     { "source": "/oauth/discord/start", "destination": "/api/oauth/discord/start" },
     { "source": "/oauth/discord/callback", "destination": "/api/oauth/discord/callback" },
     { "source": "/welcome/elite", "destination": "/welcome/elite.html" },
