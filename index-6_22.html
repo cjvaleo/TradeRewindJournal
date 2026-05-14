@@ -13321,8 +13321,17 @@ async function _eodCaptureCard(card){
       });
     }
 
+    // Pass EXPLICIT width + height so modern-screenshot doesn't re-
+    // measure the cloned tree and pick smaller dimensions that force
+    // reflow / wrap. getBoundingClientRect is the source of truth for
+    // the on-screen size — passing those bypasses any inference quirks
+    // and the captured PNG matches the live card pixel-for-pixel.
+    var rect = card.getBoundingClientRect();
+    var capW = Math.round(rect.width)  || card.offsetWidth;
+    var capH = Math.round(rect.height) || card.offsetHeight;
     console.log('[eod capture] step 3 — invoking modern-screenshot.domToBlob on card',
-      'offsetWidth:', card.offsetWidth, 'offsetHeight:', card.offsetHeight);
+      'offsetWidth:', card.offsetWidth, 'offsetHeight:', card.offsetHeight,
+      '| rect:', capW + 'x' + capH);
     // modern-screenshot's domToBlob returns Promise<Blob> directly —
     // no canvas → toBlob round-trip, fewer moving parts than html2canvas.
     // Race against a 15s timeout so a wedged capture still surfaces as
@@ -13331,7 +13340,9 @@ async function _eodCaptureCard(card){
       ms.domToBlob(card, {
         backgroundColor: '#0a0a0a',
         scale: 2,
-        type: 'image/png'
+        type: 'image/png',
+        width: capW,
+        height: capH
       }).then(function(b){ console.log('[eod capture] step 3a — domToBlob resolved'); return b; }),
       new Promise(function(_, reject){
         setTimeout(function(){ reject(new Error('capture timeout (15s)')); }, 15000);
@@ -27044,10 +27055,12 @@ function cookieDecline(){
 .ev2-head-date{
   font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
   text-transform:uppercase;color:var(--n-text-2);
+  white-space:nowrap;
 }
 .ev2-head-time{
   font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;
   text-transform:uppercase;color:var(--n-text-4);
+  white-space:nowrap;
 }
 
 /* Group flavor — pulsing gold dot replaces the avatar */
@@ -27081,9 +27094,13 @@ function cookieDecline(){
   text-transform:uppercase;color:var(--n-text-3);
 }
 .ev2-hero{
-  display:flex;align-items:baseline;gap:10px;
+  display:flex;align-items:baseline;gap:14px;
+  flex-wrap:nowrap;white-space:nowrap;
   font-family:var(--n-font-display);font-style:italic;
   font-size:68px;line-height:1;letter-spacing:-0.02em;
+}
+.ev2-hero .ev2-pnl-num{
+  display:inline-block;white-space:nowrap;flex-shrink:0;
 }
 .ev2-hero.pos{color:var(--n-profit)}
 .ev2-hero.neg{color:var(--n-loss)}
@@ -27093,9 +27110,13 @@ function cookieDecline(){
 }
 .ev2-trend{
   display:inline-flex;align-items:center;justify-content:center;
-  width:30px;height:30px;border-radius:50%;
+  width:30px;height:30px;min-width:30px;min-height:30px;
+  flex:0 0 30px;border-radius:50%;
   background:currentColor;color:inherit;
-  opacity:0.18;flex-shrink:0;align-self:center;margin-left:6px;
+  opacity:0.18;align-self:center;
+  /* margin-left:6px removed — .ev2-hero gap:14px above carries the
+     spacing, and an extra margin here doubled it up during capture
+     where modern-screenshot occasionally over-inherits. */
 }
 .ev2-trend svg{width:18px;height:18px;stroke:#000;stroke-width:2.2;fill:none;
   stroke-linecap:round;stroke-linejoin:round}
@@ -27167,8 +27188,13 @@ function cookieDecline(){
   font-weight:500;letter-spacing:0.02em;
 }
 .ev2-trade .ev2-side{
+  /* inline-block + nowrap so the chip's arrow + label stay together
+     and the pill background contains them. Without these, capture
+     renderers can break the text out of the padded box. */
+  display:inline-block;white-space:nowrap;
   font-family:var(--n-font-mono);font-size:8px;letter-spacing:0.18em;
   text-transform:uppercase;padding:2px 6px;border-radius:3px;
+  flex-shrink:0;
 }
 .ev2-trade .ev2-side.long{
   background:rgba(95,179,137,0.10);color:var(--n-profit);
@@ -27261,6 +27287,7 @@ function cookieDecline(){
   margin-left:auto;
   font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;
   text-transform:uppercase;color:var(--n-text-3);
+  white-space:nowrap;
 }
 
 /* Action buttons row — kept separate from footer so it can hide
