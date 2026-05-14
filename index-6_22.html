@@ -13180,7 +13180,12 @@ function _eodLoadHtml2Canvas(){
     var s = document.createElement('script');
     // Pinned to v4 UMD build for stability; this is the namespace
     // global pattern (`window.modernScreenshot.domToBlob(...)`).
-    s.src = 'https://cdn.jsdelivr.net/npm/modern-screenshot@4/dist/index.umd.js';
+    // Verified URL: the package's "browser" entry is dist/index.js
+    // (not dist/index.umd.js — that path 404s). Pinned to 4.7.0 so a
+    // future major can't silently break the global namespace. The UMD
+    // wrapper registers `globalThis.modernScreenshot.{domToBlob,
+    // domToCanvas, domToPng, ...}` per the package's exports.
+    s.src = 'https://cdn.jsdelivr.net/npm/modern-screenshot@4.7.0/dist/index.js';
     s.async = true;
     s.onload  = function(){
       var ms = window.modernScreenshot;
