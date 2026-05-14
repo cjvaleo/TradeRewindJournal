@@ -13176,6 +13176,10 @@ function eodDismiss(){
   // opens regardless.
   var container = document.getElementById('eod-cards');
   if(container) container.innerHTML = '';
+  // Invalidate the pre-baked File — it's tied to the now-dismissed
+  // card's data, so the next modal open should re-bake fresh.
+  _eodPrebakedFile = null;
+  _eodPrebakedFor  = null;
   // Only write the dismiss flag when the modal was auto-popped. Widget
   // inflates are "replay" — they shouldn't suppress the natural auto-pop
   // that may still be due. The flag write is the personal-scope key only;
@@ -13261,6 +13265,32 @@ function _eodLoadHtml2Canvas(){
 // browser is actually claiming file-share support (macOS Chrome 100+
 // DOES return true via the system share-sheet — that's a feature,
 // not a false positive; the click should still work).
+// Module-level pre-baked File so the click → share path can run
+// SYNCHRONOUSLY within the user-gesture window. Populated on modal
+// open via _eodPrebake(), cleared on dismiss. Without this, the
+// click → capture (async) → share chain takes long enough that
+// Safari/Chrome's gesture token expires and navigator.share throws
+// NotAllowedError.
+var _eodPrebakedFile = null;
+var _eodPrebakedFor  = null;  // tracks which card the file was baked for
+async function _eodPrebake(){
+  var card = _eodResolveCard();
+  if(!card) return;
+  if(_eodPrebakedFor === card && _eodPrebakedFile) return;  // already done
+  _eodPrebakedFor = card;
+  try {
+    console.log('[eod prebake] capturing for', card.dataset.eodDate || '(no date)');
+    var file = await _eodCaptureCard(card);
+    if(_eodPrebakedFor === card){  // ignore if user switched cards mid-bake
+      _eodPrebakedFile = file;
+      console.log('[eod prebake] ready —', file.size, 'bytes');
+    }
+  } catch(e){
+    console.warn('[eod prebake] failed (live click will retry):', e && e.message);
+    _eodPrebakedFile = null;
+  }
+}
+
 function _eodCanShareFiles(){
   if(typeof navigator === 'undefined' || !navigator.canShare || !navigator.share){
     console.log('[eod share probe] navigator.share / canShare not available');
@@ -13313,6 +13343,21 @@ async function _eodCaptureCard(card){
     backdrop.style.backdropFilter = 'none';
     backdrop.style.webkitBackdropFilter = 'none';
   }
+  // PIN the card's intrinsic dimensions inline BEFORE capture.
+  // modern-screenshot's width/height options size the OUTPUT canvas
+  // but the cloned element still uses its computed CSS. The live
+  // card's width comes from the parent flex/stage context — once
+  // cloned out of that context, the element re-flows to its content
+  // width which is narrower than 760px, causing "TOP TRADES" etc to
+  // wrap. Setting inline width on the card means the clone carries
+  // an explicit width and lays out exactly like the live render.
+  var capRect = card.getBoundingClientRect();
+  var capW = Math.round(capRect.width)  || card.offsetWidth  || 760;
+  var capH = Math.round(capRect.height) || card.offsetHeight || 330;
+  var prevCardW = card.style.width;
+  var prevCardH = card.style.height;
+  card.style.width  = capW + 'px';
+  card.style.height = capH + 'px';
   try {
     console.log('[eod capture] step 1 — awaiting renderer load');
     var ms = await _eodLoadHtml2Canvas();
@@ -13352,21 +13397,15 @@ async function _eodCaptureCard(card){
       });
     }
 
-    // Pass EXPLICIT width + height so modern-screenshot doesn't re-
-    // measure the cloned tree and pick smaller dimensions that force
-    // reflow / wrap. getBoundingClientRect is the source of truth for
-    // the on-screen size — passing those bypasses any inference quirks
-    // and the captured PNG matches the live card pixel-for-pixel.
-    var rect = card.getBoundingClientRect();
-    var capW = Math.round(rect.width)  || card.offsetWidth;
-    var capH = Math.round(rect.height) || card.offsetHeight;
     console.log('[eod capture] step 3 — invoking modern-screenshot.domToBlob on card',
-      'offsetWidth:', card.offsetWidth, 'offsetHeight:', card.offsetHeight,
-      '| rect:', capW + 'x' + capH);
+      'pinned-width:', capW, 'pinned-height:', capH);
     // modern-screenshot's domToBlob returns Promise<Blob> directly —
     // no canvas → toBlob round-trip, fewer moving parts than html2canvas.
     // Race against a 15s timeout so a wedged capture still surfaces as
     // a clean error instead of hanging the promise chain forever.
+    // width/height options also set the output canvas dims as belt-
+    // and-suspenders (the inline width on the card is the real fix
+    // for content layout).
     var blob = await Promise.race([
       ms.domToBlob(card, {
         backgroundColor: '#0a0a0a',
@@ -13392,13 +13431,14 @@ async function _eodCaptureCard(card){
     throw e;
   } finally {
     card.classList.remove('is-capturing');
-    // Restore the modal backdrop's blur. Setting back to '' lets the
-    // CSS rule reclaim its declared backdrop-filter value.
+    // Restore the modal backdrop's blur + the card's inline dims.
     if(backdrop){
       backdrop.style.backdropFilter = prevBackdropFilter;
       backdrop.style.webkitBackdropFilter = prevBackdropFilter;
     }
-    console.log('[eod capture] finally — is-capturing removed, backdrop-filter restored');
+    card.style.width  = prevCardW;
+    card.style.height = prevCardH;
+    console.log('[eod capture] finally — is-capturing removed, backdrop + dims restored');
   }
 }
 
@@ -13475,44 +13515,66 @@ async function eodDownloadCard(btn){
   var origText = btn && btn.textContent;
   if(btn){ btn.disabled = true; btn.textContent = '…'; }
   try {
-    console.log('[eod download] capturing…');
-    var file = await _eodCaptureCard(card);
-    console.log('[eod download] capture done, file size:', file && file.size, 'bytes');
+    // Prefer the pre-baked File from modal open. Synchronous lookup
+    // = the navigator.share branch below stays inside the user
+    // gesture window. If pre-bake hasn't finished or got cleared,
+    // capture inline (slower path, may risk gesture expiration but
+    // the share branch below is wrapped in a graceful fallback).
+    var file = _eodPrebakedFile;
+    if(file){
+      console.log('[eod download] using pre-baked file —', file.size, 'bytes');
+    } else {
+      console.log('[eod download] no pre-baked file — capturing now');
+      file = await _eodCaptureCard(card);
+      console.log('[eod download] capture done, file size:', file && file.size, 'bytes');
+    }
 
-    // Safari-friendly download.
-    // Symptom we hit: Safari opened the blob URL in a new tab and
-    // showed "WebKitBlobResource error 1" instead of triggering a
-    // download. The `download` attribute was being ignored, the
-    // setTimeout revoke fired too fast, and Safari's blob handling
-    // on dynamically-created anchors is finicky.
-    // Fixes layered in:
-    //   1. Use the raw Blob (not the File wrapper). Some Safari
-    //      versions reject the File object on object-URL paths.
-    //   2. Dispatch a real MouseEvent via dispatchEvent — `a.click()`
-    //      from JS sometimes gets blocked or downgraded to navigation
-    //      in Safari for dynamic anchors. A constructed MouseEvent is
-    //      treated as a "real" click event.
-    //   3. target="_self" + the download attr, anchor appended to
-    //      body so dispatch happens against an in-tree node.
-    //   4. Revoke delay bumped to 60s so the resource stays valid
-    //      long enough for Safari to write the file even on a slow
-    //      disk / iCloud Drive destination.
-    var blob = file;  // _eodCaptureCard returns a File (extends Blob)
-    var url = URL.createObjectURL(blob);
+    // PRIMARY PATH: route through navigator.share when available.
+    // Safari downloads via <a href="blob:…" download> hit
+    // "WebKitBlobResource error 1" — instead, hand the file to the
+    // OS share-sheet which includes "Save to Files" / "Save Image".
+    // This sidesteps blob URLs entirely. On desktop Chrome with
+    // canShare support, the same path opens the system share-sheet.
+    if(navigator.canShare && navigator.canShare({ files: [file] })){
+      console.log('[eod download] → navigator.share (file API)');
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'My PnL Card',
+          text: 'My trading recap'
+        });
+        if(typeof toast === 'function') toast('Saved');
+        return;
+      } catch(err){
+        // AbortError = user cancelled the share sheet — silent.
+        if(err && (err.name === 'AbortError' || /abort/i.test(err.message||''))){
+          console.log('[eod download] user cancelled share sheet');
+          return;
+        }
+        // NotAllowedError = gesture expired (capture took too long).
+        // Fall through to anchor download — that path doesn't
+        // require a gesture token.
+        console.warn('[eod download] share rejected, falling back to anchor:', err && err.message);
+      }
+    }
+
+    // FALLBACK PATH: anchor + download attr. Browsers without
+    // navigator.canShare({files}) (mostly older desktop Chrome /
+    // Firefox / non-Safari) hit this. Still uses the MouseEvent +
+    // 60s revoke from the previous attempt — works on every browser
+    // EXCEPT macOS Safari (which now goes through navigator.share
+    // above so this branch never runs on Safari).
+    console.log('[eod download] → anchor fallback (no canShare support)');
+    var url = URL.createObjectURL(file);
     var a = document.createElement('a');
     a.href = url;
     a.download = file.name;
     a.rel = 'noopener';
-    a.target = '_self';
     a.style.display = 'none';
     document.body.appendChild(a);
-    console.log('[eod download] firing anchor click for', file.name);
     var ev = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
     a.dispatchEvent(ev);
-    setTimeout(function(){
-      a.remove();
-      URL.revokeObjectURL(url);
-    }, 60000);
+    setTimeout(function(){ a.remove(); URL.revokeObjectURL(url); }, 60000);
     if(typeof toast === 'function') toast('Saved · check your downloads');
   } catch(err){
     console.warn('[eod download] failed:', err && err.message, err);
@@ -13540,11 +13602,21 @@ async function eodShareCard(btn){
   var origText = btn && btn.textContent;
   if(btn){ btn.disabled = true; btn.textContent = '…'; }
   try {
-    console.log('[eod share] capturing…');
-    var file = await _eodCaptureCard(card);
-    console.log('[eod share] capture done, file size:', file && file.size, 'bytes');
+    // Use the pre-baked File from modal open if present — the whole
+    // point of pre-baking is so the navigator.share call below stays
+    // within the user-gesture window. If pre-bake isn't ready, fall
+    // back to inline capture (gesture may expire on slow captures →
+    // NotAllowedError, caught below with a clear toast).
+    var file = _eodPrebakedFile;
+    if(file){
+      console.log('[eod share] using pre-baked file —', file.size, 'bytes');
+    } else {
+      console.log('[eod share] no pre-baked file — capturing now (may expire gesture)');
+      file = await _eodCaptureCard(card);
+      console.log('[eod share] capture done, file size:', file && file.size, 'bytes');
+    }
     // Re-check at call time — between render and click, an extension
-    // could have toggled support. Bail to download UI on the rare miss.
+    // could have toggled support. Bail to a clear error on the rare miss.
     if(!navigator.canShare || !navigator.canShare({ files: [file] })){
       throw new Error('share not supported by this browser');
     }
@@ -13940,14 +14012,23 @@ function _eodShowModal(cards, source){
   modal.style.display = 'flex';
 
   // Pre-warm the renderer (modern-screenshot) in the background as
-  // soon as the modal is visible. By the time the user clicks Share,
-  // the lib is already loaded so the capture finishes inside the
-  // user-gesture window that navigator.share requires (iOS Safari is
-  // strict about this). Function name kept (_eodLoadHtml2Canvas)
-  // post-library-swap to avoid touching every call site.
+  // soon as the modal is visible — script tag fetch.
   if(typeof _eodLoadHtml2Canvas === 'function'){
     _eodLoadHtml2Canvas().catch(function(){ /* silent — share will retry */ });
   }
+  // Pre-BAKE the File too — fully captured PNG sitting in memory by
+  // the time the user clicks Download/Share. The click handler can
+  // then call navigator.share with the pre-ready File synchronously
+  // inside the user-gesture window (iOS/Safari require this — any
+  // async work between the click and the share call expires the
+  // gesture token and throws NotAllowedError). 250ms tick gives the
+  // browser time to paint the modal first so getBoundingClientRect
+  // returns the final dimensions.
+  _eodPrebakedFile = null;
+  _eodPrebakedFor  = null;
+  setTimeout(function(){
+    if(typeof _eodPrebake === 'function') _eodPrebake();
+  }, 250);
 }
 
 /* Personal auto-pop is RETIRED. The personal PnL Card is now a LIVE
