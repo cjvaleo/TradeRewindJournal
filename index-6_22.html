@@ -13414,6 +13414,72 @@ async function _eodCaptureCard(card){
       });
     }
 
+    // ─────────────────────────────────────────────────────────────────
+    // DIAG BLOCK — exact dimensions + the trend-arrow CSS at capture
+    // time. Helps tell whether the arrow overlap in the PNG is a
+    // pre-capture layout problem (visible here) or a clone-time
+    // miscomputation by modern-screenshot (live looks fine, log says
+    // fine, but the rendered PNG disagrees).
+    // ─────────────────────────────────────────────────────────────────
+    var _capDiagRect = card.getBoundingClientRect();
+    console.log('═══ [eod capture] DIMS DIAG ═══');
+    console.log('  card.getBoundingClientRect():', {
+      x: _capDiagRect.x, y: _capDiagRect.y,
+      width: _capDiagRect.width, height: _capDiagRect.height,
+      top: _capDiagRect.top, left: _capDiagRect.left,
+      right: _capDiagRect.right, bottom: _capDiagRect.bottom
+    });
+    console.log('  card.offsetWidth / offsetHeight :', card.offsetWidth, '/', card.offsetHeight);
+    console.log('  passing to domToBlob — width:', capW, 'height:', capH);
+    console.log('  match? rect.w==capW:', Math.round(_capDiagRect.width) === capW,
+                '  rect.h==capH:', Math.round(_capDiagRect.height) === capH);
+
+    var _hero = card.querySelector('.ev2-hero');
+    var _pnlNum = card.querySelector('.ev2-pnl-num');
+    var _trend = card.querySelector('.ev2-trend');
+    if(_hero && _trend && _pnlNum){
+      var _heroCS  = getComputedStyle(_hero);
+      var _numCS   = getComputedStyle(_pnlNum);
+      var _trendCS = getComputedStyle(_trend);
+      var _heroR   = _hero.getBoundingClientRect();
+      var _numR    = _pnlNum.getBoundingClientRect();
+      var _trendR  = _trend.getBoundingClientRect();
+      console.log('═══ [eod capture] ARROW DIAG ═══');
+      console.log('  .ev2-hero  computed: display=', _heroCS.display,
+                  ' align-items=', _heroCS.alignItems,
+                  ' gap=', _heroCS.gap,
+                  ' flex-wrap=', _heroCS.flexWrap,
+                  ' white-space=', _heroCS.whiteSpace);
+      console.log('  .ev2-hero  rect:', { x: _heroR.x, y: _heroR.y, w: _heroR.width, h: _heroR.height });
+      console.log('  .ev2-pnl-num computed: display=', _numCS.display,
+                  ' font-size=', _numCS.fontSize,
+                  ' position=', _numCS.position);
+      console.log('  .ev2-pnl-num rect:', { x: _numR.x, y: _numR.y, w: _numR.width, h: _numR.height,
+                                              right: _numR.right });
+      console.log('  .ev2-trend computed: display=', _trendCS.display,
+                  ' position=', _trendCS.position,
+                  ' width=', _trendCS.width,
+                  ' height=', _trendCS.height,
+                  ' flex=', _trendCS.flex || (_trendCS.flexGrow+' '+_trendCS.flexShrink+' '+_trendCS.flexBasis),
+                  ' margin-left=', _trendCS.marginLeft,
+                  ' left=', _trendCS.left,
+                  ' top=', _trendCS.top,
+                  ' transform=', _trendCS.transform,
+                  ' align-self=', _trendCS.alignSelf);
+      console.log('  .ev2-trend rect:', { x: _trendR.x, y: _trendR.y, w: _trendR.width, h: _trendR.height });
+      console.log('  num.right vs trend.left:', _numR.right, '/', _trendR.left,
+                  '  GAP=', _trendR.left - _numR.right, 'px',
+                  _trendR.left - _numR.right < 0 ? '⚠ OVERLAP (live DOM, pre-capture)' : '(no overlap)');
+      console.log('  hero spans both? num inside hero:',
+                  _numR.left >= _heroR.left && _numR.right <= _heroR.right,
+                  ' trend inside hero:',
+                  _trendR.left >= _heroR.left && _trendR.right <= _heroR.right);
+    } else {
+      console.log('[eod capture] ARROW DIAG: could not query .ev2-hero / .ev2-pnl-num / .ev2-trend',
+                  { hero: !!_hero, pnlNum: !!_pnlNum, trend: !!_trend });
+    }
+    console.log('═══════════════════════════════');
+
     console.log('[eod capture] step 3 — invoking modern-screenshot.domToBlob on card',
       'pinned-width:', capW, 'pinned-height:', capH);
     // modern-screenshot's domToBlob returns Promise<Blob> directly —
@@ -13587,9 +13653,36 @@ function _eodSafariDownloadSync(dataUrl, filename){
 }
 
 async function eodDownloadCard(btn){
-  console.log('[eod download] click — btn:', btn);
+  // ─────────────────────────────────────────────────────────────────
+  // DIAG BLOCK — runtime state at the instant of click. No fix logic
+  // depends on these reads; if anything looks wrong in the resulting
+  // log, the next iteration is targeted at the bad value.
+  // ─────────────────────────────────────────────────────────────────
+  var _ev = window.event;
+  var _ua = (navigator.userActivation && {
+    hasBeen: navigator.userActivation.hasBeenActive,
+    isActive: navigator.userActivation.isActive
+  }) || '(unsupported)';
+  console.log('═══ [eod download] CLICK DIAG ═══');
+  console.log('  event.isTrusted    :', _ev ? _ev.isTrusted : '(no window.event)');
+  console.log('  event.type         :', _ev ? _ev.type : '(no window.event)');
+  console.log('  navigator.userActivation:', _ua);
+  console.log('  _eodIsSafari()     :', _eodIsSafari());
+  console.log('  userAgent          :', navigator.userAgent);
+  console.log('  _eodPrebakedFile   :', _eodPrebakedFile
+    ? { name: _eodPrebakedFile.name, size: _eodPrebakedFile.size, type: _eodPrebakedFile.type }
+    : 'NULL — pre-bake never finished');
+  console.log('  _eodPrebakedDataUrl:', _eodPrebakedDataUrl
+    ? { length: _eodPrebakedDataUrl.length, head: _eodPrebakedDataUrl.slice(0, 40) + '…' }
+    : 'NULL — pre-bake never finished');
+  console.log('  _eodPrebakedFor    :', _eodPrebakedFor);
+  console.log('  document.hasFocus():', document.hasFocus());
+  console.log('  btn arg            :', btn && btn.tagName, btn);
+  console.log('═══════════════════════════════');
+
   var card = _eodResolveCard(btn);
-  console.log('[eod download] resolved card →', card);
+  console.log('[eod download] resolved card →', card,
+    '| matches _eodPrebakedFor?', card === _eodPrebakedFor);
   if(!card){
     if(typeof toast === 'function') toast('Download failed — no PnL Card open');
     return;
@@ -13605,7 +13698,7 @@ async function eodDownloadCard(btn){
   // through to the async path (which is less reliable on Safari but
   // better than nothing).
   if(isSafari && _eodPrebakedDataUrl && _eodPrebakedFile){
-    console.log('[eod download] → Safari sync path (pre-baked data URL)');
+    console.log('[eod download] >>> BRANCH: Safari sync path (pre-baked data URL)');
     try {
       _eodSafariDownloadSync(_eodPrebakedDataUrl, _eodPrebakedFile.name);
       if(typeof toast === 'function') toast('Saved · check your downloads');
@@ -13614,6 +13707,12 @@ async function eodDownloadCard(btn){
       console.warn('[eod download] Safari sync path threw:', e && e.message);
       // fall through to async path below
     }
+  } else {
+    console.log('[eod download] >>> skipping Safari sync path because:',
+      !isSafari ? 'not Safari'
+      : !_eodPrebakedDataUrl ? 'no pre-baked data URL'
+      : !_eodPrebakedFile ? 'no pre-baked file'
+      : 'unknown');
   }
 
   // btn is optional — used only for the disable/loading UI nicety.
@@ -13632,7 +13731,7 @@ async function eodDownloadCard(btn){
 
     // PRIMARY PATH: every non-Safari browser. Direct anchor download.
     if(!isSafari){
-      console.log('[eod download] → direct anchor (non-Safari)');
+      console.log('[eod download] >>> BRANCH: non-Safari direct anchor');
       if(_eodDirectDownload(file)){
         if(typeof toast === 'function') toast('Saved · check your downloads');
       } else {
@@ -13647,7 +13746,7 @@ async function eodDownloadCard(btn){
     // attr at this point (gesture gone), the file shows in a new tab
     // and the user can right-click → Save Image As. Acceptable
     // degradation given pre-bake usually saves us first.
-    console.log('[eod download] → Safari async path (post-gesture)');
+    console.log('[eod download] >>> BRANCH: Safari async fallback (post-gesture, likely to fail)');
     var reader = new FileReader();
     var dataUrl = await new Promise(function(resolve, reject){
       reader.onload  = function(){ resolve(reader.result); };
