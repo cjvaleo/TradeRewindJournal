@@ -13029,7 +13029,7 @@ function _eodRenderPersonalCard(data){
     // Hero row — inline flex + gap so the arrow can NEVER overlap the
     // P&L number, regardless of how the renderer computes positioning.
     +     '<div class="ev2-hero '+heroTone+'" style="display:flex;align-items:center;gap:18px;position:static;white-space:nowrap;flex-wrap:nowrap;color:'+heroPnlCol+'">'
-    +       '<span class="ev2-pnl-num" style="display:inline-block;position:static;white-space:nowrap;flex:0 0 auto;padding-right:0.12em;font-family:\'Instrument Serif\',Georgia,serif;font-style:italic;font-size:68px;line-height:1;letter-spacing:-0.02em">'+_eodMoneyHtml(data.totalPnl)+'</span>'
+    +       '<span class="ev2-pnl-num" style="display:inline-block;position:static;white-space:nowrap;flex:0 0 auto;padding-right:32px;font-family:\'Instrument Serif\',Georgia,serif;font-style:italic;font-size:68px;line-height:1;letter-spacing:-0.02em">'+_eodMoneyHtml(data.totalPnl)+'</span>'
     +       '<span class="ev2-trend" style="display:inline-flex;align-items:center;justify-content:center;position:static;width:30px;height:30px;min-width:30px;min-height:30px;flex:0 0 30px;margin:0;transform:none;border-radius:50%;background:'+heroTrendBg+';opacity:1">'+trendSvg+'</span>'
     +     '</div>'
     // Stat strip — inline labels keep "WIN RATE" + "AVG R" single-line.
@@ -13139,7 +13139,7 @@ function _eodRenderGroupCard(data){
     +   '<div class="ev2-left">'
     +     '<span class="ev2-pnl-label" style="white-space:nowrap">Collective P&amp;L</span>'
     +     '<div class="ev2-hero '+heroTone+'" style="display:flex;align-items:center;gap:18px;position:static;white-space:nowrap;flex-wrap:nowrap;color:'+heroPnlCol+'">'
-    +       '<span class="ev2-pnl-num" style="display:inline-block;position:static;white-space:nowrap;flex:0 0 auto;padding-right:0.12em;font-family:\'Instrument Serif\',Georgia,serif;font-style:italic;font-size:68px;line-height:1;letter-spacing:-0.02em">'+_eodMoneyHtml(data.totalPnl)+'</span>'
+    +       '<span class="ev2-pnl-num" style="display:inline-block;position:static;white-space:nowrap;flex:0 0 auto;padding-right:32px;font-family:\'Instrument Serif\',Georgia,serif;font-style:italic;font-size:68px;line-height:1;letter-spacing:-0.02em">'+_eodMoneyHtml(data.totalPnl)+'</span>'
     +       '<span class="ev2-trend" style="display:inline-flex;align-items:center;justify-content:center;position:static;width:30px;height:30px;min-width:30px;min-height:30px;flex:0 0 30px;margin:0;transform:none;border-radius:50%;background:'+heroTrendBg+';opacity:1">'+trendSvg+'</span>'
     +     '</div>'
     +     '<div class="ev2-stats">'
