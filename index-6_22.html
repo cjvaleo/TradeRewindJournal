@@ -11509,6 +11509,14 @@ function renderAll(){
   if(typeof renderEodDashBar === 'function'){
     try { renderEodDashBar(); } catch(e){ console.warn('[eod dash bar]', e && e.message); }
   }
+  // Personal PnL Card live re-render — if the modal is open AND it's
+  // showing a personal card (group cards keep their EOD/yesterday
+  // framing and shouldn't repaint on every trade), refresh it in
+  // place so the open card reflects the new totals. No-op when the
+  // modal is closed or the personal card isn't currently mounted.
+  if(typeof _eodMaybeRefreshOpenPersonal === 'function'){
+    try { _eodMaybeRefreshOpenPersonal(); } catch(e){ console.warn('[eod personal refresh]', e && e.message); }
+  }
 }
 
 // ── COMMUNITY ─────────────────────────────────────────────
@@ -12699,22 +12707,20 @@ function _eodMoneyHtml(v){
   return p.sign + '$' + p.int + '<span class="eod-pnl-cents">' + p.cents + '</span>';
 }
 
-/* Filter trades to target ET date. Trades carry .date as YYYY-MM-DD
-   in BROWSER LOCAL time, while the target is ET. For users east of
-   ET those align; for users west, they can be off by a day depending
-   on time of day. So we accept a match on EITHER:
-     1. t.date == target (covers users whose local TZ matches ET)
-     2. _eodEtDate(t.created_at) == target (canonical ET match)
-   The OR is intentional — the previous `if(t.date) return t.date===X`
-   short-circuit hid trades whose date was set in a far-off TZ that
-   didn't align with ET, even when their created_at clearly placed
-   them on the target ET day. */
-function _eodTodaysTrades(etToday){
+/* Filter trades to today, USING THE EXACT SAME RULE as the dashboard
+   hero's filterByPeriod('today'): strict `t.date === today-local`,
+   no created_at fallback. The personal PnL Card must always match
+   the dashboard's "Total P&L · Today" number; adding any OR fallback
+   here would diverge from the hero whenever a trade's t.date and its
+   ET-coerced created_at land on different calendar days (common
+   for users west of ET in late-night hours). Caller passes the
+   today-local YYYY-MM-DD; both renderEodDashBar and
+   eodInflatePersonalFromWidget already compute it as
+   _localDate(new Date()) so they share the same target. */
+function _eodTodaysTrades(todayLocal){
   if(!Array.isArray(trades)) return [];
   return trades.filter(function(t){
-    if(t.date === etToday) return true;
-    if(t.created_at && _eodEtDate(new Date(t.created_at)) === etToday) return true;
-    return false;
+    return t.date === todayLocal;
   });
 }
 
@@ -13992,6 +13998,55 @@ async function eodMaybeShowGroupForCommunity(community){
 /* Widget-click inflate paths — bypass localStorage / time gates so
    users can replay the recap on demand. source='widget' tells
    eodDismiss to skip writing the dismiss flag. */
+/* Live re-render of the personal PnL Card if it's currently open.
+   Called from renderAll() whenever trades mutate (log, edit, delete,
+   import), so an open card stays in lockstep with the dashboard hero.
+   Bails cleanly when:
+     - modal is hidden (no work to do)
+     - modal is sequenced / showing multiple cards (rare; would need
+       index tracking to swap just one)
+     - the open card is the group flavor (group keeps its EOD/yesterday
+       framing — must not repaint on every personal trade)
+   Replaces the personal card's inline HTML in place. _eodPrebakedFile
+   is invalidated so the next Share click re-captures fresh data. */
+function _eodMaybeRefreshOpenPersonal(){
+  var modal = document.getElementById('eod-modal');
+  if(!modal || modal.style.display === 'none' || !modal.offsetParent) return;
+  var container = document.getElementById('eod-cards');
+  if(!container) return;
+  // Group + personal can't coexist in a single non-sequenced modal,
+  // but in sequenced mode they could. Bail on sequenced so we don't
+  // disturb the active-card index.
+  if(container.classList.contains('is-sequenced')) return;
+  var personal = container.querySelector('.eod-card-personal');
+  if(!personal) return;  // group card open, or nothing — skip
+  // Recompute today's data exactly the way the inflate path did.
+  var etDate = _localDate(new Date());
+  var data = _eodPersonalData(etDate);
+  if(!data || !data.tradeCount){
+    data = {
+      etDate: etDate, totalPnl: 0, tradeCount: 0,
+      winRate: 0, avgR: 0, avgRCount: 0, trades: []
+    };
+  }
+  var html = _eodRenderPersonalCard(data);
+  if(!html) return;
+  // Swap the personal card in place. innerHTML on container would
+  // wipe sibling cards if any existed; outerHTML on the personal
+  // element preserves order. Need to re-query the container's last
+  // child to get the new node since outerHTML invalidates `personal`.
+  personal.outerHTML = html;
+  // Pre-bake is tied to the OLD card DOM node — invalidate so the
+  // next Share click re-bakes against the refreshed card.
+  _eodPrebakedFile = null;
+  _eodPrebakedFor  = null;
+  // Re-bake in the background so Share stays snappy if the user
+  // clicks it next. Same 250ms tick the modal-open path uses.
+  setTimeout(function(){
+    if(typeof _eodPrebake === 'function') _eodPrebake();
+  }, 250);
+}
+
 async function eodInflatePersonalFromWidget(){
   // Personal card is LIVE/today now — mirrors the dashboard hero.
   // Uses browser-local date (same as dashboard's filterByPeriod) so
