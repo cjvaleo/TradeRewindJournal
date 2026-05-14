@@ -6524,9 +6524,16 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
    feed column and share its left edge with the hero + tabs. The
    ~1030px feed-column width at this size IS the focus column. */
 @media (min-width: 1920px){
+  /* !important is mandatory here — the base rule at line ~5867 sets
+     `margin:0!important` on the same selector. Without !important on
+     our override the base wins (same specificity, !important > source
+     order) and the page stays left-anchored despite the max-width cap.
+     Same goes for max-width: the base has `max-width:100%` which is
+     same specificity, but no !important — so our 1600px wins on order.
+     Belt-and-suspenders !important on both anyway. */
   #pg-community.page.on{
-    max-width: 1600px;
-    margin: 0 auto;
+    max-width: 1600px !important;
+    margin: 0 auto !important;
   }
   #pg-community .filters,
   #pg-community #comm-feed-posts{
