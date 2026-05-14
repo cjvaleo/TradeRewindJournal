@@ -13541,6 +13541,37 @@ function _eodDirectDownload(file){
   }
 }
 
+// Safari-specific download path. Safari's anchor+blob:URL combination
+// triggers "WebKitBlobResource error 1" — it opens the blob URL in a
+// new tab instead of downloading. The macOS share sheet was a wrong
+// fallback (the visible tier is AirDrop/Mail/Messages — "Save to
+// Files" is hidden behind Extensions, terrible UX).
+// Real fix: FileReader → base64 → data: URL. Safari reliably honors
+// the download attribute on data: URLs because the data is inline
+// (no blob-resource lookup that can fail).
+// Returns a Promise so the caller can await + surface errors.
+function _eodSafariDownload(file){
+  return new Promise(function(resolve, reject){
+    var reader = new FileReader();
+    reader.onload = function(){
+      try {
+        var a = document.createElement('a');
+        a.href = reader.result;  // data:image/png;base64,…
+        a.download = file.name;
+        a.rel = 'noopener';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        var ev = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
+        a.dispatchEvent(ev);
+        setTimeout(function(){ a.remove(); }, 1000);  // no revoke needed for data:
+        resolve(true);
+      } catch(e){ reject(e); }
+    };
+    reader.onerror = function(){ reject(reader.error || new Error('FileReader failed')); };
+    reader.readAsDataURL(file);
+  });
+}
+
 async function eodDownloadCard(btn){
   console.log('[eod download] click — btn:', btn);
   var card = _eodResolveCard(btn);
@@ -13580,37 +13611,24 @@ async function eodDownloadCard(btn){
       return;
     }
 
-    // SAFARI PATH: anchor download triggers WebKitBlobResource error 1
-    // on every recent Safari version. The only reliable save path is
-    // the OS share-sheet ("Save to Files" / "Save Image" actions).
-    // Distinct-action argument: on Safari it's the best the platform
-    // allows; Chrome/Firefox/Edge still get a direct download above.
-    if(navigator.canShare && navigator.canShare({ files: [file] })){
-      console.log('[eod download] → navigator.share (Safari fallback)');
-      try {
-        await navigator.share({
-          files: [file],
-          title: 'My PnL Card',
-          text: 'My trading recap'
-        });
-        // No toast — the share sheet is the confirmation UI.
-        return;
-      } catch(err){
-        if(err && (err.name === 'AbortError' || /abort/i.test(err.message||''))){
-          console.log('[eod download] user cancelled share sheet');
-          return;
-        }
-        console.warn('[eod download] safari share rejected:', err && err.message);
-      }
-    }
-
-    // LAST-RESORT: Safari without canShare-files (older versions).
-    // Try the anchor anyway and surface whatever error to the user.
-    console.log('[eod download] → last-resort anchor (Safari, no canShare)');
-    if(_eodDirectDownload(file)){
+    // SAFARI PATH: anchor + blob: URL triggers WebKitBlobResource
+    // error 1. The OS share sheet was a wrong fallback (Save to Files
+    // is buried). Real fix: FileReader → base64 → data: URL +
+    // download attribute. Safari handles data: URLs reliably.
+    console.log('[eod download] → data-URL anchor (Safari)');
+    try {
+      await _eodSafariDownload(file);
       if(typeof toast === 'function') toast('Saved · check your downloads');
-    } else {
-      if(typeof toast === 'function') toast('Download failed — try Share instead');
+    } catch(err){
+      console.warn('[eod download] safari data-url failed:', err && err.message);
+      // True last resort: try the regular anchor anyway. Won't make
+      // anything worse than the WebKitBlobResource error message we
+      // were already getting.
+      if(_eodDirectDownload(file)){
+        if(typeof toast === 'function') toast('Saved · check your downloads');
+      } else {
+        if(typeof toast === 'function') toast('Download failed — try Share instead');
+      }
     }
   } catch(err){
     console.warn('[eod download] failed:', err && err.message, err);
