@@ -6529,6 +6529,41 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
    AND drop the inner 640px posts cap so .filters + posts span the
    feed column and share its left edge with the hero + tabs. The
    ~1030px feed-column width at this size IS the focus column. */
+/* Defensive — at every desktop width below the 1920px ultra-wide
+   breakpoint, hard-cap the flex chain so the right rail can't get
+   pushed past the viewport edge. The math (210 nav + 300 csb + flex
+   feed + 300 rail) should fit at any 1280+ width, but a wide
+   descendant inside .feed (or rounding at the boundary) can push the
+   row past its allocation if `.feed` doesn't actively shrink.
+   `flex: 1 1 0%` + `min-width: 0` + `overflow-x: clip` on the chain
+   forces the feed to absorb the leftover horizontal space without
+   spilling rightward. Scoped to desktop widths only — mobile already
+   hides .rail entirely. */
+@media (min-width: 769px) and (max-width: 1919px){
+  #pg-community.page.on{
+    overflow-x: clip;
+    max-width: 100%;
+  }
+  #pg-community #comm-main,
+  #pg-community #comm-feed-view{
+    flex: 1 1 0%;
+    min-width: 0;
+    overflow-x: clip;
+  }
+  #pg-community .feed{
+    flex: 1 1 0%;
+    min-width: 0;
+  }
+  /* Rail stays its declared 300px; flex-shrink:0 from the base rule
+     guarantees it doesn't lose pixels to the feed. Belt-and-suspenders
+     `width:300px !important` here in case a future edit accidentally
+     introduces a flex grow on the rail. */
+  #pg-community .rail{
+    width: 300px !important;
+    flex: 0 0 300px !important;
+  }
+}
+
 @media (min-width: 1920px){
   /* Layout shape on ultra-wide:
        [csb 270px @ left edge][gap → feed][feed 1200px centered][gap → rail][rail 300px @ right edge]
