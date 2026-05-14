@@ -13163,37 +13163,41 @@ function eodOpenDayReview(etDate){
   } catch(e){ console.warn('[eod] day review open failed:', e && e.message); }
 }
 
-/* Lazy-load html2canvas from CDN on first Share click. The CDN bundle
-   is ~50KB minified, no need to pull it in until the user actually
-   wants to export. Loaded script registers as `window.html2canvas`.
-   _eodH2CPromise memoizes the in-flight load so concurrent calls
-   share one fetch + one <script> tag (previous version would inject
-   a new script tag per call while loading, causing the lib to
-   execute multiple times). */
-var _eodH2CPromise = null;
+/* Lazy-load modern-screenshot from CDN on first Share click.
+   Was html2canvas 1.4.1 — confirmed-hanging on this card despite
+   ruling out fonts/CORS-images/backdrop-filter. modern-screenshot
+   is actively maintained and handles modern CSS far better.
+   Exposes window.modernScreenshot.{domToBlob, domToPng, domToCanvas}.
+   _eodRendererPromise memoizes the in-flight load so concurrent
+   calls share one fetch + one <script> tag. */
+var _eodRendererPromise = null;
 function _eodLoadHtml2Canvas(){
-  console.log('[eod loader] called — already-loaded?', !!window.html2canvas,
-    '| in-flight?', !!_eodH2CPromise);
-  if(window.html2canvas) return Promise.resolve(window.html2canvas);
-  if(_eodH2CPromise)     return _eodH2CPromise;
-  _eodH2CPromise = new Promise(function(resolve, reject){
+  console.log('[eod loader] called — already-loaded?', !!window.modernScreenshot,
+    '| in-flight?', !!_eodRendererPromise);
+  if(window.modernScreenshot) return Promise.resolve(window.modernScreenshot);
+  if(_eodRendererPromise)     return _eodRendererPromise;
+  _eodRendererPromise = new Promise(function(resolve, reject){
     var s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    // Pinned to v4 UMD build for stability; this is the namespace
+    // global pattern (`window.modernScreenshot.domToBlob(...)`).
+    s.src = 'https://cdn.jsdelivr.net/npm/modern-screenshot@4/dist/index.umd.js';
     s.async = true;
     s.onload  = function(){
-      console.log('[eod loader] script onload — html2canvas typeof:', typeof window.html2canvas);
-      if(typeof window.html2canvas === 'function') resolve(window.html2canvas);
-      else reject(new Error('html2canvas loaded but global missing'));
+      var ms = window.modernScreenshot;
+      console.log('[eod loader] script onload — modernScreenshot typeof:', typeof ms,
+        '| has domToBlob:', !!(ms && typeof ms.domToBlob === 'function'));
+      if(ms && typeof ms.domToBlob === 'function') resolve(ms);
+      else reject(new Error('modern-screenshot loaded but API missing'));
     };
     s.onerror = function(ev){
       console.error('[eod loader] script onerror', ev);
-      _eodH2CPromise = null;  // allow retry
-      reject(new Error('html2canvas CDN load failed (blocked / offline?)'));
+      _eodRendererPromise = null;  // allow retry
+      reject(new Error('modern-screenshot CDN load failed (blocked / offline?)'));
     };
     document.head.appendChild(s);
     console.log('[eod loader] <script> injected, awaiting onload…');
   });
-  return _eodH2CPromise;
+  return _eodRendererPromise;
 }
 
 /* ── Capture / Download / Share — one capture, two paths ─────────
@@ -13267,15 +13271,15 @@ async function _eodCaptureCard(card){
     backdrop.style.webkitBackdropFilter = 'none';
   }
   try {
-    console.log('[eod capture] step 1 — awaiting _eodLoadHtml2Canvas()');
-    var h2c = await _eodLoadHtml2Canvas();
-    console.log('[eod capture] step 2 — h2c typeof:', typeof h2c,
-      '| window.html2canvas typeof:', typeof window.html2canvas);
-    if(typeof h2c !== 'function'){
-      throw new Error('html2canvas did not load (typeof ' + typeof h2c + ')');
+    console.log('[eod capture] step 1 — awaiting renderer load');
+    var ms = await _eodLoadHtml2Canvas();
+    console.log('[eod capture] step 2 — ms typeof:', typeof ms,
+      '| has domToBlob:', !!(ms && typeof ms.domToBlob === 'function'));
+    if(!ms || typeof ms.domToBlob !== 'function'){
+      throw new Error('renderer did not load (typeof ' + typeof ms + ')');
     }
 
-    // Step 2.5 — wait for web fonts to settle. html2canvas hangs
+    // Step 2.5 — wait for web fonts to settle. Renderer can hang
     // indefinitely when computed-style fonts haven't loaded yet
     // (Instrument Serif + Geist Mono come from Google Fonts). Race
     // the fonts.ready promise against a short timeout so we don't
@@ -13293,9 +13297,10 @@ async function _eodCaptureCard(card){
       }
     }
 
-    // Step 2.7 — image audit. cross-origin <img> tags without CORS
-    // can also hang html2canvas. Personal card shouldn't have any
-    // (avatar is a CSS gradient div + inline SVGs), but log defensively.
+    // Step 2.7 — image audit. Cross-origin <img> tags without CORS
+    // headers are a classic renderer hang vector. Personal card
+    // shouldn't have any (avatar is a CSS gradient div + inline
+    // SVGs), but log defensively.
     var imgs = card.querySelectorAll('img');
     console.log('[eod capture] step 2.7 — img count in card:', imgs.length);
     if(imgs.length){
@@ -13304,43 +13309,29 @@ async function _eodCaptureCard(card){
       });
     }
 
-    console.log('[eod capture] step 3 — invoking html2canvas on card',
+    console.log('[eod capture] step 3 — invoking modern-screenshot.domToBlob on card',
       'offsetWidth:', card.offsetWidth, 'offsetHeight:', card.offsetHeight);
-    // 2x DPR for retina; bg matches --n-bg so the PNG has no fringe.
-    // Race against a 15s timeout so a wedged capture surfaces as a
-    // clean error instead of hanging the promise chain forever.
-    // allowTaint: true permits canvas to render images that didn't
-    // come with CORS headers — the canvas becomes tainted (toBlob
-    // would still throw on a truly tainted canvas) but the render
-    // itself proceeds instead of hanging.
-    var canvas = await Promise.race([
-      h2c(card, {
+    // modern-screenshot's domToBlob returns Promise<Blob> directly —
+    // no canvas → toBlob round-trip, fewer moving parts than html2canvas.
+    // Race against a 15s timeout so a wedged capture still surfaces as
+    // a clean error instead of hanging the promise chain forever.
+    var blob = await Promise.race([
+      ms.domToBlob(card, {
         backgroundColor: '#0a0a0a',
         scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        // Cap effective width at 1080px (post-scale = 2160px — still
-        // social-friendly without bloating the file).
-        windowWidth: Math.min(card.offsetWidth, 1080)
-      }).then(function(c){ console.log('[eod capture] step 3a — html2canvas resolved'); return c; }),
+        type: 'image/png'
+      }).then(function(b){ console.log('[eod capture] step 3a — domToBlob resolved'); return b; }),
       new Promise(function(_, reject){
         setTimeout(function(){ reject(new Error('capture timeout (15s)')); }, 15000);
       })
     ]);
-    console.log('[eod capture] step 4 — canvas size:', canvas.width, 'x', canvas.height);
-    var blob = await new Promise(function(resolve, reject){
-      canvas.toBlob(function(b){
-        if(!b){ reject(new Error('toBlob returned null')); return; }
-        resolve(b);
-      }, 'image/png');
-    });
-    console.log('[eod capture] step 5 — blob:', blob && blob.size, 'bytes');
+    if(!blob) throw new Error('domToBlob returned null');
+    console.log('[eod capture] step 4 — blob:', blob.size, 'bytes, type:', blob.type);
     var filename = 'rewind-pnl-' + (card.dataset.eodDate || _eodEtDate()) + '.png';
     // File (not Blob) — required for navigator.share + nicer for the
     // download anchor (correct filename in the OS save dialog).
     var file = new File([blob], filename, { type: 'image/png' });
-    console.log('[eod capture] step 6 — File created:', filename);
+    console.log('[eod capture] step 5 — File created:', filename);
     return file;
   } catch(e){
     console.error('[eod capture] CAPTURE FAILED at', e && e.message, e);
@@ -13833,10 +13824,12 @@ function _eodShowModal(cards, source){
   }
   modal.style.display = 'flex';
 
-  // Pre-warm html2canvas in the background as soon as the modal is
-  // visible. By the time the user clicks Share, the lib is already
-  // loaded so the capture finishes inside the user-gesture window
-  // that navigator.share requires (iOS Safari is strict about this).
+  // Pre-warm the renderer (modern-screenshot) in the background as
+  // soon as the modal is visible. By the time the user clicks Share,
+  // the lib is already loaded so the capture finishes inside the
+  // user-gesture window that navigator.share requires (iOS Safari is
+  // strict about this). Function name kept (_eodLoadHtml2Canvas)
+  // post-library-swap to avoid touching every call site.
   if(typeof _eodLoadHtml2Canvas === 'function'){
     _eodLoadHtml2Canvas().catch(function(){ /* silent — share will retry */ });
   }
