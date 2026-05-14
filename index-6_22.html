@@ -13138,6 +13138,13 @@ function eodNext(){
 function eodDismiss(){
   var m = document.getElementById('eod-modal');
   if(m) m.style.display = 'none';
+  // Clear stale card HTML so the next render can't accidentally
+  // resolve to a leftover zero-dim card (would capture as a 54-byte
+  // empty PNG). _eodShowModal does innerHTML = …, which replaces
+  // atomically — but clearing here keeps the DOM clean between
+  // opens regardless.
+  var container = document.getElementById('eod-cards');
+  if(container) container.innerHTML = '';
   // Only write the dismiss flag when the modal was auto-popped. Widget
   // inflates are "replay" — they shouldn't suppress the natural auto-pop
   // that may still be due. The flag write is the personal-scope key only;
@@ -13365,18 +13372,53 @@ async function _eodCaptureCard(card){
 // In sequenced-mode (>2 cards) only one card has .is-active. Otherwise
 // all cards are visible — pick the first one (single-card cases are
 // the common path).
+// Returns true only for cards that are actually rendered + laid out
+// (offsetWidth + offsetHeight both > 0). Stale cards left in the DOM
+// from a prior _eodShowModal call would otherwise have zero dims
+// (parent display:none) and capture as a 54-byte empty PNG.
+function _eodIsVisible(el){
+  return !!(el && el.offsetWidth > 0 && el.offsetHeight > 0);
+}
+
 function _eodResolveCard(btn){
+  // Path (a) — button click. btn.closest only returns an ancestor
+  // that exists in the DOM; if it has zero dims something else is
+  // wrong, but we trust it as the intended target either way.
   if(btn && typeof btn.closest === 'function'){
     var fromBtn = btn.closest('.eod-card');
-    if(fromBtn) return fromBtn;
+    if(fromBtn){
+      console.log('[eod resolve] via btn.closest →',
+        'visible:', _eodIsVisible(fromBtn),
+        'dims:', fromBtn.offsetWidth + 'x' + fromBtn.offsetHeight);
+      return fromBtn;
+    }
   }
-  // Sequenced mode → only .is-active is visible.
-  var active = document.querySelector('#eod-cards .eod-card.is-active');
-  if(active) return active;
-  // Stacked mode (≤2 cards) → all rendered, pick the first one. If
-  // the user wants to share a specific card in stacked mode they'd
-  // click that card's actual Share button (which routes through (a)).
-  return document.querySelector('#eod-cards .eod-card');
+  // Path (b/c) — bare call (console / programmatic). Walk all cards
+  // inside #eod-cards and pick the first VISIBLE one. Sequenced-mode
+  // hides non-active cards via .is-sequenced .eod-card { display:none },
+  // so their offsetWidth/Height collapse to 0 — visibility filter
+  // naturally picks the .is-active one without a class check.
+  var all = document.querySelectorAll('#eod-cards .eod-card');
+  if(all.length > 1){
+    console.warn('[eod resolve] multiple .eod-card in #eod-cards (' + all.length + ') — picking the visible one');
+  }
+  for(var i = 0; i < all.length; i++){
+    if(_eodIsVisible(all[i])){
+      console.log('[eod resolve] via querySelector visible → card #' + i,
+        'dims:', all[i].offsetWidth + 'x' + all[i].offsetHeight);
+      return all[i];
+    }
+  }
+  // Last-resort fallback — return first match even if zero-dim, so
+  // the downstream error message ("capture timeout"/empty PNG) is
+  // a clear symptom of "no PnL Card actually open" rather than a
+  // silent null path.
+  if(all.length){
+    console.warn('[eod resolve] no visible card; falling back to first (probably modal is closed)');
+    return all[0];
+  }
+  console.warn('[eod resolve] no .eod-card anywhere');
+  return null;
 }
 
 async function eodDownloadCard(btn){
