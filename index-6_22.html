@@ -12867,15 +12867,30 @@ async function _eodGroupData(community, etToday){
    ─────────────────────────────────────────────────────────────── */
 
 // Inline SVGs — kept here so the renderers stay self-contained and
-// html2canvas captures them as real paint without an external fetch.
+// the screenshot library captures them as real paint without an
+// external fetch. Every SVG dimension + stroke property is set BOTH
+// as an attribute AND as an inline style — the descendant class
+// rules (.ev2-trend svg, etc.) get dropped by modern-screenshot's
+// clone pass, and an <svg> with only a viewBox falls back to the
+// 300×150 default canvas. That default canvas overflows the 30×30
+// .ev2-trend container by ~135px leftward and paints right on top
+// of the P&L number in captured PNGs (live browsers honor the class
+// rule and render at 18×18, so the bug only manifests in capture).
+// Belt + suspenders: attribute, inline style, and explicit stroke/fill.
+var _EOD_SVG_TREND_STYLE = 'width:18px;height:18px;display:block;stroke:#0a0a0a;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round';
 var _EOD_SVG = {
-  // Trending arrow — used inside the hero P&L circle
-  trendUp:   '<svg viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>',
-  trendDown: '<svg viewBox="0 0 24 24"><polyline points="3 7 9 13 13 9 21 17"/><polyline points="14 17 21 17 21 10"/></svg>',
-  // Trophy — used in the Top trades / Top traders header
-  trophy:    '<svg viewBox="0 0 24 24"><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M5 4h2v3a3 3 0 0 1-3 3 1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M19 4h-2v3a3 3 0 0 0 3 3 1 1 0 0 0 1-1V5a1 1 0 0 0-1-1z"/><line x1="12" y1="13" x2="12" y2="18"/><polyline points="8 21 16 21 14 18 10 18 8 21"/></svg>',
+  // Trending arrow — used inside the hero P&L circle. Dimensions
+  // + stroke baked in so the capture path can't reflow it.
+  trendUp:   '<svg viewBox="0 0 24 24" width="18" height="18" style="'+_EOD_SVG_TREND_STYLE+'"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>',
+  trendDown: '<svg viewBox="0 0 24 24" width="18" height="18" style="'+_EOD_SVG_TREND_STYLE+'"><polyline points="3 7 9 13 13 9 21 17"/><polyline points="14 17 21 17 21 10"/></svg>',
+  // Trophy — used in the Top trades / Top traders header. Same
+  // bake-in fix as trendUp/trendDown: dimensions + stroke baked
+  // into the SVG so .ev2-right-head svg{} dropping during clone
+  // can't cause a 300×150 overflow.
+  trophy:    '<svg viewBox="0 0 24 24" width="14" height="14" style="width:14px;height:14px;display:inline-block;vertical-align:middle;stroke:currentColor;stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M5 4h2v3a3 3 0 0 1-3 3 1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M19 4h-2v3a3 3 0 0 0 3 3 1 1 0 0 0 1-1V5a1 1 0 0 0-1-1z"/><line x1="12" y1="13" x2="12" y2="18"/><polyline points="8 21 16 21 14 18 10 18 8 21"/></svg>',
   // Rewind — Tabler ti-refresh-dot inspired, used in the footer
-  rewind:    '<svg viewBox="0 0 24 24"><path d="M20 11A8 8 0 1 0 4 12"/><polyline points="4 6 4 12 10 12"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>',
+  // Rewind brand mark — used in footer. Same bake-in fix.
+  rewind:    '<svg viewBox="0 0 24 24" width="14" height="14" style="width:14px;height:14px;display:inline-block;vertical-align:middle;stroke:#a1a1a1;stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M20 11A8 8 0 1 0 4 12"/><polyline points="4 6 4 12 10 12"/><circle cx="12" cy="12" r="1.5" fill="#a1a1a1" stroke="none"/></svg>',
   // Tabler ti-arrows-diagonal — "expand" affordance on the widgets
   expand:    '<svg viewBox="0 0 24 24"><polyline points="16 4 20 4 20 8"/><line x1="14" y1="10" x2="20" y2="4"/><polyline points="8 20 4 20 4 16"/><line x1="4" y1="20" x2="10" y2="14"/></svg>'
 };
