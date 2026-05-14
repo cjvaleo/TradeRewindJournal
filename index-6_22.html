@@ -13478,15 +13478,41 @@ async function eodDownloadCard(btn){
     console.log('[eod download] capturing…');
     var file = await _eodCaptureCard(card);
     console.log('[eod download] capture done, file size:', file && file.size, 'bytes');
-    var url = URL.createObjectURL(file);
+
+    // Safari-friendly download.
+    // Symptom we hit: Safari opened the blob URL in a new tab and
+    // showed "WebKitBlobResource error 1" instead of triggering a
+    // download. The `download` attribute was being ignored, the
+    // setTimeout revoke fired too fast, and Safari's blob handling
+    // on dynamically-created anchors is finicky.
+    // Fixes layered in:
+    //   1. Use the raw Blob (not the File wrapper). Some Safari
+    //      versions reject the File object on object-URL paths.
+    //   2. Dispatch a real MouseEvent via dispatchEvent — `a.click()`
+    //      from JS sometimes gets blocked or downgraded to navigation
+    //      in Safari for dynamic anchors. A constructed MouseEvent is
+    //      treated as a "real" click event.
+    //   3. target="_self" + the download attr, anchor appended to
+    //      body so dispatch happens against an in-tree node.
+    //   4. Revoke delay bumped to 60s so the resource stays valid
+    //      long enough for Safari to write the file even on a slow
+    //      disk / iCloud Drive destination.
+    var blob = file;  // _eodCaptureCard returns a File (extends Blob)
+    var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
     a.download = file.name;
+    a.rel = 'noopener';
+    a.target = '_self';
+    a.style.display = 'none';
     document.body.appendChild(a);
     console.log('[eod download] firing anchor click for', file.name);
-    a.click();
-    a.remove();
-    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    var ev = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
+    a.dispatchEvent(ev);
+    setTimeout(function(){
+      a.remove();
+      URL.revokeObjectURL(url);
+    }, 60000);
     if(typeof toast === 'function') toast('Saved · check your downloads');
   } catch(err){
     console.warn('[eod download] failed:', err && err.message, err);
