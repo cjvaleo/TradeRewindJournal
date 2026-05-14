@@ -13013,9 +13013,9 @@ function _eodRenderPersonalCard(data){
     +     '<span class="ev2-pnl-label" style="white-space:nowrap">Today&rsquo;s P&amp;L</span>'
     // Hero row — inline flex + gap so the arrow can NEVER overlap the
     // P&L number, regardless of how the renderer computes positioning.
-    +     '<div class="ev2-hero '+heroTone+'" style="display:flex;align-items:center;gap:14px;white-space:nowrap;flex-wrap:nowrap;color:'+heroPnlCol+'">'
-    +       '<span class="ev2-pnl-num" style="display:inline-block;white-space:nowrap;flex-shrink:0;font-family:\'Instrument Serif\',Georgia,serif;font-style:italic;font-size:68px;line-height:1;letter-spacing:-0.02em">'+_eodMoneyHtml(data.totalPnl)+'</span>'
-    +       '<span class="ev2-trend" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;min-width:30px;min-height:30px;flex:0 0 30px;border-radius:50%;background:'+heroTrendBg+';opacity:1">'+trendSvg+'</span>'
+    +     '<div class="ev2-hero '+heroTone+'" style="display:flex;align-items:center;gap:18px;position:static;white-space:nowrap;flex-wrap:nowrap;color:'+heroPnlCol+'">'
+    +       '<span class="ev2-pnl-num" style="display:inline-block;position:static;white-space:nowrap;flex:0 0 auto;padding-right:0.12em;font-family:\'Instrument Serif\',Georgia,serif;font-style:italic;font-size:68px;line-height:1;letter-spacing:-0.02em">'+_eodMoneyHtml(data.totalPnl)+'</span>'
+    +       '<span class="ev2-trend" style="display:inline-flex;align-items:center;justify-content:center;position:static;width:30px;height:30px;min-width:30px;min-height:30px;flex:0 0 30px;margin:0;transform:none;border-radius:50%;background:'+heroTrendBg+';opacity:1">'+trendSvg+'</span>'
     +     '</div>'
     // Stat strip — inline labels keep "WIN RATE" + "AVG R" single-line.
     +     '<div class="ev2-stats">'
@@ -13122,9 +13122,9 @@ function _eodRenderGroupCard(data){
     + '<div class="ev2-body">'
     +   '<div class="ev2-left">'
     +     '<span class="ev2-pnl-label" style="white-space:nowrap">Collective P&amp;L</span>'
-    +     '<div class="ev2-hero '+heroTone+'" style="display:flex;align-items:center;gap:14px;white-space:nowrap;flex-wrap:nowrap;color:'+heroPnlCol+'">'
-    +       '<span class="ev2-pnl-num" style="display:inline-block;white-space:nowrap;flex-shrink:0;font-family:\'Instrument Serif\',Georgia,serif;font-style:italic;font-size:68px;line-height:1;letter-spacing:-0.02em">'+_eodMoneyHtml(data.totalPnl)+'</span>'
-    +       '<span class="ev2-trend" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;min-width:30px;min-height:30px;flex:0 0 30px;border-radius:50%;background:'+heroTrendBg+';opacity:1">'+trendSvg+'</span>'
+    +     '<div class="ev2-hero '+heroTone+'" style="display:flex;align-items:center;gap:18px;position:static;white-space:nowrap;flex-wrap:nowrap;color:'+heroPnlCol+'">'
+    +       '<span class="ev2-pnl-num" style="display:inline-block;position:static;white-space:nowrap;flex:0 0 auto;padding-right:0.12em;font-family:\'Instrument Serif\',Georgia,serif;font-style:italic;font-size:68px;line-height:1;letter-spacing:-0.02em">'+_eodMoneyHtml(data.totalPnl)+'</span>'
+    +       '<span class="ev2-trend" style="display:inline-flex;align-items:center;justify-content:center;position:static;width:30px;height:30px;min-width:30px;min-height:30px;flex:0 0 30px;margin:0;transform:none;border-radius:50%;background:'+heroTrendBg+';opacity:1">'+trendSvg+'</span>'
     +     '</div>'
     +     '<div class="ev2-stats">'
     +       '<div class="ev2-stat"><span class="lbl" style="white-space:nowrap">Trades</span><span class="val">'+data.tradeCount+'</span></div>'
@@ -13932,6 +13932,46 @@ function _eodShowModal(cards, source){
     nav.style.display = 'none';
   }
   modal.style.display = 'flex';
+
+  // ─────────────────────────────────────────────────────────────────
+  // ARROW GAP DIAG — measure the live-DOM gap between the P&L
+  // number's right edge and the trend arrow's left edge. Fires once
+  // per modal-open, AFTER paint, so the rects are settled. If this
+  // value is negative the bug is in our live CSS. If positive but
+  // the captured PNG still shows overlap, the bug is either in
+  // modern-screenshot's clone OR in italic ink-overhang that
+  // exceeds the logical box's right edge (rects measure boxes, not
+  // ink).
+  // ─────────────────────────────────────────────────────────────────
+  setTimeout(function(){
+    var hero = container.querySelector('.ev2-hero');
+    var num  = container.querySelector('.ev2-pnl-num');
+    var arr  = container.querySelector('.ev2-trend');
+    if(!hero || !num || !arr) return;
+    var numR  = num.getBoundingClientRect();
+    var arrR  = arr.getBoundingClientRect();
+    var heroR = hero.getBoundingClientRect();
+    var gap = Math.round(arrR.left - numR.right);
+    var heroCS = getComputedStyle(hero);
+    var arrCS  = getComputedStyle(arr);
+    console.log('═══ [arrow gap diag] live DOM ═══');
+    console.log('  num.right =', Math.round(numR.right),
+                ' arr.left =', Math.round(arrR.left),
+                ' LOGICAL GAP =', gap + 'px',
+                gap < 0 ? '⚠ NEGATIVE (live CSS bug)' : '(positive)');
+    console.log('  hero display=' + heroCS.display +
+                ' align-items=' + heroCS.alignItems +
+                ' gap=' + heroCS.gap +
+                ' position=' + heroCS.position);
+    console.log('  arr  position=' + arrCS.position +
+                ' display=' + arrCS.display +
+                ' margin-left=' + arrCS.marginLeft +
+                ' transform=' + arrCS.transform +
+                ' flex=' + (arrCS.flex || arrCS.flexBasis));
+    console.log('  num.width=' + Math.round(numR.width) +
+                ' arr.width=' + Math.round(arrR.width) +
+                ' hero.width=' + Math.round(heroR.width));
+  }, 50);
 
   // Pre-warm the renderer (modern-screenshot) in the background as
   // soon as the modal is visible — script tag fetch.
