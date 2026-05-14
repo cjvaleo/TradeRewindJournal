@@ -4444,6 +4444,39 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 #pg-history .cell-pnl.neg{color:var(--n-loss)}
 #pg-history .cell-pnl.zero{color:var(--n-text-3)}
 #pg-history .cell-pnl .cents{font-size:0.65em;opacity:0.7}
+
+/* ── CHUNK 6: Account Type column ──────────────────────────
+   Inline dot + label using the same swatches as the rw-chip-acct
+   buttons in Log Trade + Edit Modal. Kept tight so the column
+   doesn't push the table wider than the existing layout budget. */
+#pg-history .cell-acct{
+  font-family:var(--n-font-sans);font-size:12px;
+  color:var(--n-text-2);white-space:nowrap;
+}
+#pg-history .cell-acct .acct-dot{
+  display:inline-block;width:7px;height:7px;border-radius:50%;
+  margin-right:6px;vertical-align:middle;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.04);
+}
+#pg-history .cell-acct .acct-label{vertical-align:middle;letter-spacing:0.01em}
+#pg-history .cell-acct.empty{
+  color:var(--n-text-4);font-family:var(--n-font-mono);font-size:11px;
+}
+
+/* ── CHUNK 6: R-multiple column ────────────────────────────
+   Mono cool-blue chip when the trade had a stop set. Loss rows
+   tint rose to match the cell-pnl.neg language. When stop is
+   missing we fall through to a muted em-dash. */
+#pg-history .cell-rr{
+  font-family:var(--n-font-mono);font-size:12px;letter-spacing:0.02em;
+  text-align:right;color:var(--n-accent-cool);
+}
+#pg-history .cell-rr.pos{color:var(--n-accent-cool)}
+#pg-history .cell-rr.neg{color:var(--n-loss)}
+#pg-history .cell-rr.empty{
+  color:var(--n-text-4);font-family:var(--n-font-mono);font-size:11px;
+  text-align:right;
+}
 #pg-history .cell-notes{text-align:center;position:relative}
 #pg-history .cell-notes.empty{
   color:var(--n-text-4);font-family:var(--n-font-mono);font-size:11px;
@@ -9401,6 +9434,18 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
           <option value="loss">Losses</option>
         </select>
       </div>
+      <!-- Chunk 6 — Account Type filter (matches enum from
+           visual-redesign-migration.sql + the Account chip set everywhere). -->
+      <div class="h-filter">
+        <span class="lbl">Account</span>
+        <select id="h-acct" onchange="renderHistory()">
+          <option value="">All</option>
+          <option value="paper">Paper</option>
+          <option value="eval">Eval</option>
+          <option value="funded">Funded</option>
+          <option value="live">Live</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -9431,10 +9476,12 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             <th>Symbol</th>
             <th>Market</th>
             <th>Dir</th>
+            <th>Acct</th><!-- Chunk 6 — Account Type column -->
             <th>Entry</th>
             <th>Exit</th>
             <th>Qty</th>
             <th class="right">P&amp;L</th>
+            <th class="right">R</th><!-- Chunk 6 — R-multiple column -->
             <th class="center">Notes</th>
             <th>Confluences</th>
             <th></th>
@@ -19556,10 +19603,22 @@ async function deleteTrade(id){
 }
 async function renderHistory(){
   const fm=document.getElementById('h-mkt').value,fd=document.getElementById('h-dir').value,fr=document.getElementById('h-res').value;
+  // Chunk 6 — Account Type filter chip added to the filter bar. Reads
+  // from #h-acct (single-select: '' / paper / eval / funded / live).
+  // Filter compares against t.account_type, matching the schema column
+  // shipped by visual-redesign-migration.sql.
+  const fa=(document.getElementById('h-acct')||{}).value||'';
   // Free tier sees the last 30 days only; Pro sees everything.
   const view = _visibleTrades();
   toggleFreeCapBanner('history', view !== trades);
-  const ft=view.filter(t=>{if(fm&&t.market!==fm)return false;if(fd&&t.type!==fd)return false;if(fr==='win'&&t.pnl<=0)return false;if(fr==='loss'&&t.pnl>=0)return false;return true;});
+  const ft=view.filter(t=>{
+    if(fm&&t.market!==fm)return false;
+    if(fd&&t.type!==fd)return false;
+    if(fr==='win'&&t.pnl<=0)return false;
+    if(fr==='loss'&&t.pnl>=0)return false;
+    if(fa&&(t.account_type||'')!==fa)return false;
+    return true;
+  });
 
   // ── SUMMARY STRIP (live counts from filtered results) ──────────
   function _setSum(id, html, tone){
@@ -19598,7 +19657,9 @@ async function renderHistory(){
   // ── ROWS ───────────────────────────────────────────────────────
   const tb=document.getElementById('hist-body');
   if(!ft.length){
-    tb.innerHTML = '<tr><td colspan="11" class="h-empty">No trades found</td></tr>';
+    // Chunk 6 — colspan bumped 11 → 13 to span the two new columns
+    // (Account Type after Dir, R-multiple after P&L).
+    tb.innerHTML = '<tr><td colspan="13" class="h-empty">No trades found</td></tr>';
     return;
   }
   // Batch-load confluences for every trade in the current view in one
@@ -19623,6 +19684,38 @@ async function renderHistory(){
   }
   const NOTES_SVG = '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="14" y2="17"/></svg>';
 
+  // Chunk 6 — dot+label renderer for the new Account Type column. Colors
+  // mirror the rw-chip-acct tier swatches used in Log Trade + Edit Modal
+  // so the visual language stays consistent across surfaces.
+  const ACCT_META = {
+    paper:  { label:'Paper',  dot:'rgba(255,255,255,0.35)' },
+    eval:   { label:'Eval',   dot:'var(--n-gold,#f5d77c)' },
+    funded: { label:'Funded', dot:'var(--n-profit)' },
+    live:   { label:'Live',   dot:'var(--n-accent-cool,#6ea8ff)' }
+  };
+  function _fmtAcct(at){
+    const key = String(at||'').toLowerCase();
+    const meta = ACCT_META[key];
+    if(!meta) return '<td class="cell-acct empty">—</td>';
+    return '<td class="cell-acct">'
+      + '<span class="acct-dot" style="background:'+meta.dot+'"></span>'
+      + '<span class="acct-label">'+meta.label+'</span>'
+      + '</td>';
+  }
+  // Chunk 6 — R-multiple chip. Only renders when a stop was set on the
+  // trade (otherwise rr can't be derived). Sign follows P&L: profitable
+  // trades show positive R (cool blue), losses show negative R (rose).
+  function _fmtRR(t){
+    const hasStop = t.stop != null && t.stop !== '' && !isNaN(Number(t.stop));
+    const rrVal   = Number(t.rr);
+    if(!hasStop || !isFinite(rrVal) || rrVal === 0) return '<td class="cell-rr empty">—</td>';
+    const pnlSign = (t.pnl||0) < 0 ? -1 : 1;
+    const signed  = pnlSign * Math.abs(rrVal);
+    const cls     = signed < 0 ? 'neg' : 'pos';
+    const txt     = (signed>0?'+':'') + signed.toFixed(1) + 'R';
+    return '<td class="cell-rr '+cls+'">'+txt+'</td>';
+  }
+
   tb.innerHTML = ft.map(t => {
     const dir = t.type==='short' ? 'short' : 'long';
     const dirLabel = dir.charAt(0).toUpperCase()+dir.slice(1);
@@ -19641,15 +19734,21 @@ async function renderHistory(){
     const confCell = cf.length
       ? '<td class="cell-conf">'+cfRenderMiniPillsHtml(cf, {limit:3, wrapClass:'cf-mini-row'})+'</td>'
       : '<td class="cell-conf empty">—</td>';
+    // Chunk 6 — row template now has 13 cells. Account Type sits between
+    // Direction and Entry (matching the <th> order); R-multiple sits
+    // between P&L and Notes. Header order is the source of truth — keep
+    // these aligned if either is touched.
     return '<tr>'
       + '<td class="cell-date">'+_fmtDate(t.date)+'</td>'
       + '<td class="cell-sym">'+_esc(t.sym||'—')+'</td>'
       + '<td class="cell-market">'+_esc(t.market||'—')+'</td>'
       + '<td><span class="cell-dir '+dir+'">'+dirLabel+'</span></td>'
+      + _fmtAcct(t.account_type)
       + '<td class="cell-price">'+_fmtPrice(t.entry)+'</td>'
       + '<td class="cell-price">'+_fmtPrice(t.exit)+'</td>'
       + '<td class="cell-qty">'+_esc(t.qty!=null?t.qty:'—')+acctSpan+'</td>'
       + '<td class="cell-pnl '+pnlCls+'">'+_money(pnl, true)+'</td>'
+      + _fmtRR(t)
       + notesCell
       + confCell
       + '<td class="cell-actions"><button class="del-btn" onclick="deleteTrade('+t.id+')">&times;</button></td>'
