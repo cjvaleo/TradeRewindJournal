@@ -6356,6 +6356,152 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 #pg-community .post.profit{border-left:3px solid rgba(95,179,137,0.45)}
 #pg-community .post.loss{border-left:3px solid rgba(201,95,95,0.45)}
 
+/* ──────────────────────────────────────────────────────────────────
+   CHUNK 7 — Minimal feed-post layout (.fp-* classes).
+   Post IS the container. No nested trade-card border. Element order
+   below mirrors the renderer in renderFeedPosts: author / headline /
+   conf / notes / image / actions.
+   ────────────────────────────────────────────────────────────────── */
+
+/* (1) Author row — 28px avatar + handle + time + acct dot+label right */
+#pg-community .post.fp-post{padding:14px 16px 10px}
+#pg-community .fp-head{
+  display:flex;align-items:center;gap:10px;margin-bottom:10px;
+}
+#pg-community .fp-head .av{flex-shrink:0}
+#pg-community .fp-author{
+  display:flex;align-items:baseline;gap:8px;min-width:0;flex:1;
+}
+#pg-community .fp-handle{
+  font-family:var(--n-font-mono);font-size:12px;
+  color:var(--n-text);letter-spacing:0.01em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+#pg-community .fp-time{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.04em;
+  color:var(--n-text-3);flex-shrink:0;
+}
+#pg-community .fp-acct{
+  display:inline-flex;align-items:center;gap:6px;margin-left:auto;
+  font-family:var(--n-font-sans);font-size:11px;color:var(--n-text-2);
+  flex-shrink:0;
+}
+#pg-community .fp-acct-dot{
+  width:6px;height:6px;border-radius:50%;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.04);
+}
+#pg-community .fp-acct-label{letter-spacing:0.02em}
+
+/* (2) Headline row — sym + side LEFT, R-chip + big serif P&L RIGHT */
+#pg-community .fp-headline{
+  display:flex;justify-content:space-between;align-items:baseline;
+  gap:12px;margin-bottom:10px;
+}
+#pg-community .fp-headline-l{
+  display:flex;align-items:baseline;gap:10px;min-width:0;
+}
+#pg-community .fp-headline-r{
+  display:flex;align-items:baseline;gap:10px;flex-shrink:0;
+}
+#pg-community .fp-sym{
+  font-family:var(--n-font-mono);font-size:13px;
+  color:var(--n-text);font-weight:500;letter-spacing:0.02em;
+}
+#pg-community .fp-side{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  text-transform:uppercase;padding:3px 8px;border-radius:4px;
+  font-weight:500;
+}
+#pg-community .fp-side.long{
+  background:rgba(95,179,137,0.10);color:var(--n-profit);
+  border:1px solid rgba(95,179,137,0.20);
+}
+#pg-community .fp-side.short{
+  background:rgba(201,95,95,0.10);color:var(--n-loss);
+  border:1px solid rgba(201,95,95,0.20);
+}
+#pg-community .fp-rr{
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.02em;
+}
+#pg-community .fp-rr.pos{color:var(--n-accent-cool)}
+#pg-community .fp-rr.neg{color:var(--n-loss)}
+#pg-community .fp-pnl{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:26px;line-height:1;letter-spacing:-0.01em;
+  text-shadow:none;
+}
+#pg-community .fp-pnl.profit{color:var(--n-profit)}
+#pg-community .fp-pnl.loss{color:var(--n-loss)}
+#pg-community .fp-pnl.zero{color:var(--n-text-3)}
+
+/* (3) Confluence pills — reuses .cf-pill-mini token tier colors */
+#pg-community .fp-conf{margin-bottom:10px}
+#pg-community .fp-conf .cf-mini-row{gap:5px}
+
+/* (4) Notes prose — 3-line clamp with Show more toggle */
+#pg-community .fp-notes{
+  position:relative;margin-bottom:10px;cursor:pointer;
+}
+#pg-community .fp-notes-body{
+  font-family:var(--n-font-sans);font-size:14px;
+  color:var(--n-text);line-height:1.5;white-space:pre-wrap;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+  overflow:hidden;
+}
+#pg-community .fp-notes[data-collapsed="0"] .fp-notes-body{
+  -webkit-line-clamp:unset;overflow:visible;display:block;
+}
+#pg-community .fp-notes-more{
+  display:none;margin-top:4px;padding:0;background:transparent;border:none;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.12em;
+  text-transform:uppercase;color:var(--n-accent-cool);cursor:pointer;
+}
+/* Show "Show more" only when the prose is actually clamped */
+#pg-community .fp-notes[data-collapsed="1"] .fp-notes-body{position:relative}
+#pg-community .fp-notes[data-collapsed="1"]:hover .fp-notes-more,
+#pg-community .fp-notes[data-collapsed="1"] .fp-notes-more{display:inline-block}
+#pg-community .fp-notes[data-collapsed="0"] .fp-notes-more{display:inline-block}
+#pg-community .fp-notes[data-collapsed="0"] .fp-notes-more::before{content:'Show less'}
+#pg-community .fp-notes[data-collapsed="0"] .fp-notes-more{font-size:0;letter-spacing:0}
+#pg-community .fp-notes[data-collapsed="0"] .fp-notes-more::before{font-size:10px;letter-spacing:0.12em}
+
+/* (5) Screenshot — single image, 180px tall, full-width, 8px radius */
+#pg-community .fp-image{
+  margin-bottom:10px;border-radius:8px;overflow:hidden;
+  background:var(--n-surface);cursor:pointer;
+  border:1px solid var(--n-border);transition:.15s;
+}
+#pg-community .fp-image:hover{border-color:var(--n-border-2)}
+#pg-community .fp-image img{
+  display:block;width:100%;height:180px;object-fit:cover;
+}
+
+/* (6) Engagement bar — heart, reply, share. No top border (post body has
+   enough breathing room per spec). No trophy/TOTD. */
+#pg-community .fp-actions{
+  display:flex;align-items:center;gap:18px;
+  padding-top:4px;
+}
+#pg-community .fp-actions .fp-act-share{margin-left:auto}
+#pg-community .fp-act{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 6px;background:transparent;border:none;
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.04em;
+  color:var(--n-text-3);cursor:pointer;border-radius:4px;transition:.12s;
+}
+#pg-community .fp-act:hover{color:var(--n-text);background:rgba(255,255,255,0.03)}
+#pg-community .fp-act svg{width:16px;height:16px;stroke-width:1.8;fill:none;stroke:currentColor}
+#pg-community .fp-act.liked{color:var(--n-loss)}
+#pg-community .fp-act.liked svg{fill:currentColor}
+
+/* Mobile — tighten padding, allow R+P&L to wrap below sym/side */
+@media (max-width: 720px){
+  #pg-community .post.fp-post{padding:12px 13px 9px}
+  #pg-community .fp-headline{flex-wrap:wrap;gap:8px}
+  #pg-community .fp-pnl{font-size:22px}
+  #pg-community .fp-image img{height:160px}
+}
+
 /* POST HEAD */
 #pg-community .post-head{
   display:flex;align-items:center;gap:11px;margin-bottom:12px;
@@ -12050,74 +12196,81 @@ function renderFeedPosts(g){
     return Math.floor(ago/86400) + 'd';
   }
 
+  // ──────────────────────────────────────────────────────────────────
+  // CHUNK 7 — minimal post layout. The post IS the container; no nested
+  // trade-card border. Anatomy (top-to-bottom):
+  //
+  //   1. Author row: 28px avatar · @handle · relTime · ● Acct (right)
+  //   2. Headline:   [SYM] [↗ Side]            [R-chip]  +$1,247 (serif)
+  //   3. Confluences: TF-mini-pills (reuses cfRenderMiniPillsHtml)
+  //   4. Notes:      14px prose, 3-line clamp + Show more
+  //   5. Screenshot: 180px tall, full-width, 8px radius
+  //   6. Engagement: ♥ count · 💬 Reply · ↗ Share (no trophy/TOTD)
+  //
+  // Sparse posts (no notes / no screenshot / no pills) collapse cleanly
+  // — each row is wrapped in a truthy check and omitted otherwise.
+  // ──────────────────────────────────────────────────────────────────
+
+  // Tier swatches for the Account dot+label, matched against the rw-chip
+  // tokens used in Log Trade / Edit Modal / History (Chunk 6) for
+  // cross-surface visual consistency.
+  var ACCT_META = {
+    paper:  { label:'Paper',  dot:'rgba(255,255,255,0.35)' },
+    eval:   { label:'Eval',   dot:'var(--n-gold,#f5d77c)' },
+    funded: { label:'Funded', dot:'var(--n-profit)' },
+    live:   { label:'Live',   dot:'var(--n-accent-cool,#6ea8ff)' }
+  };
+
   el.innerHTML = visible.map(function(p){
     var t = p.trade || {};
     var pnl = p.pnl || 0;
-    var pnlTone = pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : '';
-    var avTone = _avTone(p.avatar_finish || p.color);
-    var avHtml = renderAvatar({
-      avatar_finish: p.avatar_finish || p.color,
-      avatar_image_url: p.avatar_image_url,
-      avatar_initials: p.initials
-    }, 'md');
-    var tintClass = 'tint-' + avTone;
     var postId = p.isMe ? (t.id || '') : (p.row ? p.row.id : '');
     var safePid = safeText(postId);
     var likes = _likeCounts[postId] || 0;
     var youLiked = !!_myLikes[postId];
 
-    var sideTxt = '';
-    if(t.type){
-      sideTxt = String(t.type).charAt(0).toUpperCase() + String(t.type).slice(1).toLowerCase();
-      if(t.qty) sideTxt += ' · ' + safeText(t.qty) + ' contract' + (Number(t.qty)>1?'s':'');
+    // Parse metadata once. PostgREST sometimes returns JSONB as a string;
+    // be tolerant. `meta` is the denormalized snapshot of the trade at
+    // share/edit time, used as the renderer's source of truth for
+    // cross-user posts where `t` only carries the text-content header.
+    var meta = null;
+    if(p.metadata){
+      meta = (typeof p.metadata === 'string')
+        ? (function(){ try{return JSON.parse(p.metadata);}catch(e){return null;} })()
+        : p.metadata;
     }
-    var rrTxt = '';
-    if(t.rr) rrTxt = (pnl>=0?'+':'') + Number(t.rr).toFixed(1) + 'R';
-    var holdTxt = '';
-    if(t.duration) holdTxt = (rrTxt ? ' · ' : '') + Math.round(Number(t.duration)) + ' min hold';
-    var rrHoldHtml = '';
-    if(rrTxt || holdTxt){
-      rrHoldHtml = '<span class="tc-pl-r">'
-        + (rrTxt ? rrTxt.replace('R','<span class="unit">R</span>') : '')
-        + safeText(holdTxt)
-        + '</span>';
-    }
+    meta = meta || {};
 
-    var dateStr = '';
-    if(t.date){
-      var d = new Date(t.date + 'T12:00:00');
-      if(!isNaN(d)) dateStr = d.toLocaleDateString('en-US',{month:'short',day:'2-digit'});
-      else dateStr = safeText(t.date);
-    }
-    var sessTxt = t.session ? safeText(String(t.session).toUpperCase()) : '';
+    // ── (1) Author row data ──────────────────────────────────────────
+    var avHtml = renderUserAvatar({
+      avatar_finish: p.avatar_finish || p.color || p.avatar_color,
+      avatar_initials: p.avatar_initials || p.initials,
+      avatar_image_url: p.avatar_image_url,
+      username: p.username,
+      name: p.username
+    }, 'sm'); // 28px per Chunk 7 spec
 
-    // Chunk 2.5 — augmented with TV /x/ snapshot if no upload but link present.
-    var _feedImgs = (typeof getTradeImagesWithTV === 'function') ? getTradeImagesWithTV(t) : (t.images||[]);
-    var hasImg = _feedImgs.length > 0;
-    var imgUrl = hasImg ? safeURL(_feedImgs[0]) : '';
-    var thumbHtml = hasImg
-      ? '<img class="post-thumb" src="'+imgUrl+'" alt="Trade screenshot" onclick="openScreenshotLightbox(\''+imgUrl+'\')" onerror="this.style.display=\'none\'">'
+    // Account Type dot+label — prefer denormalized meta.account_type, fall
+    // back to t.account_type for own posts where the full trade is in
+    // memory. Skipped entirely if neither is set.
+    var acctKey  = String((meta.account_type || t.account_type || '')).toLowerCase();
+    var acctMeta = ACCT_META[acctKey];
+    var acctHtml = acctMeta
+      ? '<span class="fp-acct">'
+        +   '<span class="fp-acct-dot" style="background:'+acctMeta.dot+'"></span>'
+        +   '<span class="fp-acct-label">'+acctMeta.label+'</span>'
+        + '</span>'
       : '';
 
-    // Normalize content into a v6 trade-body pill (sym + side badge +
-    // italic P&L) and optional notes paragraph below. Two paths:
-    //  • text content (community_posts row): split first line on ' · '
-    //    to extract sym/side/pnl; remaining lines = notes
-    //  • JSON content (legacy or local-trade): rebuild from t.sym,
-    //    t.type, t.pnl, t.notes
+    // ── (2) Headline row: sym + side LEFT, R-chip + big P&L RIGHT ────
+    // Extract sym/side: for JSON-content (own) trades pull from `t`; for
+    // text-content posts split the stored header on " · ". Empty cells
+    // (sparse imports) just render blank — the row collapses cleanly.
     var bodySym  = '';
     var bodySide = '';
-    // Always format PnL from the numeric `pnl`. The stored text-content header
-    // can lack the minus sign for CSV-imported / legacy trades, so partsArr[2]
-    // is unreliable — numeric `pnl` from row.pnl_today is the source of truth.
-    // Don't "fix" this back to reading partsArr[2]: that's what broke the
-    // display before. Color comes from pnlClass below; sign comes from here.
-    var bodyPnl  = (pnl >= 0 ? '+' : '-') + '$' + Math.abs(pnl).toLocaleString();
-    var bodyNotes = '';
     if(p.isText){
       var lines  = String(p.text||'').split('\n');
       var header = lines[0] || '';
-      bodyNotes  = lines.slice(1).join('\n').trim();
       var partsArr = header.split(' · ');
       bodySym  = partsArr[0] || '';
       bodySide = partsArr[1] || '';
@@ -12125,119 +12278,111 @@ function renderFeedPosts(g){
       bodySym  = t.sym || '';
       var srLow = String(t.type||'').toLowerCase();
       bodySide = srLow === 'short' ? '↘ Short' : srLow === 'long' ? '↗ Long' : '';
+    }
+    var sideClass = /short/i.test(bodySide) ? 'short' : 'long';
+    var pnlClass  = pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : 'zero';
+    var pnlStr    = (pnl >= 0 ? '+' : '−') + '$' + Math.abs(pnl).toLocaleString();
+
+    // R-multiple chip — only when stop was set (otherwise rr can't be
+    // derived). Sign follows P&L: losing trades show negative R.
+    var hasStop = (meta.stop != null && meta.stop !== '') || (t.stop != null && t.stop !== '');
+    var rrRaw   = meta.rr != null ? meta.rr : t.rr;
+    var rrNum   = Number(rrRaw);
+    var rrHtml  = '';
+    if(hasStop && isFinite(rrNum) && rrNum !== 0){
+      var rrSign   = (pnl < 0) ? -1 : 1;
+      var rrSigned = rrSign * Math.abs(rrNum);
+      var rrCls    = rrSigned < 0 ? 'neg' : 'pos';
+      var rrTxt    = (rrSigned>0?'+':'') + rrSigned.toFixed(1) + 'R';
+      rrHtml = '<span class="fp-rr '+rrCls+'">'+rrTxt+'</span>';
+    }
+
+    var headlineHtml = '<div class="fp-headline">'
+      + '<div class="fp-headline-l">'
+      +   (bodySym  ? '<span class="fp-sym">'+safeText(bodySym)+'</span>' : '')
+      +   (bodySide ? '<span class="fp-side '+sideClass+'">'+safeText(bodySide)+'</span>' : '')
+      + '</div>'
+      + '<div class="fp-headline-r">'
+      +   rrHtml
+      +   '<span class="fp-pnl '+pnlClass+'">'+pnlStr+'</span>'
+      + '</div>'
+      + '</div>';
+
+    // ── (3) Confluence pills (denormalized snapshot) ─────────────────
+    // Reuses cfRenderMiniPillsHtml for TF-tier coloring identical to the
+    // History row + Calendar Sidebar. Skipped entirely if no pills.
+    var cfList = Array.isArray(meta.confluences) ? meta.confluences : [];
+    var confHtml = '';
+    if(cfList.length && typeof cfRenderMiniPillsHtml === 'function'){
+      confHtml = '<div class="fp-conf">'+cfRenderMiniPillsHtml(cfList, {limit:6, wrapClass:'cf-mini-row'})+'</div>';
+    }
+
+    // ── (4) Notes prose — truncated at 3 lines via CSS ──────────────
+    var bodyNotes = '';
+    if(p.isText){
+      var nlines  = String(p.text||'').split('\n');
+      bodyNotes  = nlines.slice(1).join('\n').trim();
+    } else {
       bodyNotes = t.notes || '';
     }
-    // Trade-share posts only — feed loader already filters to
-    // id LIKE 'trade_%', so every post here is a structured trade.
-    var sideClass = /short/i.test(bodySide) ? 'short' : 'long';
-    var pnlClass  = pnl < 0 ? 'loss' : 'profit';
-    var cardClass = pnl < 0 ? 'loss' : 'profit';
-    // Parse metadata once (it's used by both the stats row and the chips
-    // block below). Tolerant of jsonb returned as a string by PostgREST.
-    var meta = null;
-    if(p.metadata){
-      meta = (typeof p.metadata === 'string')
-        ? (function(){ try{return JSON.parse(p.metadata);}catch(e){return null;} })()
-        : p.metadata;
-    }
+    var notesHtml = bodyNotes
+      ? '<div class="fp-notes" data-collapsed="1" onclick="this.dataset.collapsed=this.dataset.collapsed==\'1\'?\'0\':\'1\'">'
+        +   '<div class="fp-notes-body">'+commEsc(bodyNotes)+'</div>'
+        +   '<button class="fp-notes-more" type="button">Show more</button>'
+        + '</div>'
+      : '';
 
-    // Stats row: Entry · Exit · Qty (under the trade pill, above notes).
-    var statsHtml = '';
-    if(meta){
-      var statCells = [];
-      if(meta.entry != null) statCells.push('<span><span class="trade-stat-l">Entry</span> '+safeText(String(meta.entry))+'</span>');
-      if(meta.exit  != null) statCells.push('<span><span class="trade-stat-l">Exit</span> '+safeText(String(meta.exit))+'</span>');
-      if(meta.qty   != null) statCells.push('<span><span class="trade-stat-l">Qty</span> '+safeText(String(meta.qty))+'</span>');
-      if(statCells.length){
-        statsHtml = '<div class="trade-stats">'
-          + statCells.join('<span class="trade-stat-sep">·</span>')
-          + '</div>';
-      }
-    }
-
-    var bodyHtml = '<div class="trade-body">'
-      + (bodySym  ? '<span class="trade-sym">'+safeText(bodySym)+'</span>' : '')
-      + (bodySide ? '<span class="trade-side '+sideClass+'">'+safeText(bodySide)+'</span>' : '')
-      + (bodyPnl  ? '<span class="trade-pnl '+pnlClass+'">'+safeText(bodyPnl)+'</span>' : '')
-      + '</div>'
-      + statsHtml
-      + (bodyNotes ? '<div class="trade-notes">'+commEsc(bodyNotes)+'</div>' : '');
-
-    // Metadata chips (grade / R-multiple / session). Reuses `meta`
-    // already parsed once above for the stats row.
-    var chipsHtml = '';
-    if(meta){
-      var chips = [];
-      if(meta.grade){
-        var gradeMap = {A:'grade-a','A+':'grade-a',B:'grade-b',C:'grade-c',D:'grade-d',F:'grade-d'};
-        var gCls = gradeMap[meta.grade] || 'grade-b';
-        chips.push('<span class="chip '+gCls+'">'+safeText(meta.grade)+' Setup</span>');
-      }
-      if(meta.rr != null && Number(meta.rr) !== 0){
-        var rrNum = Number(meta.rr);
-        var rrCls = rrNum > 0 ? 'chip-rr' : 'chip-rr-loss';
-        var rrSign = rrNum > 0 ? '+' : '';
-        chips.push('<span class="chip '+rrCls+'">'+rrSign+rrNum.toFixed(1).replace(/\.0$/,'')+'R</span>');
-      }
-      if(meta.session) chips.push('<span class="chip">'+safeText(meta.session)+'</span>');
-      if(meta.accounts != null && Number(meta.accounts) > 1){
-        chips.push('<span class="chip chip-multi-acct">×'+Number(meta.accounts)+' accts</span>');
-      }
-      var convN = Number(meta.confidence);
-      if(convN >= 1 && convN <= 5){
-        var dots = '●'.repeat(convN) + '○'.repeat(5-convN);
-        chips.push('<span class="chip">Conviction '+dots+'</span>');
-      }
-      if(chips.length) chipsHtml = '<div class="post-chips">'+chips.join('')+'</div>';
-    }
-    // Screenshot block — sourced from community_posts.image_url so it
-    // works for posts whose content is a free-form string (no embedded
-    // images JSON) as well as the legacy JSON-content path.
-    var postImgHtml = '';
+    // ── (5) Screenshot — single, full-width, 180px tall ─────────────
+    // Falls back to TV /x/ snapshot via getTradeImagesWithTV for own
+    // posts where the JSON content carries the tradingview_link.
+    var imgUrl = '';
     if(p.image_url){
-      var safeImg = safeURL(p.image_url);
-      // safeURL returns '' for any non-http(s) / non-data URL (e.g. a
-      // relative-path placeholder). Skip the block entirely instead of
-      // emitting <img src=""> which renders as a broken icon.
-      if(safeImg){
-        postImgHtml = '<div class="post-image" onclick="openScreenshotLightbox(\''+safeImg+'\')">'
-          + '<img src="'+safeImg+'" alt="Trade screenshot" loading="lazy">'
-          + '</div>';
-      } else {
-        console.warn('[feed] post', p.id, 'has invalid image_url:', p.image_url);
-      }
+      imgUrl = safeURL(p.image_url);
+    } else if(!p.isText && typeof getTradeImagesWithTV === 'function'){
+      var _ownImgs = getTradeImagesWithTV(t);
+      if(_ownImgs && _ownImgs.length) imgUrl = safeURL(_ownImgs[0]);
     }
-    return '<div class="post '+cardClass+' '+tintClass+'" data-pid="'+safePid+'">'
-      + '<div class="post-head">'
-      +   renderUserAvatar({
-            avatar_finish: p.avatar_finish || p.color || p.avatar_color,
-            avatar_initials: p.avatar_initials || p.initials,
-            avatar_image_url: p.avatar_image_url,
-            username: p.username,
-            name: p.username
-          }, 'sm')
-      +   '<div class="post-author">'
-      +     '<div class="author-line">'
-      +       '<span class="author-name">'+safeText(_memberDisplayName(p))+'</span>'
-      +       (p.isMe ? '<span class="author-you">You</span>' : '')
-      +     '</div>'
-      +     '<div class="author-handle">@'+safeText(_memberHandle(p))+'</div>'
+    var postImgHtml = imgUrl
+      ? '<div class="fp-image" onclick="openScreenshotLightbox(\''+imgUrl+'\')">'
+        +   '<img src="'+imgUrl+'" alt="Trade screenshot" loading="lazy">'
+        + '</div>'
+      : '';
+
+    // ── (6) Engagement bar — heart + reply + share. No trophy/TOTD. ─
+    var actionsHtml = '<div class="fp-actions">'
+      + '<button class="fp-act'+(youLiked?' liked':'')+'" onclick="feedLike(this)" data-id="'+safePid+'"'+(youLiked?' data-liked="1"':'')+'>'
+      +   '<svg viewBox="0 0 24 24" fill="'+(youLiked?'currentColor':'none')+'" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+      +   '<span id="like-count-'+safePid+'">'+likes+'</span>'
+      + '</button>'
+      + '<button class="fp-act" onclick="feedReply(\''+safePid+'\',this)">'
+      +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+      + '</button>'
+      + '<button class="fp-act fp-act-share" onclick="event.stopPropagation()" title="Share">'
+      +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>'
+      + '</button>'
+      + '</div>';
+
+    return '<div class="post fp-post '+pnlClass+'" data-pid="'+safePid+'">'
+      // (1) Author row
+      + '<div class="fp-head">'
+      +   avHtml
+      +   '<div class="fp-author">'
+      +     '<span class="fp-handle">@'+safeText(_memberHandle(p))+'</span>'
+      +     '<span class="fp-time">'+_relTime(p.date)+'</span>'
       +   '</div>'
-      +   '<span class="post-time">'+_relTime(p.date)+'</span>'
+      +   acctHtml
       + '</div>'
-      + bodyHtml
+      // (2) Headline
+      + headlineHtml
+      // (3) Confluence pills (skipped if empty)
+      + confHtml
+      // (4) Notes (skipped if empty)
+      + notesHtml
+      // (5) Screenshot (skipped if no image)
       + postImgHtml
-      + chipsHtml
-      + '<div class="post-actions">'
-      +   '<button class="action-btn'+(youLiked?' liked':'')+'" onclick="feedLike(this)" data-id="'+safePid+'"'+(youLiked?' data-liked="1"':'')+'>'
-      +     '<svg viewBox="0 0 24 24" fill="'+(youLiked?'currentColor':'none')+'" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
-      +     '<span id="like-count-'+safePid+'">'+likes+'</span>'
-      +   '</button>'
-      +   '<button class="action-btn" onclick="feedReply(\''+safePid+'\',this)">'
-      +     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
-      +     'Reply'
-      +   '</button>'
-      + '</div>'
+      // (6) Engagement bar
+      + actionsHtml
+      // Inline reply expansion (preserves existing feedReply / feedSubmitReply wiring)
       + '<div id="reply-box-'+safePid+'" class="reply-box" style="display:none">'
       +   '<div id="replies-'+safePid+'"></div>'
       +   '<div class="reply-input-row">'
@@ -15499,17 +15644,31 @@ function saveCalEdit(){
         var parts = [sym]; if(sideTxt) parts.push(sideTxt); parts.push(pnlStr);
         var newContent = parts.join(' · ') + (t.notes ? '\n' + t.notes : '');
         var newScreenshot = _extractTradeScreenshot(t);
+        // Chunk 7 — denormalize account_type + confluences snapshot so the
+        // edited post re-renders with the new dot+label + mini-pills set
+        // without a round-trip to trade_confluences. cemConfluencePillsSnapshot
+        // captures the picker state BEFORE closeCalEdit clears it.
+        var _cfSnapCem = Array.isArray(cemConfluencePillsSnapshot) ? cemConfluencePillsSnapshot : [];
         var newMeta = {
-          grade:      t.grade != null ? t.grade : null,
-          rr:         t.rr != null ? t.rr : null,
-          session:    t.session || null,
-          market:     t.market || null,
-          emotion:    t.emotion != null ? t.emotion : null,
-          confidence: t.confidence != null ? t.confidence : null,
-          entry:      t.entry != null ? t.entry : null,
-          exit:       t.exit != null ? t.exit : null,
-          qty:        t.qty != null ? t.qty : null,
-          accounts:   (t.accounts != null && t.accounts > 1) ? t.accounts : null
+          grade:        t.grade != null ? t.grade : null,
+          rr:           t.rr != null ? t.rr : null,
+          session:      t.session || null,
+          market:       t.market || null,
+          emotion:      t.emotion != null ? t.emotion : null,
+          confidence:   t.confidence != null ? t.confidence : null,
+          entry:        t.entry != null ? t.entry : null,
+          exit:         t.exit != null ? t.exit : null,
+          stop:         t.stop != null ? t.stop : null,
+          qty:          t.qty != null ? t.qty : null,
+          accounts:     (t.accounts != null && t.accounts > 1) ? t.accounts : null,
+          account_type: t.account_type || null,
+          confluences:  _cfSnapCem.map(function(p){
+            return {
+              confluence_id: p.confluence_id || null,
+              name:          p.name || '',
+              timeframe:     p.timeframe || null
+            };
+          })
         };
         var fullPayload = { content: newContent, pnl_today: pnlNum, image_url: newScreenshot, metadata: newMeta };
         _sb.from('community_posts')
@@ -17147,17 +17306,35 @@ async function shareTradeToCommunity(trade){
     // Metadata — drives the chip strip in the post template (grade,
     // R-multiple, session, market, emotion, confidence). Stored as
     // JSONB so we can extend later without another column add.
+    //
+    // Chunk 7 — also bakes account_type + confluences denormalized snapshot
+    // so cross-user feed posts can render the dot+label + TF-mini-pills
+    // without an N+1 trade_confluences query per row. The cascade in
+    // saveCalEdit refreshes both fields whenever the user edits the trade.
+    // Confluences ride along on the trade object as `trade.confluences`
+    // (callers attach the picker snapshot before invoking this fn).
+    var rawCf = Array.isArray(trade.confluences) ? trade.confluences : [];
+    var cfSnap = rawCf.map(function(p){
+      return {
+        confluence_id: p.confluence_id || null,
+        name:          p.name || '',
+        timeframe:     p.timeframe || null
+      };
+    });
     var meta = {
-      grade:      trade.grade != null ? trade.grade : null,
-      rr:         trade.rr != null ? trade.rr : null,
-      session:    trade.session || null,
-      market:     trade.market || null,
-      emotion:    trade.emotion != null ? trade.emotion : null,
-      confidence: trade.confidence != null ? trade.confidence : null,
-      entry:      trade.entry != null ? trade.entry : null,
-      exit:       trade.exit != null ? trade.exit : null,
-      qty:        trade.qty != null ? trade.qty : null,
-      accounts:   (trade.accounts != null && trade.accounts > 1) ? trade.accounts : null
+      grade:        trade.grade != null ? trade.grade : null,
+      rr:           trade.rr != null ? trade.rr : null,
+      session:      trade.session || null,
+      market:       trade.market || null,
+      emotion:      trade.emotion != null ? trade.emotion : null,
+      confidence:   trade.confidence != null ? trade.confidence : null,
+      entry:        trade.entry != null ? trade.entry : null,
+      exit:         trade.exit != null ? trade.exit : null,
+      stop:         trade.stop != null ? trade.stop : null,
+      qty:          trade.qty != null ? trade.qty : null,
+      accounts:     (trade.accounts != null && trade.accounts > 1) ? trade.accounts : null,
+      account_type: trade.account_type || null,
+      confluences:  cfSnap
     };
 
     // 4. One row per community, single batch insert. The id is
@@ -17243,6 +17420,17 @@ async function backfillTradesToCommunity(communityId){
   var avatar_color = prof.avatar_finish || prof.color
               || (acct && (acct.avatar_finish||acct.color)) || 'chrome';
 
+  // Chunk 7 — preload confluences for every trade we're about to backfill
+  // in a single batch round-trip. The result is keyed by trade id; missing
+  // ids just resolve to []. Fire-and-forget the load — on failure we still
+  // backfill, just without the confluences denormalization.
+  var cfByTrade = {};
+  try {
+    if (typeof _cfLoadAllForView === 'function') {
+      cfByTrade = await _cfLoadAllForView(trades.map(function(t){ return t.id; }));
+    }
+  } catch(e){ console.warn('[backfill] cf batch load failed:', e && e.message); }
+
   var commIdSlice = String(communityId).slice(0,8);
   var rows = trades.map(function(t){
     var sym = t.sym || t.symbol || t.ticker || 'Trade';
@@ -17259,17 +17447,30 @@ async function backfillTradesToCommunity(communityId){
         || (typeof getTVSnapshotImageUrl === 'function' && getTVSnapshotImageUrl(t.tradingview_link))
         || null;
 
+    // Chunk 7 — same denormalized shape used by shareTradeToCommunity +
+    // saveCalEdit cascade so the feed renderer reads from one schema.
+    var cfList = cfByTrade[String(t.id)] || [];
+    var cfSnap = cfList.map(function(p){
+      return {
+        confluence_id: p.confluence_id || null,
+        name:          p.name || '',
+        timeframe:     p.timeframe || null
+      };
+    });
     var meta = {
-      grade:      t.grade != null ? t.grade : null,
-      rr:         t.rr != null ? t.rr : null,
-      session:    t.session || null,
-      market:     t.market || null,
-      emotion:    t.emotion != null ? t.emotion : null,
-      confidence: t.confidence != null ? t.confidence : null,
-      entry:      t.entry != null ? t.entry : null,
-      exit:       t.exit != null ? t.exit : null,
-      qty:        t.qty != null ? t.qty : null,
-      accounts:   (t.accounts != null && t.accounts > 1) ? t.accounts : null
+      grade:        t.grade != null ? t.grade : null,
+      rr:           t.rr != null ? t.rr : null,
+      session:      t.session || null,
+      market:       t.market || null,
+      emotion:      t.emotion != null ? t.emotion : null,
+      confidence:   t.confidence != null ? t.confidence : null,
+      entry:        t.entry != null ? t.entry : null,
+      exit:         t.exit != null ? t.exit : null,
+      stop:         t.stop != null ? t.stop : null,
+      qty:          t.qty != null ? t.qty : null,
+      accounts:     (t.accounts != null && t.accounts > 1) ? t.accounts : null,
+      account_type: t.account_type || null,
+      confluences:  cfSnap
     };
 
     return {
@@ -17347,15 +17548,19 @@ function fullLog(){
   var newTrade = {id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,pnl,rr,grade,emotion,confidence,images:[...noteImages],created_at:new Date().toISOString(),account_type:accountType,tradingview_link:tradingviewLink||undefined};
   trades.unshift(newTrade);
   save();renderAll();
-  shareTradeToCommunity(newTrade);
 
   // Confluences persistence (Chunk 3) — snapshot pills now BEFORE the
   // form reset clears them, then fire-and-forget the FK-ordered writes.
   // Local UI reset happens immediately for snappy UX; the Supabase
   // round-trip races in the background.
+  // Chunk 7 — snapshot lifted ABOVE shareTradeToCommunity so the share
+  // can bake the confluence list into community_posts.metadata.confluences.
+  // Attach to newTrade so the share callsite reads a single object.
   var _cfPillsSnapshot = (typeof confluencesState !== 'undefined' && confluencesState.selected)
     ? confluencesState.selected.slice()
     : [];
+  newTrade.confluences = _cfPillsSnapshot;
+  shareTradeToCommunity(newTrade);
   if (typeof _cfPersistForTrade === 'function') {
     _cfPersistForTrade(newTrade, _cfPillsSnapshot);
   }
@@ -18493,7 +18698,11 @@ function importCsvTrades(){
     // Chunk 5 v3 — persist per-row confluences for this trade. Fire-and-
     // forget via _cfPersistForTrade (handles saveTradeToSupa + bound
     // trade_confluences inserts in series so the FK resolves).
+    // Chunk 7 — also attach to newTrade.confluences so the subsequent
+    // shareTradeToCommunity loop (below) can bake them into the post's
+    // metadata snapshot for cross-user rendering.
     var rowConfluences = Array.isArray(e.confluences) ? e.confluences.slice() : [];
+    newTrade.confluences = rowConfluences;
     if(rowConfluences.length && typeof _cfPersistForTrade === 'function'){
       _cfPersistForTrade(newTrade, rowConfluences);
     }
@@ -19109,8 +19318,6 @@ function ciRenderEnrichZone(idx){
     notesEl.addEventListener('change', notesHandler);
     notesEl.addEventListener('blur',   notesHandler);
     notesEl.addEventListener('keyup',  notesHandler);
-  } else {
-    console.warn('[ciRenderEnrichZone] notes textarea NOT FOUND for idx='+idx);
   }
   var tvInputEl = zone.querySelector('.rw-tv-input');
   if(tvInputEl){
@@ -19130,8 +19337,6 @@ function ciRenderEnrichZone(idx){
     tvInputEl.addEventListener('change', tvHandler);
     tvInputEl.addEventListener('blur',   tvHandler);
     tvInputEl.addEventListener('paste',  function(){ setTimeout(tvHandler, 0); }); // paste fires before value updates
-  } else {
-    console.warn('[ciRenderEnrichZone] TV input NOT FOUND for idx='+idx);
   }
 }
 window.ciRenderEnrichZone = ciRenderEnrichZone;
