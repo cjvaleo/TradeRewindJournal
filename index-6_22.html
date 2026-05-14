@@ -13108,15 +13108,90 @@ window.renderEodDashBar = renderEodDashBar;
 // refetches anyway).
 var _eodBadgeCache = {};
 
+// ── Bulletproof inline style builders ──
+// We had a prod incident where the badge rendered as a vertical
+// rotated label + giant ellipse. Couldn't repro locally — suspected
+// stale CSS cache or some cascading rule we can't see. To make the
+// badge survive ANY cascade weirdness, every layout-critical property
+// is inlined with !important on the elements that matter.
+//
+// Outer slot — width-capped + flex-column. Children align to the
+// right edge. max-height stops the whole thing from ever growing
+// vertically no matter what.
+function _eodBadgeOuterStyle(extra){
+  return 'display:flex !important'
+    + ';flex-direction:column !important'
+    + ';align-items:flex-end !important'
+    + ';justify-content:center !important'
+    + ';gap:3px !important'
+    + ';width:80px !important;max-width:80px !important'
+    + ';height:40px !important;max-height:40px !important'
+    + ';flex:0 0 80px !important;flex-shrink:0 !important'
+    + ';margin-left:auto !important'
+    + ';padding:6px 8px !important'
+    + ';border-radius:6px !important'
+    + ';box-sizing:border-box !important'
+    + ';overflow:hidden !important'
+    + ';writing-mode:horizontal-tb !important'
+    + ';text-orientation:mixed !important'
+    + ';font-family:\'Geist\',system-ui,sans-serif !important'
+    + ';line-height:1 !important'
+    + (extra || '');
+}
+
+// Inner row holding the dot + EOD label, horizontal.
+var _EOD_BADGE_TOP_STYLE =
+    'display:flex !important;flex-direction:row !important'
+  + ';align-items:center !important;gap:5px !important'
+  + ';writing-mode:horizontal-tb !important;line-height:1 !important';
+
+// 6×6 round dot. Explicit width + height + border-radius so nothing
+// can stretch it into an ellipse.
+function _eodBadgeDotStyle(tone){
+  var bg = 'background:rgba(255,255,255,0.35)';
+  var shadow = '';
+  if(tone === 'pos'){ bg = 'background:#5fb389'; shadow = ';box-shadow:0 0 0 2px rgba(95,179,137,0.10),0 0 6px rgba(95,179,137,0.55)'; }
+  else if(tone === 'neg'){ bg = 'background:#c95f5f'; shadow = ';box-shadow:0 0 0 2px rgba(201,95,95,0.10),0 0 6px rgba(201,95,95,0.55)'; }
+  else if(tone === 'empty'){ bg = 'background:transparent'; shadow = ';border:0.5px solid rgba(255,255,255,0.30)'; }
+  return 'display:inline-block !important'
+    + ';width:6px !important;height:6px !important;max-width:6px !important;max-height:6px !important'
+    + ';border-radius:50% !important'
+    + ';flex-shrink:0 !important'
+    + ';' + bg + ' !important'
+    + shadow + ' !important';
+}
+
+// "EOD" mono caps label.
+var _EOD_BADGE_LABEL_STYLE =
+    'font-family:\'Geist Mono\',ui-monospace,monospace !important'
+  + ';font-size:7px !important;letter-spacing:0.14em !important'
+  + ';text-transform:uppercase !important'
+  + ';color:#6b6b6b !important;line-height:1 !important'
+  + ';writing-mode:horizontal-tb !important;display:inline !important';
+
+// 13px serif italic P&L on the bottom row.
+function _eodBadgePnlStyle(tone){
+  var color = '#6b6b6b';
+  if(tone === 'pos') color = '#5fb389';
+  else if(tone === 'neg') color = '#c95f5f';
+  else if(tone === 'zero') color = '#a1a1a1';
+  return 'font-family:\'Instrument Serif\',Georgia,serif !important'
+    + ';font-style:italic !important'
+    + ';font-size:13px !important;line-height:1 !important;letter-spacing:-0.01em !important'
+    + ';color:' + color + ' !important'
+    + ';writing-mode:horizontal-tb !important;display:block !important';
+}
+
 // Synchronous skeleton — emitted by renderCommSidebar so the row
 // has a fixed-width slot for the badge even before async data lands.
 function _eodBadgeSkeletonHtml(gid){
-  return '<div class="eod-comm-badge is-loading" data-gid="' + _eodSafe(gid) + '">'
-    +   '<div class="eod-comm-badge-top">'
-    +     '<span class="eod-comm-badge-dot"></span>'
-    +     '<span class="eod-comm-badge-label">EOD</span>'
+  var outer = _eodBadgeOuterStyle(';background:rgba(255,255,255,0.02);border:0.5px solid transparent;opacity:0.4;cursor:default');
+  return '<div class="eod-comm-badge is-loading" data-gid="' + _eodSafe(gid) + '" style="' + outer + '">'
+    +   '<div class="eod-comm-badge-top" style="' + _EOD_BADGE_TOP_STYLE + '">'
+    +     '<span class="eod-comm-badge-dot" style="' + _eodBadgeDotStyle('empty') + '"></span>'
+    +     '<span class="eod-comm-badge-label" style="' + _EOD_BADGE_LABEL_STYLE + '">EOD</span>'
     +   '</div>'
-    +   '<div class="eod-comm-badge-pnl">&mdash;</div>'
+    +   '<div class="eod-comm-badge-pnl" style="' + _eodBadgePnlStyle('zero') + '">&mdash;</div>'
     + '</div>';
 }
 
@@ -13156,30 +13231,46 @@ async function _eodPopulateBadge(community){
 
   if(!data || !data.tradeCount){
     // Empty — no activity today (or yesterday). Outlined dot, em-dash
-    // P&L, no click target.
+    // P&L, no click target. Re-apply outer style each render so the
+    // badge can't inherit weirdness from a prior render's leftover
+    // inline styles.
     badge.className = 'eod-comm-badge is-empty';
     badge.removeAttribute('onclick');
     badge.onclick = null;
+    badge.setAttribute('style',
+      _eodBadgeOuterStyle(
+        ';background:rgba(255,255,255,0.02)'
+        + ';border:0.5px dashed rgba(255,255,255,0.15)'
+        + ';cursor:default'));
     badge.innerHTML =
-        '<div class="eod-comm-badge-top">'
-      +   '<span class="eod-comm-badge-dot empty"></span>'
-      +   '<span class="eod-comm-badge-label">EOD</span>'
+        '<div style="' + _EOD_BADGE_TOP_STYLE + '">'
+      +   '<span style="' + _eodBadgeDotStyle('empty') + '"></span>'
+      +   '<span style="' + _EOD_BADGE_LABEL_STYLE + '">EOD</span>'
       + '</div>'
-      + '<div class="eod-comm-badge-pnl">&mdash;</div>';
+      + '<div style="' + _eodBadgePnlStyle('zero') + '">&mdash;</div>';
     return;
   }
 
+  // Ready — tone-aware bg + border + dot + pnl color.
   var tone = data.totalPnl > 0 ? 'pos' : data.totalPnl < 0 ? 'neg' : 'zero';
+  var bg, bdr;
+  if(tone === 'pos'){ bg='rgba(95,179,137,0.08)'; bdr='rgba(95,179,137,0.28)'; }
+  else if(tone === 'neg'){ bg='rgba(201,95,95,0.06)'; bdr='rgba(201,95,95,0.24)'; }
+  else { bg='rgba(255,255,255,0.03)'; bdr='rgba(255,255,255,0.10)'; }
   badge.className = 'eod-comm-badge is-ready tone-' + tone;
+  badge.setAttribute('style',
+    _eodBadgeOuterStyle(
+      ';background:' + bg
+      + ';border:0.5px solid ' + bdr
+      + ';cursor:pointer'));
   badge.innerHTML =
-      '<div class="eod-comm-badge-top">'
-    +   '<span class="eod-comm-badge-dot ' + tone + '"></span>'
-    +   '<span class="eod-comm-badge-label">EOD</span>'
+      '<div style="' + _EOD_BADGE_TOP_STYLE + '">'
+    +   '<span style="' + _eodBadgeDotStyle(tone) + '"></span>'
+    +   '<span style="' + _EOD_BADGE_LABEL_STYLE + '">EOD</span>'
     + '</div>'
-    + '<div class="eod-comm-badge-pnl ' + tone + '">' + _eodBadgeMoney(data.totalPnl) + '</div>';
-  // Click — open the group EOD modal for this community. The wrapper
-  // function looks up `community` by gid because closures over the
-  // outer `community` arg would go stale if _comms reloads.
+    + '<div style="' + _eodBadgePnlStyle(tone) + '">' + _eodBadgeMoney(data.totalPnl) + '</div>';
+  // Click — open the group EOD modal for this community. Wrapper looks
+  // up `community` by gid (closure-safe across _comms reloads).
   badge.onclick = function(ev){
     if(ev) ev.stopPropagation();
     eodOpenGroupModalById(gid);
