@@ -6509,6 +6509,33 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 #pg-community .fp-act.liked{color:var(--n-loss)}
 #pg-community .fp-act.liked svg{fill:currentColor}
 
+/* Ultra-wide — cap the community page width + align internal feed
+   items. At normal widths (≤1920px) the existing 3-column flex layout
+   (csb + .feed flex:1 + .rail) works fine. At 2560px+ two things break:
+     1. .feed { flex: 1 } sprawls unbounded, stretching gaps between
+        the columns and leaving a dead center channel.
+     2. .filters + #comm-feed-posts are capped at max-width:640px and
+        centered (margin:auto). Once .feed grows past ~1100px, this
+        Twitter-focus-column treatment floats the posts way right of
+        the .hero-pnl + .fhead header which stay full feed-column
+        width — header and feed no longer share a left edge.
+   Fix at ≥1920px: cap the whole page at 1600px (centered via margin)
+   AND drop the inner 640px posts cap so .filters + posts span the
+   feed column and share its left edge with the hero + tabs. The
+   ~1030px feed-column width at this size IS the focus column. */
+@media (min-width: 1920px){
+  #pg-community.page.on{
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+  #pg-community .filters,
+  #pg-community #comm-feed-posts{
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
 /* Mobile — tighten padding, allow R+P&L to wrap below sym/side */
 @media (max-width: 720px){
   #pg-community .post.fp-post{padding:12px 13px 9px}
