@@ -2162,6 +2162,316 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);line-height:1.55;
 }
 
+/* ============================================================================
+   Chunk 4 — Calendar Sidebar / Day Review redesign (.dr-* prefix)
+   Rich trade cards: top row (sym / side chip / time / acct dot+label /
+   R-chip / P&L), middle row (confluence mini-pills), bottom row
+   (Grade · Emotion · Conf + Edit→), sparse imported state.
+   ============================================================================ */
+
+/* Header eyebrow — small mono-caps above the existing serif italic date. */
+#pg-calendar .day-panel-title .dr-eyebrow{
+  display:block;
+  font-family:var(--n-font-mono);
+  font-style:normal;
+  font-weight:400;
+  font-size:10px;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:var(--n-text-3);
+  margin-bottom:6px;
+  line-height:1;
+}
+
+/* Section header — count badge right-aligned (replaces plain "Trades" label). */
+#pg-calendar .day-section-lbl-flex{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+}
+#pg-calendar .day-section-count{
+  font-family:var(--n-font-mono);
+  font-size:9px;
+  letter-spacing:0.14em;
+  color:var(--n-text-4);
+  text-transform:uppercase;
+}
+
+/* Stats strip — tinted by sign per spec (sage bg when positive, rose when negative).
+   Keep the existing .day-summary-cell shell but layer a soft tint via the
+   class added by the renderer. */
+#pg-calendar .day-summary-cell.pos{
+  background:rgba(95,179,137,0.07);
+  border-color:rgba(95,179,137,0.22);
+}
+#pg-calendar .day-summary-cell.neg{
+  background:rgba(201,95,95,0.07);
+  border-color:rgba(201,95,95,0.22);
+}
+
+/* Trade card — replaces .day-trade-row. Stacked layout: top row, optional
+   pills row, bottom meta row. */
+#pg-calendar .day-trade-card{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  padding:11px 12px;
+  margin-bottom:7px;
+  background:var(--n-surface);
+  border:0.5px solid rgba(255,255,255,0.06);
+  border-radius:8px;
+  cursor:pointer;
+  transition:background 0.12s,border-color 0.12s;
+}
+#pg-calendar .day-trade-card:last-of-type{margin-bottom:0}
+#pg-calendar .day-trade-card:hover{
+  background:var(--n-surface-2);
+  border-color:rgba(255,255,255,0.14);
+}
+
+/* Top row — sym + side chip + time + acct + R-chip + P&L */
+#pg-calendar .day-trade-card .dr-top{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  flex-wrap:wrap;
+}
+#pg-calendar .day-trade-card .dr-sym{
+  font-family:var(--n-font-mono);
+  font-size:12.5px;
+  font-weight:500;
+  letter-spacing:0.04em;
+  color:var(--n-text);
+}
+
+/* Side chip (sage/rose mini) */
+#pg-calendar .day-trade-card .dr-side-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  padding:2px 7px;
+  border-radius:999px;
+  font-family:var(--n-font-mono);
+  font-size:9px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  line-height:1.2;
+  white-space:nowrap;
+}
+#pg-calendar .day-trade-card .dr-side-sage{
+  background:rgba(95,179,137,0.12);
+  border:0.5px solid rgba(95,179,137,0.34);
+  color:var(--n-profit);
+}
+#pg-calendar .day-trade-card .dr-side-rose{
+  background:rgba(201,95,95,0.12);
+  border:0.5px solid rgba(201,95,95,0.34);
+  color:var(--n-loss);
+}
+#pg-calendar .day-trade-card .dr-side-muted{
+  background:rgba(255,255,255,0.03);
+  border:0.5px solid rgba(255,255,255,0.10);
+  color:var(--n-text-3);
+}
+
+#pg-calendar .day-trade-card .dr-time{
+  font-family:var(--n-font-mono);
+  font-size:9.5px;
+  letter-spacing:0.06em;
+  color:var(--n-text-3);
+}
+
+/* Account-type indicator (small dot + muted label) */
+#pg-calendar .day-trade-card .dr-acct{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  font-family:var(--n-font-mono);
+  font-size:9px;
+  letter-spacing:0.14em;
+  color:var(--n-text-3);
+  text-transform:uppercase;
+}
+#pg-calendar .day-trade-card .dr-acct-dot{
+  display:inline-block;
+  width:5px;
+  height:5px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+
+#pg-calendar .day-trade-card .dr-spacer{flex:1}
+
+/* R-multiple chip (cool blue for positive R, rose for negative) */
+#pg-calendar .day-trade-card .dr-r-chip{
+  display:inline-flex;
+  align-items:center;
+  padding:2px 7px;
+  border-radius:999px;
+  font-family:var(--n-font-mono);
+  font-size:9px;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  line-height:1.2;
+  white-space:nowrap;
+}
+#pg-calendar .day-trade-card .dr-r-chip.pos{
+  background:rgba(110,168,255,0.10);
+  border:0.5px solid rgba(110,168,255,0.32);
+  color:var(--n-accent-cool,#6ea8ff);
+}
+#pg-calendar .day-trade-card .dr-r-chip.neg{
+  background:rgba(201,95,95,0.10);
+  border:0.5px solid rgba(201,95,95,0.32);
+  color:var(--n-loss);
+}
+
+/* P&L value — serif italic, colored by sign */
+#pg-calendar .day-trade-card .dr-pnl{
+  font-family:var(--n-font-display);
+  font-style:italic;
+  font-size:18px;
+  line-height:1;
+  letter-spacing:-0.01em;
+}
+#pg-calendar .day-trade-card .dr-pnl.pos{color:var(--n-profit)}
+#pg-calendar .day-trade-card .dr-pnl.neg{color:var(--n-loss)}
+#pg-calendar .day-trade-card .dr-pnl .cents{font-size:0.62em;opacity:0.7}
+
+/* Pills row — uses existing cf-mini-row styles from Confluences Chunk 4.
+   :empty selector hides the wrap if no tags. */
+#pg-calendar .day-trade-card .dr-pills{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+}
+#pg-calendar .day-trade-card .dr-pills:empty{display:none}
+
+/* Chunk 4 / Issue 2 — per-trade notes excerpt. Italic muted prose,
+   truncated to ~140 chars in JS with "…" overflow. Sits between
+   confluences row and bottom meta row inside each card. */
+#pg-calendar .day-trade-card .dr-notes{
+  font-family:var(--n-font-sans);
+  font-size:12px;
+  line-height:1.5;
+  color:var(--n-text-2);
+  padding:2px 0;
+}
+#pg-calendar .day-trade-card .dr-notes i{font-style:italic}
+
+/* Bottom row — meta (Grade · Emotion · Conf) + Edit→ hint, separated by
+   a 0.5px top border so the row reads as a footer beneath the card body. */
+#pg-calendar .day-trade-card .dr-bottom{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding-top:6px;
+  border-top:0.5px solid rgba(255,255,255,0.05);
+}
+#pg-calendar .day-trade-card .dr-meta{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-family:var(--n-font-mono);
+  font-size:9.5px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--n-text-3);
+}
+#pg-calendar .day-trade-card .dr-grade{
+  font-weight:600;
+  letter-spacing:0.06em;
+}
+#pg-calendar .day-trade-card .dr-grade.dr-grade-sage{color:var(--n-profit)}
+#pg-calendar .day-trade-card .dr-grade.dr-grade-rose{color:var(--n-loss)}
+#pg-calendar .day-trade-card .dr-grade.dr-grade-muted{color:var(--n-text-2)}
+#pg-calendar .day-trade-card .dr-sep{color:var(--n-text-4)}
+#pg-calendar .day-trade-card .dr-edit-hint{
+  font-family:var(--n-font-mono);
+  font-size:9px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--n-text-4);
+  transition:color 0.12s;
+}
+#pg-calendar .day-trade-card:hover .dr-edit-hint{color:var(--n-text-2)}
+
+/* Sparse imported state — bottom row collapses to italic muted hint + sage CTA. */
+#pg-calendar .day-trade-card-sparse .dr-sparse-hint{
+  font-family:var(--n-font-sans);
+  font-size:11px;
+  color:var(--n-text-4);
+}
+#pg-calendar .day-trade-card-sparse .dr-sparse-hint i{font-style:italic}
+#pg-calendar .day-trade-card-sparse .dr-journal-cta{
+  font-family:var(--n-font-mono);
+  font-size:9.5px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--n-profit);
+  transition:color 0.12s;
+}
+#pg-calendar .day-trade-card-sparse:hover .dr-journal-cta{
+  color:#7dc99e;
+}
+
+/* Chunk 4 fix — inline screenshots strip per card. ~50px tall thumbs,
+   right-aligned, wrap to next line for multi-screenshot trades. Click
+   opens lightbox (stopPropagation in the wrap prevents the card's
+   openCalEdit from also firing). */
+#pg-calendar .day-trade-card .dr-screenshots{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:4px;
+  margin-top:6px;
+}
+#pg-calendar .day-trade-card .dr-screenshots-wrap{
+  position:relative;
+  display:inline-flex;
+  cursor:zoom-in;
+  line-height:0;
+}
+#pg-calendar .day-trade-card .dr-screenshots-thumb{
+  width:auto;
+  max-width:80px;
+  height:50px;
+  object-fit:cover;
+  border-radius:4px;
+  border:0.5px solid rgba(255,255,255,0.10);
+  background:#000;
+  display:block;
+  transition:border-color 0.12s;
+}
+#pg-calendar .day-trade-card .dr-screenshots-wrap:hover .dr-screenshots-thumb{
+  border-color:rgba(255,255,255,0.32);
+}
+#pg-calendar .day-trade-card .dr-screenshots-tv-badge{
+  position:absolute;
+  top:3px;
+  right:3px;
+  padding:1px 5px;
+  background:rgba(0,0,0,0.72);
+  border-radius:999px;
+  font-family:var(--n-font-mono);
+  font-size:7.5px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--n-accent-cool,#6ea8ff);
+  line-height:1.2;
+}
+
+/* Mobile — collapse less aggressively; cards already stack inside the
+   sticky sidebar. Just shrink the dr-top wrap so account label and time
+   wrap to a second line cleanly. */
+@media (max-width:480px){
+  #pg-calendar .day-trade-card{padding:10px}
+  #pg-calendar .day-trade-card .dr-pnl{font-size:16px}
+  #pg-calendar .day-trade-card .dr-sym{font-size:12px}
+}
+
+/* End Chunk 4 */
+
 /* ── CALENDAR HEATMAP (Month / Heatmap tab) ──────────── */
 #pg-calendar .cal-view-tabs{
   display:inline-flex;background:var(--n-surface);
@@ -3408,146 +3718,155 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 
 /* Pill row + click-to-open trigger */
-#pg-log .cf-pills{
+:where(#pg-log, .cem-card) .cf-pills{
   display:flex;flex-wrap:wrap;gap:6px;align-items:center;
   padding:10px 12px;min-height:44px;
   background:var(--n-surface);
   border:1px solid var(--n-border);border-radius:8px;
   cursor:pointer;transition:border-color .12s;
 }
-#pg-log .cf-pills:hover{border-color:var(--n-border-2)}
-#pg-log .cf-pills.open{border-color:var(--n-border-3)}
-#pg-log .cf-hint{
+:where(#pg-log, .cem-card) .cf-pills:hover{border-color:var(--n-border-2)}
+:where(#pg-log, .cem-card) .cf-pills.open{border-color:var(--n-border-3)}
+:where(#pg-log, .cem-card) .cf-hint{
   font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-3);
   pointer-events:none;
 }
-#pg-log .cf-pills.has-pills .cf-hint{font-size:11.5px;opacity:0.65}
+:where(#pg-log, .cem-card) .cf-pills.has-pills .cf-hint{font-size:11.5px;opacity:0.65}
 
 /* Pills — TF-tier-colored */
-#pg-log .cf-pill{
+:where(#pg-log, .cem-card) .cf-pill{
   display:inline-flex;align-items:center;gap:6px;
   padding:5px 10px;border-radius:999px;
   font-family:var(--n-font-sans);font-size:12px;line-height:1;
   cursor:default;
 }
-#pg-log .cf-pill .cf-tf-prefix{
+:where(#pg-log, .cem-card) .cf-pill .cf-tf-prefix{
   font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.1em;
   text-transform:uppercase;
 }
-#pg-log .cf-pill .cf-dot{opacity:0.4}
-#pg-log .cf-pill .cf-x{
+:where(#pg-log, .cem-card) .cf-pill .cf-dot{opacity:0.4}
+:where(#pg-log, .cem-card) .cf-pill .cf-x{
   opacity:0.55;font-size:14px;cursor:pointer;line-height:1;
   padding:0 2px;margin-left:2px;
 }
-#pg-log .cf-pill .cf-x:hover{opacity:1}
-#pg-log .cf-pill-htf {background:rgba(245,215,124,0.08);border:1px solid rgba(245,215,124,0.26);color:var(--n-gold)}
-#pg-log .cf-pill-mid {background:rgba(110,168,255,0.08);border:1px solid rgba(110,168,255,0.26);color:var(--n-cool)}
-#pg-log .cf-pill-ltf {background:rgba(95,179,137,0.10);border:1px solid rgba(95,179,137,0.26);color:var(--n-profit)}
-#pg-log .cf-pill-none{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);color:var(--n-text-2)}
+:where(#pg-log, .cem-card) .cf-pill .cf-x:hover{opacity:1}
+/* Chunk 4 / Issue 3 fix — tier color rules broadened beyond Log Trade /
+   Edit Modal pickers to also reach History row mini-pills and Calendar
+   day-review card mini-pills. These mini-pills render OUTSIDE the picker
+   surfaces (in #pg-history and #pg-calendar) and share the cf-pill-htf /
+   cf-pill-mid / cf-pill-ltf / cf-pill-none class names. Without these
+   pages in the :where() list, mini-pills displayed without tier color
+   (visible but visually washed out — a pre-existing limitation that
+   only became obvious once the Calendar Sidebar redesign foregrounded
+   the pill row inside each trade card). */
+:where(#pg-log, .cem-card, #pg-calendar, #pg-history) .cf-pill-htf {background:rgba(245,215,124,0.08);border:1px solid rgba(245,215,124,0.26);color:var(--n-gold)}
+:where(#pg-log, .cem-card, #pg-calendar, #pg-history) .cf-pill-mid {background:rgba(110,168,255,0.08);border:1px solid rgba(110,168,255,0.26);color:var(--n-cool)}
+:where(#pg-log, .cem-card, #pg-calendar, #pg-history) .cf-pill-ltf {background:rgba(95,179,137,0.10);border:1px solid rgba(95,179,137,0.26);color:var(--n-profit)}
+:where(#pg-log, .cem-card, #pg-calendar, #pg-history) .cf-pill-none{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);color:var(--n-text-2)}
 
 /* Picker dropdown */
-#pg-log .cf-dropdown{
+:where(#pg-log, .cem-card) .cf-dropdown{
   margin-top:6px;
   background:var(--n-surface);
   border:1px solid var(--n-border);border-radius:8px;
   overflow:hidden;
 }
-#pg-log .cf-dropdown-section{
+:where(#pg-log, .cem-card) .cf-dropdown-section{
   padding:12px 14px 10px;
   border-bottom:1px solid var(--n-border);
 }
-#pg-log .cf-dropdown-section .lt-field-l{margin-bottom:8px}
+:where(#pg-log, .cem-card) .cf-dropdown-section .lt-field-l{margin-bottom:8px}
 
 /* TF chips */
-#pg-log .cf-tf-chips{display:flex;flex-wrap:wrap;gap:6px}
-#pg-log .cf-tf-chip{
+:where(#pg-log, .cem-card) .cf-tf-chips{display:flex;flex-wrap:wrap;gap:6px}
+:where(#pg-log, .cem-card) .cf-tf-chip{
   padding:4px 9px;border-radius:999px;
   background:rgba(255,255,255,0.03);
   border:1px solid rgba(255,255,255,0.08);
   font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.08em;
   color:var(--n-text-2);cursor:pointer;user-select:none;transition:.12s;
 }
-#pg-log .cf-tf-chip:hover{border-color:var(--n-border-2);color:var(--n-text)}
-#pg-log .cf-tf-chip.active.htf{background:rgba(245,215,124,0.14);border-color:rgba(245,215,124,0.40);color:var(--n-gold)}
-#pg-log .cf-tf-chip.active.mid{background:rgba(110,168,255,0.14);border-color:rgba(110,168,255,0.40);color:var(--n-cool)}
-#pg-log .cf-tf-chip.active.ltf{background:rgba(95,179,137,0.14);border-color:rgba(95,179,137,0.40);color:var(--n-profit)}
-#pg-log .cf-tf-chip.no-tf{
+:where(#pg-log, .cem-card) .cf-tf-chip:hover{border-color:var(--n-border-2);color:var(--n-text)}
+:where(#pg-log, .cem-card) .cf-tf-chip.active.htf{background:rgba(245,215,124,0.14);border-color:rgba(245,215,124,0.40);color:var(--n-gold)}
+:where(#pg-log, .cem-card) .cf-tf-chip.active.mid{background:rgba(110,168,255,0.14);border-color:rgba(110,168,255,0.40);color:var(--n-cool)}
+:where(#pg-log, .cem-card) .cf-tf-chip.active.ltf{background:rgba(95,179,137,0.14);border-color:rgba(95,179,137,0.40);color:var(--n-profit)}
+:where(#pg-log, .cem-card) .cf-tf-chip.no-tf{
   background:transparent;border-style:dashed;
   border-color:rgba(255,255,255,0.10);color:var(--n-text-3);
 }
-#pg-log .cf-tf-chip.no-tf.active{
+:where(#pg-log, .cem-card) .cf-tf-chip.no-tf.active{
   border-color:var(--n-border-3);color:var(--n-text-2);
   background:rgba(255,255,255,0.03);
 }
 
 /* Search input */
-#pg-log .cf-search{
+:where(#pg-log, .cem-card) .cf-search{
   display:flex;align-items:center;gap:8px;
   padding:0 14px;
   border-bottom:1px solid var(--n-border);
 }
-#pg-log .cf-search svg{
+:where(#pg-log, .cem-card) .cf-search svg{
   width:14px;height:14px;stroke:var(--n-text-3);stroke-width:1.6;fill:none;flex-shrink:0;
 }
-#pg-log .cf-search input{
+:where(#pg-log, .cem-card) .cf-search input{
   flex:1;padding:11px 0;
   background:transparent;border:none;outline:none;
   font-family:var(--n-font-sans);font-size:13px;color:var(--n-text);
 }
-#pg-log .cf-search input::placeholder{color:var(--n-text-3)}
+:where(#pg-log, .cem-card) .cf-search input::placeholder{color:var(--n-text-3)}
 
 /* Library list */
-#pg-log .cf-lib-header{padding:10px 14px 6px}
-#pg-log .cf-lib-list{
+:where(#pg-log, .cem-card) .cf-lib-header{padding:10px 14px 6px}
+:where(#pg-log, .cem-card) .cf-lib-list{
   max-height:220px;overflow-y:auto;
 }
-#pg-log .cf-lib-row{
+:where(#pg-log, .cem-card) .cf-lib-row{
   display:flex;align-items:center;justify-content:space-between;
   padding:8px 14px;cursor:pointer;transition:background .12s;
   gap:12px;
 }
-#pg-log .cf-lib-row:hover{background:rgba(255,255,255,0.02)}
-#pg-log .cf-lib-row .cf-lib-name{
+:where(#pg-log, .cem-card) .cf-lib-row:hover{background:rgba(255,255,255,0.02)}
+:where(#pg-log, .cem-card) .cf-lib-row .cf-lib-name{
   font-family:var(--n-font-sans);font-size:13px;color:var(--n-text);
 }
-#pg-log .cf-lib-row .cf-lib-preview{
+:where(#pg-log, .cem-card) .cf-lib-row .cf-lib-preview{
   font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.08em;
   color:var(--n-text-3);text-align:right;white-space:nowrap;
 }
-#pg-log .cf-lib-empty{
+:where(#pg-log, .cem-card) .cf-lib-empty{
   padding:24px 14px;text-align:center;
   font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-3);
   line-height:1.5;
 }
-#pg-log .cf-lib-empty .cf-emph{color:var(--n-text-2)}
+:where(#pg-log, .cem-card) .cf-lib-empty .cf-emph{color:var(--n-text-2)}
 
 /* Inline add-input (shown when user clicks "Add new") */
-#pg-log .cf-add-input-row{
+:where(#pg-log, .cem-card) .cf-add-input-row{
   display:flex;align-items:center;gap:6px;
   padding:11px 14px;border-top:1px solid var(--n-border);
   background:rgba(255,255,255,0.015);
 }
-#pg-log .cf-add-input-row input{
+:where(#pg-log, .cem-card) .cf-add-input-row input{
   flex:1;padding:7px 10px;
   background:var(--n-surface-2);border:1px solid var(--n-border-2);
   border-radius:6px;color:var(--n-text);
   font-family:var(--n-font-sans);font-size:13px;outline:none;
 }
-#pg-log .cf-add-input-row input:focus{border-color:var(--n-border-3)}
-#pg-log .cf-add-input-row button{
+:where(#pg-log, .cem-card) .cf-add-input-row input:focus{border-color:var(--n-border-3)}
+:where(#pg-log, .cem-card) .cf-add-input-row button{
   width:30px;height:30px;border-radius:6px;cursor:pointer;
   background:transparent;border:1px solid var(--n-border-2);color:var(--n-text-2);
   font-size:14px;line-height:1;flex-shrink:0;transition:.12s;
 }
-#pg-log .cf-add-input-row .cf-add-confirm:hover{
+:where(#pg-log, .cem-card) .cf-add-input-row .cf-add-confirm:hover{
   color:var(--n-profit);border-color:rgba(95,179,137,0.4);
 }
-#pg-log .cf-add-input-row .cf-add-cancel:hover{
+:where(#pg-log, .cem-card) .cf-add-input-row .cf-add-cancel:hover{
   color:var(--n-loss);border-color:rgba(201,95,95,0.4);
 }
 
 /* Footer: "+ Add new confluence to library" */
-#pg-log .cf-dropdown-footer{
+:where(#pg-log, .cem-card) .cf-dropdown-footer{
   display:flex;align-items:center;gap:8px;
   padding:11px 14px;
   border-top:1px solid var(--n-border);
@@ -3555,10 +3874,10 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   cursor:pointer;transition:.12s;
   font-family:var(--n-font-sans);font-size:12px;color:var(--n-text-2);
 }
-#pg-log .cf-dropdown-footer:hover{
+:where(#pg-log, .cem-card) .cf-dropdown-footer:hover{
   background:rgba(255,255,255,0.04);color:var(--n-text);
 }
-#pg-log .cf-dropdown-footer svg{
+:where(#pg-log, .cem-card) .cf-dropdown-footer svg{
   width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0;
 }
 
@@ -3566,14 +3885,14 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
    for v1 — picker sits under the input as on desktop, scroll the
    page naturally). */
 @media (max-width:768px){
-  #pg-log .cf-pills{padding:9px 10px}
-  #pg-log .cf-dropdown-section{padding:10px 12px}
-  #pg-log .cf-search{padding:0 12px}
-  #pg-log .cf-search input{font-size:16px}   /* prevent iOS zoom */
-  #pg-log .cf-add-input-row{padding:10px 12px}
-  #pg-log .cf-add-input-row input{font-size:16px}
-  #pg-log .cf-lib-row{padding:10px 12px}
-  #pg-log .cf-dropdown-footer{padding:12px 12px;font-size:13px}
+  :where(#pg-log, .cem-card) .cf-pills{padding:9px 10px}
+  :where(#pg-log, .cem-card) .cf-dropdown-section{padding:10px 12px}
+  :where(#pg-log, .cem-card) .cf-search{padding:0 12px}
+  :where(#pg-log, .cem-card) .cf-search input{font-size:16px}   /* prevent iOS zoom */
+  :where(#pg-log, .cem-card) .cf-add-input-row{padding:10px 12px}
+  :where(#pg-log, .cem-card) .cf-add-input-row input{font-size:16px}
+  :where(#pg-log, .cem-card) .cf-lib-row{padding:10px 12px}
+  :where(#pg-log, .cem-card) .cf-dropdown-footer{padding:12px 12px;font-size:13px}
 }
 
 /* ═══ Confluence mini-pills (Chunk 4 — History rows + day review) ═══
@@ -8457,80 +8776,218 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
     </div>
   </div><!-- /mode-manual -->
 
-  <!-- CSV IMPORT MODE -->
+  <!-- CSV IMPORT MODE — Visual Redesign Chunk 5
+       Two phases:
+         Phase A (#ci-phase-a): empty/landing — Drop zone + broker tile grid
+                                + tutorial accordion (Tradovate SVG mockup +
+                                placeholder copy for other brokers).
+         Phase B (#ci-phase-b): loaded — header counter + apply-to-all bar +
+                                day-grouped collapsible sections + inline
+                                enrich zones + bottom CTA.
+       State swap:
+         A → B when parseTradovateCsv populates csvParsedTrades successfully.
+         B → A when user clicks "Start over".
+       Free-tier lock veil sits above both phases (covers the whole pane).
+       Preserved IDs: ai-drop-zone, ai-file-input, ai-analyzing, ai-error,
+       lt-csv-pane, lt-veil-csv — parser pipeline keeps working.
+       New IDs prefixed ci-* (CSV import). -->
   <div id="mode-ai" class="mode-panel">
     <div class="lg-card csv-pane" id="lt-csv-pane">
 
-      <!-- DROP ZONE -->
-      <div id="ai-drop-zone"
-        onclick="document.getElementById('ai-file-input').click()"
-        ondragover="event.preventDefault();this.style.borderColor='var(--n-text)';this.style.background='var(--n-surface-3)'"
-        ondragleave="this.style.borderColor='var(--n-border-3)';this.style.background='var(--n-surface-2)'"
-        ondrop="handleAiDrop(event)">
-        <input type="file" id="ai-file-input" accept=".csv" style="display:none" onchange="handleAiFile(this.files[0])"/>
-        <svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-        <div class="csv-h">Drop CSV file here</div>
-        <div class="csv-s">Tradovate &middot; Rithmic &middot; NinjaTrader &middot; ProjectX &middot; Tradesea</div>
-      </div>
-
-      <!-- PARSING STATE -->
-      <div id="ai-analyzing" style="display:none">
+      <!-- ============ PARSING STATE — shared by both phases ============ -->
+      <div id="ai-analyzing" class="ci-analyzing" style="display:none">
         <div class="spinner"></div>
         <div class="lbl">Parsing CSV&hellip;</div>
       </div>
 
-      <!-- CSV PREVIEW + ENRICHMENT -->
-      <div id="ai-result" style="display:none">
-        <div class="csv-success-head">
-          <div class="ttl">
-            <div class="ai-pulse"></div>
-            <span>Trades detected &middot; enrich &amp; import</span>
+      <!-- ============ ERROR — shared by both phases ============ -->
+      <div id="ai-error" class="ci-error" style="display:none"></div>
+
+      <!-- ============ PHASE A — Empty / broker landing ============ -->
+      <div id="ci-phase-a" class="ci-phase">
+
+        <!-- Drop CSV zone at top (rw-dropzone styling, same as Log Trade) -->
+        <div id="ai-drop-zone" class="rw-dropzone ci-dropzone"
+          onclick="document.getElementById('ai-file-input').click()"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="this.classList.remove('drag-over');handleAiDrop(event)">
+          <input type="file" id="ai-file-input" accept=".csv" style="display:none" onchange="handleAiFile(this.files[0])"/>
+          <svg class="rw-dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+          <div class="ci-dz-h">Drop your CSV here</div>
+          <div class="ci-dz-sub">or click to browse</div>
+        </div>
+
+        <!-- 01 How to get your Tradovate CSV — single consolidated section.
+             Beta users are all on Tradovate; broker tile grid + accordion
+             were removed per Phase A adjustment 1. Scaffolding (data-broker
+             wrapper, .ci-tutorial container) kept modular so a multi-broker
+             picker can return when other broker tutorials exist. -->
+        <div class="rw-section ci-section" id="ci-tutorial-section">
+          <div class="rw-section-h">
+            <span class="rw-mono-num">01</span>
+            <span class="rw-section-name">How to get your Tradovate CSV</span>
+            <span class="rw-mono-sub">&mdash; follow these 3 steps</span>
+            <span class="rw-hr-trail"></span>
           </div>
-          <span id="csv-count"></span>
-        </div>
 
-        <!-- BULK FIELDS — applies to every row -->
-        <div class="csv-bulk-fields">
-          <span class="csv-bulk-l">Apply to all:</span>
-          <input class="field-input field-sm" id="csv-bulk-session" placeholder="Session (optional)" oninput="onCsvBulkSessionChange(this.value)"/>
-        </div>
+          <!-- TRADOVATE — 3-step SVG tutorial (adapted from tradovate_tutorial_mockup.html) -->
+          <div class="ci-tutorial" data-broker="tradovate">
+            <div class="ci-step-card">
+              <div class="ci-step-header">
+                <span class="ci-step-num">Step 01</span>
+                <span class="ci-step-title">Click your account tab</span>
+              </div>
+              <div class="ci-step-desc">Sits to the right of the Manual Lockout button in your top bar</div>
+              <svg class="ci-step-svg" viewBox="0 0 632 130" role="img" aria-label="Tradovate header bar with the account dropdown highlighted on the right">
+                <defs>
+                  <marker id="ci-arr-tradovate-1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M2 1L8 5L2 9" fill="none" stroke="#f5d77c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  </marker>
+                </defs>
+                <rect x="2" y="2" width="628" height="80" rx="6" fill="#111" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
+                <circle cx="22" cy="42" r="3" fill="#3a3a3a"/>
+                <circle cx="40" cy="42" r="3" fill="#3a3a3a"/>
+                <circle cx="58" cy="42" r="3" fill="#3a3a3a"/>
+                <circle cx="76" cy="42" r="3" fill="#3a3a3a"/>
+                <text x="270" y="46" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#666">12:31 PM</text>
+                <rect x="345" y="30" width="105" height="24" rx="3" fill="none" stroke="#f5a623" stroke-width="1"/>
+                <text x="397" y="46" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#f5d77c">Manual Lockout</text>
+                <rect x="468" y="20" width="148" height="44" rx="4" fill="rgba(245,215,124,0.1)" stroke="#f5d77c" stroke-width="2"/>
+                <text x="542" y="36" text-anchor="middle" font-family="ui-monospace, monospace" font-size="8" fill="#888" letter-spacing="0.1em">ACCOUNT</text>
+                <text x="542" y="52" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" fill="#f5f5f5">AFZEROQA20&hellip;</text>
+                <path d="M 542 122 Q 542 100 542 80" fill="none" stroke="#f5d77c" stroke-width="2" stroke-linecap="round" marker-end="url(#ci-arr-tradovate-1)"/>
+                <text x="552" y="120" font-family="Georgia, serif" font-style="italic" font-size="12" fill="#f5d77c">click this</text>
+              </svg>
+            </div>
 
-        <!-- COLUMN HEADERS — align with .csv-row-body grid -->
-        <div class="csv-col-headers" aria-hidden="true">
-          <span class="csv-col-h">Entry</span>
-          <span class="csv-col-h">Exit</span>
-          <span class="csv-col-h">Qty</span>
-          <span class="csv-col-h">Accounts</span>
-          <span class="csv-col-h">P&amp;L</span>
-        </div>
+            <div class="ci-step-card">
+              <div class="ci-step-header">
+                <span class="ci-step-num">Step 02</span>
+                <span class="ci-step-title">Click the gear icon</span>
+              </div>
+              <div class="ci-step-desc">Sits next to your account name in the dropdown</div>
+              <svg class="ci-step-svg" viewBox="0 0 632 200" role="img" aria-label="Account dropdown opened, gear icon highlighted">
+                <defs>
+                  <marker id="ci-arr-tradovate-2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M2 1L8 5L2 9" fill="none" stroke="#f5d77c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  </marker>
+                </defs>
+                <rect x="180" y="10" width="280" height="22" rx="3" fill="#1a1a1a" stroke="#333" stroke-width="0.5"/>
+                <text x="200" y="25" font-family="ui-monospace, monospace" font-size="9" fill="#aaa">AFZEROQA202602138390</text>
+                <text x="445" y="25" font-family="ui-monospace, monospace" font-size="10" fill="#888">&or;</text>
+                <rect x="180" y="42" width="280" height="120" rx="4" fill="#1a1a1a" stroke="#333" stroke-width="0.5"/>
+                <rect x="180" y="42" width="280" height="44" rx="0" fill="#222"/>
+                <text x="200" y="62" font-family="ui-monospace, monospace" font-size="9" fill="#f5f5f5">AFZEROQA202602138390</text>
+                <text x="200" y="78" font-family="system-ui, sans-serif" font-size="10" fill="#888" font-style="italic">Demo &amp; Active</text>
+                <circle cx="430" cy="64" r="14" fill="rgba(245,215,124,0.12)" stroke="#f5d77c" stroke-width="2"/>
+                <g transform="translate(421, 55)" stroke="#f5d77c" stroke-width="1.4" fill="none">
+                  <circle cx="9" cy="9" r="3"/>
+                  <path d="M9 1 L9 4 M9 14 L9 17 M1 9 L4 9 M14 9 L17 9 M3.5 3.5 L5.5 5.5 M12.5 12.5 L14.5 14.5 M14.5 3.5 L12.5 5.5 M5.5 12.5 L3.5 14.5"/>
+                </g>
+                <line x1="190" y1="100" x2="450" y2="100" stroke="#333" stroke-width="0.5"/>
+                <text x="200" y="118" font-family="system-ui, sans-serif" font-size="12" fill="#a1a1a1">Go to Replay</text>
+                <line x1="190" y1="130" x2="450" y2="130" stroke="#333" stroke-width="0.5"/>
+                <text x="200" y="148" font-family="system-ui, sans-serif" font-size="12" fill="#a1a1a1">Logout</text>
+                <path d="M 560 65 Q 510 65 470 65" fill="none" stroke="#f5d77c" stroke-width="2" stroke-linecap="round" marker-end="url(#ci-arr-tradovate-2)"/>
+                <text x="570" y="69" font-family="Georgia, serif" font-style="italic" font-size="12" fill="#f5d77c">click gear</text>
+              </svg>
+            </div>
 
-        <!-- TRADE LIST (v2) -->
-        <div id="csv-rows-list" class="csv-rows-list"></div>
+            <div class="ci-step-card">
+              <div class="ci-step-header">
+                <span class="ci-step-num">Step 03</span>
+                <span class="ci-step-title">Open Orders, then Download CSV</span>
+              </div>
+              <div class="ci-step-desc">Click the Orders tab first, then hit Download CSV below</div>
+              <svg class="ci-step-svg" viewBox="0 0 632 230" role="img" aria-label="Account Reports page with Orders tab and Download CSV button highlighted">
+                <defs>
+                  <marker id="ci-arr-tradovate-3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M2 1L8 5L2 9" fill="none" stroke="#f5d77c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  </marker>
+                </defs>
+                <rect x="2" y="2" width="628" height="220" rx="6" fill="#111" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
+                <text x="20" y="32" font-family="Georgia, serif" font-style="italic" font-size="18" fill="#f5f5f5">Account Reports</text>
+                <text x="20" y="50" font-family="ui-monospace, monospace" font-size="9" fill="#666" letter-spacing="0.1em">DEMO &middot; AFZEROQA202602138390</text>
+                <text x="68" y="87" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#666">Performance</text>
+                <rect x="135" y="72" width="62" height="24" rx="3" fill="rgba(245,215,124,0.1)" stroke="#f5d77c" stroke-width="2"/>
+                <text x="166" y="87" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#f5f5f5">Orders</text>
+                <text x="234" y="87" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#666">Position</text>
+                <text x="290" y="87" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#666">Cash</text>
+                <text x="338" y="87" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#666">Details</text>
+                <text x="390" y="87" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#666">Fills</text>
+                <text x="440" y="87" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#666">Balance</text>
+                <line x1="20" y1="104" x2="610" y2="104" stroke="#222" stroke-width="0.5"/>
+                <rect x="20" y="120" width="80" height="22" rx="3" fill="#1a1a1a" stroke="#333" stroke-width="0.5"/>
+                <text x="60" y="135" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#a1a1a1">Today &or;</text>
+                <rect x="108" y="120" width="100" height="22" rx="3" fill="#1a1a1a" stroke="#333" stroke-width="0.5"/>
+                <text x="158" y="135" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" fill="#a1a1a1">05/13/2026</text>
+                <rect x="216" y="120" width="80" height="22" rx="3" fill="#1a1a1a" stroke="#333" stroke-width="0.5"/>
+                <rect x="304" y="120" width="80" height="22" rx="3" fill="#1a1a1a" stroke="#333" stroke-width="0.5"/>
+                <rect x="20" y="160" width="48" height="24" rx="3" fill="#1a1a1a" stroke="#333" stroke-width="0.5"/>
+                <text x="44" y="176" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#a1a1a1">Go</text>
+                <rect x="78" y="156" width="120" height="32" rx="4" fill="rgba(245,215,124,0.1)" stroke="#f5d77c" stroke-width="2"/>
+                <text x="138" y="176" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#f5f5f5">Download CSV</text>
+                <rect x="206" y="160" width="108" height="24" rx="3" fill="#1a1a1a" stroke="#333" stroke-width="0.5"/>
+                <text x="260" y="176" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#888">Download PDF</text>
+                <path d="M 166 50 Q 166 60 166 70" fill="none" stroke="#f5d77c" stroke-width="2" stroke-linecap="round" marker-end="url(#ci-arr-tradovate-3)"/>
+                <text x="178" y="48" font-family="Georgia, serif" font-style="italic" font-size="12" fill="#f5d77c">first</text>
+                <path d="M 138 210 Q 138 200 138 192" fill="none" stroke="#f5d77c" stroke-width="2" stroke-linecap="round" marker-end="url(#ci-arr-tradovate-3)"/>
+                <text x="150" y="215" font-family="Georgia, serif" font-style="italic" font-size="12" fill="#f5d77c">then this</text>
+              </svg>
+            </div>
+          </div>
 
-        <div class="csv-actions">
-          <button class="csv-discard" onclick="discardAiScan()">Discard all</button>
-          <button class="csv-import" onclick="importCsvTrades()">Import all</button>
         </div>
       </div>
 
-      <!-- ERROR -->
-      <div id="ai-error" style="display:none"></div>
+      <!-- ============ PHASE B — Loaded / day-grouped enrich ============ -->
+      <div id="ci-phase-b" class="ci-phase" style="display:none">
 
-      <!-- HELP / PLACEHOLDER -->
-      <div id="ai-placeholder">
-        <div class="csv-help-h">How to export from Tradovate</div>
-        <div class="csv-help-row">1. Go to <strong>Orders</strong> or <strong>Fills</strong> tab</div>
-        <div class="csv-help-row">2. Click <strong>Export</strong> &rarr; Download CSV</div>
-        <div class="csv-help-row">3. Drop the file above &mdash; only filled orders are imported</div>
-        <div class="csv-help-divider">
-          <div class="csv-help-h">Also supported</div>
-          <div class="csv-help-row"><strong>Rithmic</strong> &mdash; statement CSV</div>
-          <div class="csv-help-row"><strong>NinjaTrader</strong> &mdash; trade performance export</div>
-          <div class="csv-help-row"><strong>ProjectX / Tradesea</strong> &mdash; similar CSV export</div>
+        <!-- Header counter -->
+        <div class="ci-loaded-h">
+          <div>
+            <div class="ci-loaded-eyebrow"><span class="ci-pulse"></span> Trades detected &middot; enrich &amp; import</div>
+            <div class="ci-loaded-helper"><i>Click any row to expand and enrich. Or import all now and journal later from Calendar.</i></div>
+          </div>
+          <div class="ci-loaded-counter">
+            <span class="ci-c-enriched"><span id="ci-c-enriched-n">0</span> enriched</span>
+            <span class="ci-c-sep">&middot;</span>
+            <span class="ci-c-pending"><span id="ci-c-pending-n">0</span> pending</span>
+            <span class="ci-c-sep">&middot;</span>
+            <span class="ci-c-total"><span id="ci-c-total-n">0</span> total</span>
+          </div>
+        </div>
+
+        <!-- Apply-to-all bar retired in Chunk 5 v2 — each trade enriches in
+             its own row (Session auto-calc'd per row, Account/Confluences/
+             Screenshots set per-row in the inline enrich zone). -->
+
+        <!-- Day-grouped trade list -->
+        <div id="ci-days-container" class="ci-days-container"></div>
+
+        <!-- Bottom CTA -->
+        <div class="ci-cta-row">
+          <button type="button" class="ci-discard" onclick="ciDiscardAll()">
+            <span class="ci-cta-icon">&#9003;</span> Discard all
+          </button>
+          <button type="button" class="ci-import" onclick="ciImportAll()">
+            <span class="ci-cta-icon">&#x2191;</span> Import all (<span id="ci-import-count">0</span> trades)
+          </button>
+        </div>
+
+        <!-- Start over (returns to Phase A) -->
+        <div class="ci-startover-row">
+          <button type="button" class="ci-startover" onclick="ciSwapToEmpty()">&#x21BA; Start over &mdash; import a different CSV</button>
         </div>
       </div>
 
-      <!-- LOCK VEIL (free tier only — toggled by applyLogTradeTier) -->
+      <!-- ============ LOCK VEIL (free tier — covers both phases) ============ -->
       <div class="lock-veil" id="lt-veil-csv" style="display:none">
         <div class="pro-badge">
           <svg viewBox="0 0 24 24"><path d="M12 1l3 6 6 .9-4.5 4.4 1 6.2L12 16.8 6.5 18.5l1-6.2L3 7.9 9 7z"/></svg>
@@ -8542,6 +8999,10 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
       </div>
     </div><!-- /lg-card -->
   </div><!-- /mode-ai -->
+
+  <!-- Bulk Confluences modal retired in Chunk 5 v2 — per-row Confluences
+       picker now lives inside the inline enrich zone (uses the single-
+       expanded-row constraint to host one picker instance at a time). -->
 </div>
 <!-- CAL EDIT MODAL — Visual Redesign Chunk 3
      Mirrors Log Trade's 4-section flow (Setup / Execution / Analysis /
@@ -8706,7 +9167,13 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         <input type="hidden" id="cem-rr" value=""/>
       </div>
 
-      <!-- ============ 03 ANALYSIS — why ============ -->
+      <!-- ============ 03 ANALYSIS — why ============
+           Chunk 4 / Issue 1 — Section is now a 2-col grid like Log Trade:
+             LEFT  Chart evidence (Screenshot + TV link + preview)
+             RIGHT Confluences picker (cem-cf-* prefixed instance)
+           Both columns share the same .rw-field styling. Picker functions
+           are now multi-instance — Edit Modal calls pass cemConfluencesState
+           as the final arg to cf* handlers. -->
       <div class="rw-section cem-section">
         <div class="rw-section-h">
           <span class="rw-mono-num">03</span>
@@ -8715,34 +9182,92 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
           <span class="rw-hr-trail"></span>
         </div>
 
-        <div class="rw-field">
-          <div class="rw-field-l">Chart evidence</div>
+        <div class="rw-grid rw-grid-analysis">
 
-          <!-- Screenshot dropzone — preserves cem-img-input + cem-img-preview IDs
-               so cemHandleImgs / cemRenderImgPreview keep working unchanged. -->
-          <div id="cem-img-drop-zone" class="rw-dropzone"
-            onclick="document.getElementById('cem-img-input').click()">
-            <input type="file" id="cem-img-input" accept="image/*" multiple style="display:none" onchange="cemHandleImgs(this.files)"/>
-            <svg class="rw-dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
-            <div class="rw-dz-h">Drop screenshot</div>
-            <div class="rw-dz-sub">or click to browse</div>
-          </div>
-          <div id="cem-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+          <!-- LEFT — Chart evidence (screenshot + TV link + preview) -->
+          <div class="rw-field">
+            <div class="rw-field-l">Chart evidence</div>
 
-          <!-- TradingView link (Chunk 2.5 — editable in modal now) -->
-          <div class="rw-tv-wrap" style="margin-top:10px">
-            <svg class="rw-tv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <polyline points="3,17 9,11 13,15 21,7"/>
-              <polyline points="14,7 21,7 21,14"/>
-            </svg>
-            <input type="url" id="cem-tv-link" class="rw-tv-input" placeholder="Paste TradingView link&hellip;" oninput="cemOnTVLinkInput()" autocomplete="off"/>
-            <span class="rw-tv-ok" id="cem-tv-ok" style="display:none">&#10003; Linked</span>
+            <!-- Screenshot dropzone — preserves cem-img-input + cem-img-preview IDs
+                 so cemHandleImgs / cemRenderImgPreview keep working unchanged. -->
+            <div id="cem-img-drop-zone" class="rw-dropzone"
+              onclick="document.getElementById('cem-img-input').click()">
+              <input type="file" id="cem-img-input" accept="image/*" multiple style="display:none" onchange="cemHandleImgs(this.files)"/>
+              <svg class="rw-dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
+              <div class="rw-dz-h">Drop screenshot</div>
+              <div class="rw-dz-sub">or click to browse</div>
+            </div>
+            <div id="cem-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+
+            <!-- TradingView link (Chunk 2.5 — editable in modal) -->
+            <div class="rw-tv-wrap" style="margin-top:10px">
+              <svg class="rw-tv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polyline points="3,17 9,11 13,15 21,7"/>
+                <polyline points="14,7 21,7 21,14"/>
+              </svg>
+              <input type="url" id="cem-tv-link" class="rw-tv-input" placeholder="Paste TradingView link&hellip;" oninput="cemOnTVLinkInput()" autocomplete="off"/>
+              <span class="rw-tv-ok" id="cem-tv-ok" style="display:none">&#10003; Linked</span>
+            </div>
+            <div class="rw-tv-preview-wrap" id="cem-tv-preview-wrap" style="display:none">
+              <img id="cem-tv-preview" class="rw-tv-preview" alt="TradingView snapshot" onerror="cemOnTVPreviewError(this)" onclick="if(this.src){openScreenshotLightbox(this.src);}"/>
+              <span class="rw-tv-preview-badge">TV Snapshot</span>
+            </div>
+            <div class="rw-helper">Paste your &ldquo;Copy link&rdquo; from TradingView&rsquo;s snapshot menu.</div>
           </div>
-          <div class="rw-tv-preview-wrap" id="cem-tv-preview-wrap" style="display:none">
-            <img id="cem-tv-preview" class="rw-tv-preview" alt="TradingView snapshot" onerror="cemOnTVPreviewError(this)" onclick="if(this.src){openScreenshotLightbox(this.src);}"/>
-            <span class="rw-tv-preview-badge">TV Snapshot</span>
+
+          <!-- RIGHT — Confluences picker (cem-cf-* second instance).
+               Every cf* handler in inline onclick passes cemConfluencesState
+               as the final arg so events route to the modal's picker state. -->
+          <div class="rw-field" id="cem-cf-section">
+            <div class="rw-field-l rw-field-l-flex">
+              <span>Tagged analysis</span>
+              <span class="cf-count" id="cem-cf-count">0 added</span>
+            </div>
+
+            <div class="cf-pills" id="cem-cf-pills" onclick="cfTogglePicker(undefined, cemConfluencesState)">
+              <span class="cf-hint" id="cem-cf-hint">+ click to add confluences</span>
+            </div>
+
+            <div class="cf-dropdown" id="cem-cf-dropdown" style="display:none">
+              <div class="cf-dropdown-section">
+                <div class="rw-field-l">Timeframe</div>
+                <div class="cf-tf-chips" id="cem-cf-tf-chips">
+                  <span class="cf-tf-chip" data-tf="1m"  onclick="cfSetTF('1m',this,event,cemConfluencesState)">1m</span>
+                  <span class="cf-tf-chip" data-tf="5m"  onclick="cfSetTF('5m',this,event,cemConfluencesState)">5m</span>
+                  <span class="cf-tf-chip" data-tf="15m" onclick="cfSetTF('15m',this,event,cemConfluencesState)">15m</span>
+                  <span class="cf-tf-chip" data-tf="30m" onclick="cfSetTF('30m',this,event,cemConfluencesState)">30m</span>
+                  <span class="cf-tf-chip active htf" data-tf="1hr" onclick="cfSetTF('1hr',this,event,cemConfluencesState)">1hr</span>
+                  <span class="cf-tf-chip" data-tf="4h"  onclick="cfSetTF('4h',this,event,cemConfluencesState)">4h</span>
+                  <span class="cf-tf-chip" data-tf="D"   onclick="cfSetTF('D',this,event,cemConfluencesState)">D</span>
+                  <span class="cf-tf-chip" data-tf="W"   onclick="cfSetTF('W',this,event,cemConfluencesState)">W</span>
+                  <span class="cf-tf-chip no-tf" data-tf="" onclick="cfSetTF(null,this,event,cemConfluencesState)">No TF</span>
+                </div>
+              </div>
+
+              <div class="cf-search">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+                <input type="text" id="cem-cf-search-input" placeholder="Type to filter or create new" oninput="cfOnSearchInput(this.value, cemConfluencesState)"/>
+              </div>
+
+              <div class="cf-lib-header">
+                <div class="rw-field-l">Your library</div>
+              </div>
+              <div class="cf-lib-list" id="cem-cf-lib-list"></div>
+
+              <div class="cf-add-input-row" id="cem-cf-add-input-row" style="display:none">
+                <input type="text" id="cem-cf-add-input" placeholder="New confluence name" maxlength="48"
+                  onkeydown="if(event.key==='Enter')cfConfirmAddLibrary(cemConfluencesState);if(event.key==='Escape')cfCancelAddLibrary(cemConfluencesState)"/>
+                <button class="cf-add-confirm" onclick="cfConfirmAddLibrary(cemConfluencesState)" aria-label="Add">&#10003;</button>
+                <button class="cf-add-cancel" onclick="cfCancelAddLibrary(cemConfluencesState)" aria-label="Cancel">&times;</button>
+              </div>
+
+              <div class="cf-dropdown-footer" id="cem-cf-add-footer" onclick="cfShowAddInput(cemConfluencesState)">
+                <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span id="cem-cf-add-footer-text">Add new confluence</span>
+              </div>
+            </div>
+            <div class="rw-helper">Tag your read on the chart &mdash; filterable in History &amp; Analytics.</div>
           </div>
-          <div class="rw-helper">Paste your &ldquo;Copy link&rdquo; from TradingView&rsquo;s snapshot menu.</div>
         </div>
       </div>
 
@@ -13551,6 +14076,36 @@ function getETMinutes(){
   return et.getHours()*60+et.getMinutes();
 }
 
+// Chunk 5 v2 — auto-detect the session for an arbitrary fillTime string
+// (used by CSV import to pre-populate csvEnrichment[i].session). Drives
+// off the SESSIONS array's start/end fields above so we don't duplicate
+// the boundary definitions. Returns chip-canonical name ('Asia' / 'London'
+// / 'NY AM' / 'NY Lunch' / 'NY PM') matching the data-session attrs on
+// the inline-enrich-zone session chips, or '' when the timestamp falls
+// outside any defined session window.
+var _SESSION_CHIP_NAMES = ['Asia','London','NY AM','NY Lunch','NY PM'];
+function _etMinutesFromDate(d){
+  if(!d || isNaN(d.getTime())) return null;
+  var etOff = isDST(d) ? -4 : -5;
+  var etMs  = d.getTime() + (d.getTimezoneOffset() + etOff*60)*60000;
+  var et    = new Date(etMs);
+  return et.getHours()*60 + et.getMinutes();
+}
+function _sessionForFillTime(fillTimeStr){
+  if(!fillTimeStr) return '';
+  var d = new Date(fillTimeStr);
+  if(isNaN(d.getTime())) return '';
+  var t = _etMinutesFromDate(d);
+  if(t == null) return '';
+  // Walk SESSIONS in order; return the first window the timestamp falls inside.
+  for(var i = 0; i < SESSIONS.length; i++){
+    var s = SESSIONS[i];
+    if(t >= s.start && t < s.end) return _SESSION_CHIP_NAMES[i] || '';
+  }
+  return ''; // outside any session window
+}
+window._sessionForFillTime = _sessionForFillTime;
+
 function getFuturesSession(){
   var now2=new Date(),etOff2=isDST(now2)?-4:-5,etMs2=now2.getTime()+(now2.getTimezoneOffset()+etOff2*60)*60000,et2=new Date(etMs2),day2=et2.getDay();if(day2===6||(day2===5&&et2.getHours()>=17)||(day2===0&&et2.getHours()<18))return null;const t=getETMinutes();
   // Asia wraps midnight: active 20:00-24:00 and 0:00-0:00 (midnight boundary)
@@ -14667,6 +15222,34 @@ function openCalEdit(id){
 
   cemRenderImgPreview();
 
+  // Chunk 4 / Issue 1 — populate the Edit Modal's confluences picker.
+  // Reset transient state first, then load this trade's saved pills from
+  // trade_confluences and render. Lazy-load library if it hasn't been
+  // fetched yet (covers the case where user opens Edit Modal before ever
+  // touching the Log Trade picker in this session). Both renders are
+  // fire-and-forget; failures fall back to an empty picker.
+  if (typeof cemConfluencesState !== 'undefined') {
+    cemConfluencesState.reset();
+    // Lazy-load library if needed
+    if (cemConfluencesState.library === null && typeof cemConfluencesState.loadLibrary === 'function') {
+      cemConfluencesState.loadLibrary().then(function(){ cfRenderLibrary(cemConfluencesState); });
+    }
+    // Load this trade's existing confluences
+    if (typeof loadTradeConfluences === 'function') {
+      loadTradeConfluences(t.id).then(function(pills){
+        cemConfluencesState.selected = pills || [];
+        cfRenderPills(cemConfluencesState);
+        cfRenderLibrary(cemConfluencesState);
+      }).catch(function(e){
+        console.warn('[cem confluences load]', e && e.message);
+        cfRenderPills(cemConfluencesState);
+      });
+    }
+    // Initial render so the count + hint show '0 added' until load resolves.
+    cfRenderPills(cemConfluencesState);
+    cfRenderTFChips(cemConfluencesState);
+  }
+
   // Eyebrow context line — EDIT · {sym} · {time}
   var hSym = document.getElementById('cem-h-sym');
   if(hSym) hSym.textContent = (t.sym || '—').toUpperCase();
@@ -14716,6 +15299,24 @@ function closeCalEdit(){
   // Dismiss the delete-confirm if it was left open somehow.
   var delModal = document.getElementById('cem-delete-confirm');
   if(delModal) delModal.style.display = 'none';
+
+  // Chunk 4 / Issue 1 — reset Edit Modal picker so a re-open with a
+  // different trade starts clean. Library cache stays (it's on
+  // confluencesState, shared); only the per-instance selected/searchQuery/
+  // activeTF/pickerOpen pieces get cleared.
+  if (typeof cemConfluencesState !== 'undefined') {
+    // Force-close the dropdown UI before resetting state so the open
+    // class doesn't linger if user dismisses modal mid-picker.
+    if (typeof cfTogglePicker === 'function' && cemConfluencesState.pickerOpen) {
+      cfTogglePicker(false, cemConfluencesState);
+    }
+    cemConfluencesState.reset();
+    var cemSearchInput = document.getElementById('cem-cf-search-input');
+    if (cemSearchInput) cemSearchInput.value = '';
+    // Re-render so the pill row shows empty + count zeros out next open.
+    if (typeof cfRenderPills === 'function')   cfRenderPills(cemConfluencesState);
+    if (typeof cfRenderTFChips === 'function') cfRenderTFChips(cemConfluencesState);
+  }
 }
 function saveCalEdit(){
   // CAPTURE the trade id BEFORE closing the modal — closeCalEdit()
@@ -14750,6 +15351,12 @@ function saveCalEdit(){
   var sessionVal = _cemSession || '';
   var sideVal = _cemType;
   var manualPnlFlag = _cemPnlManual; // snapshot before closeCalEdit resets
+  // Chunk 4 / Issue 1 — snapshot the Edit Modal picker's pills BEFORE
+  // closeCalEdit resets cemConfluencesState. Persist via saveTradeConfluences
+  // after the trade row's saveTradeToSupa so the FK constraint resolves.
+  var cemConfluencePillsSnapshot = (typeof cemConfluencesState !== 'undefined' && Array.isArray(cemConfluencesState.selected))
+    ? cemConfluencesState.selected.slice()
+    : null;
 
   // Now validate — if it fails, modal stays open with the user's edits intact.
   if(!sym || isNaN(entry) || isNaN(exit)){
@@ -14818,6 +15425,19 @@ function saveCalEdit(){
     // any other tab/device. For the current session, renderFeedPosts
     // reads the in-memory `trades` array so own edits propagate either way.
     try{ if(typeof saveTradeToSupa==='function') saveTradeToSupa(t); }catch(e){}
+    // Chunk 4 / Issue 1 — persist confluences for this trade.
+    // saveTradeToSupa above is fire-and-forget (not awaited), but the
+    // parent trade row's id has been in the DB since trade creation;
+    // saveTradeConfluences's FK targets trades.id, which already exists.
+    // The DELETE-then-INSERT pattern correctly wipes prior pills + writes
+    // the new set, so removing pills via the picker propagates to DB too.
+    try {
+      if(typeof saveTradeConfluences === 'function' && cemConfluencePillsSnapshot !== null){
+        saveTradeConfluences(String(t.id), cemConfluencePillsSnapshot).catch(function(e){
+          console.warn('[cem confluences save]', e && e.message);
+        });
+      }
+    } catch(e){ console.warn('[cem confluences save]', e && e.message); }
     // Cascade — update any community_posts auto-shared for this trade.
     // Fire-and-forget; on failure, log and move on (the trade itself
     // is saved either way and the next renderFeedPosts will refresh).
@@ -15144,7 +15764,16 @@ const CF_TF_TIER = {
 };
 function cfTierFor(tf){ return tf ? (CF_TF_TIER[tf] || 'none') : 'none'; }
 
+// Chunk 4 / Issue 1 — picker is now multi-instance.
+// confluencesState is the Log Trade instance (prefix 'cf-').
+// cemConfluencesState below mirrors the per-instance pieces with
+// 'cem-cf-' prefixed DOM IDs for the Edit Modal picker. The LIBRARY
+// (and library mutators: loadLibrary, addToLibrary, archiveLibrary)
+// remain canonical on confluencesState — cemConfluencesState reads
+// from there via getter so both instances always see the same list.
 const confluencesState = {
+  prefix: 'cf',             // DOM-id prefix; used by cfRender* and event helpers
+  containerId: 'lt-sec-confluences',  // wrapper for click-outside-closes detection
   library: null,            // [{id, name}] — null = not loaded; [] = empty
   selected: [],             // [{confluence_id, name, timeframe}]
   activeTF: '1hr',          // null = no TF
@@ -15326,28 +15955,157 @@ const confluencesState = {
 };
 window.confluencesState = confluencesState;
 
+// Chunk 4 / Issue 1 — Edit Modal picker state.
+// Library data is shared via getter forwarding to confluencesState so a single
+// loadLibrary fetch + addToLibrary/archiveLibrary mutation propagates to both
+// instances automatically. Per-instance fields (selected, activeTF, search,
+// pickerOpen, addInputOpen) are independent so the user can have a draft
+// Log Trade pill set AND edit a saved trade's pills without state collision.
+const cemConfluencesState = {
+  prefix: 'cem-cf',
+  containerId: 'cem-cf-section',
+  // Library forwarding — both reads land on confluencesState.library.
+  get library(){ return confluencesState.library; },
+  set library(v){ confluencesState.library = v; },
+  get loadingLibrary(){ return confluencesState.loadingLibrary; },
+  set loadingLibrary(v){ confluencesState.loadingLibrary = v; },
+  // Library-mutating methods delegate to the canonical instance so true-restore
+  // semantics + soft-archive cache strips apply to both pickers symmetrically.
+  loadLibrary: function(){ return confluencesState.loadLibrary(); },
+  addToLibrary: function(name){ return confluencesState.addToLibrary(name); },
+  archiveLibrary: function(id){ return confluencesState.archiveLibrary(id); },
+  // Per-instance pill state.
+  selected: [],
+  activeTF: '1hr',
+  searchQuery: '',
+  addInputOpen: false,
+  pickerOpen: false,
+  addPill(confluence){
+    if (!confluence) return false;
+    const tf = this.activeTF;
+    const dupe = this.selected.find(
+      p => p.confluence_id === confluence.id && p.timeframe === tf
+    );
+    if (dupe) return false;
+    this.selected.push({
+      confluence_id: confluence.id,
+      name: confluence.name,
+      timeframe: tf,
+    });
+    return true;
+  },
+  removePill(idx){
+    if (idx < 0 || idx >= this.selected.length) return;
+    this.selected.splice(idx, 1);
+  },
+  setTF(tf){ this.activeTF = tf; },
+  reset(){
+    this.selected = [];
+    this.activeTF = '1hr';
+    this.searchQuery = '';
+    this.addInputOpen = false;
+    this.pickerOpen = false;
+  },
+};
+window.cemConfluencesState = cemConfluencesState;
+
+// Chunk 5 v3 — CSV per-row picker instance. ONE physical picker, recycled
+// across row expansions: hydrated from csvEnrichment[idx].confluences on
+// expand, snapshotted back on collapse / row-switch. Shares the library
+// backend with confluencesState. DOM IDs prefixed 'csv-row-cf-'. Only the
+// currently-expanded row has these DOM elements rendered (ciRenderEnrichZone
+// builds them; collapsing the row clears the .ci-enrich innerHTML so no
+// duplicate IDs exist across rows).
+const csvRowConfluencesState = {
+  prefix: 'csv-row-cf',
+  containerId: 'csv-row-cf-section',
+  get library(){ return confluencesState.library; },
+  set library(v){ confluencesState.library = v; },
+  get loadingLibrary(){ return confluencesState.loadingLibrary; },
+  set loadingLibrary(v){ confluencesState.loadingLibrary = v; },
+  loadLibrary: function(){ return confluencesState.loadLibrary(); },
+  addToLibrary: function(name){ return confluencesState.addToLibrary(name); },
+  archiveLibrary: function(id){ return confluencesState.archiveLibrary(id); },
+  selected: [],
+  activeTF: '1hr',
+  searchQuery: '',
+  addInputOpen: false,
+  pickerOpen: false,
+  addPill(confluence){
+    if (!confluence) return false;
+    const tf = this.activeTF;
+    const dupe = this.selected.find(
+      p => p.confluence_id === confluence.id && p.timeframe === tf
+    );
+    if (dupe) return false;
+    this.selected.push({
+      confluence_id: confluence.id,
+      name: confluence.name,
+      timeframe: tf,
+    });
+    // Mirror live edits into csvEnrichment[idx].confluences so the row
+    // status icon updates and the import path reads the latest state.
+    if (typeof ciSnapshotRowConfluences === 'function') ciSnapshotRowConfluences();
+    return true;
+  },
+  removePill(idx){
+    if (idx < 0 || idx >= this.selected.length) return;
+    this.selected.splice(idx, 1);
+    if (typeof ciSnapshotRowConfluences === 'function') ciSnapshotRowConfluences();
+  },
+  setTF(tf){ this.activeTF = tf; },
+  reset(){
+    this.selected = [];
+    this.activeTF = '1hr';
+    this.searchQuery = '';
+    this.addInputOpen = false;
+    this.pickerOpen = false;
+  },
+};
+window.csvRowConfluencesState = csvRowConfluencesState;
+
 /* ─── Render functions ──────────────────────────────────────── */
 
-function cfRenderPills(){
-  const wrap = document.getElementById('cf-pills');
-  const hint = document.getElementById('cf-hint');
-  const count = document.getElementById('cf-count');
+// Chunk 4 / Issue 1 — render functions take an optional `state` argument
+// (defaults to confluencesState for Log Trade backward compat). DOM IDs
+// are computed from state.prefix so the same code drives both pickers.
+function cfRenderPills(state){
+  state = state || confluencesState;
+  const wrap = document.getElementById(state.prefix + '-pills');
+  const hint = document.getElementById(state.prefix + '-hint');
+  const count = document.getElementById(state.prefix + '-count');
   if (!wrap || !hint) return;
   // Clear existing pills, keep the hint span at the end.
   Array.from(wrap.querySelectorAll('.cf-pill')).forEach(el => el.remove());
-  const list = confluencesState.selected;
+  const list = state.selected;
+  // Chunk 4 / Issue 2 fix — emit an inline onclick on each pill × that
+  // calls removePill directly on the correct state. The original document-
+  // level delegated handler works for Log Trade but is BLOCKED inside the
+  // Edit Modal because .cem-card has onclick="event.stopPropagation()"
+  // (added in Chunk 3 to prevent click-on-card from triggering the backdrop's
+  // close-modal handler). With propagation stopped at .cem-card, clicks
+  // inside the modal never reach the document listener — including the
+  // pill × click. Wiring the handler inline at the source bypasses the
+  // stopPropagation chain. The inline handler also stopPropagation's at
+  // the source, so the cf-pills row's onclick (which toggles the picker
+  // open) doesn't fire on × clicks — cleaner UX in both contexts.
+  // Chunk 5 — added csvRowConfluencesState as third state instance.
+  const stateRef = (state === cemConfluencesState) ? 'cemConfluencesState'
+                 : (state === csvRowConfluencesState) ? 'csvRowConfluencesState'
+                 : 'confluencesState';
   list.forEach((pill, idx) => {
     const tier = cfTierFor(pill.timeframe);
     const el = document.createElement('span');
     el.className = 'cf-pill cf-pill-' + tier;
     const safeName = _cfEsc(pill.name);
+    const xHandler = 'event.stopPropagation();' + stateRef + '.removePill(' + idx + ');cfRenderPills(' + stateRef + ')';
     el.innerHTML = pill.timeframe
       ? '<span class="cf-tf-prefix">' + _cfEsc(pill.timeframe) + '</span>' +
         '<span class="cf-dot">·</span>' +
         '<span>' + safeName + '</span>' +
-        '<span class="cf-x" data-idx="' + idx + '">&times;</span>'
+        '<span class="cf-x" data-idx="' + idx + '" onclick="' + xHandler + '">&times;</span>'
       : '<span>' + safeName + '</span>' +
-        '<span class="cf-x" data-idx="' + idx + '">&times;</span>';
+        '<span class="cf-x" data-idx="' + idx + '" onclick="' + xHandler + '">&times;</span>';
     wrap.insertBefore(el, hint);
   });
   wrap.classList.toggle('has-pills', list.length > 0);
@@ -15355,14 +16113,16 @@ function cfRenderPills(){
   hint.textContent = list.length > 0 ? '+ add more' : '+ click to add confluences';
 }
 
-function cfRenderLibrary(){
-  const list = document.getElementById('cf-lib-list');
+function cfRenderLibrary(state){
+  state = state || confluencesState;
+  const list = document.getElementById(state.prefix + '-lib-list');
   if (!list) return;
-  const lib = confluencesState.library || [];
-  const q = (confluencesState.searchQuery || '').trim().toLowerCase();
+  const lib = state.library || [];
+  const q = (state.searchQuery || '').trim().toLowerCase();
   const filtered = q ? lib.filter(c => c.name.toLowerCase().includes(q)) : lib;
-  const tf = confluencesState.activeTF;
+  const tf = state.activeTF;
   const previewPrefix = tf ? (tf + ' · ') : '';
+  const ctxArg = (state === cemConfluencesState) ? ",cemConfluencesState" : "";
 
   if (lib.length === 0) {
     list.innerHTML = '<div class="cf-lib-empty">' +
@@ -15380,24 +16140,26 @@ function cfRenderLibrary(){
       '<span class="cf-lib-name">' + _cfEsc(c.name) + '</span>' +
       '<span class="cf-lib-preview">+ add as ' + _cfEsc(previewPrefix + c.name) + '</span>' +
       // Chunk 2.6 — small × button to soft-archive this library entry.
-      // stopPropagation prevents the row's body click (cfOnLibRowClick)
-      // from firing simultaneously and adding the pill we're about to delete.
+      // Library delete is global (touches confluencesState.library); both
+      // pickers re-render after archive completes via cfConfirmLibDelete.
       '<button type="button" class="cf-lib-x" title="Remove from library" aria-label="Remove ' + _cfEsc(c.name) + ' from library" ' +
               'onclick="event.stopPropagation();cfOnLibDeleteClick(this.parentNode.dataset.id, this.parentNode.dataset.name)">' +
         '&times;' +
       '</button>' +
     '</div>'
   ).join('');
-  // Wire row body clicks (× has its own stopPropagation'd handler above).
+  // Wire row body clicks — pass state via closure so the click adds the
+  // pill to the correct instance (Log Trade vs Edit Modal).
   list.querySelectorAll('.cf-lib-row').forEach(row => {
-    row.addEventListener('click', () => cfOnLibRowClick(row.dataset.id));
+    row.addEventListener('click', () => cfOnLibRowClick(row.dataset.id, state));
   });
 }
 
-function cfRenderTFChips(){
-  document.querySelectorAll('#cf-tf-chips .cf-tf-chip').forEach(chip => {
+function cfRenderTFChips(state){
+  state = state || confluencesState;
+  document.querySelectorAll('#' + state.prefix + '-tf-chips .cf-tf-chip').forEach(chip => {
     const tf = chip.dataset.tf || null;
-    const isActive = (confluencesState.activeTF === (tf || null));
+    const isActive = (state.activeTF === (tf || null));
     chip.classList.remove('active','htf','mid','ltf');
     if (isActive) {
       chip.classList.add('active');
@@ -15414,50 +16176,53 @@ function _cfEsc(s){
 
 /* ─── Event handlers ────────────────────────────────────────── */
 
-function cfTogglePicker(forceOpen){
-  const dd = document.getElementById('cf-dropdown');
-  const pills = document.getElementById('cf-pills');
+// Chunk 4 / Issue 1 — all event handlers accept an optional `state` argument
+// (defaults to confluencesState for Log Trade backward compat). Edit Modal
+// inline onclicks pass cemConfluencesState as the final argument.
+function cfTogglePicker(forceOpen, state){
+  state = state || confluencesState;
+  const dd = document.getElementById(state.prefix + '-dropdown');
+  const pills = document.getElementById(state.prefix + '-pills');
   if (!dd) return;
   const willOpen = (typeof forceOpen === 'boolean') ? forceOpen : (dd.style.display === 'none');
   if (willOpen) {
-    // Lazy-load library on first open.
-    if (confluencesState.library === null) {
-      confluencesState.loadLibrary().then(cfRenderLibrary);
+    // Lazy-load library on first open (any picker triggers the load).
+    if (state.library === null) {
+      state.loadLibrary().then(function(){ cfRenderLibrary(state); });
     }
     dd.style.display = '';
-    pills.classList.add('open');
-    confluencesState.pickerOpen = true;
-    cfRenderLibrary();
-    cfRenderTFChips();
+    if (pills) pills.classList.add('open');
+    state.pickerOpen = true;
+    cfRenderLibrary(state);
+    cfRenderTFChips(state);
   } else {
     dd.style.display = 'none';
-    pills.classList.remove('open');
-    confluencesState.pickerOpen = false;
-    cfCancelAddLibrary();
+    if (pills) pills.classList.remove('open');
+    state.pickerOpen = false;
+    cfCancelAddLibrary(state);
   }
 }
 window.cfTogglePicker = cfTogglePicker;
 
-function cfSetTF(tf, el, event){
+function cfSetTF(tf, el, event, state){
+  state = state || confluencesState;
   if (event) event.stopPropagation();
   // Click active chip again → unset (back to "No TF" state).
-  if (confluencesState.activeTF === tf) {
-    confluencesState.setTF(null);
-  } else {
-    confluencesState.setTF(tf);
-  }
-  cfRenderTFChips();
-  cfRenderLibrary();   // preview text updates
+  if (state.activeTF === tf) state.setTF(null);
+  else state.setTF(tf);
+  cfRenderTFChips(state);
+  cfRenderLibrary(state);   // preview text updates
 }
 window.cfSetTF = cfSetTF;
 
-function cfOnSearchInput(value){
-  confluencesState.searchQuery = value || '';
-  cfRenderLibrary();
+function cfOnSearchInput(value, state){
+  state = state || confluencesState;
+  state.searchQuery = value || '';
+  cfRenderLibrary(state);
   // Pre-fill the "+ Add new" footer text when search has no matches.
-  const lib = confluencesState.library || [];
-  const q = confluencesState.searchQuery.trim();
-  const footerText = document.getElementById('cf-add-footer-text');
+  const lib = state.library || [];
+  const q = state.searchQuery.trim();
+  const footerText = document.getElementById(state.prefix + '-add-footer-text');
   if (!footerText) return;
   if (q.length >= 2 && !lib.some(c => c.name.toLowerCase().includes(q.toLowerCase()))) {
     footerText.textContent = 'Add "' + q + '" to library';
@@ -15467,25 +16232,27 @@ function cfOnSearchInput(value){
 }
 window.cfOnSearchInput = cfOnSearchInput;
 
-function cfOnLibRowClick(confluenceId){
-  const c = (confluencesState.library || []).find(x => x.id === confluenceId);
+function cfOnLibRowClick(confluenceId, state){
+  state = state || confluencesState;
+  const c = (state.library || []).find(x => x.id === confluenceId);
   if (!c) return;
-  const added = confluencesState.addPill(c);
-  if (added) cfRenderPills();
+  const added = state.addPill(c);
+  if (added) cfRenderPills(state);
 }
 window.cfOnLibRowClick = cfOnLibRowClick;
 
-function cfShowAddInput(){
-  confluencesState.addInputOpen = true;
-  const row = document.getElementById('cf-add-input-row');
-  const footer = document.getElementById('cf-add-footer');
-  const input = document.getElementById('cf-add-input');
+function cfShowAddInput(state){
+  state = state || confluencesState;
+  state.addInputOpen = true;
+  const row = document.getElementById(state.prefix + '-add-input-row');
+  const footer = document.getElementById(state.prefix + '-add-footer');
+  const input = document.getElementById(state.prefix + '-add-input');
   if (row) row.style.display = '';
   if (footer) footer.style.display = 'none';
   if (input) {
     // Prefill with the current search query if it has no matches in lib.
-    const q = (confluencesState.searchQuery || '').trim();
-    const lib = confluencesState.library || [];
+    const q = (state.searchQuery || '').trim();
+    const lib = state.library || [];
     const noMatch = q.length >= 2 && !lib.some(c => c.name.toLowerCase().includes(q.toLowerCase()));
     input.value = noMatch ? q : '';
     setTimeout(() => { input.focus(); input.select(); }, 30);
@@ -15493,33 +16260,39 @@ function cfShowAddInput(){
 }
 window.cfShowAddInput = cfShowAddInput;
 
-function cfCancelAddLibrary(){
-  confluencesState.addInputOpen = false;
-  const row = document.getElementById('cf-add-input-row');
-  const footer = document.getElementById('cf-add-footer');
-  const input = document.getElementById('cf-add-input');
+function cfCancelAddLibrary(state){
+  state = state || confluencesState;
+  state.addInputOpen = false;
+  const row = document.getElementById(state.prefix + '-add-input-row');
+  const footer = document.getElementById(state.prefix + '-add-footer');
+  const input = document.getElementById(state.prefix + '-add-input');
   if (row) row.style.display = 'none';
   if (footer) footer.style.display = '';
   if (input) input.value = '';
 }
 window.cfCancelAddLibrary = cfCancelAddLibrary;
 
-async function cfConfirmAddLibrary(){
-  const input = document.getElementById('cf-add-input');
+async function cfConfirmAddLibrary(state){
+  state = state || confluencesState;
+  const input = document.getElementById(state.prefix + '-add-input');
   if (!input) return;
   const name = (input.value || '').trim();
   if (!name) { input.focus(); return; }
-  const c = await confluencesState.addToLibrary(name);
+  const c = await state.addToLibrary(name);
   if (!c) return;  // toast already raised on failure
-  // Auto-add a pill with the current TF
-  const added = confluencesState.addPill(c);
-  cfCancelAddLibrary();
+  // Auto-add a pill with the current TF (in THIS picker's instance).
+  const added = state.addPill(c);
+  cfCancelAddLibrary(state);
   // Clear search so the newly-added row is visible in the unfiltered list.
-  confluencesState.searchQuery = '';
-  const searchInput = document.getElementById('cf-search-input');
+  state.searchQuery = '';
+  const searchInput = document.getElementById(state.prefix + '-search-input');
   if (searchInput) searchInput.value = '';
-  cfRenderLibrary();
-  if (added) cfRenderPills();
+  // Re-render the active picker's library + pills. Since addToLibrary
+  // operates on the shared confluencesState.library (true-restore /
+  // insert), the OTHER picker's next render will see the new entry too —
+  // no need to re-render it now (its library list won't be visible).
+  cfRenderLibrary(state);
+  if (added) cfRenderPills(state);
 }
 window.cfConfirmAddLibrary = cfConfirmAddLibrary;
 
@@ -15554,40 +16327,70 @@ async function cfConfirmLibDelete(){
   cfCancelLibDelete();
   var ok = await confluencesState.archiveLibrary(id);
   if (!ok) return; // toast already raised by archiveLibrary on failure
-  // Re-render library list (row strips out) + the pill row (if the user
-  // had a draft pill for this confluence, archiveLibrary already removed it).
-  if (typeof cfRenderLibrary === 'function') cfRenderLibrary();
-  if (typeof cfRenderPills === 'function')   cfRenderPills();
+  // Chunk 4 / Issue 1 — strip from all picker instances' pill arrays.
+  // Chunk 5 — extended to include csvRowConfluencesState (third instance).
+  // archiveLibrary stripped from confluencesState.library AND from
+  // confluencesState.selected; we must also strip from cem + csv state.
+  if (Array.isArray(cemConfluencesState.selected)) {
+    cemConfluencesState.selected = cemConfluencesState.selected.filter(p => p.confluence_id !== id);
+  }
+  if (typeof csvRowConfluencesState !== 'undefined' && Array.isArray(csvRowConfluencesState.selected)) {
+    csvRowConfluencesState.selected = csvRowConfluencesState.selected.filter(p => p.confluence_id !== id);
+  }
+  if (typeof cfRenderLibrary === 'function') {
+    cfRenderLibrary(confluencesState);
+    cfRenderLibrary(cemConfluencesState);
+    if (typeof csvRowConfluencesState !== 'undefined') cfRenderLibrary(csvRowConfluencesState);
+  }
+  if (typeof cfRenderPills === 'function') {
+    cfRenderPills(confluencesState);
+    cfRenderPills(cemConfluencesState);
+    if (typeof csvRowConfluencesState !== 'undefined') cfRenderPills(csvRowConfluencesState);
+  }
   toast('Removed from library');
 }
 window.cfConfirmLibDelete = cfConfirmLibDelete;
 
-/* ─── Pill X click (event delegation on the pill row) ─────── */
+/* ─── Pill X click + outside-picker close — handles both Log Trade
+       picker and Edit Modal picker instances. ─────── */
 
 document.addEventListener('click', function(e){
-  // Pill X — remove from selected
-  const x = e.target.closest && e.target.closest('#cf-pills .cf-x');
+  // Pill X — walk up to any of the three picker pill rows, route to
+  // the correct state instance. Chunk 5 v3 — csv-row-cf-pills (per-row picker
+   // inside the inline enrich zone) replaces the retired csv-cf-pills (bulk).
+  const x = e.target.closest && e.target.closest('.cf-x');
   if (x) {
-    e.stopPropagation();   // don't toggle picker open
-    const idx = parseInt(x.dataset.idx, 10);
-    if (!isNaN(idx)) {
-      confluencesState.removePill(idx);
-      cfRenderPills();
+    const pillsWrap = x.closest('#cf-pills, #cem-cf-pills, #csv-row-cf-pills');
+    if (pillsWrap) {
+      e.stopPropagation();
+      const idx = parseInt(x.dataset.idx, 10);
+      if (!isNaN(idx)) {
+        var state;
+        if (pillsWrap.id === 'cem-cf-pills') state = cemConfluencesState;
+        else if (pillsWrap.id === 'csv-row-cf-pills') state = csvRowConfluencesState;
+        else state = confluencesState;
+        state.removePill(idx);
+        cfRenderPills(state);
+      }
+      return;
     }
-    return;
   }
-  // Click outside picker → close (preserves selected pills in state)
-  if (!confluencesState.pickerOpen) return;
-  const section = document.getElementById('lt-sec-confluences');
-  if (section && !section.contains(e.target)) {
-    cfTogglePicker(false);
-  }
+  // Click outside an open picker → close. Iterate all three states.
+  [confluencesState, cemConfluencesState, csvRowConfluencesState].forEach(function(state){
+    if (!state.pickerOpen) return;
+    const section = document.getElementById(state.containerId);
+    if (section && !section.contains(e.target)) {
+      cfTogglePicker(false, state);
+    }
+  });
 });
 
-// ESC closes picker
+// ESC closes whichever picker is open (most-recent / modal-on-top first).
 document.addEventListener('keydown', function(e){
   if (e.key !== 'Escape') return;
-  if (confluencesState.pickerOpen) cfTogglePicker(false);
+  if (csvRowConfluencesState.pickerOpen) { cfTogglePicker(false, csvRowConfluencesState); return; }
+  if (cemConfluencesState.pickerOpen) { cfTogglePicker(false, cemConfluencesState); return; }
+  if (confluencesState.pickerOpen)    { cfTogglePicker(false, confluencesState);    return; }
 });
 
 /* ─── Persistence to trade_confluences (Chunk 3) ─────────────
@@ -16704,9 +17507,29 @@ let csvCurrentImgs = [];
 
 function csvInitEnrichment() {
   csvCurrentIdx = 0;
-  csvEnrichment = csvParsedTrades.map(() => ({notes:'', session:'', grade:'B', emotion:3, confidence:3, accounts:1, pnlManual:false, images:[]}));
+  csvEnrichment = csvParsedTrades.map(function(t){
+    var autoSession = (typeof _sessionForFillTime === 'function')
+      ? _sessionForFillTime(t._fillTime) : '';
+    // Chunk 5 v4 — normalized to snake_case across the board to match the
+    // newTrade / DB schema. accountType → account_type, tradingview_link
+    // stays. All 9 fields use the same casing for readers + writers.
+    return {
+      notes: '',
+      session: autoSession,
+      grade: 'B',
+      emotion: 3,
+      confidence: 3,
+      accounts: 1,
+      pnlManual: false,
+      images: [],
+      account_type: '',
+      tradingview_link: '',
+      confluences: []
+    };
+  });
   csvCurrentImgs = [];
-  _csvBulkSession = '';
+  // Old bulk-session inline UI is gone; legacy reset kept defensive in case
+  // some flow re-renders the old element.
   var bulkEl = document.getElementById('csv-bulk-session');
   if(bulkEl) bulkEl.value = '';
   csvRenderAllRows();
@@ -17297,10 +18120,12 @@ function handleAiFile(file){
   if(!file||!file.name.endsWith('.csv')){
     showAiError('Please upload a CSV file.');return;
   }
-  document.getElementById('ai-drop-zone').style.display='none';
-  document.getElementById('ai-placeholder').style.display='none';
-  document.getElementById('ai-result').style.display='none';
-  document.getElementById('ai-error').style.display='none';
+  // Chunk 5 — keep Phase A visible while parsing (analyzing block sits
+  // above the dropzone). Clear any prior error. On parse success the
+  // parseTradovateCsv handler swaps to Phase B; on failure showAiError
+  // keeps Phase A visible with the error banner.
+  var errEl = document.getElementById('ai-error');
+  if(errEl) errEl.style.display = 'none';
   document.getElementById('ai-analyzing').style.display='block';
   const reader=new FileReader();
   reader.onload=e=>{ try{parseTradovateCsv(e.target.result);}catch(err){showAiError('Could not parse CSV: '+err.message);} };
@@ -17493,7 +18318,11 @@ function parseTradovateCsv(text){
           qty,date:entryF.date,
           dateFallback:!!entryF.dateFallback,  // surface to the parse-end toast
           market:'Futures',account:entryF.account,pnl,
-          notes:'Imported from Tradovate CSV'
+          notes:'Imported from Tradovate CSV',
+          // Chunk 5 v2 — preserve the entry fill time so the day-review
+          // can show HH:MM and so _sessionForFillTime can auto-detect the
+          // session window in csvInitEnrichment.
+          _fillTime: entryF.fillTime
         });
         pending.shift();
       } else {
@@ -17517,15 +18346,22 @@ function parseTradovateCsv(text){
           ' had no parseable date and were logged to today.');
   }
 
-  // Show result panel
-  document.getElementById('csv-count').textContent=csvParsedTrades.length+' trade'+(csvParsedTrades.length>1?'s':'');
-  document.getElementById('ai-result').style.display='block';
+  // Chunk 5 — swap to Phase B (day-grouped enrich UI). csvInitEnrichment
+  // seeds csvEnrichment[i] with default values per row; ciSwapToLoaded
+  // hides Phase A, shows Phase B, and triggers the day-grouped render.
   csvInitEnrichment();
+  if (typeof ciSwapToLoaded === 'function') ciSwapToLoaded();
 }
 
 function importCsvTrades(){
-  if(!csvParsedTrades.length)return;
+  if(!csvParsedTrades.length) return;
   csvSaveCurrent(); // legacy carousel save — no-op when carousel is gone
+
+  // Capture from DOM before reading csvEnrichment — covers any field whose
+  // event listener missed a flush (e.g. paste-without-input, last keystroke
+  // arriving after the click on Import). See ciSnapshotExpandedRowInputs.
+  if(typeof ciSnapshotExpandedRowInputs === 'function') ciSnapshotExpandedRowInputs();
+
   // Capture count BEFORE discardAiScan empties the array.
   const n = csvParsedTrades.length;
   const importedTrades = [];
@@ -17541,10 +18377,47 @@ function importCsvTrades(){
     var eRisk=eStop?eStop*totalQty*ePtVal:null;
     var eRR=eRisk&&eRisk>0?Math.abs(t.pnl)/eRisk:null;
 
-    // Bulk session applies to every row that doesn't already have one
-    // (per-row session field doesn't exist in the v2 row UI, but a future
-    // upgrade could add it — this keeps the precedence right).
-    var rowSession = e.session || _csvBulkSession || '';
+    // Chunk 5 v3 — per-row only. Bulk apply-to-all bar retired; session is
+    // auto-detected per row at parse time (csvInitEnrichment) and can be
+    // overridden via the inline enrich zone. account_type / tradingview_link
+    // / confluences / images all read straight off csvEnrichment[i].
+    var rowSession = e.session || '';
+    // Chunk 5 v4 — read snake_case account_type. Fall back to camelCase
+    // accountType for any legacy enrichment objects (defensive — shouldn't
+    // happen after csvInitEnrichment v4 but covers a stale csvEnrichment
+    // from an older code path).
+    var rowAccountType = ((e.account_type || e.accountType) || '').toLowerCase();
+    if(['paper','eval','funded','live'].indexOf(rowAccountType) < 0) rowAccountType = null;
+    var rowTVLink = (e.tradingview_link && typeof _TV_LINK_RE !== 'undefined' && _TV_LINK_RE.test(e.tradingview_link))
+      ? e.tradingview_link
+      : '';
+
+    // Chunk 5 v5 — notes ABSOLUTE-LAST-RESORT fallback chain. The notes
+    // textarea has been the only field consistently failing to round-trip.
+    // Causes investigated (and ruled out / fixed): camelCase key mismatch
+    // (fixed in v4), inline-oninput not binding (added addEventListener),
+    // chip clicks destroying the textarea (chip handlers no longer call
+    // ciRenderEnrichZone). If e.notes is STILL empty here, the textarea
+    // either never received the user's keystrokes OR the listener+inline
+    // both failed to flush — so as a true last resort we read the
+    // textarea's .value PROPERTY directly off the DOM right now, before
+    // falling back to the parser default. This is belt-and-suspenders:
+    // if the DOM has the value (which it must, since the user typed it),
+    // we capture it regardless of whether any event ever fired.
+    var domNotes = '';
+    var _rowEl = document.querySelector('#mode-ai .ci-row[data-idx="'+i+'"]');
+    if(_rowEl){
+      var _nt = _rowEl.querySelector('textarea.ci-enrich-notes, textarea.rw-textarea');
+      if(_nt){
+        domNotes = (_nt.value || '').trim();
+      }
+    }
+    // Priority: e.notes (already-flushed) > DOM scrape > parser default.
+    // ANY non-empty user value wins over t.notes. Only fall to parser
+    // default if both enrichment AND DOM are empty.
+    var finalNotes = (e.notes && String(e.notes).trim()) ? e.notes
+                  : domNotes ? domNotes
+                  : (t.notes || '');
 
     var newTrade = {
       id: tradeId,
@@ -17553,7 +18426,7 @@ function importCsvTrades(){
       entry: t.entry, exit: t.exit, stop: eStop, qty: t.qty,
       accounts: accounts > 1 ? accounts : undefined,
       date: t.date, market: t.market,
-      notes: e.notes || t.notes || '',
+      notes: finalNotes,
       session: rowSession,
       grade: e.grade || 'B',
       emotion: e.emotion || 3,
@@ -17562,18 +18435,31 @@ function importCsvTrades(){
       rr: eRR,
       images: e.images || [],
       account: t.account,
+      // Chunk 5 — new fields parallel to Log Trade / Edit Modal.
+      account_type: rowAccountType,
+      tradingview_link: rowTVLink || undefined,
       created_at: new Date().toISOString()
     };
     trades.unshift(newTrade);
     importedTrades.push(newTrade);
 
-    // Auto-journal each trade
+    // Chunk 5 v3 — persist per-row confluences for this trade. Fire-and-
+    // forget via _cfPersistForTrade (handles saveTradeToSupa + bound
+    // trade_confluences inserts in series so the FK resolves).
+    var rowConfluences = Array.isArray(e.confluences) ? e.confluences.slice() : [];
+    if(rowConfluences.length && typeof _cfPersistForTrade === 'function'){
+      _cfPersistForTrade(newTrade, rowConfluences);
+    }
+
+    // Auto-journal each trade. Chunk 5 v5 — use the resolved finalNotes
+    // (not raw e.notes) so the journal entry matches the saved trade.
     const pnlStr=(t.pnl>=0?'+':'-')+'$'+Math.abs(t.pnl).toFixed(2);
     const gradeStr=e.grade||'B';
     const emotionStr=e.emotion||3;
     const sessionStr=rowSession?` · ${rowSession}`:'';
     const acctStr=accounts>1?` · ×${accounts} accts`:'';
-    const notesStr=e.notes?`\n\nNotes: ${e.notes}`:'';
+    const userJournalNotes = (finalNotes && finalNotes !== t.notes) ? finalNotes : (e.notes || '');
+    const notesStr=userJournalNotes?`\n\nNotes: ${userJournalNotes}`:'';
     const dirStr=(newTrade.type||'long').toUpperCase();
     const eStr=t.entry!=null?t.entry.toFixed(2):'?';
     const xStr=t.exit !=null?t.exit .toFixed(2):'?';
@@ -17597,28 +18483,941 @@ function importCsvTrades(){
 }
 
 function showAiError(msg){
+  // Chunk 5 — error path returns to Phase A (broker landing) with error
+  // banner shown above the drop zone. Phase B is hidden if it was visible.
+  var a = document.getElementById('ci-phase-a');
+  var b = document.getElementById('ci-phase-b');
+  if(a) a.style.display = '';
+  if(b) b.style.display = 'none';
   document.getElementById('ai-analyzing').style.display='none';
-  document.getElementById('ai-result').style.display='none';
-  document.getElementById('ai-drop-zone').style.display='block';
-  document.getElementById('ai-placeholder').style.display='block';
   const el=document.getElementById('ai-error');
-  el.style.display='block';
-  el.innerHTML=msg.replace(/\n/g,'<br>');
-  document.getElementById('ai-file-input').value='';
+  if(el){
+    el.style.display='block';
+    el.innerHTML = msg.replace(/\n/g,'<br>');
+  }
+  var fi = document.getElementById('ai-file-input');
+  if(fi) fi.value = '';
 }
 
 function discardAiScan(){
-  csvParsedTrades=[];
-  document.getElementById('ai-result').style.display='none';
-  document.getElementById('ai-drop-zone').style.display='block';
-  document.getElementById('ai-placeholder').style.display='block';
-  document.getElementById('ai-error').style.display='none';
-  document.getElementById('ai-file-input').value='';
+  // Chunk 5 — fully reset both csv state arrays + swap UI to Phase A.
+  // Called from importCsvTrades success path AND from ciDiscardAll (Phase B
+  // bottom CTA). Doesn't touch _csvBulkSession/Account/Confluences — those
+  // get reset inside ciSwapToEmpty so a refreshed Phase A starts clean.
+  csvParsedTrades = [];
+  csvEnrichment   = [];
+  csvCurrentIdx   = 0;
+  csvCurrentImgs  = [];
+  var err = document.getElementById('ai-error');
+  if (err) err.style.display = 'none';
+  var fi = document.getElementById('ai-file-input');
+  if (fi) fi.value = '';
+  if (typeof ciSwapToEmpty === 'function') ciSwapToEmpty();
 }
 
 function toBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});}
 function confirmAiScan(){}
 function logAiTrade(){}
+
+/* ════════════════════════════════════════════════════════════════════════
+   CHUNK 5 — CSV Import full redesign (Phase A landing + Phase B enrich).
+   State machine:
+     csvViewMode  'empty' (Phase A) | 'loaded' (Phase B)
+     _csvBulkSession / _csvBulkAccount / _csvBulkConfluences  apply-to-all defaults
+     ciExpandedRowIdx  index of the currently expanded trade row (only one at a time)
+   Phase A is Tradovate-only (broker grid retired in Chunk 5 v2). Tutorial
+   wrapper retains data-broker="tradovate" for future multi-broker reintro.
+   ════════════════════════════════════════════════════════════════════════ */
+
+var csvViewMode = 'empty';
+var ciExpandedRowIdx = -1;           // -1 = none expanded
+
+/* ── Phase A — single Tradovate tutorial (broker grid removed Chunk 5 v2)
+   The earlier ciSelectBroker / ciOpenBrokerRequest helpers + ciSelectedBroker
+   state were retired when the broker tile grid was collapsed into one
+   consolidated Tradovate-only section. The Tradovate tutorial wrapper still
+   carries data-broker="tradovate" so a future multi-broker picker can be
+   reintroduced without touching the JS render path.
+
+   Chunk 5 v3 also retired the apply-to-all bar (_csvBulkSession was already
+   declared elsewhere; _csvBulkAccount + _csvBulkConfluences are gone). Each
+   trade enriches per-row via the inline enrich zone, with session auto-
+   detected from the trade's fill time. */
+
+/* ── State swap: Phase A ↔ Phase B ─────────────────────────────────── */
+
+function ciSwapToLoaded(){
+  csvViewMode = 'loaded';
+  document.getElementById('ai-analyzing').style.display = 'none';
+  document.getElementById('ci-phase-a').style.display = 'none';
+  document.getElementById('ci-phase-b').style.display = '';
+  ciRenderLoaded();
+  // Top of pane so user sees the counter + apply-to-all immediately.
+  var pane = document.getElementById('lt-csv-pane');
+  if(pane && pane.scrollIntoView){ try{ pane.scrollIntoView({behavior:'smooth', block:'start'}); }catch(e){} }
+}
+window.ciSwapToLoaded = ciSwapToLoaded;
+
+function ciSwapToEmpty(){
+  csvViewMode = 'empty';
+  document.getElementById('ai-analyzing').style.display = 'none';
+  document.getElementById('ci-phase-b').style.display = 'none';
+  document.getElementById('ci-phase-a').style.display = '';
+  // Chunk 5 v3 — bulk state vars retired; only expanded-row tracker resets.
+  _csvBulkSession = '';
+  ciExpandedRowIdx = -1;
+}
+window.ciSwapToEmpty = ciSwapToEmpty;
+
+/* ── Phase B — render counter + apply-to-all + days ─────────────────── */
+
+function ciRenderLoaded(){
+  ciUpdateCounters();
+  ciRenderDays();
+  // Bottom CTA import count
+  var cnt = document.getElementById('ci-import-count');
+  if(cnt) cnt.textContent = csvParsedTrades.length;
+}
+window.ciRenderLoaded = ciRenderLoaded;
+
+function ciIsRowEnriched(i){
+  var e = csvEnrichment[i] || {};
+  if(e.notes && String(e.notes).trim()) return true;
+  // Chunk 5 v4 — snake_case. Fall back to camelCase for any legacy state.
+  if(e.account_type || e.accountType) return true;
+  if(e.tradingview_link && String(e.tradingview_link).trim()) return true;
+  if(Array.isArray(e.confluences) && e.confluences.length) return true;
+  // Chunk 5 v3 — count uploaded screenshots toward enriched. Pending-upload
+  // placeholder strings count too (the user committed to attaching them).
+  if(Array.isArray(e.images) && e.images.length) return true;
+  if(e.grade && e.grade !== 'B') return true;
+  var em = parseInt(e.emotion); if(!isNaN(em) && em !== 3) return true;
+  var cf = parseInt(e.confidence); if(!isNaN(cf) && cf !== 3) return true;
+  // session is intentionally NOT in the enriched signal — auto-detected
+  // for every row from fill time, so every row has one by default.
+  return false;
+}
+
+function ciUpdateCounters(){
+  var total = csvParsedTrades.length;
+  var enriched = 0;
+  for(var i=0;i<total;i++) if(ciIsRowEnriched(i)) enriched++;
+  var pending = total - enriched;
+  var en = document.getElementById('ci-c-enriched-n');
+  var pe = document.getElementById('ci-c-pending-n');
+  var to = document.getElementById('ci-c-total-n');
+  if(en) en.textContent = enriched;
+  if(pe) pe.textContent = pending;
+  if(to) to.textContent = total;
+}
+window.ciUpdateCounters = ciUpdateCounters;
+
+/* Apply-to-all popovers + bulk setters retired in Chunk 5 v3.
+   ciToggleApplyAllPop / ciApplyAllSession / ciApplyAllAccount /
+   ciRefreshApplyAllChips / ciOpenBulkConfluencesPicker /
+   ciCloseBulkConfluencesPicker are all gone. Per-row enrichment via
+   the inline enrich zone covers session (auto-detected per row from
+   each trade's fill time), account_type, confluences, screenshots,
+   TV link, and notes. */
+
+/* ── Phase B — day grouping + row render ────────────────────────────── */
+
+function ciBuildDayGroups(){
+  var groups = {};
+  csvParsedTrades.forEach(function(t, i){
+    var d = t.date || 'unknown';
+    if(!groups[d]) groups[d] = [];
+    groups[d].push({trade:t, idx:i});
+  });
+  // Return array of {date, items, pnl} sorted by date ascending.
+  return Object.keys(groups).sort().map(function(d){
+    var items = groups[d];
+    var pnl = items.reduce(function(s, x){ return s + (Number(x.trade.pnl)||0); }, 0);
+    return {date:d, items:items, pnl:pnl};
+  });
+}
+
+function ciFmtMoney(v){
+  var sign = v>0?'+':v<0?'−':'';
+  var abs = Math.abs(v);
+  var int = Math.floor(abs).toLocaleString('en-US');
+  var cents = (abs - Math.floor(abs)).toFixed(2).slice(1);
+  return sign + '$' + int + '<span class="cents">' + cents + '</span>';
+}
+function ciFmtTime(t){
+  // Tradovate parser stores fillTime (timestamp string) inside t — fall
+  // back to t.date if no time available.
+  if(t._fillTime){
+    try {
+      var d = new Date(t._fillTime);
+      if(!isNaN(d)) return d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false});
+    } catch(e){}
+  }
+  return '';
+}
+function ciEsc(s){
+  return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+  });
+}
+
+function ciFmtDateHeader(dateStr){
+  try {
+    var d = new Date(dateStr + 'T12:00:00');
+    if(!isNaN(d)) return d.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'});
+  } catch(e){}
+  return dateStr || 'Unknown date';
+}
+
+function ciRenderDays(){
+  var container = document.getElementById('ci-days-container');
+  if(!container) return;
+  var groups = ciBuildDayGroups();
+  if(!groups.length){
+    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--n-text-3);font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.14em">NO TRADES PARSED</div>';
+    return;
+  }
+  container.innerHTML = groups.map(function(g){
+    var pnlCls = g.pnl > 0 ? 'pos' : g.pnl < 0 ? 'neg' : '';
+    return '<div class="ci-day" data-date="'+ciEsc(g.date)+'">' +
+      '<div class="ci-day-head" onclick="ciToggleDay(\''+ciEsc(g.date)+'\')">' +
+        '<span class="ci-day-chevron">&#9662;</span>' +
+        '<span class="ci-day-date">'+ciEsc(ciFmtDateHeader(g.date))+'</span>' +
+        '<span class="ci-day-hr"></span>' +
+        '<span class="ci-day-count">'+g.items.length+' trade'+(g.items.length>1?'s':'')+'</span>' +
+        '<span class="ci-day-pnl '+pnlCls+'">'+ciFmtMoney(g.pnl)+'</span>' +
+      '</div>' +
+      '<div class="ci-day-rows">' +
+        g.items.map(function(item){ return ciRenderRow(item.trade, item.idx); }).join('') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+window.ciRenderDays = ciRenderDays;
+
+function ciToggleDay(date){
+  var day = document.querySelector('#mode-ai .ci-day[data-date="'+date+'"]');
+  if(day) day.classList.toggle('ci-day-collapsed');
+}
+window.ciToggleDay = ciToggleDay;
+
+function ciRenderRow(t, idx){
+  var e = csvEnrichment[idx] || {};
+  // Chunk 5 v3 fix — per-row P&L removed from the row template. Day-header
+  // P&L (next to "N TRADE") still renders day totals; per-row P&L was
+  // redundant noise. `p` and `pnlCls` variables retired alongside.
+  var sideRaw = String(t.direction || t.type || '').toLowerCase();
+  var sideArrow = sideRaw === 'long' ? '↗' : sideRaw === 'short' ? '↘' : '';
+  var sideLabel = sideRaw === 'long' ? 'Long' : sideRaw === 'short' ? 'Short' : '';
+  var sideTier = sideRaw === 'long' ? 'sage' : sideRaw === 'short' ? 'rose' : '';
+  var enriched = ciIsRowEnriched(idx);
+  var statusIcon = enriched ? '&#10003;' : '&#9675;';
+  var time = ciFmtTime(t);
+
+  // Mini confluence pills if row has any (per-row only; no bulk fallback
+   // anymore — apply-to-all bar retired in Chunk 5 v3).
+  var cfPills = (Array.isArray(e.confluences) && e.confluences.length) ? e.confluences : [];
+  var cfHtml = '';
+  if(cfPills.length){
+    cfHtml = '<span class="ci-row-cf">' + cfPills.slice(0,3).map(function(p){
+      var tier = (typeof cfTierFor === 'function') ? cfTierFor(p.timeframe) : 'none';
+      var tf = p.timeframe ? ('<span class="cf-mini-tf">'+p.timeframe+'</span><span class="cf-mini-dot">·</span>') : '';
+      return '<span class="cf-pill-mini cf-pill-'+tier+'">'+tf+'<span>'+ciEsc(p.name)+'</span></span>';
+    }).join('') + (cfPills.length > 3 ? '<span class="cf-more-badge">+'+(cfPills.length-3)+'</span>' : '') + '</span>';
+  } else if(!enriched) {
+    cfHtml = '<span class="ci-row-pending-hint"><i>pending enrich</i></span>';
+  }
+
+  var pricesHtml = (t.entry != null && t.exit != null)
+    ? ciEsc(Number(t.entry).toFixed(2)) + '<span class="ci-row-prices-arrow">→</span>' + ciEsc(Number(t.exit).toFixed(2))
+    : '';
+  var qtyHtml = (t.qty ? t.qty : 1) + 'ct';
+  // Account from per-row only (bulk retired). Chunk 5 v4 — snake_case;
+  // fall back to camelCase for legacy state.
+  var acctRaw = e.account_type || e.accountType || '';
+  var metaHtml = qtyHtml + (acctRaw ? (' · ' + acctRaw.toUpperCase()) : '');
+
+  return '<div class="ci-row" data-idx="'+idx+'">' +
+    '<div class="ci-row-head" onclick="ciToggleRowEnrich('+idx+')">' +
+      '<span class="ci-row-status '+(enriched?'enriched':'pending')+'">'+statusIcon+'</span>' +
+      (time ? '<span class="ci-row-time">'+ciEsc(time)+'</span>' : '') +
+      '<span class="ci-row-sym">'+ciEsc(t.sym||'—')+'</span>' +
+      (sideLabel ? '<span class="ci-row-side '+sideTier+'">'+sideArrow+' '+sideLabel+'</span>' : '') +
+      (pricesHtml ? '<span class="ci-row-prices">'+pricesHtml+'</span>' : '') +
+      '<span class="ci-row-meta">'+ciEsc(metaHtml)+'</span>' +
+      cfHtml +
+      '<span class="ci-row-spacer"></span>' +
+      '<span class="ci-row-chevron">&#9662;</span>' +
+    '</div>' +
+    '<div class="ci-enrich" data-idx="'+idx+'"></div>' +
+  '</div>';
+}
+
+function ciToggleRowEnrich(idx){
+  var row = document.querySelector('#mode-ai .ci-row[data-idx="'+idx+'"]');
+  if(!row) return;
+  var wasExpanded = row.classList.contains('expanded');
+
+  // Chunk 5 v3 — snapshot the currently-expanded row's picker pills BEFORE
+  // we change selection, so live edits land in csvEnrichment[i].confluences.
+  // Also clear the previously-expanded row's enrich-zone DOM so we don't
+  // accidentally leave two pickers (with duplicate IDs) in the document.
+  if(ciExpandedRowIdx !== -1 && ciExpandedRowIdx !== idx){
+    if(typeof ciSnapshotRowConfluences === 'function') ciSnapshotRowConfluences(ciExpandedRowIdx);
+    ciClearEnrichZone(ciExpandedRowIdx);
+  }
+  // Collapse any other expanded row first (only one at a time).
+  document.querySelectorAll('#mode-ai .ci-row.expanded').forEach(function(r){
+    if(r !== row) r.classList.remove('expanded');
+  });
+
+  if(wasExpanded){
+    // Collapsing the current row — snapshot picker pills first, then clear DOM.
+    if(typeof ciSnapshotRowConfluences === 'function') ciSnapshotRowConfluences(idx);
+    ciClearEnrichZone(idx);
+    row.classList.remove('expanded');
+    ciExpandedRowIdx = -1;
+  } else {
+    // Expanding a row — paint the enrich zone, then hydrate the picker
+    // instance with this row's saved confluences.
+    row.classList.add('expanded');
+    ciExpandedRowIdx = idx;
+    ciRenderEnrichZone(idx);
+    // Hydrate picker
+    csvRowConfluencesState.reset();
+    var saved = (csvEnrichment[idx] && csvEnrichment[idx].confluences) || [];
+    csvRowConfluencesState.selected = saved.map(function(p){
+      return { confluence_id: p.confluence_id, name: p.name, timeframe: p.timeframe };
+    });
+    // Lazy-load library on first picker open in this CSV session.
+    if(csvRowConfluencesState.library === null && typeof csvRowConfluencesState.loadLibrary === 'function'){
+      csvRowConfluencesState.loadLibrary().then(function(){
+        cfRenderLibrary(csvRowConfluencesState);
+      });
+    }
+    cfRenderPills(csvRowConfluencesState);
+    cfRenderTFChips(csvRowConfluencesState);
+  }
+}
+window.ciToggleRowEnrich = ciToggleRowEnrich;
+
+// Snapshot picker pills → csvEnrichment[idx].confluences. Called on collapse,
+// row-switch, and live from csvRowConfluencesState.addPill/removePill so the
+// row's status icon updates immediately as pills change.
+function ciSnapshotRowConfluences(idx){
+  if(idx == null) idx = ciExpandedRowIdx;
+  if(idx == null || idx < 0) return;
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  e.confluences = csvRowConfluencesState.selected.slice();
+  if(typeof ciUpdateRowStatus === 'function') ciUpdateRowStatus(idx);
+  if(typeof ciUpdateCounters === 'function') ciUpdateCounters();
+}
+window.ciSnapshotRowConfluences = ciSnapshotRowConfluences;
+
+// Clear an enrich zone's DOM. Used on collapse / row-switch so picker
+// elements (with fixed IDs like #csv-row-cf-pills) don't duplicate
+// across rows.
+//
+// Chunk 5 v4 — BEFORE wiping the DOM, snapshot any textarea/TV input
+// values back into csvEnrichment[idx]. Without this, a user who typed
+// notes and then clicked another row would lose their notes when this
+// row's DOM gets destroyed (the new row's expand calls ciClearEnrichZone
+// on the previously-expanded idx, which up to now just wiped the DOM
+// without preserving input state).
+function ciClearEnrichZone(idx){
+  var row = document.querySelector('#mode-ai .ci-row[data-idx="'+idx+'"]');
+  if(!row) return;
+  var zone = row.querySelector('.ci-enrich');
+  if(!zone) return;
+  // Snapshot input values FIRST — these only get flushed via oninput, but a
+  // pending keystroke or paste might not have fired before we tear down.
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  var notesEl = zone.querySelector('textarea.ci-enrich-notes, textarea.rw-textarea');
+  if(notesEl) e.notes = notesEl.value || '';
+  var tvEl = zone.querySelector('.rw-tv-input');
+  if(tvEl) e.tradingview_link = (tvEl.value || '').trim();
+  // THEN wipe DOM.
+  zone.innerHTML = '';
+}
+
+/* ── Inline enrich zone (chip selectors + TV link + notes) ──────────── */
+
+function ciRenderEnrichZone(idx){
+  var row = document.querySelector('#mode-ai .ci-row[data-idx="'+idx+'"]');
+  if(!row) return;
+  var zone = row.querySelector('.ci-enrich');
+  if(!zone) return;
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  // Defaults
+  if(!e.grade) e.grade = 'B';
+  if(e.emotion == null) e.emotion = 3;
+  if(e.confidence == null) e.confidence = 3;
+  if(!e.notes) e.notes = '';
+  if(!e.tradingview_link) e.tradingview_link = '';
+  if(!e.session) e.session = '';
+  if(!e.account_type) e.account_type = '';   // Chunk 5 v4 — snake_case
+  if(!Array.isArray(e.images)) e.images = [];
+
+  // Chunk 5 v3 — Grade chips (F D C B A A+). Inline onclick passes `this`
+  // so the targeted handler can flip .active in-place without re-rendering
+  // the whole enrich zone (which would destroy the textarea + TV input).
+  var gradeIdxMap = {F:1, D:2, C:3, B:4, A:5, 'A+':6};
+  var gradeIdx = gradeIdxMap[e.grade] || 4;
+  var gradeChips = ['F','D','C','B','A','A+'].map(function(letter, i){
+    var ti = i+1;
+    var tier = (letter==='F'||letter==='D')?'rose':(letter==='A'||letter==='A+')?'sage':'muted';
+    var active = ti === gradeIdx ? ' active' : '';
+    return '<button type="button" class="rw-chip rw-chip-grade'+active+'" data-tier="'+tier+'" '+
+           'onclick="ciSetEnrichGrade('+idx+',\''+letter+'\',this)">'+letter+'</button>';
+  }).join('');
+
+  // Emotion: 5 chips (existing scale direction kept — 1=worst → 5=best)
+  var emotionLbls = ['','1·Tilt','2','3·Neutral','4','5·Zone'];
+  var emotionTiers = ['','rose','rose','muted','sage','sage'];
+  var emotionChips = [1,2,3,4,5].map(function(n){
+    var active = n === e.emotion ? ' active' : '';
+    return '<button type="button" class="rw-chip'+active+'" data-tier="'+emotionTiers[n]+'" '+
+           'onclick="ciSetEnrichEmotion('+idx+','+n+',this)">'+emotionLbls[n]+'</button>';
+  }).join('');
+
+  // Confidence: 5 chips
+  var confLbls = ['','1·None','2','3','4','5·Max'];
+  var confTiers = ['','rose','cool','cool','cool','sage'];
+  var confChips = [1,2,3,4,5].map(function(n){
+    var active = n === e.confidence ? ' active' : '';
+    return '<button type="button" class="rw-chip'+active+'" data-tier="'+confTiers[n]+'" '+
+           'onclick="ciSetEnrichConf('+idx+','+n+',this)">'+confLbls[n]+'</button>';
+  }).join('');
+
+  // Session: 5 chips (auto-populated from fill time; user can override).
+  // No toggle-off — clicking any chip SETS that session (avoids the silent
+  // wipe where clicking the auto-detected chip cleared it). To "clear" a
+  // session the user would just pick a different one.
+  var sessionList = ['Asia','London','NY AM','NY Lunch','NY PM'];
+  var sessionChips = sessionList.map(function(s){
+    var active = s === e.session ? ' active' : '';
+    return '<button type="button" class="rw-chip'+active+'" data-tier="sage" '+
+           'onclick="ciSetEnrichSession('+idx+',\''+s+'\',this)">'+s+'</button>';
+  }).join('');
+
+  // Account Type: 4 chips
+  var acctList = [
+    {key:'paper',  label:'Paper',  tier:'muted', dot:'rgba(255,255,255,0.35)'},
+    {key:'eval',   label:'Eval',   tier:'gold',  dot:'var(--n-gold,#f5d77c)'},
+    {key:'funded', label:'Funded', tier:'sage',  dot:'var(--n-profit)'},
+    {key:'live',   label:'Live',   tier:'cool',  dot:'var(--n-accent-cool,#6ea8ff)'}
+  ];
+  var acctChips = acctList.map(function(a){
+    var active = a.key === e.account_type ? ' active' : '';   // Chunk 5 v4 — snake_case
+    return '<button type="button" class="rw-chip rw-chip-acct'+active+'" data-tier="'+a.tier+'" '+
+           'onclick="ciSetEnrichAccount('+idx+',\''+a.key+'\',this)">'+
+           '<span class="rw-acct-dot" style="background:'+a.dot+'"></span>'+a.label+'</button>';
+  }).join('');
+
+  // TV link + validation badge
+  var tvOkVis = (e.tradingview_link && typeof _TV_LINK_RE !== 'undefined' && _TV_LINK_RE.test(e.tradingview_link)) ? 'inline-flex' : 'none';
+
+  // Screenshot thumbs (mini, with × remove)
+  var thumbsHtml = e.images.map(function(src, imgIdx){
+    if(typeof src === 'string' && src.indexOf('UPLOADING:') === 0){
+      return '<div class="ci-enrich-thumb ci-enrich-thumb-uploading">UPLOADING…</div>';
+    }
+    var safeSrc = (typeof safeURL === 'function') ? safeURL(src) : src;
+    if(!safeSrc) return '';
+    return '<div class="ci-enrich-thumb-wrap">' +
+             '<img class="ci-enrich-thumb" src="'+ciEsc(safeSrc)+'" '+
+                  'onclick="event.stopPropagation();openImgLightbox(this.src)" '+
+                  'onerror="this.parentNode.style.display=\'none\'"/>' +
+             '<button type="button" class="ci-enrich-thumb-x" '+
+                     'onclick="event.stopPropagation();ciRemoveEnrichImage('+idx+','+imgIdx+')">&times;</button>' +
+           '</div>';
+  }).join('');
+
+  zone.innerHTML =
+    /* Row 1 — Grade · Emotion · Confidence */
+    '<div class="ci-enrich-grid">' +
+      '<div class="rw-field">' +
+        '<div class="rw-field-l">Setup Grade</div>' +
+        '<div class="rw-chip-row rw-chip-row-grade">'+gradeChips+'</div>' +
+      '</div>' +
+      '<div class="rw-field">' +
+        '<div class="rw-field-l">Emotion</div>' +
+        '<div class="rw-chip-row">'+emotionChips+'</div>' +
+      '</div>' +
+      '<div class="rw-field">' +
+        '<div class="rw-field-l">Confidence</div>' +
+        '<div class="rw-chip-row">'+confChips+'</div>' +
+      '</div>' +
+    '</div>' +
+    /* Row 2 — Session (full-width, auto-detected from fill time) */
+    '<div class="rw-field">' +
+      '<div class="rw-field-l">Session <span class="rw-mod-opt">'+(e.session?'auto-detected':'manual')+'</span></div>' +
+      '<div class="rw-chip-row">'+sessionChips+'</div>' +
+    '</div>' +
+    /* Row 3 — Account Type · TradingView link */
+    '<div class="ci-enrich-row-double">' +
+      '<div class="rw-field">' +
+        '<div class="rw-field-l">Account Type <span class="rw-mod-opt">optional</span></div>' +
+        '<div class="rw-chip-row">'+acctChips+'</div>' +
+      '</div>' +
+      '<div class="rw-field">' +
+        '<div class="rw-field-l">TradingView link <span class="rw-mod-opt">optional</span></div>' +
+        '<div class="rw-tv-wrap">' +
+          '<svg class="rw-tv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+            '<polyline points="3,17 9,11 13,15 21,7"/><polyline points="14,7 21,7 21,14"/>' +
+          '</svg>' +
+          '<input type="url" class="rw-tv-input" placeholder="Paste TradingView link…" '+
+                 'value="'+ciEsc(e.tradingview_link)+'" '+
+                 'oninput="ciOnEnrichTV('+idx+', this.value, this.parentNode.querySelector(\'.rw-tv-ok\'))"/>' +
+          '<span class="rw-tv-ok" style="display:'+tvOkVis+'">&#10003; Linked</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    /* Row 4 — Screenshots · Confluences picker */
+    '<div class="ci-enrich-row-double">' +
+      '<div class="rw-field">' +
+        '<div class="rw-field-l">Screenshots <span class="rw-mod-opt">optional</span></div>' +
+        '<div class="rw-dropzone ci-enrich-dropzone" '+
+             'onclick="event.stopPropagation();document.getElementById(\'csv-row-img-input\').click()" '+
+             'ondragover="event.preventDefault();this.classList.add(\'drag-over\')" '+
+             'ondragleave="this.classList.remove(\'drag-over\')" '+
+             'ondrop="event.preventDefault();this.classList.remove(\'drag-over\');ciHandleEnrichDrop('+idx+',event)">' +
+          '<input type="file" id="csv-row-img-input" accept="image/*" multiple style="display:none" '+
+                 'onchange="ciHandleEnrichFiles('+idx+',this.files)"/>' +
+          '<svg class="rw-dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">' +
+            '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>' +
+          '<div class="rw-dz-h">Drop screenshot</div>' +
+          '<div class="rw-dz-sub">or click to browse</div>' +
+        '</div>' +
+        '<div class="ci-enrich-thumbs">'+thumbsHtml+'</div>' +
+      '</div>' +
+      '<div class="rw-field" id="csv-row-cf-section">' +
+        '<div class="rw-field-l rw-field-l-flex">' +
+          '<span>Confluences <span class="rw-mod-opt">optional</span></span>' +
+          '<span class="cf-count" id="csv-row-cf-count">0 added</span>' +
+        '</div>' +
+        '<div class="cf-pills" id="csv-row-cf-pills" onclick="event.stopPropagation();cfTogglePicker(undefined, csvRowConfluencesState)">' +
+          '<span class="cf-hint" id="csv-row-cf-hint">+ click to add confluences</span>' +
+        '</div>' +
+        '<div class="cf-dropdown" id="csv-row-cf-dropdown" style="display:none">' +
+          '<div class="cf-dropdown-section">' +
+            '<div class="rw-field-l">Timeframe</div>' +
+            '<div class="cf-tf-chips" id="csv-row-cf-tf-chips">' +
+              '<span class="cf-tf-chip" data-tf="1m"  onclick="cfSetTF(\'1m\',this,event,csvRowConfluencesState)">1m</span>' +
+              '<span class="cf-tf-chip" data-tf="5m"  onclick="cfSetTF(\'5m\',this,event,csvRowConfluencesState)">5m</span>' +
+              '<span class="cf-tf-chip" data-tf="15m" onclick="cfSetTF(\'15m\',this,event,csvRowConfluencesState)">15m</span>' +
+              '<span class="cf-tf-chip" data-tf="30m" onclick="cfSetTF(\'30m\',this,event,csvRowConfluencesState)">30m</span>' +
+              '<span class="cf-tf-chip active htf" data-tf="1hr" onclick="cfSetTF(\'1hr\',this,event,csvRowConfluencesState)">1hr</span>' +
+              '<span class="cf-tf-chip" data-tf="4h"  onclick="cfSetTF(\'4h\',this,event,csvRowConfluencesState)">4h</span>' +
+              '<span class="cf-tf-chip" data-tf="D"   onclick="cfSetTF(\'D\',this,event,csvRowConfluencesState)">D</span>' +
+              '<span class="cf-tf-chip" data-tf="W"   onclick="cfSetTF(\'W\',this,event,csvRowConfluencesState)">W</span>' +
+              '<span class="cf-tf-chip no-tf" data-tf="" onclick="cfSetTF(null,this,event,csvRowConfluencesState)">No TF</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="cf-search">' +
+            '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>' +
+            '<input type="text" id="csv-row-cf-search-input" placeholder="Type to filter or create new" oninput="cfOnSearchInput(this.value, csvRowConfluencesState)"/>' +
+          '</div>' +
+          '<div class="cf-lib-header"><div class="rw-field-l">Your library</div></div>' +
+          '<div class="cf-lib-list" id="csv-row-cf-lib-list"></div>' +
+          '<div class="cf-add-input-row" id="csv-row-cf-add-input-row" style="display:none">' +
+            '<input type="text" id="csv-row-cf-add-input" placeholder="New confluence name" maxlength="48" '+
+                   'onkeydown="if(event.key===\'Enter\')cfConfirmAddLibrary(csvRowConfluencesState);if(event.key===\'Escape\')cfCancelAddLibrary(csvRowConfluencesState)"/>' +
+            '<button class="cf-add-confirm" onclick="cfConfirmAddLibrary(csvRowConfluencesState)">&#10003;</button>' +
+            '<button class="cf-add-cancel" onclick="cfCancelAddLibrary(csvRowConfluencesState)">&times;</button>' +
+          '</div>' +
+          '<div class="cf-dropdown-footer" id="csv-row-cf-add-footer" onclick="cfShowAddInput(csvRowConfluencesState)">' +
+            '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+            '<span id="csv-row-cf-add-footer-text">Add new confluence</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    /* Row 5 — Notes. Chunk 5 v4 — inline oninput retained, but the
+       primary binding is via addEventListener below (more reliable when
+       the textarea is created via innerHTML and the inline attribute
+       parsing has edge-case failures). */
+    '<div class="rw-field">' +
+      '<div class="rw-field-l">Notes</div>' +
+      '<textarea class="rw-input rw-textarea ci-enrich-notes" data-idx="'+idx+'" '+
+                'placeholder="What happened? Setup, decision, lessons…" '+
+                'oninput="ciOnEnrichNotes('+idx+', this.value)">'+ciEsc(e.notes)+'</textarea>' +
+    '</div>';
+
+  // Chunk 5 v4 — bind textarea + TV input via addEventListener as the
+  // PRIMARY handler, with multiple event types so a value lands in
+  // csvEnrichment[idx] regardless of which event fires (input fires per
+  // keystroke; change fires on commit/blur; blur catches a clicked-away
+  // value). The inline oninput acts as a backup. Plus an explicit class
+  // (.ci-enrich-notes) makes the textarea easy to find via querySelector.
+  var notesEl = zone.querySelector('textarea.ci-enrich-notes, textarea.rw-textarea');
+  if(notesEl){
+    var notesHandler = function(){
+      var e2 = csvEnrichment[idx] = csvEnrichment[idx] || {};
+      e2.notes = notesEl.value || '';
+      ciUpdateRowStatus(idx);
+      ciUpdateCounters();
+    };
+    notesEl.addEventListener('input',  notesHandler);
+    notesEl.addEventListener('change', notesHandler);
+    notesEl.addEventListener('blur',   notesHandler);
+    notesEl.addEventListener('keyup',  notesHandler);
+  } else {
+    console.warn('[ciRenderEnrichZone] notes textarea NOT FOUND for idx='+idx);
+  }
+  var tvInputEl = zone.querySelector('.rw-tv-input');
+  if(tvInputEl){
+    var tvHandler = function(){
+      var e2 = csvEnrichment[idx] = csvEnrichment[idx] || {};
+      e2.tradingview_link = (tvInputEl.value || '').trim();
+      // Also update the ✓ Linked badge.
+      var okBadge = tvInputEl.parentNode && tvInputEl.parentNode.querySelector('.rw-tv-ok');
+      if(okBadge){
+        var isValid = e2.tradingview_link && typeof _TV_LINK_RE !== 'undefined' && _TV_LINK_RE.test(e2.tradingview_link);
+        okBadge.style.display = isValid ? 'inline-flex' : 'none';
+      }
+      ciUpdateRowStatus(idx);
+      ciUpdateCounters();
+    };
+    tvInputEl.addEventListener('input',  tvHandler);
+    tvInputEl.addEventListener('change', tvHandler);
+    tvInputEl.addEventListener('blur',   tvHandler);
+    tvInputEl.addEventListener('paste',  function(){ setTimeout(tvHandler, 0); }); // paste fires before value updates
+  } else {
+    console.warn('[ciRenderEnrichZone] TV input NOT FOUND for idx='+idx);
+  }
+}
+window.ciRenderEnrichZone = ciRenderEnrichZone;
+
+function _ciFlagOverride(idx, fieldKey){
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  e[fieldKey + 'Override'] = true;
+}
+
+/* Chunk 5 v3 bug fix — TARGETED chip-row update.
+   Previously every chip click called ciRenderEnrichZone(idx) which rebuilt
+   the ENTIRE enrich zone via zone.innerHTML — wiping the textarea + TV input
+   DOM nodes (and any text the user had typed but not yet flushed through
+   oninput). Now each chip handler updates only the chip row it owns by
+   toggling .active classes in place. Textarea + TV input stay live. */
+function _ciToggleActiveChip(row, attrKey, activeValue){
+  if(!row) return;
+  var chips = row.querySelectorAll('.ci-enrich [data-'+attrKey+'], .ci-enrich button[data-'+attrKey+']');
+  // Note: we use a generic selector that walks all chips in the zone since
+  // chip data-attrs vary (data-tier carries tier color, but the chips don't
+  // currently carry data-grade / data-emotion / etc. — so we identify chip
+  // rows by their parent .rw-chip-row and the onclick attribute that names
+  // the setter. Simpler: walk all rw-chip elements inside the same row,
+  // strip .active off siblings of the clicked one, then add .active to
+  // whichever button matches the new value.
+}
+// Simpler implementation: pass the clicked button element directly and
+// strip .active off its siblings.
+function _ciActivateChipInGroup(rowEl, groupSelector, clickedBtn){
+  if(!rowEl) return;
+  var group = rowEl.querySelector(groupSelector);
+  if(!group) return;
+  Array.prototype.forEach.call(group.querySelectorAll('.rw-chip'), function(c){
+    c.classList.remove('active');
+  });
+  if(clickedBtn) clickedBtn.classList.add('active');
+}
+
+function ciSetEnrichGrade(idx, letter, btn){
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  e.grade = letter;
+  // Targeted update — strip .active from siblings, add to clicked.
+  var rowEl = document.querySelector('#mode-ai .ci-row[data-idx="'+idx+'"]');
+  _ciActivateChipInGroup(rowEl, '.rw-chip-row-grade', btn || null);
+  // Fallback (older calls without btn arg) — find by letter text.
+  if(!btn && rowEl){
+    Array.prototype.forEach.call(rowEl.querySelectorAll('.rw-chip-row-grade .rw-chip'), function(c){
+      if(c.textContent.trim() === letter) c.classList.add('active');
+    });
+  }
+  ciUpdateRowStatus(idx);
+  ciUpdateCounters();
+}
+window.ciSetEnrichGrade = ciSetEnrichGrade;
+
+function ciSetEnrichEmotion(idx, n, btn){
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  e.emotion = parseInt(n) || 3;
+  var rowEl = document.querySelector('#mode-ai .ci-row[data-idx="'+idx+'"]');
+  // Emotion is the second .rw-chip-row inside the top .ci-enrich-grid.
+  if(rowEl){
+    var grids = rowEl.querySelectorAll('.ci-enrich-grid .rw-chip-row');
+    var emotionGroup = grids[1]; // Grade · Emotion · Confidence
+    if(emotionGroup){
+      Array.prototype.forEach.call(emotionGroup.querySelectorAll('.rw-chip'), function(c){
+        c.classList.remove('active');
+      });
+      if(btn){ btn.classList.add('active'); }
+      else {
+        // Fallback — match by n in onclick attribute.
+        Array.prototype.forEach.call(emotionGroup.querySelectorAll('.rw-chip'), function(c){
+          var oc = c.getAttribute('onclick')||'';
+          if(oc.indexOf('ciSetEnrichEmotion('+idx+','+e.emotion+')') >= 0) c.classList.add('active');
+        });
+      }
+    }
+  }
+  ciUpdateRowStatus(idx);
+  ciUpdateCounters();
+}
+window.ciSetEnrichEmotion = ciSetEnrichEmotion;
+
+function ciSetEnrichConf(idx, n, btn){
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  e.confidence = parseInt(n) || 3;
+  var rowEl = document.querySelector('#mode-ai .ci-row[data-idx="'+idx+'"]');
+  if(rowEl){
+    var grids = rowEl.querySelectorAll('.ci-enrich-grid .rw-chip-row');
+    var confGroup = grids[2];
+    if(confGroup){
+      Array.prototype.forEach.call(confGroup.querySelectorAll('.rw-chip'), function(c){
+        c.classList.remove('active');
+      });
+      if(btn){ btn.classList.add('active'); }
+      else {
+        Array.prototype.forEach.call(confGroup.querySelectorAll('.rw-chip'), function(c){
+          var oc = c.getAttribute('onclick')||'';
+          if(oc.indexOf('ciSetEnrichConf('+idx+','+e.confidence+')') >= 0) c.classList.add('active');
+        });
+      }
+    }
+  }
+  ciUpdateRowStatus(idx);
+  ciUpdateCounters();
+}
+window.ciSetEnrichConf = ciSetEnrichConf;
+
+function ciSetEnrichAccount(idx, type, btn){
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  // Click active → clear (toggle off). Snake_case key (Chunk 5 v4 fix).
+  e.account_type = (e.account_type === type) ? '' : type;
+  // Targeted update — find the account chip group in the enrich zone.
+  var rowEl = document.querySelector('#mode-ai .ci-row[data-idx="'+idx+'"]');
+  if(rowEl){
+    Array.prototype.forEach.call(rowEl.querySelectorAll('.ci-enrich .rw-chip-acct'), function(c){
+      c.classList.remove('active');
+    });
+    if(e.account_type && btn) btn.classList.add('active');
+    else if(e.account_type){
+      Array.prototype.forEach.call(rowEl.querySelectorAll('.ci-enrich .rw-chip-acct'), function(c){
+        var oc = c.getAttribute('onclick')||'';
+        if(oc.indexOf('ciSetEnrichAccount('+idx+',\''+e.account_type+'\'') >= 0) c.classList.add('active');
+      });
+    }
+  }
+  ciUpdateRowStatus(idx);
+  ciUpdateCounters();
+}
+window.ciSetEnrichAccount = ciSetEnrichAccount;
+
+// Chunk 5 v3 bug fix — Session chip handler. Auto-detected from fill time
+// in csvInitEnrichment; user clicks to override. Clicking the SAME chip
+// that's currently active SETS it again (no toggle-off — auto-detected
+// values shouldn't accidentally clear when the user clicks the chip that
+// already matches what they want). To explicitly clear session, user can
+// pick a different one and then re-click that — same behavior. Avoids
+// the silent-wipe bug where clicking "NY AM" on an already-NY-AM row
+// blanked the field.
+function ciSetEnrichSession(idx, name, btn){
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  e.session = name || '';
+  var rowEl = document.querySelector('#mode-ai .ci-row[data-idx="'+idx+'"]');
+  if(rowEl){
+    // Session row is the standalone .rw-chip-row right after .ci-enrich-grid.
+    // Identify it by its child chips' onclick referencing ciSetEnrichSession.
+    var allChipRows = rowEl.querySelectorAll('.ci-enrich .rw-chip-row');
+    var sessionGroup = null;
+    Array.prototype.some.call(allChipRows, function(g){
+      var firstBtn = g.querySelector('.rw-chip');
+      if(firstBtn && (firstBtn.getAttribute('onclick')||'').indexOf('ciSetEnrichSession') >= 0){
+        sessionGroup = g; return true;
+      }
+      return false;
+    });
+    if(sessionGroup){
+      Array.prototype.forEach.call(sessionGroup.querySelectorAll('.rw-chip'), function(c){
+        c.classList.remove('active');
+      });
+      if(btn) btn.classList.add('active');
+      else {
+        Array.prototype.forEach.call(sessionGroup.querySelectorAll('.rw-chip'), function(c){
+          var oc = c.getAttribute('onclick')||'';
+          if(oc.indexOf("ciSetEnrichSession("+idx+",'"+e.session+"'") >= 0) c.classList.add('active');
+        });
+      }
+    }
+  }
+  ciUpdateCounters();
+}
+window.ciSetEnrichSession = ciSetEnrichSession;
+
+/* ── Per-row screenshot upload ───────────────────────────────────────
+   Pattern mirrors Log Trade's handleImgFiles: push UPLOADING placeholder,
+   render, await uploadTradeImage, replace with URL or splice on failure.
+   Race-safe via unique placeholder token (matches Chunk 2's screenshot
+   reset fix). */
+function ciHandleEnrichDrop(idx, e){
+  e.preventDefault();
+  var dt = e.dataTransfer;
+  if(dt && dt.files && dt.files.length) ciHandleEnrichFiles(idx, dt.files);
+}
+window.ciHandleEnrichDrop = ciHandleEnrichDrop;
+
+async function ciHandleEnrichFiles(idx, files){
+  if(!files || !files.length) return;
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  if(!Array.isArray(e.images)) e.images = [];
+  for(var i = 0; i < files.length; i++){
+    var f = files[i];
+    if(!f.type.startsWith('image/')) continue;
+    var token = 'UPLOADING:' + f.name + '#' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+    e.images.push(token);
+    // Re-render the enrich zone so the placeholder shows immediately.
+    // (Re-render is OK because csvRowConfluencesState.selected is the
+    //  source of truth for pills — the picker DOM gets rebuilt with the
+    //  same hydrated state via ciToggleRowEnrich, but we're not toggling.
+    //  Instead, rebuild ONLY the thumbs strip below.)
+    if(ciExpandedRowIdx === idx) ciRefreshEnrichThumbs(idx);
+    try {
+      var url = await uploadTradeImage(f);
+      var slot = e.images.indexOf(token);
+      if(slot < 0) continue; // row collapsed / image removed during upload
+      if(url){ e.images[slot] = url; }
+      else   { e.images.splice(slot, 1); }
+    } catch(err){
+      var slot2 = e.images.indexOf(token);
+      if(slot2 >= 0) e.images.splice(slot2, 1);
+    }
+    if(ciExpandedRowIdx === idx) ciRefreshEnrichThumbs(idx);
+  }
+  ciUpdateRowStatus(idx);
+  ciUpdateCounters();
+  // Reset file input value so picking the same file again re-fires onchange.
+  var input = document.getElementById('csv-row-img-input');
+  if(input) input.value = '';
+}
+window.ciHandleEnrichFiles = ciHandleEnrichFiles;
+
+function ciRemoveEnrichImage(idx, imgIdx){
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  if(!Array.isArray(e.images)) return;
+  if(imgIdx < 0 || imgIdx >= e.images.length) return;
+  e.images.splice(imgIdx, 1);
+  if(ciExpandedRowIdx === idx) ciRefreshEnrichThumbs(idx);
+  ciUpdateRowStatus(idx);
+  ciUpdateCounters();
+}
+window.ciRemoveEnrichImage = ciRemoveEnrichImage;
+
+// Refresh just the thumbs strip inside the expanded row's enrich zone
+// without re-rendering the whole zone (which would reset the picker DOM
+// and ⓘ tear down the live cf-* state).
+function ciRefreshEnrichThumbs(idx){
+  var row = document.querySelector('#mode-ai .ci-row[data-idx="'+idx+'"]');
+  if(!row) return;
+  var strip = row.querySelector('.ci-enrich-thumbs');
+  if(!strip) return;
+  var e = csvEnrichment[idx] || {};
+  var imgs = Array.isArray(e.images) ? e.images : [];
+  strip.innerHTML = imgs.map(function(src, imgIdx){
+    if(typeof src === 'string' && src.indexOf('UPLOADING:') === 0){
+      return '<div class="ci-enrich-thumb ci-enrich-thumb-uploading">UPLOADING…</div>';
+    }
+    var safeSrc = (typeof safeURL === 'function') ? safeURL(src) : src;
+    if(!safeSrc) return '';
+    return '<div class="ci-enrich-thumb-wrap">' +
+             '<img class="ci-enrich-thumb" src="'+ciEsc(safeSrc)+'" '+
+                  'onclick="event.stopPropagation();openImgLightbox(this.src)" '+
+                  'onerror="this.parentNode.style.display=\'none\'"/>' +
+             '<button type="button" class="ci-enrich-thumb-x" '+
+                     'onclick="event.stopPropagation();ciRemoveEnrichImage('+idx+','+imgIdx+')">&times;</button>' +
+           '</div>';
+  }).join('');
+}
+
+function ciOnEnrichTV(idx, value, okBadge){
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  e.tradingview_link = (value || '').trim();
+  if(okBadge){
+    var isValid = e.tradingview_link && typeof _TV_LINK_RE !== 'undefined' && _TV_LINK_RE.test(e.tradingview_link);
+    okBadge.style.display = isValid ? 'inline-flex' : 'none';
+  }
+  ciUpdateRowStatus(idx);
+  ciUpdateCounters();
+}
+window.ciOnEnrichTV = ciOnEnrichTV;
+
+function ciOnEnrichNotes(idx, value){
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  e.notes = value || '';
+  ciUpdateRowStatus(idx);
+  ciUpdateCounters();
+}
+window.ciOnEnrichNotes = ciOnEnrichNotes;
+
+/* Chunk 5 v3 bug fix — capture any DOM-side textarea/input values from the
+   currently-expanded row's enrich zone into csvEnrichment[idx], in case
+   `oninput` didn't get a chance to fire for the very last keystroke before
+   the user clicked Import (or clicked a chip that destroyed the input via
+   re-render). Catches the silent-wipe bug where notes / tv_link sat in the
+   DOM but never reached the enrichment object. */
+function ciSnapshotExpandedRowInputs(){
+  // Chunk 5 v4 — walk ALL .ci-row[data-idx] in the loaded CSV, find any
+  // that have a populated .ci-enrich (only the expanded row will), and
+  // scrape textarea + TV input values into csvEnrichment[idx]. The DOM
+  // is the source of truth at this point — overrides whatever
+  // csvEnrichment[idx] had from any prior event flush.
+  var rows = document.querySelectorAll('#mode-ai .ci-row[data-idx]');
+  rows.forEach(function(row){
+    var idx = parseInt(row.getAttribute('data-idx'), 10);
+    if(isNaN(idx)) return;
+    var zone = row.querySelector('.ci-enrich');
+    if(!zone || !zone.innerHTML.trim()) return;  // skip collapsed rows
+    var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+    var notesEl = zone.querySelector('textarea.ci-enrich-notes, textarea.rw-textarea');
+    if(notesEl) e.notes = notesEl.value || '';
+    var tvEl = zone.querySelector('.rw-tv-input');
+    if(tvEl) e.tradingview_link = (tvEl.value || '').trim();
+  });
+}
+window.ciSnapshotExpandedRowInputs = ciSnapshotExpandedRowInputs;
+
+function ciUpdateRowStatus(idx){
+  // Cheaply re-flip just the row's status icon without re-rendering the
+  // whole row (which would close the expanded zone).
+  var row = document.querySelector('#mode-ai .ci-row[data-idx="'+idx+'"]');
+  if(!row) return;
+  var icon = row.querySelector('.ci-row-status');
+  if(!icon) return;
+  var enriched = ciIsRowEnriched(idx);
+  icon.classList.toggle('enriched', enriched);
+  icon.classList.toggle('pending', !enriched);
+  icon.innerHTML = enriched ? '&#10003;' : '&#9675;';
+}
+
+/* ── Bottom CTA: Discard / Import ───────────────────────────────────── */
+
+function ciDiscardAll(){
+  if(csvParsedTrades.length && !confirm('Discard '+csvParsedTrades.length+' parsed trade'+(csvParsedTrades.length>1?'s':'')+'? This cannot be undone.')) return;
+  discardAiScan();
+  if(typeof toast === 'function') toast('Cleared');
+}
+window.ciDiscardAll = ciDiscardAll;
+
+function ciImportAll(){
+  if(!csvParsedTrades.length) return;
+  // Hand off to the (updated) importCsvTrades which already loops + persists
+  // + auto-shares + journals. Returns to Phase A via discardAiScan inside it.
+  importCsvTrades();
+}
+window.ciImportAll = ciImportAll;
+
+/* End Chunk 5 JS layer */
 // ── ACCOUNT SETTINGS ─────────────────────────────────────
 function openAccountSettings(){
   goTo('account');
@@ -20271,7 +22070,15 @@ async function openDayReview(dateStr, dayTrades) {
   var body = document.getElementById('cal-day-body');
   if (!el || !body) return;
   var d = new Date(dateStr + 'T12:00:00');
-  el.textContent = d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+  var dateLabel = d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+  // Chunk 4 — header gets mono-caps "DAY REVIEW" eyebrow above the serif
+  // italic date. Renders via innerHTML so we don't need to touch the
+  // calendar HTML; the title slot is already styled italic, the .dr-eyebrow
+  // class overrides for the small uppercase line. Date string is from
+  // toLocaleDateString (no user input), but route through innerHTML-safe
+  // escaping defensively. The local escapeHtml is declared below — hoisted
+  // function declarations work inside the closure scope.
+  el.innerHTML = '<span class="dr-eyebrow">Day Review</span>' + escapeHtml(dateLabel);
 
   // Batch-load confluences for every trade in this day in one round-trip.
   // Empty object on failure — pills row just renders empty (hidden via CSS).
@@ -20306,9 +22113,88 @@ async function openDayReview(dateStr, dayTrades) {
   }
   function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
+  // Chunk 4 helpers — account type tier, R-chip, time, grade tier, sparse check.
+  var ACCT_TIERS = {
+    paper:  {color:'rgba(255,255,255,0.4)',           label:'Paper'},
+    eval:   {color:'var(--n-gold,#f5d77c)',           label:'Eval'},
+    funded: {color:'var(--n-profit)',                 label:'Funded'},
+    live:   {color:'var(--n-accent-cool,#6ea8ff)',    label:'Live'}
+  };
+  function fmtAcct(at){
+    var tier = ACCT_TIERS[String(at||'').toLowerCase()];
+    if(!tier) return '';
+    return '<span class="dr-acct"><span class="dr-acct-dot" style="background:'+tier.color+'"></span>'+tier.label+'</span>';
+  }
+  function fmtTime(t){
+    if(!t.created_at) return '';
+    try {
+      var d2 = new Date(t.created_at);
+      if(isNaN(d2)) return '';
+      return d2.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:false});
+    } catch(e){ return ''; }
+  }
+  function fmtRChip(t){
+    var rr = parseFloat(t.rr);
+    if(!t.stop || isNaN(rr) || !isFinite(rr)) return '';
+    var sign = rr >= 0 ? '+' : '';
+    var cls  = rr >= 0 ? 'pos' : 'neg';
+    return '<span class="dr-r-chip '+cls+'">'+sign+rr.toFixed(1)+'R</span>';
+  }
+  function gradeTier(g){
+    if(g==='F'||g==='D') return 'rose';
+    if(g==='A'||g==='A+') return 'sage';
+    return 'muted'; // C/B
+  }
+  // Chunk 4 fix — inline screenshots strip per trade card.
+  // Uses getTradeImagesWithTV so the TV /x/ snapshot rides alongside user
+  // uploads (Chunk 2.5 augmentation). Wrapper handler stopPropagation()s
+  // so the click doesn't also fire the card's openCalEdit.
+  // Returns empty string when trade has no images — caller emits unconditionally.
+  function fmtScreenshots(t){
+    var imgs = (typeof getTradeImagesWithTV === 'function') ? getTradeImagesWithTV(t) : (t.images||[]);
+    if(!imgs.length) return '';
+    var tvUrl = (typeof getTVSnapshotImageUrl === 'function') ? getTVSnapshotImageUrl(t.tradingview_link) : null;
+    var html = '<div class="dr-screenshots">';
+    imgs.forEach(function(src){
+      var safeSrc = (typeof safeURL === 'function') ? safeURL(src) : src;
+      if(!safeSrc) return; // safeURL rejected the value (data:, javascript:, etc.)
+      var isTV = (tvUrl && src === tvUrl);
+      html += '<div class="dr-screenshots-wrap" onclick="event.stopPropagation();openImgLightbox(this.querySelector(\'img\').src)">'
+           +    '<img class="dr-screenshots-thumb" src="'+escapeHtml(safeSrc)+'" alt="screenshot" onerror="this.parentElement.style.display=\'none\'"/>'
+           +    (isTV ? '<span class="dr-screenshots-tv-badge">TV</span>' : '')
+           + '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+  // Chunk 4 fix — sparse heuristic was too narrow (notes/confluences only),
+  // leaving cards stuck in "Imported · ungraded · no tags" after a user
+  // enriched via Account Type / Grade / Emotion / Confidence chips in the
+  // Edit Modal. Broadened: ANY explicit enrichment signal flips to rich.
+  //
+  // Defaults that can't be distinguished from "user explicitly chose default"
+  // are treated as enrichment if the user touched the chip at all — but
+  // since touching doesn't leave a fingerprint, we approximate by comparing
+  // against the system-default values:
+  //   grade='B' (GRADES idx 3),  emotion=3,  confidence=3
+  // A trade with all three matching defaults AND no notes/confluences/
+  // account_type/images/tv_link is the only state that reads as truly sparse.
+  function isSparse(t, cfPills){
+    if (!t) return true;
+    if (t.notes && String(t.notes).trim())              return false;
+    if (cfPills && cfPills.length)                      return false;
+    if (t.account_type)                                  return false;
+    if (Array.isArray(t.images) && t.images.length)      return false;
+    if (t.tradingview_link && String(t.tradingview_link).trim()) return false;
+    if (t.grade && t.grade !== 'B')                      return false;
+    var em = parseInt(t.emotion); if (!isNaN(em) && em !== 3) return false;
+    var cf = parseInt(t.confidence); if (!isNaN(cf) && cf !== 3) return false;
+    return true;
+  }
+
   var html = '';
   html += '<div class="day-summary-row">';
-  html += '<div class="day-summary-cell"><div class="lbl">Net P&amp;L</div>'
+  html += '<div class="day-summary-cell '+(pnl===0?'neutral':pnlCls(pnl))+'"><div class="lbl">Net P&amp;L</div>'
        + '<div class="val '+(pnl===0?'neutral':pnlCls(pnl))+'">'+(pnl===0?'$0<span class="cents">.00</span>':fmtFull(pnl))+'</div></div>';
   html += '<div class="day-summary-cell"><div class="lbl">W &middot; L &middot; BE</div>'
        + '<div class="val wlb"><span class="w">'+wins+'</span><span class="sep">/</span>'
@@ -20316,49 +22202,97 @@ async function openDayReview(dateStr, dayTrades) {
   html += '</div>';
 
   if(dayTrades.length){
-    html += '<div class="day-section-lbl">Trades</div>';
+    html += '<div class="day-section-lbl day-section-lbl-flex">'
+         +    '<span>Trades</span>'
+         +    '<span class="day-section-count">'+dayTrades.length+' logged</span>'
+         +  '</div>';
     dayTrades.forEach(function(t){
-      var p = t.pnl||0;
-      html += '<div class="day-trade-row">'
-           + '<span class="sym">'+escapeHtml(t.sym||'—')+'</span>'
-           + '<span class="typ">'+escapeHtml((t.type||'').toLowerCase())+'</span>'
-           + '<span class="pnl '+pnlCls(p)+'">'+fmtShort(p)+'</span>'
-           + '<button class="edit-btn" onclick="openCalEdit('+t.id+')">Edit</button>'
-           + '</div>';
-      // Confluences pills (full list, no truncation) under each trade row.
-      // Empty when trade has no tags — :empty selector hides the wrapper.
+      var p = t.pnl || 0;
       var cf = cfByTrade[String(t.id)] || [];
-      html += '<div class="day-trade-pills">'
-           + (cf.length ? cfRenderMiniPillsHtml(cf, {limit:99}) : '')
-           + '</div>';
+      var sparse = isSparse(t, cf);
+
+      // Side chip (sage long / rose short / muted neither)
+      var sideTier = (t.type==='long') ? 'sage' : (t.type==='short') ? 'rose' : 'muted';
+      var sideArrow = (t.type==='long') ? '↗' : (t.type==='short') ? '↘' : '';
+      var sideLabel = (t.type==='long') ? 'Long' : (t.type==='short') ? 'Short' : '';
+      var sideChipHtml = sideLabel
+        ? '<span class="dr-side-chip dr-side-'+sideTier+'">'+sideArrow+' '+sideLabel+'</span>'
+        : '';
+
+      var time = fmtTime(t);
+      var acctHtml = fmtAcct(t.account_type);
+      var rChipHtml = fmtRChip(t);
+
+      // Whole card is clickable — opens Edit Modal pre-populated.
+      // t.id is a numeric Date.now() — safe to template directly.
+      html += '<div class="day-trade-card'+(sparse?' day-trade-card-sparse':'')+'" onclick="openCalEdit('+t.id+')">';
+
+      // Top row — sym + side chip + time + acct + R-chip + P&L
+      html += '<div class="dr-top">';
+      html +=   '<span class="dr-sym">'+escapeHtml(t.sym||'—')+'</span>';
+      html +=   sideChipHtml;
+      if(time)     html += '<span class="dr-time">'+escapeHtml(time)+'</span>';
+      if(acctHtml) html += acctHtml;
+      html +=   '<span class="dr-spacer"></span>';
+      html +=   rChipHtml;
+      html +=   '<span class="dr-pnl '+pnlCls(p)+'">'+(p===0?'$0<span class="cents">.00</span>':fmtFull(p))+'</span>';
+      html += '</div>';
+
+      // Middle row — confluence mini-pills (skip if no tags). The CSS for
+      // .dr-pills:empty hides the wrapper so we can emit it unconditionally
+      // and let the renderer drop in nothing for sparse trades.
+      if(cf.length){
+        html += '<div class="dr-pills">'+cfRenderMiniPillsHtml(cf, {limit:99})+'</div>';
+      }
+
+      // Chunk 4 / Issue 2 — per-trade notes excerpt between confluences row
+      // and bottom meta row. Italic + muted, truncated at ~140 chars with
+      // "..." overflow. Skipped entirely if !t.notes (no empty div emitted).
+      // Replaces the aggregate "Day Notes" section that used to sit at
+      // the bottom of the sidebar and concatenated notes across all trades.
+      if(t.notes && String(t.notes).trim()){
+        var noteText = String(t.notes).trim();
+        var noteTrunc = noteText.length > 140
+          ? escapeHtml(noteText.slice(0, 140).trim()) + '&hellip;'
+          : escapeHtml(noteText);
+        html += '<div class="dr-notes"><i>' + noteTrunc + '</i></div>';
+      }
+
+      // Bottom row — sparse vs rich
+      html += '<div class="dr-bottom">';
+      if(sparse){
+        html += '<span class="dr-sparse-hint"><i>Imported &middot; ungraded &middot; no tags</i></span>';
+        html += '<span class="dr-journal-cta">+ Journal &rarr;</span>';
+      } else {
+        var gradeLetter = t.grade || '—';
+        var gTier = gradeTier(gradeLetter);
+        var emotionLbl = (typeof EMOTION_LABELS !== 'undefined' && EMOTION_LABELS[parseInt(t.emotion)||3]) || '—';
+        var conf = parseInt(t.confidence) || 3;
+        html += '<span class="dr-meta">';
+        html +=   '<span class="dr-grade dr-grade-'+gTier+'">'+escapeHtml(gradeLetter)+'</span>';
+        html +=   '<span class="dr-sep">&middot;</span>';
+        html +=   '<span class="dr-emotion">'+escapeHtml(emotionLbl)+'</span>';
+        html +=   '<span class="dr-sep">&middot;</span>';
+        html +=   '<span class="dr-conf">'+conf+'/5</span>';
+        html += '</span>';
+        html += '<span class="dr-edit-hint">Edit &rarr;</span>';
+      }
+      html += '</div>';
+
+      // Chunk 4 fix — inline screenshots strip per card, right-aligned,
+      // below the bottom meta row. Replaces the aggregate "Screenshots (N)"
+      // section that used to sit below all trades. Empty for trades with
+      // no images + no TV snapshot — fmtScreenshots returns ''.
+      html += fmtScreenshots(t);
+
+      html += '</div>'; // /.day-trade-card
     });
   }
 
-  var allImgs = [];
-  dayTrades.forEach(function(t){
-    // Chunk 2.5 — TV /x/ snapshot rolls into the day screenshots gallery.
-    var imgs = (typeof getTradeImagesWithTV === 'function') ? getTradeImagesWithTV(t) : (t.images||[]);
-    var tvUrl = (typeof getTVSnapshotImageUrl === 'function') ? getTVSnapshotImageUrl(t.tradingview_link) : null;
-    imgs.forEach(function(img){
-      allImgs.push({src:img, sym:t.sym||'', pnl:t.pnl||0, isTV: (tvUrl && img===tvUrl)});
-    });
-  });
-  if(allImgs.length){
-    html += '<div class="day-section-lbl">Screenshots ('+allImgs.length+')</div>';
-    allImgs.forEach(function(im){
-      var tvBadge = im.isTV ? '<span class="day-img-tv-badge">TV</span>' : '';
-      html += '<div class="day-img-row" onclick="openImgLightbox(this.querySelector(\'img\').src)">'
-           + '<div class="img-meta"><span class="sym">'+escapeHtml(im.sym||'Trade')+'</span>'
-           + '<span class="pnl '+pnlCls(im.pnl)+'">'+fmtPlain(im.pnl)+'</span>' + tvBadge + '</div>'
-           + '<img src="'+escapeHtml(im.src)+'" onerror="this.parentElement.style.display=\'none\'">'
-           + '</div>';
-    });
-  }
-
-  var notes = dayTrades.filter(function(t){return t.notes;}).map(function(t){return t.notes;}).join(' | ');
-  if(notes){
-    html += '<div class="day-notes"><div class="lbl">Notes</div><div class="body">'+escapeHtml(notes)+'</div></div>';
-  }
+  // Chunk 4 / Issue 2 — aggregate Day Notes section removed. Per-trade
+  // notes now render inline inside each card (italic, truncated at ~140
+  // chars). A proper day-level notes feature would require a separate
+  // schema migration (day_notes table) and is Phase 2 work.
 
   body.innerHTML = html;
 }
@@ -22952,8 +24886,8 @@ function cookieDecline(){
    The existing .cf-lib-row is `display:flex; justify-content:space-between`,
    so we tuck the × at the end with margin-left:auto. Keep it visually quiet
    until the row is hovered, then surface it. */
-#pg-log .cf-lib-row{position:relative}
-#pg-log .cf-lib-x{
+:where(#pg-log, .cem-card) .cf-lib-row{position:relative}
+:where(#pg-log, .cem-card) .cf-lib-x{
   display:inline-flex;
   align-items:center;
   justify-content:center;
@@ -22972,20 +24906,20 @@ function cookieDecline(){
   transition:opacity 0.12s,color 0.12s,background 0.12s;
   flex-shrink:0;
 }
-#pg-log .cf-lib-row:hover .cf-lib-x{opacity:0.7}
-#pg-log .cf-lib-x:hover{
+:where(#pg-log, .cem-card) .cf-lib-row:hover .cf-lib-x{opacity:0.7}
+:where(#pg-log, .cem-card) .cf-lib-x:hover{
   opacity:1;
   color:var(--n-loss);
   background:rgba(201,95,95,0.10);
 }
 /* Touch fallback — devices that don't honor :hover get the × always visible. */
 @media (hover:none){
-  #pg-log .cf-lib-x{opacity:0.55}
+  :where(#pg-log, .cem-card) .cf-lib-x{opacity:0.55}
 }
 
 /* Confirm modal — full-viewport backdrop, centered card. Lighter than the
    cancel-subscription modal (different visual weight for a library scrub). */
-#pg-log .cf-del-backdrop{
+:where(#pg-log, .cem-card) .cf-del-backdrop{
   position:fixed;
   inset:0;
   background:rgba(0,0,0,0.55);
@@ -22996,7 +24930,7 @@ function cookieDecline(){
   justify-content:center;
   padding:24px;
 }
-#pg-log .cf-del-card{
+:where(#pg-log, .cem-card) .cf-del-card{
   background:var(--n-surface);
   border:0.5px solid rgba(255,255,255,0.10);
   border-radius:12px;
@@ -23005,7 +24939,7 @@ function cookieDecline(){
   width:100%;
   box-shadow:0 12px 48px rgba(0,0,0,0.5);
 }
-#pg-log .cf-del-title{
+:where(#pg-log, .cem-card) .cf-del-title{
   font-family:Georgia,'Times New Roman',serif;
   font-style:italic;
   font-size:18px;
@@ -23015,25 +24949,25 @@ function cookieDecline(){
   margin-bottom:12px;
   letter-spacing:-0.005em;
 }
-#pg-log .cf-del-title span#cf-delete-name{color:var(--n-text)}
-#pg-log .cf-del-body{
+:where(#pg-log, .cem-card) .cf-del-title span#cf-delete-name{color:var(--n-text)}
+:where(#pg-log, .cem-card) .cf-del-body{
   font-family:var(--n-font-body);
   font-size:13px;
   color:var(--n-text-2);
   line-height:1.55;
   margin-bottom:18px;
 }
-#pg-log .cf-del-hint{
+:where(#pg-log, .cem-card) .cf-del-hint{
   font-style:italic;
   color:var(--n-text-4);
   font-size:12px;
 }
-#pg-log .cf-del-actions{
+:where(#pg-log, .cem-card) .cf-del-actions{
   display:flex;
   gap:8px;
   justify-content:flex-end;
 }
-#pg-log .cf-del-actions button{
+:where(#pg-log, .cem-card) .cf-del-actions button{
   padding:9px 16px;
   border-radius:8px;
   font-family:var(--n-font-mono);
@@ -23043,31 +24977,31 @@ function cookieDecline(){
   cursor:pointer;
   transition:background 0.12s,border-color 0.12s,color 0.12s;
 }
-#pg-log .cf-del-cancel{
+:where(#pg-log, .cem-card) .cf-del-cancel{
   background:transparent;
   border:0.5px solid rgba(255,255,255,0.14);
   color:var(--n-text-2);
 }
-#pg-log .cf-del-cancel:hover{
+:where(#pg-log, .cem-card) .cf-del-cancel:hover{
   background:rgba(255,255,255,0.04);
   border-color:rgba(255,255,255,0.24);
   color:var(--n-text);
 }
-#pg-log .cf-del-go{
+:where(#pg-log, .cem-card) .cf-del-go{
   background:rgba(201,95,95,0.14);
   border:0.5px solid rgba(201,95,95,0.4);
   color:var(--n-loss);
 }
-#pg-log .cf-del-go:hover{
+:where(#pg-log, .cem-card) .cf-del-go:hover{
   background:rgba(201,95,95,0.22);
   border-color:rgba(201,95,95,0.55);
 }
 
 @media (max-width:480px){
-  #pg-log .cf-del-card{padding:20px 18px;border-radius:10px}
-  #pg-log .cf-del-title{font-size:17px}
-  #pg-log .cf-del-actions{flex-direction:column-reverse}
-  #pg-log .cf-del-actions button{width:100%}
+  :where(#pg-log, .cem-card) .cf-del-card{padding:20px 18px;border-radius:10px}
+  :where(#pg-log, .cem-card) .cf-del-title{font-size:17px}
+  :where(#pg-log, .cem-card) .cf-del-actions{flex-direction:column-reverse}
+  :where(#pg-log, .cem-card) .cf-del-actions button{width:100%}
 }
 
 /* End Chunk 2.6 */
@@ -23097,8 +25031,14 @@ function cookieDecline(){
   border:0.5px solid rgba(255,255,255,0.10);
   border-radius:12px;
   padding:22px 24px 0;
-  width:min(600px, 100%);
-  max-height:92vh;
+  /* Chunk 4 / Issue 1 (revised 2x) — near-fullscreen workspace. 920px
+     still felt constrained for an active editing surface. min(1280px, 96vw)
+     gives a max of 1280px on 1440p, ~1380px effective on 1080p laptops
+     (capped at 96vw so it never touches the screen edges), and scales
+     gracefully on smaller screens. Analysis grid collapses at 1000px
+     (further down) since the modal now stays side-by-side until then. */
+  width:min(1280px, 96vw);
+  max-height:96vh;
   display:flex;
   flex-direction:column;
   box-shadow:0 12px 56px rgba(0,0,0,0.55);
@@ -23231,6 +25171,9 @@ function cookieDecline(){
 .cem-card .rw-grid-date-sess{grid-template-columns:0.7fr 1.8fr}
 .cem-card .rw-grid-triple{grid-template-columns:1fr 1fr 1fr}
 .cem-card .rw-grid-exec-bottom{grid-template-columns:1fr 1fr 1.3fr}
+/* Chunk 4 / Issue 1 — Analysis section 2-column at desktop widths
+   (Screenshot+TV LEFT, Confluences RIGHT), collapses to single col on mobile. */
+.cem-card .rw-grid-analysis{grid-template-columns:0.95fr 1.3fr;align-items:start}
 
 @media (max-width:600px){
   .cem-card .rw-grid-side-acct,
@@ -23238,6 +25181,13 @@ function cookieDecline(){
   .cem-card .rw-grid-date-sess,
   .cem-card .rw-grid-triple,
   .cem-card .rw-grid-exec-bottom{grid-template-columns:1fr}
+}
+/* Chunk 4 / Issue 1 (revised 2x) — analysis grid collapses at 1000px
+   (was 900px). The modal is now wider (up to 1280px) so the side-by-side
+   layout has more room to breathe, but on smaller laptops <1000px wide
+   the two columns still squash — stack them at that threshold. */
+@media (max-width:1000px){
+  .cem-card .rw-grid-analysis{grid-template-columns:1fr}
 }
 
 /* Inputs — compact (was 10px 12px → 8px 11px per spec) */
@@ -23697,6 +25647,768 @@ function cookieDecline(){
 }
 
 /* End Chunk 3 — Edit Modal */
+
+/* ============================================================================
+   VISUAL REDESIGN · Chunk 5 — CSV Import full redesign
+   Two phases: Phase A (broker landing) + Phase B (day-grouped enrich).
+   Prefix: .ci-* (csv import). Reuses .rw-* tokens for chip language,
+   serif italic values, section headers, dropzone styling.
+   Free-tier lock veil (.lock-veil) sits above both phases unchanged.
+   ============================================================================ */
+
+/* Pane wrapper height — let it grow naturally now that the parse/result UI
+   is gone; was previously height-locked to viewport for the carousel UX. */
+#pg-log #lt-csv-pane{position:relative;min-height:auto}
+
+/* Parsing + error blocks (shared by phases) */
+#pg-log .ci-analyzing{
+  padding:40px;text-align:center;color:var(--n-text-2);
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.14em;text-transform:uppercase;
+}
+#pg-log .ci-error{
+  padding:14px 16px;margin-bottom:18px;
+  background:rgba(201,95,95,0.06);
+  border:0.5px solid rgba(201,95,95,0.32);
+  border-radius:8px;
+  font-family:var(--n-font-body);font-size:13px;color:var(--n-loss);
+  white-space:pre-line;line-height:1.5;
+}
+
+/* Phase containers — both stack their child sections vertically. */
+#pg-log .ci-phase{display:flex;flex-direction:column;gap:6px}
+#pg-log .ci-section{margin-bottom:24px}
+
+/* ── Phase A — Drop zone ─────────────────────────────────────────────────*/
+#pg-log .ci-dropzone{
+  margin-bottom:24px;
+  min-height:140px;
+  padding:28px 18px;
+}
+#pg-log .ci-dropzone .ci-dz-h{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-size:18px;
+  color:var(--n-text);
+  letter-spacing:-0.01em;
+}
+#pg-log .ci-dropzone .ci-dz-sub{
+  font-family:var(--n-font-mono);
+  font-size:11px;
+  letter-spacing:0.14em;
+  color:var(--n-text-3);
+  text-transform:uppercase;
+  margin-top:4px;
+}
+#pg-log .ci-dropzone.drag-over{
+  border-color:rgba(110,168,255,0.6)!important;
+  background:rgba(110,168,255,0.06)!important;
+}
+
+/* ── Phase A — Broker tile grid ──────────────────────────────────────────*/
+#pg-log .ci-broker-grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:10px;
+}
+@media (max-width:720px){
+  #pg-log .ci-broker-grid{grid-template-columns:repeat(2, 1fr)}
+}
+#pg-log .ci-broker-tile{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:18px 12px 14px;
+  background:var(--n-surface);
+  border:0.5px solid rgba(255,255,255,0.08);
+  border-radius:10px;
+  cursor:pointer;
+  transition:background 0.14s,border-color 0.14s,transform 0.14s;
+  position:relative;
+}
+#pg-log .ci-broker-tile:hover{
+  background:var(--n-surface-2);
+  border-color:rgba(110,168,255,0.36);
+  transform:translateY(-1px);
+}
+#pg-log .ci-broker-tile.active{
+  background:rgba(110,168,255,0.06);
+  border-color:rgba(110,168,255,0.4);
+  box-shadow:0 0 0 1px rgba(110,168,255,0.2);
+}
+#pg-log .ci-broker-logo{
+  font-family:var(--n-font-mono);
+  font-size:14px;
+  letter-spacing:0.08em;
+  font-weight:500;
+  color:var(--n-text-2);
+  background:rgba(255,255,255,0.04);
+  border:0.5px solid rgba(255,255,255,0.08);
+  border-radius:6px;
+  padding:6px 10px;
+  min-width:54px;
+  text-align:center;
+}
+#pg-log .ci-broker-tile.active .ci-broker-logo{
+  color:var(--n-accent-cool,#6ea8ff);
+  border-color:rgba(110,168,255,0.32);
+  background:rgba(110,168,255,0.06);
+}
+#pg-log .ci-broker-name{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-size:15px;
+  color:var(--n-text);
+  letter-spacing:-0.005em;
+  margin-top:4px;
+}
+#pg-log .ci-broker-status{
+  font-family:var(--n-font-mono);
+  font-size:9px;
+  letter-spacing:0.14em;
+  color:var(--n-text-4);
+  text-transform:uppercase;
+}
+
+/* ── Phase A — Tutorial step cards (adapted from tradovate_tutorial_mockup) */
+#pg-log .ci-tutorial{display:flex;flex-direction:column;gap:18px}
+#pg-log .ci-step-card{
+  background:var(--n-surface);
+  border:0.5px solid rgba(255,255,255,0.08);
+  border-radius:12px;
+  padding:22px 22px 18px;
+}
+#pg-log .ci-step-card-placeholder{padding:20px 22px}
+#pg-log .ci-step-header{
+  display:flex;
+  align-items:baseline;
+  gap:12px;
+  margin-bottom:6px;
+  flex-wrap:wrap;
+}
+#pg-log .ci-step-num{
+  font-family:var(--n-font-mono);
+  font-size:10.5px;
+  letter-spacing:0.14em;
+  color:var(--n-accent-cool,#6ea8ff);
+  text-transform:uppercase;
+  flex-shrink:0;
+}
+#pg-log .ci-step-title{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-size:18px;
+  color:var(--n-text);
+  letter-spacing:-0.005em;
+}
+#pg-log .ci-step-desc{
+  font-family:var(--n-font-body);
+  font-size:13px;
+  color:var(--n-text-2);
+  margin-bottom:16px;
+  line-height:1.5;
+}
+#pg-log .ci-step-desc-block{line-height:2}
+#pg-log .ci-step-desc-block .ci-step-num{margin-right:6px}
+#pg-log .ci-step-svg{
+  /* Chunk 5 v2 — capped at 440px + centered so the mockups read as
+     reference thumbnails inside the step card rather than full-bleed
+     UI shots. Was full-width which made each step card a half-screen
+     tall and pushed the rest of Phase A below the fold. */
+  display:block;
+  width:100%;
+  max-width:440px;
+  margin:0 auto;
+  border-radius:6px;
+}
+#pg-log .ci-step-request{
+  display:inline-block;
+  margin-top:14px;
+  font-family:var(--n-font-mono);
+  font-size:10.5px;
+  letter-spacing:0.12em;
+  color:var(--n-accent-cool,#6ea8ff);
+  text-transform:uppercase;
+  text-decoration:none;
+  transition:opacity 0.12s;
+}
+#pg-log .ci-step-request:hover{opacity:0.78}
+
+/* ── Phase B — Loaded header counter ──────────────────────────────────── */
+#pg-log .ci-loaded-h{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:18px;
+  margin-bottom:18px;
+  flex-wrap:wrap;
+}
+#pg-log .ci-loaded-eyebrow{
+  font-family:var(--n-font-mono);
+  font-size:11px;
+  letter-spacing:0.16em;
+  color:var(--n-text-2);
+  text-transform:uppercase;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+#pg-log .ci-pulse{
+  display:inline-block;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--n-profit);
+  box-shadow:0 0 0 0 rgba(95,179,137,0.7);
+  animation:ci-pulse 2s ease-in-out infinite;
+}
+@keyframes ci-pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(95,179,137,0.55)}
+  50%{box-shadow:0 0 0 5px rgba(95,179,137,0)}
+}
+#pg-log .ci-loaded-helper{
+  font-family:var(--n-font-body);
+  font-style:italic;
+  font-size:12px;
+  color:var(--n-text-4);
+  margin-top:4px;
+}
+#pg-log .ci-loaded-counter{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-family:var(--n-font-mono);
+  font-size:11px;
+  letter-spacing:0.1em;
+  color:var(--n-text-3);
+  text-transform:uppercase;
+}
+#pg-log .ci-c-enriched{color:var(--n-profit)}
+#pg-log .ci-c-pending{color:var(--n-loss)}
+#pg-log .ci-c-total{color:var(--n-text-2)}
+#pg-log .ci-c-sep{color:var(--n-text-4)}
+
+/* ── Phase B — Apply-to-all bar ─────────────────────────────────────── */
+#pg-log .ci-applyall{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+  padding:11px 14px;
+  margin-bottom:18px;
+  background:rgba(110,168,255,0.04);
+  border:0.5px solid rgba(110,168,255,0.16);
+  border-radius:10px;
+}
+#pg-log .ci-applyall-label{
+  font-family:var(--n-font-mono);
+  font-size:10px;
+  letter-spacing:0.18em;
+  color:var(--n-accent-cool,#6ea8ff);
+  text-transform:uppercase;
+  margin-right:4px;
+}
+#pg-log .ci-applyall-chip-wrap{position:relative}
+#pg-log .ci-applyall-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 12px;
+  background:var(--n-surface);
+  border:0.5px solid rgba(255,255,255,0.10);
+  border-radius:999px;
+  font-family:var(--n-font-mono);
+  font-size:10.5px;
+  letter-spacing:0.1em;
+  color:var(--n-text-2);
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:background 0.12s,border-color 0.12s;
+}
+#pg-log .ci-applyall-chip:hover{
+  background:var(--n-surface-2);
+  border-color:rgba(255,255,255,0.22);
+  color:var(--n-text);
+}
+#pg-log .ci-applyall-chip.active{
+  background:rgba(110,168,255,0.12);
+  border-color:rgba(110,168,255,0.34);
+  color:var(--n-accent-cool,#6ea8ff);
+}
+#pg-log .ci-applyall-chip-l{opacity:0.7}
+#pg-log .ci-applyall-chip-v{font-weight:500}
+#pg-log .ci-applyall-chip-dashed{
+  border-style:dashed;
+  border-color:rgba(255,255,255,0.18);
+}
+#pg-log .ci-applyall-chip-dashed.active{
+  border-style:solid;
+}
+#pg-log .ci-applyall-pop{
+  position:absolute;
+  top:calc(100% + 6px);
+  left:0;
+  z-index:50;
+  min-width:180px;
+  background:var(--n-surface-2);
+  border:0.5px solid rgba(255,255,255,0.14);
+  border-radius:8px;
+  padding:6px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.45);
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+#pg-log .ci-applyall-pop-wide{min-width:280px;padding:12px}
+#pg-log .ci-applyall-pop-item{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  background:transparent;
+  border:none;
+  border-radius:6px;
+  font-family:var(--n-font-mono);
+  font-size:11px;
+  letter-spacing:0.1em;
+  color:var(--n-text);
+  text-transform:uppercase;
+  cursor:pointer;
+  text-align:left;
+  transition:background 0.12s;
+}
+#pg-log .ci-applyall-pop-item:hover{background:rgba(255,255,255,0.06)}
+#pg-log .ci-applyall-pop-clear{
+  color:var(--n-text-4);
+  border-top:0.5px solid rgba(255,255,255,0.06);
+  margin-top:4px;padding-top:10px;
+}
+#pg-log .ci-applyall-pop-hint{
+  font-family:var(--n-font-body);
+  font-style:italic;
+  font-size:11.5px;
+  color:var(--n-text-3);
+  padding:0 4px 8px;
+  line-height:1.4;
+}
+#pg-log .ci-applyall-bulk-pills{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  margin-bottom:8px;
+  min-height:24px;
+  padding:6px 8px;
+  background:var(--n-surface);
+  border:0.5px solid rgba(255,255,255,0.08);
+  border-radius:6px;
+}
+#pg-log .ci-applyall-bulk-empty{
+  font-family:var(--n-font-body);
+  font-style:italic;
+  font-size:11px;
+  color:var(--n-text-4);
+}
+
+/* ── Phase B — Day groupings ─────────────────────────────────────────── */
+#pg-log .ci-days-container{display:flex;flex-direction:column;gap:14px;margin-bottom:18px}
+#pg-log .ci-day{display:flex;flex-direction:column}
+#pg-log .ci-day-head{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  padding:8px 0;
+  cursor:pointer;
+  user-select:none;
+  border-bottom:0.5px solid rgba(255,255,255,0.06);
+  margin-bottom:6px;
+}
+#pg-log .ci-day-chevron{
+  font-size:11px;
+  color:var(--n-text-3);
+  width:14px;
+  transition:transform 0.14s;
+}
+#pg-log .ci-day-collapsed .ci-day-chevron{transform:rotate(-90deg)}
+#pg-log .ci-day-date{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-size:16px;
+  color:var(--n-text);
+  letter-spacing:-0.005em;
+}
+#pg-log .ci-day-hr{
+  flex:1;
+  height:1px;
+  background:rgba(255,255,255,0.06);
+}
+#pg-log .ci-day-count{
+  font-family:var(--n-font-mono);
+  font-size:9.5px;
+  letter-spacing:0.14em;
+  color:var(--n-text-4);
+  text-transform:uppercase;
+}
+#pg-log .ci-day-pnl{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-size:16px;
+  margin-left:8px;
+  letter-spacing:-0.005em;
+}
+#pg-log .ci-day-pnl.pos{color:var(--n-profit)}
+#pg-log .ci-day-pnl.neg{color:var(--n-loss)}
+#pg-log .ci-day-pnl .cents{font-size:0.62em;opacity:0.7}
+#pg-log .ci-day-rows{display:flex;flex-direction:column}
+#pg-log .ci-day-collapsed .ci-day-rows{display:none}
+
+/* ── Phase B — Single-line trade rows ───────────────────────────────── */
+#pg-log .ci-row{
+  display:flex;
+  flex-direction:column;
+  background:var(--n-surface);
+  border:0.5px solid rgba(255,255,255,0.06);
+  border-radius:8px;
+  margin-bottom:5px;
+  overflow:hidden;
+  transition:border-color 0.12s,background 0.12s;
+}
+#pg-log .ci-row:hover{
+  background:var(--n-surface-2);
+  border-color:rgba(255,255,255,0.14);
+}
+#pg-log .ci-row.expanded{
+  border-color:rgba(110,168,255,0.32);
+  background:var(--n-surface-2);
+}
+#pg-log .ci-row-head{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:9px 12px;
+  min-height:36px;
+  cursor:pointer;
+  flex-wrap:wrap;
+}
+#pg-log .ci-row-status{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:14px;
+  height:14px;
+  flex-shrink:0;
+}
+#pg-log .ci-row-status.enriched{color:var(--n-profit)}
+#pg-log .ci-row-status.pending{color:var(--n-text-4)}
+#pg-log .ci-row-time{
+  font-family:var(--n-font-mono);
+  font-size:10px;
+  letter-spacing:0.06em;
+  color:var(--n-text-3);
+  min-width:42px;
+}
+#pg-log .ci-row-sym{
+  font-family:var(--n-font-mono);
+  font-size:12px;
+  font-weight:500;
+  letter-spacing:0.04em;
+  color:var(--n-text);
+}
+#pg-log .ci-row-side{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  padding:2px 7px;
+  border-radius:999px;
+  font-family:var(--n-font-mono);
+  font-size:9px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  line-height:1.2;
+  white-space:nowrap;
+}
+#pg-log .ci-row-side.sage{
+  background:rgba(95,179,137,0.12);
+  border:0.5px solid rgba(95,179,137,0.34);
+  color:var(--n-profit);
+}
+#pg-log .ci-row-side.rose{
+  background:rgba(201,95,95,0.12);
+  border:0.5px solid rgba(201,95,95,0.34);
+  color:var(--n-loss);
+}
+#pg-log .ci-row-prices{
+  font-family:var(--n-font-mono);
+  font-size:10.5px;
+  color:var(--n-text-2);
+  letter-spacing:0.04em;
+}
+#pg-log .ci-row-prices-arrow{margin:0 4px;color:var(--n-text-4)}
+#pg-log .ci-row-meta{
+  font-family:var(--n-font-mono);
+  font-size:9.5px;
+  letter-spacing:0.06em;
+  color:var(--n-text-4);
+}
+#pg-log .ci-row-pending-hint{
+  font-family:var(--n-font-body);
+  font-style:italic;
+  font-size:11px;
+  color:var(--n-text-4);
+}
+#pg-log .ci-row-cf{display:inline-flex;flex-wrap:wrap;gap:4px;align-items:center}
+#pg-log .ci-row-spacer{flex:1}
+/* Chunk 5 v3 fix — .ci-row-pnl rules retired alongside the per-row P&L
+   element. Day-header P&L styling (.ci-day-pnl) still in place. */
+#pg-log .ci-row-chevron{
+  font-size:10px;
+  color:var(--n-text-4);
+  transition:transform 0.14s;
+}
+#pg-log .ci-row.expanded .ci-row-chevron{transform:rotate(180deg)}
+
+/* ── Phase B — Inline enrich zone (expanded row) ────────────────────── */
+#pg-log .ci-enrich{
+  padding:16px 16px 18px;
+  border-top:0.5px dashed rgba(255,255,255,0.10);
+  background:rgba(110,168,255,0.03);
+  display:none;
+}
+#pg-log .ci-row.expanded .ci-enrich{display:block}
+#pg-log .ci-enrich-grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:12px;
+  margin-bottom:14px;
+}
+@media (max-width:720px){
+  #pg-log .ci-enrich-grid{grid-template-columns:1fr}
+}
+#pg-log .ci-enrich .rw-chip-row{gap:4px}
+#pg-log .ci-enrich .rw-chip{padding:5px 9px;font-size:9.5px}
+#pg-log .ci-enrich-row-double{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:14px;
+}
+@media (max-width:720px){
+  #pg-log .ci-enrich-row-double{grid-template-columns:1fr}
+}
+#pg-log .ci-enrich .rw-field-l{font-size:9.5px;margin-bottom:6px}
+#pg-log .ci-enrich .rw-input,
+#pg-log .ci-enrich .rw-textarea{padding:7px 10px;font-size:12.5px}
+
+/* ── Phase B — Bottom CTA + Start over ──────────────────────────────── */
+#pg-log .ci-cta-row{
+  display:flex;
+  gap:10px;
+  margin-top:18px;
+}
+#pg-log .ci-discard{
+  flex:0 0 40%;
+  padding:13px 16px;
+  border-radius:9px;
+  background:transparent;
+  border:0.5px solid rgba(255,255,255,0.14);
+  color:var(--n-text-2);
+  font-family:var(--n-font-mono);
+  font-size:11px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:background 0.12s,border-color 0.12s,color 0.12s;
+}
+#pg-log .ci-discard:hover{
+  background:rgba(201,95,95,0.06);
+  border-color:rgba(201,95,95,0.42);
+  color:var(--n-loss);
+}
+#pg-log .ci-import{
+  flex:1;
+  padding:13px 16px;
+  border-radius:9px;
+  background:rgba(95,179,137,0.14);
+  border:0.5px solid rgba(95,179,137,0.4);
+  color:var(--n-profit);
+  font-family:var(--n-font-mono);
+  font-size:11px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:background 0.12s,border-color 0.12s;
+}
+#pg-log .ci-import:hover{
+  background:rgba(95,179,137,0.24);
+  border-color:rgba(95,179,137,0.6);
+}
+#pg-log .ci-cta-icon{margin-right:4px;font-size:13px}
+#pg-log .ci-startover-row{margin-top:12px;text-align:center}
+#pg-log .ci-startover{
+  background:transparent;
+  border:none;
+  font-family:var(--n-font-mono);
+  font-size:10px;
+  letter-spacing:0.16em;
+  color:var(--n-text-4);
+  text-transform:uppercase;
+  cursor:pointer;
+  padding:6px;
+  transition:color 0.12s;
+}
+#pg-log .ci-startover:hover{color:var(--n-text-2)}
+
+/* ── Bulk Confluences picker modal (own surface, outside cem-card) ─── */
+.ci-bulk-cf-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.55);
+  backdrop-filter:blur(2px);
+  z-index:9991;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+.ci-bulk-cf-card{
+  background:var(--n-bg,#0a0a0a);
+  border:0.5px solid rgba(255,255,255,0.10);
+  border-radius:12px;
+  padding:22px 24px;
+  width:min(560px, 100%);
+  max-height:88vh;
+  overflow-y:auto;
+  box-shadow:0 12px 56px rgba(0,0,0,0.5);
+}
+.ci-bulk-cf-h{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:18px;
+}
+.ci-bulk-cf-eyebrow{
+  font-family:var(--n-font-mono);
+  font-size:10px;
+  letter-spacing:0.16em;
+  color:var(--n-text-3);
+  text-transform:uppercase;
+}
+.ci-bulk-cf-title{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  font-size:22px;
+  color:var(--n-text);
+  letter-spacing:-0.01em;
+  margin-top:4px;
+}
+.ci-bulk-cf-card .cem-close{
+  background:transparent;border:none;color:var(--n-text-3);
+  font-size:22px;line-height:1;cursor:pointer;padding:2px 6px;
+  border-radius:6px;flex-shrink:0;
+}
+.ci-bulk-cf-card .cem-close:hover{color:var(--n-text);background:rgba(255,255,255,0.04)}
+.ci-bulk-cf-actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:16px;
+  padding-top:14px;
+  border-top:0.5px solid rgba(255,255,255,0.06);
+}
+.ci-bulk-cf-card .cem-cancel{
+  padding:9px 18px;
+  border-radius:8px;
+  background:rgba(95,179,137,0.14);
+  border:0.5px solid rgba(95,179,137,0.4);
+  color:var(--n-profit);
+  font-family:var(--n-font-mono);
+  font-size:10.5px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:background 0.12s;
+}
+.ci-bulk-cf-card .cem-cancel:hover{background:rgba(95,179,137,0.24)}
+
+/* End Chunk 5 */
+
+/* ============================================================================
+   CHUNK 5 v3 — Inline enrich zone additions: Session chip row (between
+   Grade/Emotion/Conf and Account/TV rows), inline screenshot dropzone with
+   mini thumbs, per-row Confluences picker (.cf-* inherits via the existing
+   :where(#pg-log, .cem-card) scope since the picker lives inside #pg-log).
+   ============================================================================ */
+#pg-log .ci-enrich-dropzone{
+  /* Compact dropzone for inline enrich — Log Trade's full-size dropzone
+     is too tall for a per-row context. */
+  min-height:72px;
+  padding:12px 10px;
+}
+#pg-log .ci-enrich-dropzone .rw-dz-icon{width:18px;height:18px}
+#pg-log .ci-enrich-dropzone .rw-dz-h{font-size:9.5px}
+#pg-log .ci-enrich-dropzone .rw-dz-sub{font-size:10px}
+#pg-log .ci-enrich-thumbs{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:8px;
+}
+#pg-log .ci-enrich-thumbs:empty{display:none}
+#pg-log .ci-enrich-thumb-wrap{
+  position:relative;
+  display:inline-flex;
+  line-height:0;
+}
+#pg-log .ci-enrich-thumb{
+  width:72px;
+  height:48px;
+  object-fit:cover;
+  border-radius:5px;
+  border:0.5px solid rgba(255,255,255,0.10);
+  background:#000;
+  cursor:zoom-in;
+  transition:border-color 0.12s;
+}
+#pg-log .ci-enrich-thumb-wrap:hover .ci-enrich-thumb{
+  border-color:rgba(110,168,255,0.36);
+}
+#pg-log .ci-enrich-thumb-uploading{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:72px;
+  height:48px;
+  background:rgba(110,168,255,0.06);
+  border:1px dashed rgba(110,168,255,0.32);
+  border-radius:5px;
+  font-family:var(--n-font-mono);
+  font-size:8.5px;
+  letter-spacing:0.12em;
+  color:var(--n-accent-cool,#6ea8ff);
+  text-transform:uppercase;
+}
+#pg-log .ci-enrich-thumb-x{
+  position:absolute;
+  top:-5px;
+  right:-5px;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  background:rgba(0,0,0,0.78);
+  border:0.5px solid rgba(201,95,95,0.4);
+  color:var(--n-loss);
+  font-size:11px;
+  line-height:13px;
+  cursor:pointer;
+  padding:0;
+  transition:background 0.12s,color 0.12s;
+}
+#pg-log .ci-enrich-thumb-x:hover{
+  background:var(--n-loss);
+  color:#fff;
+}
+
+/* End Chunk 5 v3 */
 </style>
 
 <div id="cancel-modal" class="cm-backdrop" style="display:none" onclick="cancelModalBackdropClick(event)">
