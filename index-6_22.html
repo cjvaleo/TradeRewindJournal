@@ -11004,12 +11004,25 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             </div>
             <div class="toggle on" onclick="this.classList.toggle('on')"></div>
           </div>
+          <!-- EOD recap toggles — persist to user_settings so the
+               popup stays gone permanently when off. The classlist
+               toggle gives instant visual feedback; userSettingSet
+               handles the DB upsert in the background. -->
           <div class="notif-row">
             <div class="notif-info">
-              <div class="nm">Daily P&amp;L summary</div>
-              <div class="desc">End-of-day recap with total P&amp;L and trade count</div>
+              <div class="nm">Personal EOD recap</div>
+              <div class="desc">End-of-day popup with your P&amp;L, trades, and win rate</div>
             </div>
-            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            <div id="setting-eod-personal" class="toggle on"
+                 onclick="eodTogglePref('personal', this)"></div>
+          </div>
+          <div class="notif-row">
+            <div class="notif-info">
+              <div class="nm">Group EOD recap</div>
+              <div class="desc">End-of-day leaderboard for every community you're in</div>
+            </div>
+            <div id="setting-eod-group" class="toggle on"
+                 onclick="eodTogglePref('group', this)"></div>
           </div>
           <div class="notif-row">
             <div class="notif-info">
@@ -11227,6 +11240,25 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
       </div>
     </div>
     <div id="edit-modal-body" style="padding:16px 18px;max-height:70vh;overflow-y:auto"></div>
+  </div>
+</div>
+
+<!--
+  EOD RECAP MODAL — fires once per trading day after 4:30pm ET on next
+  page load. Holds 1+ stacked cards: one personal recap + one per
+  community the user is in. ≤2 cards visible together; ≥3 sequenced
+  with Next button. Dismiss writes today's ET date to localStorage so
+  the modal stays gone until tomorrow. Per-flavor opt-out toggles live
+  in Account → Preferences (eod_personal_enabled / eod_group_enabled).
+-->
+<div id="eod-modal" class="eod-backdrop" style="display:none"
+     onclick="if(event.target===this) eodDismiss()">
+  <div class="eod-stage" onclick="event.stopPropagation()">
+    <div id="eod-cards" class="eod-cards"></div>
+    <div id="eod-nav" class="eod-nav" style="display:none">
+      <div id="eod-dots" class="eod-dots"></div>
+      <button class="eod-next" onclick="eodNext()">Next &rarr;</button>
+    </div>
   </div>
 </div>
 
@@ -12402,6 +12434,521 @@ function renderFeedPosts(g){
       + '</button>';
   }
 }
+
+/* ===================================================================
+   EOD RECAP MODAL — personal + group flavors
+   ───────────────────────────────────────────────────────────────────
+   maybeShowEodRecap() is called from onSignedIn after trades + comms
+   load. Gating logic, in order:
+     1. localStorage 'rw_eod_last_shown' must NOT equal today's ET date
+     2. Current ET time must be ≥ 16:30 (4:30pm market close + 30m buffer)
+     3. User must have at least one trade dated today (ET)
+     4. At least one of (eod_personal_enabled, eod_group_enabled) must be on
+   On dismiss we write today's ET date to localStorage so the modal
+   stays gone until the next trading day, regardless of refreshes.
+   =================================================================== */
+
+/* Returns 'YYYY-MM-DD' in America/New_York for `d` (default: now).
+   This matches how the trade.date field reads when logged from the US
+   East coast — necessary because the rest of the app uses _localDate
+   (browser TZ), but EOD wants a stable market-day key. */
+function _eodEtDate(d){
+  d = d || new Date();
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  }).format(d);
+}
+
+/* Current minute-of-day in America/New_York (0..1439). 16:30 = 990. */
+function _eodEtMinutes(){
+  var parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  }).formatToParts(new Date());
+  var h = 0, m = 0;
+  parts.forEach(function(p){
+    if(p.type==='hour')   h = parseInt(p.value, 10);
+    if(p.type==='minute') m = parseInt(p.value, 10);
+  });
+  // Intl can return "24" for midnight in some locales — normalize.
+  if(h === 24) h = 0;
+  return h*60 + m;
+}
+
+/* Pretty date label: "Wed · May 13" — feeds the right side of the
+   card header. Localized to the browser's display preferences, NOT
+   coerced to ET (since the visual label is fine either way and ET
+   coercion adds complexity). */
+function _eodDateLabel(etDateStr){
+  var d = new Date(etDateStr + 'T12:00:00');
+  if(isNaN(d)) return etDateStr;
+  return d.toLocaleDateString('en-US', { weekday:'short' })
+    + ' · '
+    + d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+}
+
+/* Money formatter — split into integer / cents parts so the cents
+   span can be dimmed independently per spec ("cents dimmed"). */
+function _eodMoney(v){
+  var sign = v > 0 ? '+' : v < 0 ? '−' : '';
+  var abs  = Math.abs(v);
+  var int  = Math.floor(abs).toLocaleString('en-US');
+  var cents = (abs - Math.floor(abs)).toFixed(2).slice(1);  // ".50"
+  return { sign:sign, int:int, cents:cents };
+}
+function _eodMoneyHtml(v){
+  var p = _eodMoney(v);
+  return p.sign + '$' + p.int + '<span class="eod-pnl-cents">' + p.cents + '</span>';
+}
+
+/* Filter trades to today's (ET). Trades carry .date as YYYY-MM-DD in
+   the user's local time, so we compare directly. Trades whose .date
+   is empty fall back to ET-coercing created_at. */
+function _eodTodaysTrades(etToday){
+  if(!Array.isArray(trades)) return [];
+  return trades.filter(function(t){
+    if(t.date) return t.date === etToday;
+    if(t.created_at) return _eodEtDate(new Date(t.created_at)) === etToday;
+    return false;
+  });
+}
+
+/* Personal card data — wins/losses, win-rate, average R, sorted by
+   created_at ascending so the "trades list" reads chronologically. */
+function _eodPersonalData(etToday){
+  var todays = _eodTodaysTrades(etToday).slice().sort(function(a,b){
+    var aT = a.created_at ? new Date(a.created_at).getTime() : 0;
+    var bT = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return aT - bT;
+  });
+  var total = todays.reduce(function(s,t){ return s + (Number(t.pnl)||0); }, 0);
+  var wins  = todays.filter(function(t){ return (Number(t.pnl)||0) > 0; }).length;
+  var losses= todays.filter(function(t){ return (Number(t.pnl)||0) < 0; }).length;
+  var decided = wins + losses;
+  var wr = decided > 0 ? Math.round((wins / decided) * 100) : 0;
+  // Average R — only over trades with both stop and rr available, signed by P&L.
+  var rrTrades = todays.filter(function(t){
+    var rr = Number(t.rr);
+    return t.stop != null && t.stop !== '' && isFinite(rr) && rr !== 0;
+  });
+  var avgR = 0;
+  if(rrTrades.length){
+    var sum = rrTrades.reduce(function(s,t){
+      var rr = Math.abs(Number(t.rr));
+      var sign = (Number(t.pnl)||0) < 0 ? -1 : 1;
+      return s + sign * rr;
+    }, 0);
+    avgR = sum / rrTrades.length;
+  }
+  return {
+    flavor: 'personal',
+    etDate: etToday,
+    totalPnl: total,
+    tradeCount: todays.length,
+    winRate: wr,
+    avgR: avgR,
+    avgRCount: rrTrades.length,
+    trades: todays
+  };
+}
+
+/* Group card data — for one community. Fetches today's posts grouped
+   by user_id, sums P&L per user, returns top 3 traders + aggregate
+   stats. Returns null if the fetch fails (we just skip that card). */
+async function _eodGroupData(community, etToday){
+  if(!_sb || !community || !community.id) return null;
+  // Fetch a generous window (today ± 1 day in UTC) and ET-filter client-side
+  // so DST / off-hours posts still land on the right ET date.
+  var nowMs = Date.now();
+  var startISO = new Date(nowMs - 36*3600*1000).toISOString();
+  var endISO   = new Date(nowMs +  4*3600*1000).toISOString();
+  try {
+    var r = await _sb.from('community_posts')
+      .select('id, user_id, username, display_name, initials, avatar_finish, avatar_color, avatar_image_url, pnl_today, content, metadata, created_at')
+      .eq('community_id', community.id)
+      .gte('created_at', startISO)
+      .lte('created_at', endISO);
+    if(r.error) throw r.error;
+    var posts = (r.data || []).filter(function(p){
+      return _eodEtDate(new Date(p.created_at)) === etToday;
+    });
+    // Aggregate by user_id
+    var byUser = {};
+    posts.forEach(function(p){
+      var uid = p.user_id || '__anon';
+      if(!byUser[uid]){
+        byUser[uid] = {
+          user_id: uid,
+          username: p.username || 'trader',
+          display_name: p.display_name || p.username || 'Member',
+          initials: p.initials || (p.username||'??').slice(0,2).toUpperCase(),
+          avatar_finish: p.avatar_finish || p.avatar_color || 'chrome',
+          avatar_image_url: p.avatar_image_url || null,
+          pnl: 0,
+          tradeCount: 0,
+          isMe: !!(currentUser && uid === currentUser.id)
+        };
+      }
+      byUser[uid].pnl += Number(p.pnl_today) || 0;
+      byUser[uid].tradeCount += 1;
+    });
+    var traders = Object.keys(byUser).map(function(k){ return byUser[k]; });
+    traders.sort(function(a,b){ return b.pnl - a.pnl; });
+    var totalPnl = traders.reduce(function(s,t){ return s + t.pnl; }, 0);
+    var totalTrades = traders.reduce(function(s,t){ return s + t.tradeCount; }, 0);
+    var wins = posts.filter(function(p){ return (Number(p.pnl_today)||0) > 0; }).length;
+    var losses = posts.filter(function(p){ return (Number(p.pnl_today)||0) < 0; }).length;
+    var decided = wins + losses;
+    var wr = decided > 0 ? Math.round((wins / decided) * 100) : 0;
+    var avgPerTrader = traders.length ? (totalPnl / traders.length) : 0;
+    return {
+      flavor: 'group',
+      etDate: etToday,
+      community: community,
+      totalPnl: totalPnl,
+      tradeCount: totalTrades,
+      winRate: wr,
+      avgPerTrader: avgPerTrader,
+      traders: traders.slice(0, 3)
+    };
+  } catch(e){
+    console.warn('[eod group fetch]', community.name, e && e.message);
+    return null;
+  }
+}
+
+/* HTML builders — pure functions returning markup strings. Kept
+   separate so the modal init code stays readable. */
+function _eodRenderPersonalCard(data){
+  if(!data || !data.tradeCount) return '';
+  var heroTone = data.totalPnl > 0 ? 'pos' : data.totalPnl < 0 ? 'neg' : 'zero';
+  var avgRTone = data.avgR > 0 ? 'pos' : data.avgR < 0 ? 'neg' : '';
+  var avgRTxt  = data.avgRCount
+    ? ((data.avgR>0?'+':'') + data.avgR.toFixed(1) + 'R')
+    : '—';
+
+  // Trade list — truncate to top 5 by |P&L| if more than 5; the spec
+  // emphasizes "top 5 by |P&L|" but renders chronologically. Pick the
+  // top-5 set, then sort that subset chronologically for display.
+  var sortedByMag = data.trades.slice().sort(function(a,b){
+    return Math.abs(Number(b.pnl)||0) - Math.abs(Number(a.pnl)||0);
+  });
+  var shown = sortedByMag.slice(0, 5).sort(function(a,b){
+    var aT = a.created_at ? new Date(a.created_at).getTime() : 0;
+    var bT = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return aT - bT;
+  });
+  var hidden = data.tradeCount - shown.length;
+
+  function _safe(s){ return String(s||'').replace(/[&<>"]/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+  });}
+  function _timeOf(t){
+    if(!t.created_at) return '—';
+    var d = new Date(t.created_at);
+    if(isNaN(d)) return '—';
+    return d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:false });
+  }
+
+  var rowsHtml = shown.map(function(t){
+    var pnl = Number(t.pnl)||0;
+    var tone = pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : 'zero';
+    var dir  = String(t.type||'').toLowerCase() === 'short' ? 'short' : 'long';
+    var dirLabel = dir === 'short' ? '↘ Short' : '↗ Long';
+    var hasStop = t.stop != null && t.stop !== '';
+    var rrNum   = Number(t.rr);
+    var rrHtml  = '<span class="eod-rr empty">—</span>';
+    if(hasStop && isFinite(rrNum) && rrNum !== 0){
+      var rrSign = pnl < 0 ? -1 : 1;
+      var rrSigned = rrSign * Math.abs(rrNum);
+      var rrCls = rrSigned < 0 ? 'neg' : 'pos';
+      rrHtml = '<span class="eod-rr '+rrCls+'">'+(rrSigned>0?'+':'')+rrSigned.toFixed(1)+'R</span>';
+    }
+    return '<div class="eod-row '+tone+'">'
+      + '<span class="eod-time">'+_safe(_timeOf(t))+'</span>'
+      + '<span class="eod-sym">'+_safe(t.sym||'—')+'</span>'
+      + '<span class="eod-side '+dir+'">'+dirLabel+'</span>'
+      + rrHtml
+      + '<span class="eod-row-pnl '+tone+'">'+_eodMoneyHtml(pnl)+'</span>'
+      + '</div>';
+  }).join('');
+
+  var moreHtml = hidden > 0
+    ? '<div class="eod-more" onclick="eodOpenDayReview(\''+data.etDate+'\')">+'+hidden+' more &rarr;</div>'
+    : '';
+
+  var handle = (currentUser && acct && acct.username) ? acct.username
+             : (currentUser && currentUser.email ? currentUser.email.split('@')[0] : 'you');
+
+  return '<div class="eod-card eod-card-personal" data-eod-date="'+_safe(data.etDate)+'">'
+    + '<div class="eod-head">'
+    +   '<span class="eod-brand">Rewind</span>'
+    +   '<span class="eod-handle">@'+_safe(handle)+'</span>'
+    +   '<span class="eod-date">'+_safe(_eodDateLabel(data.etDate))+'</span>'
+    + '</div>'
+    + '<div class="eod-hero '+heroTone+'">'+_eodMoneyHtml(data.totalPnl)+'</div>'
+    + '<div class="eod-stats">'
+    +   '<div class="eod-stat"><span class="lbl">Trades</span><span class="val">'+data.tradeCount+'</span></div>'
+    +   '<div class="eod-stat"><span class="lbl">Win Rate</span><span class="val">'+data.winRate+'<span class="unit">%</span></span></div>'
+    +   '<div class="eod-stat"><span class="lbl">Avg R</span><span class="val '+avgRTone+'">'+avgRTxt+'</span></div>'
+    + '</div>'
+    + '<div class="eod-list">'+rowsHtml+moreHtml+'</div>'
+    + '<div class="eod-foot">'
+    +   '<span class="eod-wm">traderewindjournal.com</span>'
+    +   '<div class="eod-actions">'
+    +     '<button class="eod-share" onclick="eodShareCard(this)">Share</button>'
+    +     '<button class="eod-dismiss" onclick="eodDismiss()">Dismiss</button>'
+    +   '</div>'
+    + '</div>'
+    + '</div>';
+}
+
+function _eodRenderGroupCard(data){
+  if(!data || !data.tradeCount || !data.traders || !data.traders.length) return '';
+  var heroTone = data.totalPnl > 0 ? 'pos' : data.totalPnl < 0 ? 'neg' : 'zero';
+  var avgTone  = data.avgPerTrader > 0 ? 'pos' : data.avgPerTrader < 0 ? 'neg' : '';
+  function _safe(s){ return String(s||'').replace(/[&<>"]/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+  });}
+  var rowsHtml = data.traders.map(function(tr, i){
+    var rank = i + 1;
+    var avHtml = (typeof renderUserAvatar === 'function')
+      ? renderUserAvatar({
+          avatar_finish: tr.avatar_finish,
+          avatar_image_url: tr.avatar_image_url,
+          avatar_initials: tr.initials,
+          username: tr.username
+        }, 'sm')
+      : '';
+    var pnlTone = tr.pnl > 0 ? 'pos' : tr.pnl < 0 ? 'neg' : 'zero';
+    var meCls = tr.isMe ? ' is-me' : '';
+    return '<div class="eod-lb-row rank-'+rank+'">'
+      + '<span class="eod-lb-rank">'+rank+'</span>'
+      + avHtml
+      + '<div class="eod-lb-name">'
+      +   '<span class="eod-lb-handle'+meCls+'">@'+_safe(tr.username||'trader')+'</span>'
+      + '</div>'
+      + '<span class="eod-lb-trades">'+tr.tradeCount+' trade'+(tr.tradeCount>1?'s':'')+'</span>'
+      + '<span class="eod-lb-pnl '+pnlTone+'">'+_eodMoneyHtml(tr.pnl)+'</span>'
+      + '</div>';
+  }).join('');
+
+  return '<div class="eod-card eod-card-group" data-eod-date="'+_safe(data.etDate)+'">'
+    + '<div class="eod-head">'
+    +   '<span class="eod-brand-dot"></span>'
+    +   '<span class="eod-brand">'+_safe(data.community.name||'Community')+'</span>'
+    +   '<span class="eod-subtitle">Day recap</span>'
+    +   '<span class="eod-date">'+_safe(_eodDateLabel(data.etDate))+'</span>'
+    + '</div>'
+    + '<div class="eod-hero '+heroTone+'">'+_eodMoneyHtml(data.totalPnl)+'</div>'
+    + '<div class="eod-stats">'
+    +   '<div class="eod-stat"><span class="lbl">Trades</span><span class="val">'+data.tradeCount+'</span></div>'
+    +   '<div class="eod-stat"><span class="lbl">Group WR</span><span class="val">'+data.winRate+'<span class="unit">%</span></span></div>'
+    +   '<div class="eod-stat"><span class="lbl">Avg / trader</span><span class="val '+avgTone+'">'+_eodMoneyHtml(data.avgPerTrader)+'</span></div>'
+    + '</div>'
+    + '<div class="eod-lb">'+rowsHtml+'</div>'
+    + '<div class="eod-foot">'
+    +   '<span class="eod-wm">traderewindjournal.com</span>'
+    +   '<div class="eod-actions">'
+    +     '<button class="eod-share" onclick="eodShareCard(this)">Share</button>'
+    +     '<button class="eod-dismiss" onclick="eodDismiss()">Dismiss</button>'
+    +   '</div>'
+    + '</div>'
+    + '</div>';
+}
+
+/* Sequenced-mode index — used when 3+ cards force the Next-button flow. */
+var _eodCurrentIdx = 0;
+var _eodSequenced  = false;
+
+function eodNext(){
+  if(!_eodSequenced) return;
+  var cards = document.querySelectorAll('#eod-cards .eod-card');
+  var dots  = document.querySelectorAll('#eod-dots .dot');
+  if(!cards.length) return;
+  _eodCurrentIdx = (_eodCurrentIdx + 1) % cards.length;
+  cards.forEach(function(c, i){ c.classList.toggle('is-active', i === _eodCurrentIdx); });
+  dots.forEach(function(d, i){ d.classList.toggle('on', i === _eodCurrentIdx); });
+}
+
+function eodDismiss(){
+  var m = document.getElementById('eod-modal');
+  if(m) m.style.display = 'none';
+  try { localStorage.setItem('rw_eod_last_shown', _eodEtDate()); } catch(e){}
+}
+
+function eodOpenDayReview(etDate){
+  // Close the EOD modal first (so we don't stack overlays), mark today
+  // as shown, then forward to the Calendar Day Review for the deep dive.
+  eodDismiss();
+  try {
+    if(typeof goTo === 'function') goTo('calendar');
+    var dayTrades = (Array.isArray(trades) ? trades : []).filter(function(t){
+      return t.date === etDate;
+    });
+    if(typeof openDayReview === 'function') openDayReview(etDate, dayTrades);
+  } catch(e){ console.warn('[eod] day review open failed:', e && e.message); }
+}
+
+/* Lazy-load html2canvas from CDN on first Share click. The CDN bundle
+   is ~50KB minified, no need to pull it in until the user actually
+   wants to export. Loaded script registers as `window.html2canvas`. */
+function _eodLoadHtml2Canvas(){
+  return new Promise(function(resolve, reject){
+    if(window.html2canvas) return resolve(window.html2canvas);
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    s.onload  = function(){ resolve(window.html2canvas); };
+    s.onerror = function(){ reject(new Error('html2canvas load failed')); };
+    document.head.appendChild(s);
+  });
+}
+
+function eodShareCard(btn){
+  var card = btn && btn.closest ? btn.closest('.eod-card') : null;
+  if(!card) return;
+  var origText = btn.textContent;
+  btn.disabled = true; btn.textContent = '…';
+  _eodLoadHtml2Canvas().then(function(h2c){
+    // Capture at 2x DPR for retina-quality social export. Background
+    // matches --n-bg so the PNG has no transparent fringe.
+    return h2c(card, {
+      backgroundColor: '#0a0a0a',
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      // Cap effective width at 1080px (post-scale that's 2160px which
+      // is still social-friendly without bloating the file).
+      windowWidth: Math.min(card.offsetWidth, 1080)
+    });
+  }).then(function(canvas){
+    return new Promise(function(resolve){
+      canvas.toBlob(function(blob){ resolve(blob); }, 'image/png');
+    });
+  }).then(function(blob){
+    if(!blob) throw new Error('toBlob failed');
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'rewind-eod-' + (card.dataset.eodDate || _eodEtDate()) + '.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    btn.disabled = false; btn.textContent = origText || 'Share';
+    if(typeof toast === 'function') toast('Recap saved · check your downloads');
+  }).catch(function(err){
+    console.warn('[eod share]', err && err.message);
+    btn.disabled = false; btn.textContent = origText || 'Share';
+    if(typeof toast === 'function') toast('Share failed — try again');
+  });
+}
+
+/* Main entry — checks every gate, then builds + shows the modal. */
+async function maybeShowEodRecap(){
+  // Gate 1 — opt-out toggles. Default both to ON.
+  var personalEnabled = userSettingGet('eod_personal_enabled', true) !== false;
+  var groupEnabled    = userSettingGet('eod_group_enabled',    true) !== false;
+  if(!personalEnabled && !groupEnabled) return;
+
+  // Gate 2 — already shown today
+  var todayET = _eodEtDate();
+  var lastShown = null;
+  try { lastShown = localStorage.getItem('rw_eod_last_shown'); } catch(e){}
+  if(lastShown === todayET) return;
+
+  // Gate 3 — must be after 4:30pm ET
+  if(_eodEtMinutes() < (16*60 + 30)) return;
+
+  // Gate 4 — must have at least one trade today
+  var todays = _eodTodaysTrades(todayET);
+  if(!todays.length) return;
+
+  // Build cards
+  var cards = [];
+  if(personalEnabled){
+    var personalData = _eodPersonalData(todayET);
+    if(personalData.tradeCount > 0){
+      var html = _eodRenderPersonalCard(personalData);
+      if(html) cards.push({ flavor:'personal', html:html });
+    }
+  }
+  if(groupEnabled && Array.isArray(_comms) && _comms.length){
+    // Fetch group data for every community in parallel; null entries
+    // (fetch failure / no group activity) are dropped.
+    var groupResults = await Promise.all(_comms.map(function(c){
+      return _eodGroupData(c, todayET);
+    }));
+    groupResults.forEach(function(d){
+      if(d && d.tradeCount > 0 && d.traders.length > 0){
+        var html = _eodRenderGroupCard(d);
+        if(html) cards.push({ flavor:'group', html:html, communityId:d.community.id });
+      }
+    });
+  }
+
+  if(!cards.length) return;
+
+  // Inject and reveal
+  var modal = document.getElementById('eod-modal');
+  var container = document.getElementById('eod-cards');
+  var nav = document.getElementById('eod-nav');
+  var dots = document.getElementById('eod-dots');
+  if(!modal || !container) return;
+
+  // ≤2 cards → all visible at once. ≥3 cards → sequenced w/ Next.
+  _eodSequenced = cards.length > 2;
+  _eodCurrentIdx = 0;
+  container.classList.toggle('is-sequenced', _eodSequenced);
+  container.innerHTML = cards.map(function(c, i){
+    if(!_eodSequenced) return c.html;
+    return c.html.replace('<div class="eod-card', '<div class="eod-card'+(i===0?' is-active':''));
+  }).join('');
+
+  if(_eodSequenced){
+    dots.innerHTML = cards.map(function(_, i){
+      return '<span class="dot'+(i===0?' on':'')+'"></span>';
+    }).join('');
+    nav.style.display = 'flex';
+  } else {
+    nav.style.display = 'none';
+  }
+
+  modal.style.display = 'flex';
+}
+window.maybeShowEodRecap = maybeShowEodRecap;
+window.eodDismiss        = eodDismiss;
+window.eodNext           = eodNext;
+window.eodShareCard      = eodShareCard;
+window.eodOpenDayReview  = eodOpenDayReview;
+
+/* Settings toggle handler — flips the .on class for immediate feedback,
+   then persists via userSettingSet so the next page-load reads the new
+   value. Defaults are ON for both flavors so this only writes when a
+   user explicitly disables. */
+function eodTogglePref(flavor, el){
+  var key = flavor === 'group' ? 'eod_group_enabled' : 'eod_personal_enabled';
+  el.classList.toggle('on');
+  var enabled = el.classList.contains('on');
+  if(typeof userSettingSet === 'function'){
+    userSettingSet(key, enabled);
+  }
+}
+window.eodTogglePref = eodTogglePref;
+
+/* Sync the toggle visual state to the stored preference. Called from
+   loadUserSettings success path so the panel reflects DB state when
+   the user opens Preferences. Defaults to "on" if the key is missing. */
+function eodSyncToggleUi(){
+  var personal = userSettingGet('eod_personal_enabled', true) !== false;
+  var group    = userSettingGet('eod_group_enabled',    true) !== false;
+  var p = document.getElementById('setting-eod-personal');
+  var g = document.getElementById('setting-eod-group');
+  if(p) p.classList.toggle('on', !!personal);
+  if(g) g.classList.toggle('on', !!group);
+}
+window.eodSyncToggleUi = eodSyncToggleUi;
 
 /* ── FEED INTERACTIONS ──────────────────────────────── */
 var _likeCounts = {};
@@ -22024,7 +22571,7 @@ async function onSignedIn(user) {
   try { await loadTradesFromDB(user); } catch(e) { console.warn('Trades load skipped:', e.message); }
   try { await loadCommunityFromDB(user); } catch(e) { console.warn('Community load skipped:', e.message); }
   try { await loadPendingInvitesFromDB(user); } catch(e) { console.warn('Invites load skipped:', e.message); }
-  try { await loadUserSettings(); refreshCustomRulesFromSettings(); } catch(e) { console.warn('Settings load skipped:', e.message); }
+  try { await loadUserSettings(); refreshCustomRulesFromSettings(); if(typeof eodSyncToggleUi==='function') eodSyncToggleUi(); } catch(e) { console.warn('Settings load skipped:', e.message); }
   try { await loadSentInvitesFromDB(user); } catch(e) { console.warn('Sent invites load skipped:', e.message); }
   init();
   // Cache the user's tier so free-tier gates (Community, Analytics tabs,
@@ -22041,6 +22588,16 @@ async function onSignedIn(user) {
   var _initialPage = _pathToPage[window.location.pathname] || 'dashboard';
   goTo(_initialPage);
   handleStripeReturn();
+
+  // EOD recap — fires once per trading day after 4:30pm ET on next page
+  // load. All four gates (time / per-day flag / opt-out / 0-trade) live
+  // inside maybeShowEodRecap so this caller stays cheap. A small delay
+  // lets the dashboard paint first so the modal feels like a moment of
+  // closure rather than a blocking interstitial.
+  setTimeout(function(){
+    try { if(typeof maybeShowEodRecap === 'function') maybeShowEodRecap(); }
+    catch(e){ console.warn('[eod] trigger failed:', e && e.message); }
+  }, 600);
 }
 
 /* ── Tab switching ── */
@@ -25311,7 +25868,269 @@ function cookieDecline(){
 /* End Chunk 2.6 */
 
 /* ============================================================================
-   VISUAL REDESIGN · Chunk 3 — Edit Trade Modal
+   EOD RECAP MODAL — personal + group flavors
+   Triggered once per trading day after 4:30pm ET on next page load.
+   Visual language: serif italic hero numbers, mono caps subtitles,
+   sage/rose tinted rows, gold trophy row for the top trader. Built
+   to render cleanly to PNG via html2canvas (no transforms / no
+   non-painted overlays in the captured area).
+   ============================================================================ */
+.eod-backdrop{
+  position:fixed;inset:0;z-index:11000;
+  background:rgba(0,0,0,0.72);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;overflow-y:auto;
+}
+.eod-stage{
+  width:100%;max-width:520px;
+  display:flex;flex-direction:column;align-items:stretch;gap:16px;
+  margin:auto;
+}
+.eod-cards{display:flex;flex-direction:column;gap:16px}
+.eod-cards.is-sequenced .eod-card{display:none}
+.eod-cards.is-sequenced .eod-card.is-active{display:flex}
+
+/* Card chassis — solid background so html2canvas captures it without
+   gradients bleeding to transparent. Padding intentionally generous
+   so the export feels poster-like at 2x scale. */
+.eod-card{
+  background:var(--n-surface);
+  border:1px solid var(--n-border);
+  border-radius:14px;
+  padding:22px 24px 18px;
+  display:flex;flex-direction:column;gap:14px;
+  font-family:var(--n-font-sans);
+  color:var(--n-text);
+}
+
+/* (1) Header row — brand | handle | date */
+.eod-head{
+  display:flex;align-items:baseline;gap:10px;
+  padding-bottom:12px;border-bottom:1px solid var(--n-border);
+}
+.eod-brand{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:20px;color:var(--n-text);letter-spacing:-0.01em;
+}
+.eod-brand-dot{
+  display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:var(--n-gold);margin-right:8px;vertical-align:middle;
+  box-shadow:0 0 8px rgba(245,215,124,0.45);
+}
+.eod-handle{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+.eod-date{
+  margin-left:auto;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+.eod-subtitle{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-3);
+  margin-left:6px;
+}
+
+/* (2) Hero P&L — 56px Instrument Serif Italic, sign-tinted, dimmed cents */
+.eod-hero{
+  text-align:center;
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:56px;line-height:1;letter-spacing:-0.02em;
+  padding:6px 0 4px;
+}
+.eod-hero.pos{color:var(--n-profit)}
+.eod-hero.neg{color:var(--n-loss)}
+.eod-hero.zero{color:var(--n-text-2)}
+.eod-hero .eod-pnl-cents{font-size:0.5em;opacity:0.55;font-style:italic}
+
+/* (3) 3-stat strip — top/bottom borders, three equal cells */
+.eod-stats{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  padding:12px 0;
+  border-top:1px solid var(--n-border);
+  border-bottom:1px solid var(--n-border);
+}
+.eod-stat{display:flex;flex-direction:column;align-items:center;gap:4px}
+.eod-stat .lbl{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+.eod-stat .val{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:22px;line-height:1;color:var(--n-text);
+}
+.eod-stat .val.pos{color:var(--n-profit)}
+.eod-stat .val.neg{color:var(--n-loss)}
+.eod-stat .val .unit{font-size:0.6em;opacity:0.6;margin-left:2px}
+
+/* (4a) Personal trades list — sage/rose tinted rows */
+.eod-list{display:flex;flex-direction:column;gap:6px}
+.eod-row{
+  display:grid;
+  grid-template-columns:48px 60px 56px 1fr auto;
+  align-items:center;gap:10px;
+  padding:9px 12px;border-radius:6px;
+  border:1px solid transparent;
+  font-family:var(--n-font-sans);
+}
+.eod-row.pos{
+  background:rgba(95,179,137,0.07);border-color:rgba(95,179,137,0.18);
+}
+.eod-row.neg{
+  background:rgba(201,95,95,0.07);border-color:rgba(201,95,95,0.18);
+}
+.eod-row .eod-time{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.04em;
+  color:var(--n-text-3);
+}
+.eod-row .eod-sym{
+  font-family:var(--n-font-mono);font-size:12px;color:var(--n-text);
+  font-weight:500;letter-spacing:0.02em;
+}
+.eod-row .eod-side{
+  display:inline-block;font-family:var(--n-font-mono);font-size:8.5px;
+  letter-spacing:0.18em;text-transform:uppercase;
+  padding:3px 7px;border-radius:3px;text-align:center;
+}
+.eod-row .eod-side.long{
+  background:rgba(95,179,137,0.10);color:var(--n-profit);
+  border:1px solid rgba(95,179,137,0.20);
+}
+.eod-row .eod-side.short{
+  background:rgba(201,95,95,0.10);color:var(--n-loss);
+  border:1px solid rgba(201,95,95,0.20);
+}
+.eod-row .eod-rr{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.02em;
+  text-align:left;
+}
+.eod-row .eod-rr.pos{color:var(--n-accent-cool)}
+.eod-row .eod-rr.neg{color:var(--n-loss)}
+.eod-row .eod-rr.empty{color:var(--n-text-4)}
+.eod-row .eod-row-pnl{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:18px;line-height:1;text-align:right;letter-spacing:-0.01em;
+}
+.eod-row .eod-row-pnl.pos{color:var(--n-profit)}
+.eod-row .eod-row-pnl.neg{color:var(--n-loss)}
+.eod-more{
+  text-align:center;padding:8px 12px;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-accent-cool);cursor:pointer;
+  border:1px dashed rgba(110,168,255,0.25);border-radius:6px;
+  transition:.15s;
+}
+.eod-more:hover{background:rgba(110,168,255,0.06);border-color:rgba(110,168,255,0.45)}
+
+/* (4b) Group leaderboard — rank 1 = gold-tinted, 2/3 neutral */
+.eod-lb{display:flex;flex-direction:column;gap:6px}
+.eod-lb-row{
+  display:grid;
+  grid-template-columns:32px 30px 1fr 60px auto;
+  align-items:center;gap:10px;
+  padding:9px 12px;border-radius:6px;
+  border:1px solid transparent;
+}
+.eod-lb-row.rank-1{
+  background:linear-gradient(180deg, rgba(245,215,124,0.12) 0%, rgba(245,215,124,0.05) 100%);
+  border-color:rgba(245,215,124,0.32);
+}
+.eod-lb-row.rank-2,
+.eod-lb-row.rank-3{
+  background:var(--n-surface-2);
+  border-color:var(--n-border);
+}
+.eod-lb-rank{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:22px;line-height:1;text-align:center;letter-spacing:-0.02em;
+}
+.eod-lb-row.rank-1 .eod-lb-rank{
+  color:var(--n-gold);
+  text-shadow:0 0 12px rgba(245,215,124,0.25);
+}
+.eod-lb-row.rank-2 .eod-lb-rank,
+.eod-lb-row.rank-3 .eod-lb-rank{color:var(--n-text-2)}
+.eod-lb-row .av{flex-shrink:0}
+.eod-lb-name{
+  display:flex;flex-direction:column;gap:2px;min-width:0;
+}
+.eod-lb-handle{
+  font-family:var(--n-font-mono);font-size:11px;color:var(--n-text);
+  letter-spacing:0.01em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.eod-lb-handle.is-me{color:var(--n-accent-cool)}
+.eod-lb-trades{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+.eod-lb-pnl{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:18px;line-height:1;text-align:right;letter-spacing:-0.01em;
+}
+.eod-lb-pnl.pos{color:var(--n-profit)}
+.eod-lb-pnl.neg{color:var(--n-loss)}
+
+/* (5) Footer — watermark left, Share/Dismiss right */
+.eod-foot{
+  display:flex;align-items:center;gap:10px;
+  padding-top:10px;border-top:1px solid var(--n-border);
+}
+.eod-wm{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--n-text-4);
+}
+.eod-actions{margin-left:auto;display:flex;gap:8px}
+.eod-actions button{
+  padding:7px 14px;border-radius:6px;cursor:pointer;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
+  text-transform:uppercase;transition:.15s;
+}
+.eod-share{
+  background:var(--n-text);color:var(--n-bg);border:1px solid var(--n-text);
+}
+.eod-share:hover{background:var(--n-text-2);border-color:var(--n-text-2)}
+.eod-share:disabled{opacity:0.5;cursor:wait}
+.eod-dismiss{
+  background:transparent;color:var(--n-text-3);
+  border:1px solid var(--n-border);
+}
+.eod-dismiss:hover{color:var(--n-text);border-color:var(--n-border)}
+
+/* Sequenced-mode nav — dot indicator + Next */
+.eod-nav{
+  display:flex;align-items:center;gap:14px;
+  padding:0 6px;
+}
+.eod-dots{display:flex;gap:6px}
+.eod-dots .dot{
+  width:6px;height:6px;border-radius:50%;
+  background:rgba(255,255,255,0.16);transition:.15s;
+}
+.eod-dots .dot.on{background:var(--n-text-2);width:18px;border-radius:3px}
+.eod-next{
+  margin-left:auto;
+  padding:8px 16px;border-radius:6px;border:1px solid var(--n-border);
+  background:var(--n-surface);color:var(--n-text);cursor:pointer;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
+  text-transform:uppercase;transition:.15s;
+}
+.eod-next:hover{border-color:var(--n-border-2);background:var(--n-surface-2)}
+
+/* Mobile — keep the card readable on narrow screens */
+@media (max-width: 540px){
+  .eod-backdrop{padding:12px}
+  .eod-card{padding:18px 16px 14px}
+  .eod-hero{font-size:46px}
+  .eod-stat .val{font-size:18px}
+  .eod-row{grid-template-columns:42px 52px 50px 1fr auto;gap:8px;padding:8px 10px}
+  .eod-lb-row{grid-template-columns:26px 28px 1fr auto;gap:8px;padding:8px 10px}
+  .eod-lb-row .eod-lb-trades{display:none}
+}
+
+
    Mirrors Log Trade's 4-section flow, compacted ~15% for modal context.
    Re-applies all .rw-* design tokens scoped under .cem-card (since the
    existing .rw-* rules are scoped to #pg-log and don't reach inside this
