@@ -13153,13 +13153,14 @@ async function renderEodCommCard(community){
   // visible so the surface is discoverable; show an "intentional, not
   // broken" placeholder instead of disappearing.
   //
-  // Inline styles on the body elements are defensive: an earlier pass
-  // shipped class-based styling that rendered as just the header in
-  // production, suggesting a CSS rule shadow / cache / specificity
-  // issue we couldn't reproduce locally. Inline beats any class rule
-  // short of !important, so this guarantees the body paints.
+  // Inline styles are intentional: we previously shipped class-based
+  // styling that rendered as just the header in production. Inline +
+  // !important beats any external cascade short of another !important,
+  // so the body always paints. Both lines are flat sibling divs (not
+  // wrapped in a flex container) to keep the markup as boring as
+  // possible — fewer moving parts that could collapse.
   //
-  // data-eod-state marker lets us confirm the branch from DevTools.
+  // data-eod-state="empty" lets you verify the branch in DevTools.
   if(!data || !data.tradeCount){
     console.log('[eod comm card] EMPTY branch — community has no posts today/yesterday in ET');
     el.className = 'eod-mini-card is-empty';
@@ -13170,10 +13171,8 @@ async function renderEodCommCard(community){
       +   '<span class="eod-mini-pulse pending"></span>'
       +   '<span class="eod-mini-label">EOD &middot; ' + _eodSafe(_eodDateLabel(todayET)) + '</span>'
       + '</div>'
-      + '<div class="eod-mini-card-empty" style="display:flex !important;flex-direction:column;gap:6px;padding:6px 0 2px;min-height:48px">'
-      +   '<div class="eod-mini-card-empty-title" style="font-family:\'Instrument Serif\',Georgia,serif;font-style:italic;font-size:20px;line-height:1.1;letter-spacing:-0.01em;color:#a1a1a1;display:block !important">No activity yet</div>'
-      +   '<div class="eod-mini-card-empty-sub" style="font-family:\'Geist Mono\',ui-monospace,monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#6b6b6b;display:block !important">Be the first to log a trade today</div>'
-      + '</div>';
+      + '<div style="font-family:\'Instrument Serif\',Georgia,serif !important;font-style:italic !important;font-size:18px !important;line-height:1.15 !important;letter-spacing:-0.01em !important;color:#a1a1a1 !important;display:block !important;margin-top:10px !important">No activity yet</div>'
+      + '<div style="font-family:\'Geist Mono\',ui-monospace,monospace !important;font-size:9px !important;letter-spacing:0.14em !important;text-transform:uppercase !important;color:#6b6b6b !important;display:block !important;margin-top:6px !important">Be the first to share a trade today</div>';
     el.style.display = 'block';
     return;
   }
