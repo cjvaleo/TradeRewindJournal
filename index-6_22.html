@@ -6524,17 +6524,48 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
    feed column and share its left edge with the hero + tabs. The
    ~1030px feed-column width at this size IS the focus column. */
 @media (min-width: 1920px){
-  /* !important is mandatory here — the base rule at line ~5867 sets
-     `margin:0!important` on the same selector. Without !important on
-     our override the base wins (same specificity, !important > source
-     order) and the page stays left-anchored despite the max-width cap.
-     Same goes for max-width: the base has `max-width:100%` which is
-     same specificity, but no !important — so our 1600px wins on order.
-     Belt-and-suspenders !important on both anyway. */
+  /* Layout shape on ultra-wide:
+       [csb 270px @ left edge][gap → feed][feed 1200px centered][gap → rail][rail 300px @ right edge]
+     csb is already the first flex child of #pg-community → already
+     hugs the left edge of .main (no change needed beyond unlocking
+     the page's max-width cap from c4bf01b).
+     rail needs to pin to the right edge — easiest path is to swap
+     #comm-feed-view from flex to grid 1fr/300px so the rail's grid
+     cell anchors to the container's right edge regardless of how
+     much the feed actually uses.
+     feed caps at 1200px + margin:0 auto inside its grid cell so
+     wide cells leave balanced gaps on both sides of the feed.
+     Sticky behavior on .csb and .rail is already wired in the base
+     rules (position:sticky; top:0 + max-height 100vh + overflow-y),
+     so we don't touch those here. */
+
+  /* Restore full-viewport behavior — drop the 1600px cluster cap. */
   #pg-community.page.on{
-    max-width: 1600px !important;
-    margin: 0 auto !important;
+    max-width: none !important;
+    margin: 0 !important;
   }
+
+  /* Grid swap: feed column (1fr) + rail column (300px fixed).
+     align-items: flex-start preserves the sticky-right-rail behavior
+     (rail anchors to top of its cell, doesn't stretch to feed height). */
+  #pg-community #comm-feed-view{
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    align-items: flex-start;
+  }
+
+  /* Feed: cap at 1200px, centered inside its grid column. Drop the
+     base `flex: 1` since we're no longer a flex item here. */
+  #pg-community .feed{
+    flex: none;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* Inner items align to the feed's left edge — no centered 640px
+     focus column at this size (the 1200px feed cap IS the focus
+     column). Keeps hero / tabs / filters / posts at one left edge. */
   #pg-community .filters,
   #pg-community #comm-feed-posts{
     max-width: none;
