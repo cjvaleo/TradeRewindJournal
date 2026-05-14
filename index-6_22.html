@@ -12890,15 +12890,12 @@ function _eodRenderPersonalCard(data){
     +   '<span class="ev2-foot-meta">PnL Card &middot; '+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
     + '</div>'
     // Action row — hidden during PNG capture (see .is-capturing rule).
-    // Order: [Download] [Share?] [Dismiss]. Share only renders when the
-    // browser supports file-share (navigator.canShare with files) —
-    // mostly iOS Safari + Android Chrome. Desktop browsers see just
-    // Download + Dismiss.
+    // Order: [Download] [Dismiss]. Share button skipped this release —
+    // TODO: re-enable Share once the navigator.share chain is debugged.
+    // Keeping eodShareCard / _eodCanShareFiles / instrumented logging in
+    // place so we can bring it back without re-architecting.
     + '<div class="ev2-actions">'
     +   '<button class="ev2-download" onclick="eodDownloadCard(this)">Download</button>'
-    +   (_eodCanShareFiles()
-        ? '<button class="ev2-share" onclick="eodShareCard(this)">Share</button>'
-        : '')
     +   '<button class="ev2-dismiss" onclick="eodDismiss()">Dismiss</button>'
     + '</div>'
     + '</div>';
@@ -12989,16 +12986,12 @@ function _eodRenderGroupCard(data){
     +   '<span class="ev2-wm">traderewindjournal.com</span>'
     +   '<span class="ev2-foot-meta">'+memberCount+' member'+(memberCount===1?'':'s')+' &middot; '+data.tradeCount+' trade'+(data.tradeCount===1?'':'s')+'</span>'
     + '</div>'
-    // Action row — same three-button layout as the personal modal.
-    // Order: [Download] [Share?] [Dismiss]. Share is feature-detected
-    // via _eodCanShareFiles() so desktop browsers see [Download]
-    // [Dismiss] only. All three funnel through the single
-    // _eodCaptureCard() render path (no double-capture).
+    // Action row — matches the personal modal. Order: [Download] [Dismiss].
+    // TODO: re-enable Share once the navigator.share chain is debugged.
+    // eodShareCard / _eodCanShareFiles / instrumented logging stay in
+    // place so we can flip the button back without re-architecting.
     + '<div class="ev2-actions">'
     +   '<button class="ev2-download" onclick="eodDownloadCard(this)">Download</button>'
-    +   (_eodCanShareFiles()
-        ? '<button class="ev2-share" onclick="eodShareCard(this)">Share</button>'
-        : '')
     +   '<button class="ev2-dismiss" onclick="eodDismiss()">Dismiss</button>'
     + '</div>'
     + '</div>';
