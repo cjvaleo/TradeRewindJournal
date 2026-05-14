@@ -12874,10 +12874,17 @@ function _eodRenderPersonalCard(data){
     +   '<span class="ev2-wm">traderewindjournal.com</span>'
     +   '<span class="ev2-foot-meta">PnL Card &middot; '+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
     + '</div>'
-    // Action row — hidden during PNG capture (see .is-capturing rule)
+    // Action row — hidden during PNG capture (see .is-capturing rule).
+    // Order: [Download] [Share?] [Dismiss]. Share only renders when the
+    // browser supports file-share (navigator.canShare with files) —
+    // mostly iOS Safari + Android Chrome. Desktop browsers see just
+    // Download + Dismiss.
     + '<div class="ev2-actions">'
+    +   '<button class="ev2-download" onclick="eodDownloadCard(this)">Download</button>'
+    +   (_eodCanShareFiles()
+        ? '<button class="ev2-share" onclick="eodShareCard(this)">Share</button>'
+        : '')
     +   '<button class="ev2-dismiss" onclick="eodDismiss()">Dismiss</button>'
-    +   '<button class="ev2-share" onclick="eodShareCard(this)">Share as image</button>'
     + '</div>'
     + '</div>';
 }
@@ -13031,50 +13038,120 @@ function _eodLoadHtml2Canvas(){
   });
 }
 
-function eodShareCard(btn){
-  var card = btn && btn.closest ? btn.closest('.eod-card') : null;
-  if(!card) return;
-  var origText = btn.textContent;
-  btn.disabled = true; btn.textContent = '…';
-  // Toggle .is-capturing so the action row disappears in the rendered
-  // canvas — the export reads like a finished poster, not a dialog.
-  // The class is removed in the .finally() branch so the user gets the
-  // buttons back regardless of success / failure.
+/* ── Capture / Download / Share — one capture, two paths ─────────
+   The modal action row has three buttons:
+     [Download]   — secondary, always shown
+     [Share]      — primary, only shown when the browser supports
+                    file-share via the Web Share API (mobile mostly)
+     [Dismiss]    — secondary, always shown
+   Both Download and Share funnel through _eodCaptureCard() so the
+   html2canvas render happens ONCE per click. .is-capturing on the
+   card hides the action row during the render so the exported PNG
+   reads as a finished poster.
+   ─────────────────────────────────────────────────────────────── */
+
+// Feature-detect file share. Probed with a tiny dummy File since
+// canShare({files:[]}) returns false on all browsers.
+function _eodCanShareFiles(){
+  if(typeof navigator === 'undefined' || !navigator.canShare || !navigator.share) return false;
+  try {
+    var probe = new File([new Blob(['x'], {type:'image/png'})], 'probe.png', {type:'image/png'});
+    return navigator.canShare({ files: [probe] });
+  } catch(e){ return false; }
+}
+
+// Pure capture — returns Promise<File>. Caller wraps the resulting
+// File in a download anchor OR hands it to navigator.share. Toggles
+// .is-capturing on the card so the action row vanishes in the PNG.
+async function _eodCaptureCard(card){
+  if(!card) throw new Error('no card');
   card.classList.add('is-capturing');
-  _eodLoadHtml2Canvas().then(function(h2c){
-    // Capture at 2x DPR for retina-quality social export. Background
-    // matches --n-bg so the PNG has no transparent fringe.
-    return h2c(card, {
+  try {
+    var h2c = await _eodLoadHtml2Canvas();
+    // 2x DPR for retina; bg matches --n-bg so the PNG has no fringe.
+    var canvas = await h2c(card, {
       backgroundColor: '#0a0a0a',
       scale: 2,
       useCORS: true,
       logging: false,
-      // Cap effective width at 1080px (post-scale that's 2160px which
-      // is still social-friendly without bloating the file).
+      // Cap effective width at 1080px (post-scale = 2160px — still
+      // social-friendly without bloating the file).
       windowWidth: Math.min(card.offsetWidth, 1080)
     });
-  }).then(function(canvas){
-    return new Promise(function(resolve){
-      canvas.toBlob(function(blob){ resolve(blob); }, 'image/png');
+    var blob = await new Promise(function(resolve){
+      canvas.toBlob(function(b){ resolve(b); }, 'image/png');
     });
-  }).then(function(blob){
     if(!blob) throw new Error('toBlob failed');
-    var url = URL.createObjectURL(blob);
+    var filename = 'rewind-pnl-' + (card.dataset.eodDate || _eodEtDate()) + '.png';
+    // File (not Blob) — required for navigator.share + nicer for the
+    // download anchor (correct filename in the OS save dialog).
+    return new File([blob], filename, { type: 'image/png' });
+  } finally {
+    card.classList.remove('is-capturing');
+  }
+}
+
+// Download path — capture → object URL → anchor click. Works on every
+// browser; on iOS Safari the user gets a Save Image / Open in Photos
+// affordance instead of a true filesystem download.
+async function eodDownloadCard(btn){
+  var card = btn && btn.closest ? btn.closest('.eod-card') : null;
+  if(!card) return;
+  var origText = btn.textContent;
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    var file = await _eodCaptureCard(card);
+    var url = URL.createObjectURL(file);
     var a = document.createElement('a');
     a.href = url;
-    a.download = 'rewind-eod-' + (card.dataset.eodDate || _eodEtDate()) + '.png';
+    a.download = file.name;
     document.body.appendChild(a);
     a.click();
     a.remove();
     setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
-    if(typeof toast === 'function') toast('Recap saved · check your downloads');
-  }).catch(function(err){
-    console.warn('[eod share]', err && err.message);
-    if(typeof toast === 'function') toast('Share failed — try again');
-  }).finally(function(){
-    card.classList.remove('is-capturing');
-    btn.disabled = false; btn.textContent = origText || 'Share as image';
-  });
+    if(typeof toast === 'function') toast('Saved · check your downloads');
+  } catch(err){
+    console.warn('[eod download]', err && err.message);
+    if(typeof toast === 'function') toast('Download failed — try again');
+  } finally {
+    btn.disabled = false; btn.textContent = origText || 'Download';
+  }
+}
+
+// Share path — capture → File → navigator.share. Must run in the same
+// microtask flush as the click for iOS Safari to accept the gesture,
+// which is why _eodShowModal pre-loads html2canvas: by the time the
+// user clicks Share, the lib is already in memory and the capture
+// chain finishes before the gesture window expires.
+async function eodShareCard(btn){
+  var card = btn && btn.closest ? btn.closest('.eod-card') : null;
+  if(!card) return;
+  var origText = btn.textContent;
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    var file = await _eodCaptureCard(card);
+    // Re-check at call time — between render and click, an extension
+    // could have toggled support. Bail to download UI on the rare miss.
+    if(!navigator.canShare || !navigator.canShare({ files: [file] })){
+      throw new Error('share not supported');
+    }
+    await navigator.share({
+      files: [file],
+      title: 'My PnL Card',
+      text:  'My trading recap for ' + (card.dataset.eodDate || _eodEtDate())
+    });
+    // Success — no toast; the OS share-sheet is its own confirmation.
+  } catch(err){
+    // User cancelled the share sheet → AbortError. Stay silent.
+    if(err && (err.name === 'AbortError' || /abort/i.test(err.message||''))) {
+      // intentional no-op
+    } else {
+      console.warn('[eod share]', err && err.message);
+      if(typeof toast === 'function') toast('Couldn’t open share sheet — try Download instead');
+    }
+  } finally {
+    btn.disabled = false; btn.textContent = origText || 'Share';
+  }
 }
 
 /* ── EOD WIDGETS — persistent dashboard bar + community sidebar card
@@ -13444,6 +13521,14 @@ function _eodShowModal(cards, source){
     nav.style.display = 'none';
   }
   modal.style.display = 'flex';
+
+  // Pre-warm html2canvas in the background as soon as the modal is
+  // visible. By the time the user clicks Share, the lib is already
+  // loaded so the capture finishes inside the user-gesture window
+  // that navigator.share requires (iOS Safari is strict about this).
+  if(typeof _eodLoadHtml2Canvas === 'function'){
+    _eodLoadHtml2Canvas().catch(function(){ /* silent — share will retry */ });
+  }
 }
 
 /* App-open auto-pop — PERSONAL ONLY as of the widget redesign. Group
@@ -13577,6 +13662,7 @@ window.eodInflateGroupFromWidget     = eodInflateGroupFromWidget;
 window.eodDismiss                    = eodDismiss;
 window.eodNext                       = eodNext;
 window.eodShareCard                  = eodShareCard;
+window.eodDownloadCard               = eodDownloadCard;
 window.eodOpenDayReview              = eodOpenDayReview;
 
 /* Settings toggle handler — flips the .on class for immediate feedback,
@@ -26847,7 +26933,11 @@ function cookieDecline(){
 }
 
 /* Action buttons row — kept separate from footer so it can hide
-   cleanly during html2canvas capture (we add .is-capturing to mute). */
+   cleanly during html2canvas capture (we add .is-capturing to mute).
+   Order: [Download] [Share?] [Dismiss]. Download + Dismiss are neutral
+   secondary; Share is the primary cool-blue CTA. Share auto-aligns to
+   the right via margin-left:auto so the layout reads as a clear
+   primary even when Share is hidden (Dismiss takes the right slot). */
 .ev2-actions{
   display:flex;align-items:center;gap:8px;
   padding-top:8px;
@@ -26857,17 +26947,42 @@ function cookieDecline(){
   font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
   text-transform:uppercase;transition:.15s;
 }
+
+/* Download — neutral secondary, mirrors Dismiss treatment */
+.ev2-download{
+  background:transparent;color:var(--n-text-2);
+  border:1px solid var(--n-border);
+}
+.ev2-download:hover{color:var(--n-text);border-color:var(--n-border-2);background:rgba(255,255,255,0.02)}
+.ev2-download:disabled{opacity:0.5;cursor:wait}
+
+/* Share — primary cool-blue (#6ea8ff / --n-accent-cool). Pushes itself
+   to the right with margin-left:auto so when both Download + Share
+   render, Share sits adjacent to Dismiss on the right edge. */
 .ev2-share{
   margin-left:auto;
-  background:var(--n-text);color:var(--n-bg);border:1px solid var(--n-text);
+  background:rgba(110,168,255,0.16);
+  color:var(--n-accent-cool, #6ea8ff);
+  border:1px solid rgba(110,168,255,0.45);
 }
-.ev2-share:hover{background:var(--n-text-2);border-color:var(--n-text-2)}
+.ev2-share:hover{
+  background:rgba(110,168,255,0.26);
+  border-color:rgba(110,168,255,0.70);
+}
 .ev2-share:disabled{opacity:0.5;cursor:wait}
+
+/* Dismiss — neutral, pushed to the right edge when Share is hidden
+   (no margin-left:auto needed since Download's right neighbor is
+   either Share or Dismiss). */
 .ev2-dismiss{
   background:transparent;color:var(--n-text-3);
   border:1px solid var(--n-border);
 }
 .ev2-dismiss:hover{color:var(--n-text);border-color:var(--n-border)}
+
+/* When Share is missing (desktop browsers), Dismiss takes the right
+   edge instead so the row doesn't bunch left. */
+.ev2-actions .ev2-download + .ev2-dismiss{margin-left:auto}
 /* During PNG capture we hide the action row so the export reads
    like a finished poster, not a dialog. */
 .eod-card.is-capturing .ev2-actions{display:none}
