@@ -27266,25 +27266,75 @@ function cookieDecline(){
 .eod-comm-badge-pnl.neg{color:var(--n-loss)}
 .eod-comm-badge-pnl.zero{color:var(--n-text-2)}
 
-/* Tighten on narrow sidebar / collapsed mode */
+/* Tighten on collapsed sidebar — hide the badge so the avatar column
+   stays narrow. Mobile rule that previously hid the badge entirely
+   was removed; see the mobile block below for the new layout. */
 #pg-community .csb.collapsed .eod-comm-badge{display:none}
-@media (max-width: 768px){
-  .eod-comm-badge{display:none}
-}
 
-/* Mobile — dashboard bar wraps gracefully on narrow screens */
+/* Mobile — dashboard bar.
+   Previously the bar used width:fit-content + margin:0 auto which
+   reads as block-level on desktop but can collapse to zero render
+   width on a 390px viewport when its content exceeds available
+   space + flex-wrap kicks in inconsistently. On mobile we drop
+   the fit-content cap, span the page padding minus a small inset,
+   and let the inner pills wrap onto multiple lines. */
 @media (max-width: 720px){
+  /* The bar's inline style starts as display:none; renderEodDashBar
+     promotes it to display:flex once trades load. We re-assert flex
+     with !important here so the mobile cascade can't accidentally
+     collapse it (the previous fit-content + auto-margin combo on
+     mobile rendered the bar at zero effective width on 390px). */
+  #eod-dash-bar.eod-mini-bar[style*="display: flex"],
+  #eod-dash-bar.eod-mini-bar[style*="display:flex"]{
+    display:flex !important;
+  }
   .eod-mini-bar{
-    gap:10px;padding:8px 14px;flex-wrap:wrap;
-    border-radius:18px;
+    width:auto !important;max-width:none !important;
+    margin:0 12px 16px !important;
+    padding:10px 14px;gap:10px;
+    flex-wrap:wrap;justify-content:flex-start;
+    border-radius:14px;min-height:auto;
   }
   .eod-mini-pnl{font-size:18px}
   .eod-mini-meta,.eod-mini-await{font-size:9.5px}
-  .eod-mini-view{padding:4px 9px;font-size:9px}
+  .eod-mini-view{padding:4px 9px;font-size:9px;margin-left:auto}
+  /* Drop the internal separator dividers on narrow screens — the
+     flex-wrap fold-points carry the visual grouping instead. */
+  .eod-mini-bar .eod-mini-sep{display:none}
 }
 @media (max-width: 480px){
-  .eod-mini-bar .eod-mini-meta{display:none}
-  .eod-mini-bar .eod-mini-sep:nth-of-type(3){display:none}
+  .eod-mini-bar{margin:0 10px 14px !important;padding:9px 12px}
+}
+
+/* Mobile — community list: switch from the horizontal-scroller tile
+   strip back to vertical full rows so [avatar] [name + members]
+   [PnL badge] reads cleanly. The base mobile rules at line ~7641
+   force #comm-sidebar-list to flex-direction:row + hide .gmeta and
+   the EOD badge; these overrides specifically un-do those for the
+   community list (still leaving .rail hidden, which is a different
+   surface). */
+@media (max-width: 768px){
+  #pg-community #comm-sidebar-list{
+    display:flex !important;
+    flex-direction:column !important;
+    max-height:none !important;
+    overflow-x:visible !important;overflow-y:visible !important;
+    padding:8px 10px !important;gap:6px;
+  }
+  #pg-community .gitem{
+    flex-direction:row !important;
+    width:100%;padding:8px 10px !important;
+    align-items:center;
+  }
+  #pg-community .gitem .gmeta,
+  #pg-community .gitem .gname,
+  #pg-community .gitem .gsub{display:block !important;min-width:0}
+  #pg-community .gitem .gmeta{flex:1 1 auto !important}
+  /* Badge — visible on mobile, tightened to fit the narrow row. The
+     base !important inline width:80px from the bulletproof outer
+     style means we can't shrink it via class CSS; instead let it sit
+     as-is and reduce the row's left padding to make room. */
+  .eod-comm-badge{display:flex !important}
 }
 
 
