@@ -13424,28 +13424,33 @@ function _eodShowModal(cards, source){
 async function maybeShowEodRecap(){
   // Gate 1 — opt-out toggle (personal flavor only)
   var personalEnabled = userSettingGet('eod_personal_enabled', true) !== false;
-  if(!personalEnabled) return;
+  if(!personalEnabled){ console.log('[eod auto-pop] skip — disabled in settings'); return; }
 
   // Gate 2 — already shown for this ET calendar day
   var todayET = _eodEtDate();
   var lastShown = null;
   try { lastShown = localStorage.getItem('rw_eod_last_shown'); } catch(e){}
-  if(lastShown === todayET) return;
+  if(lastShown === todayET){ console.log('[eod auto-pop] skip — already shown today (ET):', todayET); return; }
 
   // The recap always represents the LAST FULLY COMPLETED ET day —
   // that's "yesterday" relative to the current ET date. No time-of-day
   // gate any more (used to require ≥ 4:30pm ET); yesterday's data is
   // always complete since midnight ET has passed by definition.
   var recapDate = _eodYesterdayEt();
+  var todays = _eodTodaysTrades(recapDate);
+  console.log('[eod auto-pop] checking',
+    '| recapDate(yesterday-ET):', recapDate,
+    '| trades on that date:', todays.length,
+    '| in-mem total trades:', Array.isArray(trades) ? trades.length : 'n/a');
 
   // Gate 3 — yesterday must have at least one trade in scope
-  var todays = _eodTodaysTrades(recapDate);
-  if(!todays.length) return;
+  if(!todays.length){ console.log('[eod auto-pop] skip — no trades yesterday'); return; }
 
   var personalData = _eodPersonalData(recapDate);
-  if(!personalData.tradeCount) return;
+  if(!personalData.tradeCount){ console.log('[eod auto-pop] skip — personalData has 0 tradeCount'); return; }
   var html = _eodRenderPersonalCard(personalData);
-  if(!html) return;
+  if(!html){ console.log('[eod auto-pop] skip — renderer returned empty'); return; }
+  console.log('[eod auto-pop] firing — pnl:', personalData.totalPnl, 'trades:', personalData.tradeCount);
   _eodShowModal([{ flavor:'personal', html:html }], 'auto');
 }
 
@@ -26888,6 +26893,23 @@ function cookieDecline(){
 
 /* Shared cents — half-size, dimmed, used in widget P&L spans only */
 .eod-mini-cents{font-size:0.55em;opacity:0.55;font-style:italic;letter-spacing:-0.01em}
+
+/* ─── KILL-SWITCH: nuke any decorative pseudo-element on EOD surfaces.
+   The radial spotlight glow was removed in commit eb5727e, but we
+   re-assert it here with !important so any stale CSS that survives a
+   deploy / CDN cache / browser cache can't repaint the gold/sage glow.
+   If a future iteration wants the glow back, override this rule with
+   higher specificity. */
+.eod-card::before,
+.eod-card::after,
+.eod-mini-bar::before,
+.eod-mini-bar::after,
+.eod-comm-badge::before,
+.eod-comm-badge::after{
+  display:none !important;
+  background:none !important;
+  content:none !important;
+}
 
 /* Dashboard pill — single-row, ~44px tall, centered in the page width.
    Background is a subtle 3-stop horizontal gradient so the pill feels
