@@ -13255,6 +13255,17 @@ async function _eodCaptureCard(card){
     throw new Error('capture already in progress');
   }
   card.classList.add('is-capturing');
+  // Disable backdrop-filter on the modal backdrop during capture —
+  // html2canvas chokes on backdrop-filter and can hang traversing
+  // ancestors that have it. The .eod-backdrop parent uses blur(4px).
+  // Restore on finally so the modal looks normal again.
+  var backdrop = document.getElementById('eod-modal');
+  var prevBackdropFilter = '';
+  if(backdrop){
+    prevBackdropFilter = backdrop.style.backdropFilter || backdrop.style.webkitBackdropFilter || '';
+    backdrop.style.backdropFilter = 'none';
+    backdrop.style.webkitBackdropFilter = 'none';
+  }
   try {
     console.log('[eod capture] step 1 — awaiting _eodLoadHtml2Canvas()');
     var h2c = await _eodLoadHtml2Canvas();
@@ -13263,17 +13274,51 @@ async function _eodCaptureCard(card){
     if(typeof h2c !== 'function'){
       throw new Error('html2canvas did not load (typeof ' + typeof h2c + ')');
     }
+
+    // Step 2.5 — wait for web fonts to settle. html2canvas hangs
+    // indefinitely when computed-style fonts haven't loaded yet
+    // (Instrument Serif + Geist Mono come from Google Fonts). Race
+    // the fonts.ready promise against a short timeout so we don't
+    // wait forever on a flaky network; fall through either way.
+    if(document.fonts && document.fonts.ready){
+      console.log('[eod capture] step 2.5 — document.fonts.status:', document.fonts.status);
+      try {
+        await Promise.race([
+          document.fonts.ready,
+          new Promise(function(res){ setTimeout(res, 3000); })
+        ]);
+        console.log('[eod capture] step 2.6 — fonts settled, status:', document.fonts.status);
+      } catch(e){
+        console.warn('[eod capture] fonts.ready threw, proceeding anyway:', e && e.message);
+      }
+    }
+
+    // Step 2.7 — image audit. cross-origin <img> tags without CORS
+    // can also hang html2canvas. Personal card shouldn't have any
+    // (avatar is a CSS gradient div + inline SVGs), but log defensively.
+    var imgs = card.querySelectorAll('img');
+    console.log('[eod capture] step 2.7 — img count in card:', imgs.length);
+    if(imgs.length){
+      imgs.forEach(function(im, i){
+        console.log('  img['+i+']:', { src: im.src, complete: im.complete, crossOrigin: im.crossOrigin });
+      });
+    }
+
     console.log('[eod capture] step 3 — invoking html2canvas on card',
       'offsetWidth:', card.offsetWidth, 'offsetHeight:', card.offsetHeight);
     // 2x DPR for retina; bg matches --n-bg so the PNG has no fringe.
     // Race against a 15s timeout so a wedged capture surfaces as a
     // clean error instead of hanging the promise chain forever.
+    // allowTaint: true permits canvas to render images that didn't
+    // come with CORS headers — the canvas becomes tainted (toBlob
+    // would still throw on a truly tainted canvas) but the render
+    // itself proceeds instead of hanging.
     var canvas = await Promise.race([
       h2c(card, {
         backgroundColor: '#0a0a0a',
         scale: 2,
         useCORS: true,
-        allowTaint: false,
+        allowTaint: true,
         logging: false,
         // Cap effective width at 1080px (post-scale = 2160px — still
         // social-friendly without bloating the file).
@@ -13302,7 +13347,13 @@ async function _eodCaptureCard(card){
     throw e;
   } finally {
     card.classList.remove('is-capturing');
-    console.log('[eod capture] finally — is-capturing removed');
+    // Restore the modal backdrop's blur. Setting back to '' lets the
+    // CSS rule reclaim its declared backdrop-filter value.
+    if(backdrop){
+      backdrop.style.backdropFilter = prevBackdropFilter;
+      backdrop.style.webkitBackdropFilter = prevBackdropFilter;
+    }
+    console.log('[eod capture] finally — is-capturing removed, backdrop-filter restored');
   }
 }
 
