@@ -12810,29 +12810,43 @@ function _eodRenderPersonalCard(data){
 }
 
 function _eodRenderGroupCard(data){
-  if(!data || !data.tradeCount || !data.traders || !data.traders.length) return '';
-  var heroTone = data.totalPnl > 0 ? 'pos' : data.totalPnl < 0 ? 'neg' : 'zero';
-  var avgTone  = data.avgPerTrader > 0 ? 'pos' : data.avgPerTrader < 0 ? 'neg' : '';
+  if(!data) return '';
+  // Empty-state path — when the community has no activity today we
+  // still want the badge-click to open SOMETHING. Render an "Awaiting
+  // recap" version of the card with the same chrome but a quiet body.
+  var isEmpty = !data.tradeCount || !data.traders || !data.traders.length;
+  var heroTone = isEmpty ? 'zero' : (data.totalPnl > 0 ? 'pos' : data.totalPnl < 0 ? 'neg' : 'zero');
+  var avgTone  = isEmpty ? '' : (data.avgPerTrader > 0 ? 'pos' : data.avgPerTrader < 0 ? 'neg' : '');
 
-  var lbRowsHtml = data.traders.map(function(tr, i){
-    var rank = i + 1;
-    var avHtml = (typeof renderUserAvatar === 'function')
-      ? renderUserAvatar({
-          avatar_finish: tr.avatar_finish,
-          avatar_image_url: tr.avatar_image_url,
-          avatar_initials: tr.initials,
-          username: tr.username
-        }, 'sm')
-      : '';
-    var pnlTone = tr.pnl > 0 ? 'pos' : tr.pnl < 0 ? 'neg' : 'zero';
-    var meCls = tr.isMe ? ' is-me' : '';
-    return '<div class="ev2-lb-row rank-'+rank+'">'
-      + '<span class="ev2-lb-rank">'+rank+'</span>'
-      + avHtml
-      + '<span class="ev2-lb-handle'+meCls+'">@'+_eodSafe(tr.username||'trader')+'</span>'
-      + '<span class="ev2-lb-pnl '+pnlTone+'">'+_eodMoneyHtml(tr.pnl)+'</span>'
+  // Leaderboard rows OR empty-state placeholder — same .ev2-right slot.
+  var lbRowsHtml;
+  if(isEmpty){
+    lbRowsHtml =
+        '<div style="padding:18px 12px;border:0.5px dashed rgba(255,255,255,0.14);border-radius:6px;text-align:center">'
+      +   '<div style="font-family:\'Instrument Serif\',Georgia,serif;font-style:italic;font-size:18px;color:#a1a1a1;line-height:1.2">No traders yet</div>'
+      +   '<div style="margin-top:6px;font-family:\'Geist Mono\',ui-monospace,monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#6b6b6b">Be the first to share a trade today</div>'
       + '</div>';
-  }).join('');
+  } else {
+    lbRowsHtml = data.traders.map(function(tr, i){
+      var rank = i + 1;
+      var avHtml = (typeof renderUserAvatar === 'function')
+        ? renderUserAvatar({
+            avatar_finish: tr.avatar_finish,
+            avatar_image_url: tr.avatar_image_url,
+            avatar_initials: tr.initials,
+            username: tr.username
+          }, 'sm')
+        : '';
+      var pnlTone = tr.pnl > 0 ? 'pos' : tr.pnl < 0 ? 'neg' : 'zero';
+      var meCls = tr.isMe ? ' is-me' : '';
+      return '<div class="ev2-lb-row rank-'+rank+'">'
+        + '<span class="ev2-lb-rank">'+rank+'</span>'
+        + avHtml
+        + '<span class="ev2-lb-handle'+meCls+'">@'+_eodSafe(tr.username||'trader')+'</span>'
+        + '<span class="ev2-lb-pnl '+pnlTone+'">'+_eodMoneyHtml(tr.pnl)+'</span>'
+        + '</div>';
+    }).join('');
+  }
 
   // Member count + trade count for the footer-right meta. Falls back
   // to traders.length when the community object doesn't have members[].
@@ -13123,10 +13137,11 @@ function _eodBadgeOuterStyle(extra){
     + ';flex-direction:column !important'
     + ';align-items:flex-end !important'
     + ';justify-content:center !important'
+    + ';align-self:center !important'      /* center in the .gitem row's flex */
     + ';gap:3px !important'
     + ';width:80px !important;max-width:80px !important'
-    + ';height:40px !important;max-height:40px !important'
-    + ';flex:0 0 80px !important;flex-shrink:0 !important'
+    + ';height:40px !important;min-height:40px !important;max-height:40px !important'
+    + ';flex:0 0 80px !important;flex-shrink:0 !important;flex-grow:0 !important'
     + ';margin-left:auto !important'
     + ';padding:6px 8px !important'
     + ';border-radius:6px !important'
@@ -13230,33 +13245,45 @@ async function _eodPopulateBadge(community){
   badge.classList.remove('is-loading');
 
   if(!data || !data.tradeCount){
-    // Empty — no activity today (or yesterday). Outlined dot, em-dash
-    // P&L, no click target. Re-apply outer style each render so the
-    // badge can't inherit weirdness from a prior render's leftover
-    // inline styles.
+    // Empty — no activity today (or yesterday). Outlined dot + em-dash
+    // P&L, but STILL clickable so the user can pop the full modal and
+    // see the empty-state group card. Hover treatment matches the
+    // ready states (border opacity bump + slight lift via translateY
+    // through the parent .gitem hover — we keep the inline cursor
+    // pointer so the affordance reads as interactive).
     badge.className = 'eod-comm-badge is-empty';
-    badge.removeAttribute('onclick');
-    badge.onclick = null;
     badge.setAttribute('style',
       _eodBadgeOuterStyle(
         ';background:rgba(255,255,255,0.02)'
         + ';border:0.5px dashed rgba(255,255,255,0.15)'
-        + ';cursor:default'));
+        + ';cursor:pointer'));
     badge.innerHTML =
         '<div style="' + _EOD_BADGE_TOP_STYLE + '">'
       +   '<span style="' + _eodBadgeDotStyle('empty') + '"></span>'
       +   '<span style="' + _EOD_BADGE_LABEL_STYLE + '">EOD</span>'
       + '</div>'
       + '<div style="' + _eodBadgePnlStyle('zero') + '">&mdash;</div>';
+    badge.onclick = function(ev){
+      if(ev) ev.stopPropagation();
+      eodOpenGroupModalById(gid);
+    };
+    // Hover treatment — bump border opacity. Done in JS rather than
+    // CSS so it survives the bulletproof inline-styles strategy.
+    badge.onmouseenter = function(){
+      badge.style.setProperty('border-color', 'rgba(255,255,255,0.35)', 'important');
+    };
+    badge.onmouseleave = function(){
+      badge.style.setProperty('border-color', 'rgba(255,255,255,0.15)', 'important');
+    };
     return;
   }
 
   // Ready — tone-aware bg + border + dot + pnl color.
   var tone = data.totalPnl > 0 ? 'pos' : data.totalPnl < 0 ? 'neg' : 'zero';
-  var bg, bdr;
-  if(tone === 'pos'){ bg='rgba(95,179,137,0.08)'; bdr='rgba(95,179,137,0.28)'; }
-  else if(tone === 'neg'){ bg='rgba(201,95,95,0.06)'; bdr='rgba(201,95,95,0.24)'; }
-  else { bg='rgba(255,255,255,0.03)'; bdr='rgba(255,255,255,0.10)'; }
+  var bg, bdr, bdrHover;
+  if(tone === 'pos'){ bg='rgba(95,179,137,0.08)'; bdr='rgba(95,179,137,0.28)'; bdrHover='rgba(95,179,137,0.55)'; }
+  else if(tone === 'neg'){ bg='rgba(201,95,95,0.06)'; bdr='rgba(201,95,95,0.24)'; bdrHover='rgba(201,95,95,0.55)'; }
+  else { bg='rgba(255,255,255,0.03)'; bdr='rgba(255,255,255,0.10)'; bdrHover='rgba(255,255,255,0.25)'; }
   badge.className = 'eod-comm-badge is-ready tone-' + tone;
   badge.setAttribute('style',
     _eodBadgeOuterStyle(
@@ -13274,6 +13301,15 @@ async function _eodPopulateBadge(community){
   badge.onclick = function(ev){
     if(ev) ev.stopPropagation();
     eodOpenGroupModalById(gid);
+  };
+  // Hover bumps border opacity — done in JS to survive the inline
+  // !important strategy. Use setProperty('...', 'important') because
+  // assigning to el.style doesn't accept the important flag.
+  badge.onmouseenter = function(){
+    badge.style.setProperty('border-color', bdrHover, 'important');
+  };
+  badge.onmouseleave = function(){
+    badge.style.setProperty('border-color', bdr, 'important');
   };
 }
 
@@ -13445,9 +13481,19 @@ async function eodInflatePersonalFromWidget(){
 async function eodInflateGroupFromWidget(community){
   if(!community || !community.id) return;
   var etDate = _eodPickRelevantDate('group', community);
-  if(!etDate) return;
+  if(!etDate) etDate = _eodEtDate();
   var data = await _eodGroupData(community, etDate);
-  if(!data || !data.tradeCount || !data.traders.length) return;
+  // No-data inflate — Christian wants the modal to ALWAYS open from
+  // the badge so the user can see the full v2 card layout (even if
+  // it's just the "no traders today" empty state). Construct a
+  // synthetic empty-data shape so _eodRenderGroupCard's empty branch
+  // takes over the rendering.
+  if(!data){
+    data = {
+      flavor:'group', etDate:etDate, community:community,
+      totalPnl:0, tradeCount:0, winRate:0, avgPerTrader:0, traders:[]
+    };
+  }
   var html = _eodRenderGroupCard(data);
   if(html) _eodShowModal([{ flavor:'group', html:html, communityId:community.id }], 'widget');
 }
@@ -14428,10 +14474,27 @@ function renderTOTD(g){
     todayStr: todayStr
   });
 
-  if(!candidates.length){ card.style.display='none'; return; }
+  // Quiet-day placeholder — Christian wants the TOTD slot to stay visible
+  // at the top of the right rail even when no one's traded today yet.
+  // Renders a compact "waiting room" card with the same chrome so the
+  // sidebar layout doesn't pop when activity finally lands.
+  function _totdEmpty(reason){
+    card.innerHTML =
+        '<div class="card" style="padding:14px 16px">'
+      +   '<div class="card-title" style="display:flex;align-items:center;gap:8px">'
+      +     '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--n-gold,#f5d77c);stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M5 4h2v3a3 3 0 0 1-3 3 1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M19 4h-2v3a3 3 0 0 0 3 3 1 1 0 0 0 1-1V5a1 1 0 0 0-1-1z"/><line x1="12" y1="13" x2="12" y2="18"/><polyline points="8 21 16 21 14 18 10 18 8 21"/></svg>'
+      +     '<span>Trade of the Day</span>'
+      +   '</div>'
+      +   '<div style="margin-top:10px;font-family:var(--n-font-display);font-style:italic;font-size:15px;color:var(--n-text-2);line-height:1.2">' + _eodSafe(reason) + '</div>'
+      +   '<div style="margin-top:4px;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--n-text-3)">Be the first to share a trade today</div>'
+      + '</div>';
+    card.style.display='block';
+  }
+
+  if(!candidates.length){ _totdEmpty('No trades logged today'); return; }
   candidates.sort(function(a,b){return b.pnl - a.pnl;});
   var top = candidates[0];
-  if(top.pnl <= 0){ card.style.display='none'; return; } // only feature winners
+  if(top.pnl <= 0){ _totdEmpty('No winners today yet'); return; } // only feature winners
 
   var t = top.trade;
   var pid = top.isMe ? (t.id||'') : (top.remoteRow ? top.remoteRow.id+'_'+top.remoteRow.user_id : '');
