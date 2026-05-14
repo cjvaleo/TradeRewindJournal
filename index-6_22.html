@@ -13206,6 +13206,110 @@ function eodOpenDayReview(etDate){
   } catch(e){ console.warn('[eod] day review open failed:', e && e.message); }
 }
 
+/* ─────────────────────────────────────────────────────────────────
+   EOD DIAG INFRASTRUCTURE
+   Safari navigates the entire tab to data: URLs when the download
+   attribute is ignored, destroying console state. To survive that,
+   every diag entry is mirrored to localStorage and rendered into
+   an on-screen panel the next time the page loads. This lets us
+   read the diag output even after Safari hijacks the tab.
+   ───────────────────────────────────────────────────────────────── */
+function _eodSerialize(v){
+  if(v == null) return String(v);
+  if(typeof v === 'string') return v;
+  if(typeof v !== 'object') return String(v);
+  try { return JSON.stringify(v); } catch(e){ return Object.prototype.toString.call(v); }
+}
+function _eodLog(/* ...args */){
+  // Always mirror to console for normal dev flow.
+  try { console.log.apply(console, arguments); } catch(e){}
+  // Append to localStorage so navigation can't destroy it.
+  try {
+    var parts = [];
+    for(var i = 0; i < arguments.length; i++) parts.push(_eodSerialize(arguments[i]));
+    var msg = parts.join(' ');
+    var raw = localStorage.getItem('eod_diag_log') || '[]';
+    var arr = JSON.parse(raw);
+    arr.push({ t: Date.now(), msg: msg });
+    if(arr.length > 400) arr = arr.slice(-400);  // cap size
+    localStorage.setItem('eod_diag_log', JSON.stringify(arr));
+  } catch(e){}
+  // If panel is already on screen, append live too.
+  try {
+    var pre = document.getElementById('eod-diag-pre');
+    if(pre){
+      var ts = new Date().toISOString().slice(11, 23);
+      var line = ts + '  ' + (msg || (parts && parts.join(' ')) || '');
+      pre.textContent += line + '\n';
+      pre.scrollTop = pre.scrollHeight;
+    }
+  } catch(e){}
+}
+window._eodDiagClear = function(){
+  try { localStorage.removeItem('eod_diag_log'); } catch(e){}
+  var p = document.getElementById('eod-diag-panel'); if(p) p.remove();
+};
+window._eodDiagCopy = function(){
+  var pre = document.getElementById('eod-diag-pre');
+  if(!pre) return;
+  var text = pre.textContent || '';
+  var done = function(ok){
+    var btn = document.getElementById('eod-diag-copy-btn');
+    if(btn){ btn.textContent = ok ? 'COPIED ✓' : 'COPY FAILED'; setTimeout(function(){ btn.textContent = 'COPY'; }, 1500); }
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ done(false); });
+  } else {
+    // Fallback: select the pre so the user can Cmd+C manually.
+    var r = document.createRange(); r.selectNodeContents(pre);
+    var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    done(true);
+  }
+};
+function _eodDiagRender(){
+  if(!window.localStorage) return;
+  var raw; try { raw = localStorage.getItem('eod_diag_log'); } catch(e){ return; }
+  if(!raw) return;
+  var log; try { log = JSON.parse(raw); } catch(e){ return; }
+  if(!log || !log.length) return;
+
+  var mount = function(){
+    if(document.getElementById('eod-diag-panel')) return;
+    var panel = document.createElement('div');
+    panel.id = 'eod-diag-panel';
+    panel.style.cssText = [
+      'position:fixed','bottom:12px','right:12px','z-index:2147483647',
+      'background:#0a0a0a','color:#e5e5e5',
+      'font-family:ui-monospace,Menlo,monospace','font-size:10px','line-height:1.45',
+      'border:1px solid #f5d77c','border-radius:6px',
+      'max-width:560px','max-height:60vh','overflow:hidden',
+      'padding:8px 10px','box-shadow:0 6px 24px rgba(0,0,0,0.7)'
+    ].join(';');
+    var header =
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">'
+      +   '<strong style="color:#f5d77c;font-family:ui-monospace,monospace;font-size:10px;letter-spacing:0.12em">EOD DIAG · ' + log.length + ' entries</strong>'
+      +   '<div style="display:flex;gap:4px">'
+      +     '<button id="eod-diag-copy-btn"  onclick="_eodDiagCopy()"  style="background:transparent;border:1px solid #444;color:#e5e5e5;font:inherit;padding:2px 7px;border-radius:3px;cursor:pointer">COPY</button>'
+      +     '<button                          onclick="_eodDiagClear()" style="background:transparent;border:1px solid #444;color:#888;font:inherit;padding:2px 7px;border-radius:3px;cursor:pointer">CLEAR</button>'
+      +   '</div>'
+      + '</div>';
+    panel.innerHTML = header
+      + '<pre id="eod-diag-pre" style="margin:0;padding:0;font:inherit;color:inherit;white-space:pre-wrap;word-break:break-all;max-height:calc(60vh - 36px);overflow:auto"></pre>';
+    document.body.appendChild(panel);
+    var pre = document.getElementById('eod-diag-pre');
+    var lines = log.map(function(e){
+      var ts = new Date(e.t).toISOString().slice(11, 23);
+      return ts + '  ' + (e.msg || '');
+    });
+    pre.textContent = lines.join('\n');
+    pre.scrollTop = pre.scrollHeight;
+  };
+  if(document.body) mount();
+  else document.addEventListener('DOMContentLoaded', mount);
+}
+// Render any persisted diag log as soon as we can.
+_eodDiagRender();
+
 /* Lazy-load modern-screenshot from CDN on first Share click.
    Was html2canvas 1.4.1 — confirmed-hanging on this card despite
    ruling out fonts/CORS-images/backdrop-filter. modern-screenshot
@@ -13284,25 +13388,24 @@ async function _eodPrebake(){
   if(_eodPrebakedFor === card && _eodPrebakedFile && _eodPrebakedDataUrl) return;
   _eodPrebakedFor = card;
   try {
-    console.log('[eod prebake] capturing for', card.dataset.eodDate || '(no date)');
+    _eodLog('[eod prebake] capturing for', card.dataset.eodDate || '(no date)');
     var file = await _eodCaptureCard(card);
-    if(_eodPrebakedFor !== card) return;  // user switched cards mid-bake
+    if(_eodPrebakedFor !== card) return;
     _eodPrebakedFile = file;
-    console.log('[eod prebake] File ready —', file.size, 'bytes; converting to data URL…');
-    // Also pre-read to data URL for Safari's synchronous-click path.
+    _eodLog('[eod prebake] File ready —', file.size, 'bytes; converting to data URL…');
     var reader = new FileReader();
     reader.onload = function(){
       if(_eodPrebakedFor === card){
         _eodPrebakedDataUrl = reader.result;
-        console.log('[eod prebake] dataUrl ready —', reader.result.length, 'chars');
+        _eodLog('[eod prebake] dataUrl ready —', reader.result.length, 'chars');
       }
     };
     reader.onerror = function(){
-      console.warn('[eod prebake] FileReader error — Safari download will fall back');
+      _eodLog('[eod prebake] FileReader error — Safari download will fall back');
     };
     reader.readAsDataURL(file);
   } catch(e){
-    console.warn('[eod prebake] failed (live click will retry):', e && e.message);
+    _eodLog('[eod prebake] failed:', e && e.message);
     _eodPrebakedFile = null;
     _eodPrebakedDataUrl = null;
   }
@@ -13422,17 +13525,15 @@ async function _eodCaptureCard(card){
     // fine, but the rendered PNG disagrees).
     // ─────────────────────────────────────────────────────────────────
     var _capDiagRect = card.getBoundingClientRect();
-    console.log('═══ [eod capture] DIMS DIAG ═══');
-    console.log('  card.getBoundingClientRect():', {
+    _eodLog('═══ [eod capture] DIMS DIAG ═══');
+    _eodLog('  card.getBoundingClientRect():', {
       x: _capDiagRect.x, y: _capDiagRect.y,
-      width: _capDiagRect.width, height: _capDiagRect.height,
-      top: _capDiagRect.top, left: _capDiagRect.left,
-      right: _capDiagRect.right, bottom: _capDiagRect.bottom
+      width: _capDiagRect.width, height: _capDiagRect.height
     });
-    console.log('  card.offsetWidth / offsetHeight :', card.offsetWidth, '/', card.offsetHeight);
-    console.log('  passing to domToBlob — width:', capW, 'height:', capH);
-    console.log('  match? rect.w==capW:', Math.round(_capDiagRect.width) === capW,
-                '  rect.h==capH:', Math.round(_capDiagRect.height) === capH);
+    _eodLog('  card.offsetWidth / offsetHeight:', card.offsetWidth + ' / ' + card.offsetHeight);
+    _eodLog('  passing to domToBlob — width:', capW, ' height:', capH);
+    _eodLog('  match? rect.w==capW:', Math.round(_capDiagRect.width) === capW,
+            ' rect.h==capH:', Math.round(_capDiagRect.height) === capH);
 
     var _hero = card.querySelector('.ev2-hero');
     var _pnlNum = card.querySelector('.ev2-pnl-num');
@@ -13444,41 +13545,41 @@ async function _eodCaptureCard(card){
       var _heroR   = _hero.getBoundingClientRect();
       var _numR    = _pnlNum.getBoundingClientRect();
       var _trendR  = _trend.getBoundingClientRect();
-      console.log('═══ [eod capture] ARROW DIAG ═══');
-      console.log('  .ev2-hero  computed: display=', _heroCS.display,
-                  ' align-items=', _heroCS.alignItems,
-                  ' gap=', _heroCS.gap,
-                  ' flex-wrap=', _heroCS.flexWrap,
-                  ' white-space=', _heroCS.whiteSpace);
-      console.log('  .ev2-hero  rect:', { x: _heroR.x, y: _heroR.y, w: _heroR.width, h: _heroR.height });
-      console.log('  .ev2-pnl-num computed: display=', _numCS.display,
-                  ' font-size=', _numCS.fontSize,
-                  ' position=', _numCS.position);
-      console.log('  .ev2-pnl-num rect:', { x: _numR.x, y: _numR.y, w: _numR.width, h: _numR.height,
-                                              right: _numR.right });
-      console.log('  .ev2-trend computed: display=', _trendCS.display,
-                  ' position=', _trendCS.position,
-                  ' width=', _trendCS.width,
-                  ' height=', _trendCS.height,
-                  ' flex=', _trendCS.flex || (_trendCS.flexGrow+' '+_trendCS.flexShrink+' '+_trendCS.flexBasis),
-                  ' margin-left=', _trendCS.marginLeft,
-                  ' left=', _trendCS.left,
-                  ' top=', _trendCS.top,
-                  ' transform=', _trendCS.transform,
-                  ' align-self=', _trendCS.alignSelf);
-      console.log('  .ev2-trend rect:', { x: _trendR.x, y: _trendR.y, w: _trendR.width, h: _trendR.height });
-      console.log('  num.right vs trend.left:', _numR.right, '/', _trendR.left,
-                  '  GAP=', _trendR.left - _numR.right, 'px',
-                  _trendR.left - _numR.right < 0 ? '⚠ OVERLAP (live DOM, pre-capture)' : '(no overlap)');
-      console.log('  hero spans both? num inside hero:',
-                  _numR.left >= _heroR.left && _numR.right <= _heroR.right,
-                  ' trend inside hero:',
-                  _trendR.left >= _heroR.left && _trendR.right <= _heroR.right);
+      _eodLog('═══ [eod capture] ARROW DIAG ═══');
+      _eodLog('  .ev2-hero  cs: display=' + _heroCS.display +
+              ' align-items=' + _heroCS.alignItems +
+              ' gap=' + _heroCS.gap +
+              ' flex-wrap=' + _heroCS.flexWrap +
+              ' white-space=' + _heroCS.whiteSpace);
+      _eodLog('  .ev2-hero  rect: x=' + Math.round(_heroR.x) + ' y=' + Math.round(_heroR.y) +
+              ' w=' + Math.round(_heroR.width) + ' h=' + Math.round(_heroR.height));
+      _eodLog('  .ev2-pnl-num cs: display=' + _numCS.display +
+              ' font-size=' + _numCS.fontSize +
+              ' position=' + _numCS.position);
+      _eodLog('  .ev2-pnl-num rect: x=' + Math.round(_numR.x) + ' y=' + Math.round(_numR.y) +
+              ' w=' + Math.round(_numR.width) + ' h=' + Math.round(_numR.height) +
+              ' right=' + Math.round(_numR.right));
+      _eodLog('  .ev2-trend cs: display=' + _trendCS.display +
+              ' position=' + _trendCS.position +
+              ' w=' + _trendCS.width + ' h=' + _trendCS.height +
+              ' flex=' + (_trendCS.flex || (_trendCS.flexGrow+' '+_trendCS.flexShrink+' '+_trendCS.flexBasis)) +
+              ' ml=' + _trendCS.marginLeft +
+              ' left=' + _trendCS.left + ' top=' + _trendCS.top +
+              ' transform=' + _trendCS.transform +
+              ' align-self=' + _trendCS.alignSelf);
+      _eodLog('  .ev2-trend rect: x=' + Math.round(_trendR.x) + ' y=' + Math.round(_trendR.y) +
+              ' w=' + Math.round(_trendR.width) + ' h=' + Math.round(_trendR.height));
+      var _gap = Math.round(_trendR.left - _numR.right);
+      _eodLog('  num.right=' + Math.round(_numR.right) + '  trend.left=' + Math.round(_trendR.left) +
+              '  GAP=' + _gap + 'px',
+              _gap < 0 ? '⚠ OVERLAP (live DOM, pre-capture)' : '(no overlap)');
+      _eodLog('  num inside hero?', _numR.left >= _heroR.left && _numR.right <= _heroR.right,
+              ' trend inside hero?', _trendR.left >= _heroR.left && _trendR.right <= _heroR.right);
     } else {
-      console.log('[eod capture] ARROW DIAG: could not query .ev2-hero / .ev2-pnl-num / .ev2-trend',
-                  { hero: !!_hero, pnlNum: !!_pnlNum, trend: !!_trend });
+      _eodLog('[eod capture] ARROW DIAG: missing elements',
+              'hero?', !!_hero, 'pnlNum?', !!_pnlNum, 'trend?', !!_trend);
     }
-    console.log('═══════════════════════════════');
+    _eodLog('═══════════════════════════════');
 
     console.log('[eod capture] step 3 — invoking modern-screenshot.domToBlob on card',
       'pinned-width:', capW, 'pinned-height:', capH);
@@ -13663,52 +13764,45 @@ async function eodDownloadCard(btn){
     hasBeen: navigator.userActivation.hasBeenActive,
     isActive: navigator.userActivation.isActive
   }) || '(unsupported)';
-  console.log('═══ [eod download] CLICK DIAG ═══');
-  console.log('  event.isTrusted    :', _ev ? _ev.isTrusted : '(no window.event)');
-  console.log('  event.type         :', _ev ? _ev.type : '(no window.event)');
-  console.log('  navigator.userActivation:', _ua);
-  console.log('  _eodIsSafari()     :', _eodIsSafari());
-  console.log('  userAgent          :', navigator.userAgent);
-  console.log('  _eodPrebakedFile   :', _eodPrebakedFile
+  _eodLog('═══ [eod download] CLICK DIAG ═══');
+  _eodLog('  event.isTrusted    :', _ev ? _ev.isTrusted : '(no window.event)');
+  _eodLog('  event.type         :', _ev ? _ev.type : '(no window.event)');
+  _eodLog('  navigator.userActivation:', _ua);
+  _eodLog('  _eodIsSafari()     :', _eodIsSafari());
+  _eodLog('  userAgent          :', navigator.userAgent);
+  _eodLog('  _eodPrebakedFile   :', _eodPrebakedFile
     ? { name: _eodPrebakedFile.name, size: _eodPrebakedFile.size, type: _eodPrebakedFile.type }
     : 'NULL — pre-bake never finished');
-  console.log('  _eodPrebakedDataUrl:', _eodPrebakedDataUrl
+  _eodLog('  _eodPrebakedDataUrl:', _eodPrebakedDataUrl
     ? { length: _eodPrebakedDataUrl.length, head: _eodPrebakedDataUrl.slice(0, 40) + '…' }
     : 'NULL — pre-bake never finished');
-  console.log('  _eodPrebakedFor    :', _eodPrebakedFor);
-  console.log('  document.hasFocus():', document.hasFocus());
-  console.log('  btn arg            :', btn && btn.tagName, btn);
-  console.log('═══════════════════════════════');
+  _eodLog('  _eodPrebakedFor    :', _eodPrebakedFor ? '(card element ' + (_eodPrebakedFor.dataset && _eodPrebakedFor.dataset.eodDate || '?') + ')' : 'null');
+  _eodLog('  document.hasFocus():', document.hasFocus());
+  _eodLog('  btn arg            :', btn && btn.tagName);
+  _eodLog('═══════════════════════════════');
 
   var card = _eodResolveCard(btn);
-  console.log('[eod download] resolved card →', card,
-    '| matches _eodPrebakedFor?', card === _eodPrebakedFor);
+  _eodLog('[eod download] resolved card; matches _eodPrebakedFor?', card === _eodPrebakedFor);
   if(!card){
     if(typeof toast === 'function') toast('Download failed — no PnL Card open');
     return;
   }
 
   var isSafari = _eodIsSafari();
-  console.log('[eod download] isSafari:', isSafari);
+  _eodLog('[eod download] isSafari:', isSafari);
 
-  // SAFARI FAST PATH — must run SYNCHRONOUSLY inside the click event
-  // (no await before .click() or Safari treats it as non-trusted →
-  // navigates to data: URL instead of downloading). Requires the
-  // pre-baked data URL from modal open. If it's not ready, fall
-  // through to the async path (which is less reliable on Safari but
-  // better than nothing).
   if(isSafari && _eodPrebakedDataUrl && _eodPrebakedFile){
-    console.log('[eod download] >>> BRANCH: Safari sync path (pre-baked data URL)');
+    _eodLog('[eod download] >>> BRANCH: Safari sync path (pre-baked data URL)');
     try {
       _eodSafariDownloadSync(_eodPrebakedDataUrl, _eodPrebakedFile.name);
+      _eodLog('[eod download] Safari sync .click() returned (no throw)');
       if(typeof toast === 'function') toast('Saved · check your downloads');
       return;
     } catch(e){
-      console.warn('[eod download] Safari sync path threw:', e && e.message);
-      // fall through to async path below
+      _eodLog('[eod download] Safari sync path threw:', e && e.message);
     }
   } else {
-    console.log('[eod download] >>> skipping Safari sync path because:',
+    _eodLog('[eod download] >>> skipping Safari sync path because:',
       !isSafari ? 'not Safari'
       : !_eodPrebakedDataUrl ? 'no pre-baked data URL'
       : !_eodPrebakedFile ? 'no pre-baked file'
