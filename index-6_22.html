@@ -12943,12 +12943,25 @@ function _eodRenderPersonalCard(data){
       // (where the top row is still a loss). Without this, sage bg +
       // rose pnl text reads visually as a bug.
       var bestCls = idx === 0 ? ' best' : '';
+      // Inline styles on every cell — class rules with white-space:nowrap
+      // were not surviving the modern-screenshot clone; inline beats
+      // the cloned-style computation. Especially the .ev2-side chip,
+      // which was breaking out of its pill in the captured PNG.
+      var sideBg, sideBd, sideCol;
+      if(dir === 'short'){ sideBg='rgba(201,95,95,0.10)'; sideBd='rgba(201,95,95,0.20)'; sideCol='#c95f5f'; }
+      else               { sideBg='rgba(95,179,137,0.10)'; sideBd='rgba(95,179,137,0.20)'; sideCol='#5fb389'; }
+      var sideStyle = 'display:inline-block;white-space:nowrap;flex-shrink:0;'
+                    + 'font-family:\'Geist Mono\',ui-monospace,monospace;'
+                    + 'font-size:8px;letter-spacing:0.18em;text-transform:uppercase;'
+                    + 'padding:2px 6px;border-radius:3px;'
+                    + 'background:'+sideBg+';color:'+sideCol+';'
+                    + 'border:1px solid '+sideBd+';';
       return '<div class="ev2-trade'+bestCls+' '+tone+'">'
-        + '<span class="ev2-time">'+_eodSafe(_eodTimeOf(t))+'</span>'
-        + '<span class="ev2-sym">'+_eodSafe(t.sym||'—')+'</span>'
-        + '<span class="ev2-side '+dir+'">'+dirLabel+'</span>'
+        + '<span class="ev2-time" style="white-space:nowrap">'+_eodSafe(_eodTimeOf(t))+'</span>'
+        + '<span class="ev2-sym"  style="white-space:nowrap">'+_eodSafe(t.sym||'—')+'</span>'
+        + '<span class="ev2-side '+dir+'" style="'+sideStyle+'">'+dirLabel+'</span>'
         + rrHtml
-        + '<span class="ev2-trade-pnl '+tone+'">'+_eodMoneyHtml(pnl)+'</span>'
+        + '<span class="ev2-trade-pnl '+tone+'" style="white-space:nowrap">'+_eodMoneyHtml(pnl)+'</span>'
         + '</div>';
     }).join('');
   }
@@ -12967,45 +12980,58 @@ function _eodRenderPersonalCard(data){
   var subtitle = 'Trading journal · Today';
   var trendSvg = data.totalPnl >= 0 ? _EOD_SVG.trendUp : _EOD_SVG.trendDown;
 
+  // Inline-style strategy: modern-screenshot occasionally drops or
+  // miscomputes class-based styles during the clone, so every cell
+  // that MUST stay on one line + every cell that MUST honor a fixed
+  // dimension gets inline style="" attributes the cloned tree can't
+  // shed. Class rules stay (live render still uses them); inline
+  // wins the cascade during capture either way.
+  var heroTrendBg = data.totalPnl >= 0 ? '#5fb389' : '#c95f5f';
+  var heroPnlCol  = data.totalPnl > 0 ? '#5fb389' : data.totalPnl < 0 ? '#c95f5f' : '#a1a1a1';
   return '<div class="eod-card eod-card-personal" data-eod-date="'+_eodSafe(data.etDate)+'">'
-    // (1) Header
+    // (1) Header — date/time spans pinned to nowrap so they can't fold.
     + '<div class="ev2-head">'
     +   '<div class="ev2-av">'+_eodSafe(initials)+'</div>'
     +   '<div class="ev2-head-text">'
-    +     '<span class="ev2-handle">@'+_eodSafe(handle)+'</span>'
-    +     '<span class="ev2-subtitle">'+subtitle+'</span>'
+    +     '<span class="ev2-handle" style="white-space:nowrap">@'+_eodSafe(handle)+'</span>'
+    +     '<span class="ev2-subtitle" style="white-space:nowrap">'+subtitle+'</span>'
     +   '</div>'
     +   '<div class="ev2-head-meta">'
-    +     '<span class="ev2-head-date">'+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
-    +     '<span class="ev2-head-time">Live · Today</span>'
+    +     '<span class="ev2-head-date" style="white-space:nowrap">'+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
+    +     '<span class="ev2-head-time" style="white-space:nowrap">Live &middot; Today</span>'
     +   '</div>'
     + '</div>'
     // (2) Body — 2 cols + vertical divider
     + '<div class="ev2-body">'
     +   '<div class="ev2-left">'
-    +     '<span class="ev2-pnl-label">Today&rsquo;s P&amp;L</span>'
-    +     '<div class="ev2-hero '+heroTone+'">'
-    +       '<span class="ev2-pnl-num">'+_eodMoneyHtml(data.totalPnl)+'</span>'
-    +       '<span class="ev2-trend">'+trendSvg+'</span>'
+    +     '<span class="ev2-pnl-label" style="white-space:nowrap">Today&rsquo;s P&amp;L</span>'
+    // Hero row — inline flex + gap so the arrow can NEVER overlap the
+    // P&L number, regardless of how the renderer computes positioning.
+    +     '<div class="ev2-hero '+heroTone+'" style="display:flex;align-items:center;gap:14px;white-space:nowrap;flex-wrap:nowrap;color:'+heroPnlCol+'">'
+    +       '<span class="ev2-pnl-num" style="display:inline-block;white-space:nowrap;flex-shrink:0;font-family:\'Instrument Serif\',Georgia,serif;font-style:italic;font-size:68px;line-height:1;letter-spacing:-0.02em">'+_eodMoneyHtml(data.totalPnl)+'</span>'
+    +       '<span class="ev2-trend" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;min-width:30px;min-height:30px;flex:0 0 30px;border-radius:50%;background:'+heroTrendBg+';opacity:1">'+trendSvg+'</span>'
     +     '</div>'
+    // Stat strip — inline labels keep "WIN RATE" + "AVG R" single-line.
     +     '<div class="ev2-stats">'
-    +       '<div class="ev2-stat"><span class="lbl">Trades</span><span class="val">'+data.tradeCount+'</span></div>'
-    +       '<div class="ev2-stat"><span class="lbl">Win Rate</span><span class="val">'+data.winRate+'<span class="unit">%</span></span></div>'
-    +       '<div class="ev2-stat"><span class="lbl">Avg R</span><span class="val '+avgRTone+'">'+_eodSafe(avgRTxt)+'</span></div>'
+    +       '<div class="ev2-stat"><span class="lbl" style="white-space:nowrap">Trades</span><span class="val">'+data.tradeCount+'</span></div>'
+    +       '<div class="ev2-stat"><span class="lbl" style="white-space:nowrap">Win Rate</span><span class="val">'+data.winRate+'<span class="unit">%</span></span></div>'
+    +       '<div class="ev2-stat"><span class="lbl" style="white-space:nowrap">Avg R</span><span class="val '+avgRTone+'" style="white-space:nowrap">'+_eodSafe(avgRTxt)+'</span></div>'
     +     '</div>'
     +   '</div>'
     +   '<div class="ev2-divider"></div>'
     +   '<div class="ev2-right">'
-    +     '<div class="ev2-right-head">'+_EOD_SVG.trophy+'<span>Top trades</span></div>'
+    // "TOP TRADES" header — nowrap so the two words stay on one line.
+    +     '<div class="ev2-right-head" style="white-space:nowrap">'+_EOD_SVG.trophy+'<span>Top trades</span></div>'
     +     '<div class="ev2-trades">'+tradeRowsHtml+'</div>'
     +     moreHtml
     +   '</div>'
     + '</div>'
-    // (3) Footer
+    // (3) Footer — nowrap the wordmark + meta so the right-edge date
+    // can't fold under the brand mark.
     + '<div class="ev2-foot">'
-    +   '<div class="ev2-foot-brand">'+_EOD_SVG.rewind+'<span>Rewind</span></div>'
-    +   '<span class="ev2-wm">traderewindjournal.com</span>'
-    +   '<span class="ev2-foot-meta">PnL Card &middot; '+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
+    +   '<div class="ev2-foot-brand" style="white-space:nowrap">'+_EOD_SVG.rewind+'<span>Rewind</span></div>'
+    +   '<span class="ev2-wm" style="white-space:nowrap">traderewindjournal.com</span>'
+    +   '<span class="ev2-foot-meta" style="white-space:nowrap">PnL Card &middot; '+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
     + '</div>'
     // Action row — hidden during PNG capture (see .is-capturing rule).
     // Order: [Download] [Share?] [Dismiss]. Share is feature-detected
@@ -13069,44 +13095,49 @@ function _eodRenderGroupCard(data){
     : data.traders.length;
   var trendSvg = data.totalPnl >= 0 ? _EOD_SVG.trendUp : _EOD_SVG.trendDown;
 
+  // Inline-style strategy mirrors the personal renderer — same modern-
+  // screenshot reliability fix. See _eodRenderPersonalCard for the
+  // full rationale.
+  var heroTrendBg = data.totalPnl >= 0 ? '#5fb389' : '#c95f5f';
+  var heroPnlCol  = data.totalPnl > 0 ? '#5fb389' : data.totalPnl < 0 ? '#c95f5f' : '#a1a1a1';
   return '<div class="eod-card eod-card-group" data-eod-date="'+_eodSafe(data.etDate)+'">'
     // (1) Header — gold pulse instead of avatar
     + '<div class="ev2-head">'
     +   '<span class="ev2-pulse"></span>'
     +   '<div class="ev2-head-text">'
-    +     '<span class="ev2-handle">'+_eodSafe(data.community.name||'Community')+'</span>'
-    +     '<span class="ev2-subtitle">Community &middot; Day recap</span>'
+    +     '<span class="ev2-handle" style="white-space:nowrap">'+_eodSafe(data.community.name||'Community')+'</span>'
+    +     '<span class="ev2-subtitle" style="white-space:nowrap">Community &middot; Day recap</span>'
     +   '</div>'
     +   '<div class="ev2-head-meta">'
-    +     '<span class="ev2-head-date">'+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
-    +     '<span class="ev2-head-time">Last completed day</span>'
+    +     '<span class="ev2-head-date" style="white-space:nowrap">'+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
+    +     '<span class="ev2-head-time" style="white-space:nowrap">Last completed day</span>'
     +   '</div>'
     + '</div>'
     // (2) Body
     + '<div class="ev2-body">'
     +   '<div class="ev2-left">'
-    +     '<span class="ev2-pnl-label">Collective P&amp;L</span>'
-    +     '<div class="ev2-hero '+heroTone+'">'
-    +       '<span class="ev2-pnl-num">'+_eodMoneyHtml(data.totalPnl)+'</span>'
-    +       '<span class="ev2-trend">'+trendSvg+'</span>'
+    +     '<span class="ev2-pnl-label" style="white-space:nowrap">Collective P&amp;L</span>'
+    +     '<div class="ev2-hero '+heroTone+'" style="display:flex;align-items:center;gap:14px;white-space:nowrap;flex-wrap:nowrap;color:'+heroPnlCol+'">'
+    +       '<span class="ev2-pnl-num" style="display:inline-block;white-space:nowrap;flex-shrink:0;font-family:\'Instrument Serif\',Georgia,serif;font-style:italic;font-size:68px;line-height:1;letter-spacing:-0.02em">'+_eodMoneyHtml(data.totalPnl)+'</span>'
+    +       '<span class="ev2-trend" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;min-width:30px;min-height:30px;flex:0 0 30px;border-radius:50%;background:'+heroTrendBg+';opacity:1">'+trendSvg+'</span>'
     +     '</div>'
     +     '<div class="ev2-stats">'
-    +       '<div class="ev2-stat"><span class="lbl">Trades</span><span class="val">'+data.tradeCount+'</span></div>'
-    +       '<div class="ev2-stat"><span class="lbl">Group WR</span><span class="val">'+data.winRate+'<span class="unit">%</span></span></div>'
-    +       '<div class="ev2-stat"><span class="lbl">Avg / trade</span><span class="val '+avgTone+'">'+_eodMoneyHtml(data.avgPerTrade)+'</span></div>'
+    +       '<div class="ev2-stat"><span class="lbl" style="white-space:nowrap">Trades</span><span class="val">'+data.tradeCount+'</span></div>'
+    +       '<div class="ev2-stat"><span class="lbl" style="white-space:nowrap">Group WR</span><span class="val">'+data.winRate+'<span class="unit">%</span></span></div>'
+    +       '<div class="ev2-stat"><span class="lbl" style="white-space:nowrap">Avg / trade</span><span class="val '+avgTone+'" style="white-space:nowrap">'+_eodMoneyHtml(data.avgPerTrade)+'</span></div>'
     +     '</div>'
     +   '</div>'
     +   '<div class="ev2-divider"></div>'
     +   '<div class="ev2-right">'
-    +     '<div class="ev2-right-head">'+_EOD_SVG.trophy+'<span>Top traders</span></div>'
+    +     '<div class="ev2-right-head" style="white-space:nowrap">'+_EOD_SVG.trophy+'<span>Top traders</span></div>'
     +     '<div class="ev2-lb">'+lbRowsHtml+'</div>'
     +   '</div>'
     + '</div>'
     // (3) Footer
     + '<div class="ev2-foot">'
-    +   '<div class="ev2-foot-brand">'+_EOD_SVG.rewind+'<span>Rewind</span></div>'
-    +   '<span class="ev2-wm">traderewindjournal.com</span>'
-    +   '<span class="ev2-foot-meta">'+memberCount+' member'+(memberCount===1?'':'s')+' &middot; '+data.tradeCount+' trade'+(data.tradeCount===1?'':'s')+'</span>'
+    +   '<div class="ev2-foot-brand" style="white-space:nowrap">'+_EOD_SVG.rewind+'<span>Rewind</span></div>'
+    +   '<span class="ev2-wm" style="white-space:nowrap">traderewindjournal.com</span>'
+    +   '<span class="ev2-foot-meta" style="white-space:nowrap">'+memberCount+' member'+(memberCount===1?'':'s')+' &middot; '+data.tradeCount+' trade'+(data.tradeCount===1?'':'s')+'</span>'
     + '</div>'
     // Action row — matches the personal modal. Order: [Download]
     // [Share?] [Dismiss]. Share is feature-detected via
