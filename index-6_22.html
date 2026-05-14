@@ -1873,7 +1873,9 @@ body::before,.bg-grid,.bg-horizon,.bg-horizon2{display:none}
   top:auto!important;
 }
 .wrap{flex-direction:column}
-.main{width:100%;padding-bottom:60px}
+/* padding-bottom dropped — used to be 60px to clear the now-removed
+   bottom tab bar; just a small breathing inset remains. */
+.main{width:100%;padding-bottom:16px}
 .page{padding:14px 12px!important}
 .ph{flex-direction:column;gap:8px}
 .ptitle{font-size:20px}
@@ -7572,7 +7574,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   /* Page-level layout shifts */
   body{overflow-x:hidden}
   .wrap{flex-direction:column}
-  .main{width:100%;padding:14px 12px 80px}
+  .main{width:100%;padding:14px 12px 24px} /* was 80px for old bottom-nav clearance */
 
   /* DASHBOARD */
   #pg-dashboard.page.on{padding:18px 14px 60px}
@@ -13072,12 +13074,24 @@ function _eodLoadHtml2Canvas(){
 
 // Feature-detect file share. Probed with a tiny dummy File since
 // canShare({files:[]}) returns false on all browsers.
+// Diagnostic-logged so we can verify in DevTools whether the desktop
+// browser is actually claiming file-share support (macOS Chrome 100+
+// DOES return true via the system share-sheet — that's a feature,
+// not a false positive; the click should still work).
 function _eodCanShareFiles(){
-  if(typeof navigator === 'undefined' || !navigator.canShare || !navigator.share) return false;
+  if(typeof navigator === 'undefined' || !navigator.canShare || !navigator.share){
+    console.log('[eod share probe] navigator.share / canShare not available');
+    return false;
+  }
   try {
     var probe = new File([new Blob(['x'], {type:'image/png'})], 'probe.png', {type:'image/png'});
-    return navigator.canShare({ files: [probe] });
-  } catch(e){ return false; }
+    var ok = navigator.canShare({ files: [probe] });
+    console.log('[eod share probe] canShare({files:[probe]}) →', ok);
+    return ok;
+  } catch(e){
+    console.log('[eod share probe] threw:', e && e.message);
+    return false;
+  }
 }
 
 // Pure capture — returns Promise<File>. Caller wraps the resulting
@@ -13114,25 +13128,38 @@ async function _eodCaptureCard(card){
 // Download path — capture → object URL → anchor click. Works on every
 // browser; on iOS Safari the user gets a Save Image / Open in Photos
 // affordance instead of a true filesystem download.
+// Every bail surfaces a toast — silent failure was reported in prod.
 async function eodDownloadCard(btn){
-  var card = btn && btn.closest ? btn.closest('.eod-card') : null;
-  if(!card) return;
+  console.log('[eod download] click — btn:', btn);
+  if(!btn){
+    if(typeof toast === 'function') toast('Download failed — no button context');
+    return;
+  }
+  var card = btn.closest ? btn.closest('.eod-card') : null;
+  console.log('[eod download] closest .eod-card →', card);
+  if(!card){
+    if(typeof toast === 'function') toast('Download failed — card not found');
+    return;
+  }
   var origText = btn.textContent;
   btn.disabled = true; btn.textContent = '…';
   try {
+    console.log('[eod download] capturing…');
     var file = await _eodCaptureCard(card);
+    console.log('[eod download] capture done, file size:', file && file.size, 'bytes');
     var url = URL.createObjectURL(file);
     var a = document.createElement('a');
     a.href = url;
     a.download = file.name;
     document.body.appendChild(a);
+    console.log('[eod download] firing anchor click for', file.name);
     a.click();
     a.remove();
     setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
     if(typeof toast === 'function') toast('Saved · check your downloads');
   } catch(err){
-    console.warn('[eod download]', err && err.message);
-    if(typeof toast === 'function') toast('Download failed — try again');
+    console.warn('[eod download] failed:', err && err.message, err);
+    if(typeof toast === 'function') toast('Download failed — ' + ((err && err.message) || 'try again'));
   } finally {
     btn.disabled = false; btn.textContent = origText || 'Download';
   }
@@ -13144,30 +13171,43 @@ async function eodDownloadCard(btn){
 // user clicks Share, the lib is already in memory and the capture
 // chain finishes before the gesture window expires.
 async function eodShareCard(btn){
-  var card = btn && btn.closest ? btn.closest('.eod-card') : null;
-  if(!card) return;
+  console.log('[eod share] click — btn:', btn);
+  if(!btn){
+    if(typeof toast === 'function') toast('Share failed — no button context');
+    return;
+  }
+  var card = btn.closest ? btn.closest('.eod-card') : null;
+  console.log('[eod share] closest .eod-card →', card);
+  if(!card){
+    if(typeof toast === 'function') toast('Share failed — card not found');
+    return;
+  }
   var origText = btn.textContent;
   btn.disabled = true; btn.textContent = '…';
   try {
+    console.log('[eod share] capturing…');
     var file = await _eodCaptureCard(card);
+    console.log('[eod share] capture done, file size:', file && file.size, 'bytes');
     // Re-check at call time — between render and click, an extension
     // could have toggled support. Bail to download UI on the rare miss.
     if(!navigator.canShare || !navigator.canShare({ files: [file] })){
-      throw new Error('share not supported');
+      throw new Error('share not supported by this browser');
     }
+    console.log('[eod share] invoking navigator.share…');
     await navigator.share({
       files: [file],
       title: 'My PnL Card',
       text:  'My trading recap for ' + (card.dataset.eodDate || _eodEtDate())
     });
+    console.log('[eod share] share returned successfully');
     // Success — no toast; the OS share-sheet is its own confirmation.
   } catch(err){
     // User cancelled the share sheet → AbortError. Stay silent.
     if(err && (err.name === 'AbortError' || /abort/i.test(err.message||''))) {
-      // intentional no-op
+      console.log('[eod share] user cancelled the share sheet');
     } else {
-      console.warn('[eod share]', err && err.message);
-      if(typeof toast === 'function') toast('Couldn’t open share sheet — try Download instead');
+      console.warn('[eod share] failed:', err && err.message, err);
+      if(typeof toast === 'function') toast('Share failed — ' + ((err && err.message) || 'try Download instead'));
     }
   } finally {
     btn.disabled = false; btn.textContent = origText || 'Share';
@@ -26038,15 +26078,10 @@ function cookieDecline(){
 })();
 </script>
 
-<div id="mobile-nav">
-<div class="mn on" onclick="goTo('dashboard');mNav(this)"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>Home</div>
-<div class="mn" onclick="goTo('log');mNav(this)"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="11"/><line x1="5" y1="8" x2="11" y2="8"/></svg>Log</div>
-<div class="mn" onclick="goTo('calendar');mNav(this)"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="1.5"/><line x1="5" y1="1" x2="5" y2="5"/><line x1="11" y1="1" x2="11" y2="5"/><line x1="2" y1="7" x2="14" y2="7"/></svg>Calendar</div>
-<div class="mn" onclick="goTo('analytics');mNav(this)"><svg viewBox="0 0 16 16"><rect x="2" y="8" width="3" height="5" rx=".5"/><rect x="6" y="5" width="3" height="8" rx=".5"/><rect x="10" y="2" width="3" height="11" rx=".5"/></svg>Stats</div>
-<div class="mn" onclick="onCommunityNavClickMobile(this)"><svg viewBox="0 0 16 16"><circle cx="6" cy="5" r="2.5"/><path d="M2 13c0-2.2 1.8-4 4-4s4 1.8 4 4"/><circle cx="12" cy="6" r="2"/><path d="M14 13c0-1.7-1.3-3-2-3"/></svg>Group</div>
-<div class="mn" onclick="openAccountSettings();mNav(this)"><svg viewBox="0 0 16 16"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>You</div>
-</div>
-<script>function mNav(el){document.querySelectorAll('#mobile-nav .mn').forEach(function(m){m.classList.remove('on')});el.classList.add('on')}</script>
+<!-- Mobile bottom tab bar removed — the hamburger drawer (☰ in the
+     mobile topbar) now covers all 10 routes, making the bottom strip
+     redundant. The desktop sidebar (.sb) is the source of truth for
+     nav; _wireMobileShell clones it into #mobile-drawer on demand. -->
 
 <!-- ─────────────────────────────────────────────────────────────────
      Cancellation modal — 3-step flow with save offers per spec §11.
@@ -27027,8 +27062,15 @@ function cookieDecline(){
 }
 .eod-next:hover{border-color:var(--n-border-2);background:var(--n-surface-2)}
 
-/* Mobile — 2-col grid collapses to 1-col, divider hidden, hero still big */
+/* Mobile — 2-col grid collapses to 1-col, divider hidden, hero still big.
+   Also reposition the modal: switch from align-items:center to
+   flex-start with a top inset so the card sits clear of the mobile
+   topbar (~56px) instead of jamming under it on short viewports. */
 @media (max-width: 720px){
+  .eod-backdrop{
+    align-items:flex-start;
+    padding:72px 14px 24px;  /* top clears mobile topbar + breathing room */
+  }
   .eod-stage{max-width:480px}
   .eod-card{padding:20px 18px 16px;gap:14px}
   .ev2-body{grid-template-columns:1fr;gap:14px}
