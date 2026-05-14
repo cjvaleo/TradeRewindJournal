@@ -13004,12 +13004,16 @@ function _eodRenderPersonalCard(data){
     +   '<span class="ev2-foot-meta">PnL Card &middot; '+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
     + '</div>'
     // Action row — hidden during PNG capture (see .is-capturing rule).
-    // Order: [Download] [Dismiss]. Share button skipped this release —
-    // TODO: re-enable Share once the navigator.share chain is debugged.
-    // Keeping eodShareCard / _eodCanShareFiles / instrumented logging in
-    // place so we can bring it back without re-architecting.
+    // Order: [Download] [Share?] [Dismiss]. Share is feature-detected
+    // via _eodCanShareFiles() so desktop browsers without file-share
+    // support see [Download] [Dismiss] only. Both Download and Share
+    // funnel through _eodCaptureCard() so the html2canvas render
+    // happens ONCE per click.
     + '<div class="ev2-actions">'
     +   '<button class="ev2-download" onclick="eodDownloadCard(this)">Download</button>'
+    +   (_eodCanShareFiles()
+        ? '<button class="ev2-share" onclick="eodShareCard(this)">Share</button>'
+        : '')
     +   '<button class="ev2-dismiss" onclick="eodDismiss()">Dismiss</button>'
     + '</div>'
     + '</div>';
@@ -13100,12 +13104,14 @@ function _eodRenderGroupCard(data){
     +   '<span class="ev2-wm">traderewindjournal.com</span>'
     +   '<span class="ev2-foot-meta">'+memberCount+' member'+(memberCount===1?'':'s')+' &middot; '+data.tradeCount+' trade'+(data.tradeCount===1?'':'s')+'</span>'
     + '</div>'
-    // Action row — matches the personal modal. Order: [Download] [Dismiss].
-    // TODO: re-enable Share once the navigator.share chain is debugged.
-    // eodShareCard / _eodCanShareFiles / instrumented logging stay in
-    // place so we can flip the button back without re-architecting.
+    // Action row — matches the personal modal. Order: [Download]
+    // [Share?] [Dismiss]. Share is feature-detected via
+    // _eodCanShareFiles(). Both funnel through _eodCaptureCard().
     + '<div class="ev2-actions">'
     +   '<button class="ev2-download" onclick="eodDownloadCard(this)">Download</button>'
+    +   (_eodCanShareFiles()
+        ? '<button class="ev2-share" onclick="eodShareCard(this)">Share</button>'
+        : '')
     +   '<button class="ev2-dismiss" onclick="eodDismiss()">Dismiss</button>'
     + '</div>'
     + '</div>';
@@ -13236,20 +13242,39 @@ async function _eodCaptureCard(card){
 // browser; on iOS Safari the user gets a Save Image / Open in Photos
 // affordance instead of a true filesystem download.
 // Every bail surfaces a toast — silent failure was reported in prod.
+// Resolve the active .eod-card without depending on a button reference.
+// Used by eodDownloadCard / eodShareCard so they work whether called:
+//   (a) via the inline button onclick (btn = this, btn.closest works)
+//   (b) bare from the console: eodShareCard()  — no btn, fall back to
+//       the visible card in the open #eod-modal
+// In sequenced-mode (>2 cards) only one card has .is-active. Otherwise
+// all cards are visible — pick the first one (single-card cases are
+// the common path).
+function _eodResolveCard(btn){
+  if(btn && typeof btn.closest === 'function'){
+    var fromBtn = btn.closest('.eod-card');
+    if(fromBtn) return fromBtn;
+  }
+  // Sequenced mode → only .is-active is visible.
+  var active = document.querySelector('#eod-cards .eod-card.is-active');
+  if(active) return active;
+  // Stacked mode (≤2 cards) → all rendered, pick the first one. If
+  // the user wants to share a specific card in stacked mode they'd
+  // click that card's actual Share button (which routes through (a)).
+  return document.querySelector('#eod-cards .eod-card');
+}
+
 async function eodDownloadCard(btn){
   console.log('[eod download] click — btn:', btn);
-  if(!btn){
-    if(typeof toast === 'function') toast('Download failed — no button context');
-    return;
-  }
-  var card = btn.closest ? btn.closest('.eod-card') : null;
-  console.log('[eod download] closest .eod-card →', card);
+  var card = _eodResolveCard(btn);
+  console.log('[eod download] resolved card →', card);
   if(!card){
-    if(typeof toast === 'function') toast('Download failed — card not found');
+    if(typeof toast === 'function') toast('Download failed — no PnL Card open');
     return;
   }
-  var origText = btn.textContent;
-  btn.disabled = true; btn.textContent = '…';
+  // btn is optional — used only for the disable/loading UI nicety.
+  var origText = btn && btn.textContent;
+  if(btn){ btn.disabled = true; btn.textContent = '…'; }
   try {
     console.log('[eod download] capturing…');
     var file = await _eodCaptureCard(card);
@@ -13268,7 +13293,7 @@ async function eodDownloadCard(btn){
     console.warn('[eod download] failed:', err && err.message, err);
     if(typeof toast === 'function') toast('Download failed — ' + ((err && err.message) || 'try again'));
   } finally {
-    btn.disabled = false; btn.textContent = origText || 'Download';
+    if(btn){ btn.disabled = false; btn.textContent = origText || 'Download'; }
   }
 }
 
@@ -13277,20 +13302,18 @@ async function eodDownloadCard(btn){
 // which is why _eodShowModal pre-loads html2canvas: by the time the
 // user clicks Share, the lib is already in memory and the capture
 // chain finishes before the gesture window expires.
+// btn is optional — if absent (console call or programmatic invocation)
+// we still resolve the open card via _eodResolveCard and share it.
 async function eodShareCard(btn){
   console.log('[eod share] click — btn:', btn);
-  if(!btn){
-    if(typeof toast === 'function') toast('Share failed — no button context');
-    return;
-  }
-  var card = btn.closest ? btn.closest('.eod-card') : null;
-  console.log('[eod share] closest .eod-card →', card);
+  var card = _eodResolveCard(btn);
+  console.log('[eod share] resolved card →', card);
   if(!card){
-    if(typeof toast === 'function') toast('Share failed — card not found');
+    if(typeof toast === 'function') toast('Share failed — no PnL Card open');
     return;
   }
-  var origText = btn.textContent;
-  btn.disabled = true; btn.textContent = '…';
+  var origText = btn && btn.textContent;
+  if(btn){ btn.disabled = true; btn.textContent = '…'; }
   try {
     console.log('[eod share] capturing…');
     var file = await _eodCaptureCard(card);
@@ -13317,7 +13340,7 @@ async function eodShareCard(btn){
       if(typeof toast === 'function') toast('Share failed — ' + ((err && err.message) || 'try Download instead'));
     }
   } finally {
-    btn.disabled = false; btn.textContent = origText || 'Share';
+    if(btn){ btn.disabled = false; btn.textContent = origText || 'Share'; }
   }
 }
 
