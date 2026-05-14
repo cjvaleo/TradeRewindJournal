@@ -12618,88 +12618,143 @@ async function _eodGroupData(community, etToday){
   }
 }
 
-/* HTML builders — pure functions returning markup strings. Kept
-   separate so the modal init code stays readable. */
+/* ───────────────────────────────────────────────────────────────
+   V2 HTML builders — wide share-card design (.ev2-*).
+   Both flavors share chrome (header, 2-col body, footer, action row).
+   _safe + _timeOf are local helpers; _eodMoneyHtml comes from the
+   gating section above. The action row sits BELOW the footer so
+   we can hide it cleanly during PNG capture via .is-capturing.
+   ─────────────────────────────────────────────────────────────── */
+
+// Inline SVGs — kept here so the renderers stay self-contained and
+// html2canvas captures them as real paint without an external fetch.
+var _EOD_SVG = {
+  // Trending arrow — used inside the hero P&L circle
+  trendUp:   '<svg viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>',
+  trendDown: '<svg viewBox="0 0 24 24"><polyline points="3 7 9 13 13 9 21 17"/><polyline points="14 17 21 17 21 10"/></svg>',
+  // Trophy — used in the Top trades / Top traders header
+  trophy:    '<svg viewBox="0 0 24 24"><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M5 4h2v3a3 3 0 0 1-3 3 1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M19 4h-2v3a3 3 0 0 0 3 3 1 1 0 0 0 1-1V5a1 1 0 0 0-1-1z"/><line x1="12" y1="13" x2="12" y2="18"/><polyline points="8 21 16 21 14 18 10 18 8 21"/></svg>',
+  // Rewind — Tabler ti-refresh-dot inspired, used in the footer
+  rewind:    '<svg viewBox="0 0 24 24"><path d="M20 11A8 8 0 1 0 4 12"/><polyline points="4 6 4 12 10 12"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>'
+};
+
+function _eodSafe(s){
+  return String(s||'').replace(/[&<>"]/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+  });
+}
+function _eodTimeOf(t){
+  if(!t.created_at) return '—';
+  var d = new Date(t.created_at);
+  if(isNaN(d)) return '—';
+  return d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:false });
+}
+function _eodInitialsFor(handle){
+  var clean = String(handle||'').replace(/[^a-zA-Z0-9]/g,'');
+  return (clean ? clean.slice(0,2).toUpperCase() : '??');
+}
+
 function _eodRenderPersonalCard(data){
   if(!data || !data.tradeCount) return '';
+
   var heroTone = data.totalPnl > 0 ? 'pos' : data.totalPnl < 0 ? 'neg' : 'zero';
   var avgRTone = data.avgR > 0 ? 'pos' : data.avgR < 0 ? 'neg' : '';
   var avgRTxt  = data.avgRCount
     ? ((data.avgR>0?'+':'') + data.avgR.toFixed(1) + 'R')
     : '—';
 
-  // Trade list — truncate to top 5 by |P&L| if more than 5; the spec
-  // emphasizes "top 5 by |P&L|" but renders chronologically. Pick the
-  // top-5 set, then sort that subset chronologically for display.
-  var sortedByMag = data.trades.slice().sort(function(a,b){
-    return Math.abs(Number(b.pnl)||0) - Math.abs(Number(a.pnl)||0);
+  // Top 3 by P&L value (best first per spec — purely magnitude-positive sort
+  // works for the "best" row but we want literal best-pnl-first, so sort
+  // by signed pnl descending). Personal users with 0 trades short-circuit
+  // above; <3 trade case naturally renders fewer rows.
+  var sortedByPnl = data.trades.slice().sort(function(a,b){
+    return (Number(b.pnl)||0) - (Number(a.pnl)||0);
   });
-  var shown = sortedByMag.slice(0, 5).sort(function(a,b){
-    var aT = a.created_at ? new Date(a.created_at).getTime() : 0;
-    var bT = b.created_at ? new Date(b.created_at).getTime() : 0;
-    return aT - bT;
-  });
+  var shown = sortedByPnl.slice(0, 3);
   var hidden = data.tradeCount - shown.length;
 
-  function _safe(s){ return String(s||'').replace(/[&<>"]/g, function(c){
-    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
-  });}
-  function _timeOf(t){
-    if(!t.created_at) return '—';
-    var d = new Date(t.created_at);
-    if(isNaN(d)) return '—';
-    return d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:false });
-  }
-
-  var rowsHtml = shown.map(function(t){
+  var tradeRowsHtml = shown.map(function(t, idx){
     var pnl = Number(t.pnl)||0;
     var tone = pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : 'zero';
     var dir  = String(t.type||'').toLowerCase() === 'short' ? 'short' : 'long';
     var dirLabel = dir === 'short' ? '↘ Short' : '↗ Long';
     var hasStop = t.stop != null && t.stop !== '';
     var rrNum   = Number(t.rr);
-    var rrHtml  = '<span class="eod-rr empty">—</span>';
+    var rrHtml  = '<span class="ev2-rr empty">—</span>';
     if(hasStop && isFinite(rrNum) && rrNum !== 0){
       var rrSign = pnl < 0 ? -1 : 1;
       var rrSigned = rrSign * Math.abs(rrNum);
       var rrCls = rrSigned < 0 ? 'neg' : 'pos';
-      rrHtml = '<span class="eod-rr '+rrCls+'">'+(rrSigned>0?'+':'')+rrSigned.toFixed(1)+'R</span>';
+      rrHtml = '<span class="ev2-rr '+rrCls+'">'+(rrSigned>0?'+':'')+rrSigned.toFixed(1)+'R</span>';
     }
-    return '<div class="eod-row '+tone+'">'
-      + '<span class="eod-time">'+_safe(_timeOf(t))+'</span>'
-      + '<span class="eod-sym">'+_safe(t.sym||'—')+'</span>'
-      + '<span class="eod-side '+dir+'">'+dirLabel+'</span>'
+    // "best" is purely position-based (top row), but we also tag the
+    // row tone so the CSS can soften the sage tint on an all-loss day
+    // (where the top row is still a loss). Without this, sage bg +
+    // rose pnl text reads visually as a bug.
+    var bestCls = idx === 0 ? ' best' : '';
+    return '<div class="ev2-trade'+bestCls+' '+tone+'">'
+      + '<span class="ev2-time">'+_eodSafe(_eodTimeOf(t))+'</span>'
+      + '<span class="ev2-sym">'+_eodSafe(t.sym||'—')+'</span>'
+      + '<span class="ev2-side '+dir+'">'+dirLabel+'</span>'
       + rrHtml
-      + '<span class="eod-row-pnl '+tone+'">'+_eodMoneyHtml(pnl)+'</span>'
+      + '<span class="ev2-trade-pnl '+tone+'">'+_eodMoneyHtml(pnl)+'</span>'
       + '</div>';
   }).join('');
 
   var moreHtml = hidden > 0
-    ? '<div class="eod-more" onclick="eodOpenDayReview(\''+data.etDate+'\')">+'+hidden+' more &rarr;</div>'
+    ? '<button type="button" class="ev2-more" onclick="eodOpenDayReview(\''+_eodSafe(data.etDate)+'\')">+'+hidden+' more &rarr;</button>'
     : '';
 
   var handle = (currentUser && acct && acct.username) ? acct.username
              : (currentUser && currentUser.email ? currentUser.email.split('@')[0] : 'you');
+  var initials = _eodInitialsFor(handle);
+  var subtitle = 'Trading journal · Day recap';
+  var trendSvg = data.totalPnl >= 0 ? _EOD_SVG.trendUp : _EOD_SVG.trendDown;
 
-  return '<div class="eod-card eod-card-personal" data-eod-date="'+_safe(data.etDate)+'">'
-    + '<div class="eod-head">'
-    +   '<span class="eod-brand">Rewind</span>'
-    +   '<span class="eod-handle">@'+_safe(handle)+'</span>'
-    +   '<span class="eod-date">'+_safe(_eodDateLabel(data.etDate))+'</span>'
-    + '</div>'
-    + '<div class="eod-hero '+heroTone+'">'+_eodMoneyHtml(data.totalPnl)+'</div>'
-    + '<div class="eod-stats">'
-    +   '<div class="eod-stat"><span class="lbl">Trades</span><span class="val">'+data.tradeCount+'</span></div>'
-    +   '<div class="eod-stat"><span class="lbl">Win Rate</span><span class="val">'+data.winRate+'<span class="unit">%</span></span></div>'
-    +   '<div class="eod-stat"><span class="lbl">Avg R</span><span class="val '+avgRTone+'">'+avgRTxt+'</span></div>'
-    + '</div>'
-    + '<div class="eod-list">'+rowsHtml+moreHtml+'</div>'
-    + '<div class="eod-foot">'
-    +   '<span class="eod-wm">traderewindjournal.com</span>'
-    +   '<div class="eod-actions">'
-    +     '<button class="eod-share" onclick="eodShareCard(this)">Share</button>'
-    +     '<button class="eod-dismiss" onclick="eodDismiss()">Dismiss</button>'
+  return '<div class="eod-card eod-card-personal" data-eod-date="'+_eodSafe(data.etDate)+'">'
+    // (1) Header
+    + '<div class="ev2-head">'
+    +   '<div class="ev2-av">'+_eodSafe(initials)+'</div>'
+    +   '<div class="ev2-head-text">'
+    +     '<span class="ev2-handle">@'+_eodSafe(handle)+'</span>'
+    +     '<span class="ev2-subtitle">'+subtitle+'</span>'
     +   '</div>'
+    +   '<div class="ev2-head-meta">'
+    +     '<span class="ev2-head-date">'+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
+    +     '<span class="ev2-head-time">EOD &middot; 5:00pm ET</span>'
+    +   '</div>'
+    + '</div>'
+    // (2) Body — 2 cols + vertical divider
+    + '<div class="ev2-body">'
+    +   '<div class="ev2-left">'
+    +     '<span class="ev2-pnl-label">Today&rsquo;s P&amp;L</span>'
+    +     '<div class="ev2-hero '+heroTone+'">'
+    +       '<span class="ev2-pnl-num">'+_eodMoneyHtml(data.totalPnl)+'</span>'
+    +       '<span class="ev2-trend">'+trendSvg+'</span>'
+    +     '</div>'
+    +     '<div class="ev2-stats">'
+    +       '<div class="ev2-stat"><span class="lbl">Trades</span><span class="val">'+data.tradeCount+'</span></div>'
+    +       '<div class="ev2-stat"><span class="lbl">Win Rate</span><span class="val">'+data.winRate+'<span class="unit">%</span></span></div>'
+    +       '<div class="ev2-stat"><span class="lbl">Avg R</span><span class="val '+avgRTone+'">'+_eodSafe(avgRTxt)+'</span></div>'
+    +     '</div>'
+    +   '</div>'
+    +   '<div class="ev2-divider"></div>'
+    +   '<div class="ev2-right">'
+    +     '<div class="ev2-right-head">'+_EOD_SVG.trophy+'<span>Top trades</span></div>'
+    +     '<div class="ev2-trades">'+tradeRowsHtml+'</div>'
+    +     moreHtml
+    +   '</div>'
+    + '</div>'
+    // (3) Footer
+    + '<div class="ev2-foot">'
+    +   '<div class="ev2-foot-brand">'+_EOD_SVG.rewind+'<span>Rewind</span></div>'
+    +   '<span class="ev2-wm">traderewindjournal.com</span>'
+    +   '<span class="ev2-foot-meta">EOD &middot; '+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
+    + '</div>'
+    // Action row — hidden during PNG capture (see .is-capturing rule)
+    + '<div class="ev2-actions">'
+    +   '<button class="ev2-dismiss" onclick="eodDismiss()">Dismiss</button>'
+    +   '<button class="ev2-share" onclick="eodShareCard(this)">Share as image</button>'
     + '</div>'
     + '</div>';
 }
@@ -12708,10 +12763,8 @@ function _eodRenderGroupCard(data){
   if(!data || !data.tradeCount || !data.traders || !data.traders.length) return '';
   var heroTone = data.totalPnl > 0 ? 'pos' : data.totalPnl < 0 ? 'neg' : 'zero';
   var avgTone  = data.avgPerTrader > 0 ? 'pos' : data.avgPerTrader < 0 ? 'neg' : '';
-  function _safe(s){ return String(s||'').replace(/[&<>"]/g, function(c){
-    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
-  });}
-  var rowsHtml = data.traders.map(function(tr, i){
+
+  var lbRowsHtml = data.traders.map(function(tr, i){
     var rank = i + 1;
     var avHtml = (typeof renderUserAvatar === 'function')
       ? renderUserAvatar({
@@ -12723,37 +12776,64 @@ function _eodRenderGroupCard(data){
       : '';
     var pnlTone = tr.pnl > 0 ? 'pos' : tr.pnl < 0 ? 'neg' : 'zero';
     var meCls = tr.isMe ? ' is-me' : '';
-    return '<div class="eod-lb-row rank-'+rank+'">'
-      + '<span class="eod-lb-rank">'+rank+'</span>'
+    return '<div class="ev2-lb-row rank-'+rank+'">'
+      + '<span class="ev2-lb-rank">'+rank+'</span>'
       + avHtml
-      + '<div class="eod-lb-name">'
-      +   '<span class="eod-lb-handle'+meCls+'">@'+_safe(tr.username||'trader')+'</span>'
-      + '</div>'
-      + '<span class="eod-lb-trades">'+tr.tradeCount+' trade'+(tr.tradeCount>1?'s':'')+'</span>'
-      + '<span class="eod-lb-pnl '+pnlTone+'">'+_eodMoneyHtml(tr.pnl)+'</span>'
+      + '<span class="ev2-lb-handle'+meCls+'">@'+_eodSafe(tr.username||'trader')+'</span>'
+      + '<span class="ev2-lb-pnl '+pnlTone+'">'+_eodMoneyHtml(tr.pnl)+'</span>'
       + '</div>';
   }).join('');
 
-  return '<div class="eod-card eod-card-group" data-eod-date="'+_safe(data.etDate)+'">'
-    + '<div class="eod-head">'
-    +   '<span class="eod-brand-dot"></span>'
-    +   '<span class="eod-brand">'+_safe(data.community.name||'Community')+'</span>'
-    +   '<span class="eod-subtitle">Day recap</span>'
-    +   '<span class="eod-date">'+_safe(_eodDateLabel(data.etDate))+'</span>'
-    + '</div>'
-    + '<div class="eod-hero '+heroTone+'">'+_eodMoneyHtml(data.totalPnl)+'</div>'
-    + '<div class="eod-stats">'
-    +   '<div class="eod-stat"><span class="lbl">Trades</span><span class="val">'+data.tradeCount+'</span></div>'
-    +   '<div class="eod-stat"><span class="lbl">Group WR</span><span class="val">'+data.winRate+'<span class="unit">%</span></span></div>'
-    +   '<div class="eod-stat"><span class="lbl">Avg / trader</span><span class="val '+avgTone+'">'+_eodMoneyHtml(data.avgPerTrader)+'</span></div>'
-    + '</div>'
-    + '<div class="eod-lb">'+rowsHtml+'</div>'
-    + '<div class="eod-foot">'
-    +   '<span class="eod-wm">traderewindjournal.com</span>'
-    +   '<div class="eod-actions">'
-    +     '<button class="eod-share" onclick="eodShareCard(this)">Share</button>'
-    +     '<button class="eod-dismiss" onclick="eodDismiss()">Dismiss</button>'
+  // Member count + trade count for the footer-right meta. Falls back
+  // to traders.length when the community object doesn't have members[].
+  var memberCount = (data.community && Array.isArray(data.community.members))
+    ? data.community.members.length
+    : data.traders.length;
+  var trendSvg = data.totalPnl >= 0 ? _EOD_SVG.trendUp : _EOD_SVG.trendDown;
+
+  return '<div class="eod-card eod-card-group" data-eod-date="'+_eodSafe(data.etDate)+'">'
+    // (1) Header — gold pulse instead of avatar
+    + '<div class="ev2-head">'
+    +   '<span class="ev2-pulse"></span>'
+    +   '<div class="ev2-head-text">'
+    +     '<span class="ev2-handle">'+_eodSafe(data.community.name||'Community')+'</span>'
+    +     '<span class="ev2-subtitle">Community &middot; Day recap</span>'
     +   '</div>'
+    +   '<div class="ev2-head-meta">'
+    +     '<span class="ev2-head-date">'+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
+    +     '<span class="ev2-head-time">EOD &middot; 5:00pm ET</span>'
+    +   '</div>'
+    + '</div>'
+    // (2) Body
+    + '<div class="ev2-body">'
+    +   '<div class="ev2-left">'
+    +     '<span class="ev2-pnl-label">Collective P&amp;L</span>'
+    +     '<div class="ev2-hero '+heroTone+'">'
+    +       '<span class="ev2-pnl-num">'+_eodMoneyHtml(data.totalPnl)+'</span>'
+    +       '<span class="ev2-trend">'+trendSvg+'</span>'
+    +     '</div>'
+    +     '<div class="ev2-stats">'
+    +       '<div class="ev2-stat"><span class="lbl">Trades</span><span class="val">'+data.tradeCount+'</span></div>'
+    +       '<div class="ev2-stat"><span class="lbl">Group WR</span><span class="val">'+data.winRate+'<span class="unit">%</span></span></div>'
+    +       '<div class="ev2-stat"><span class="lbl">Avg / trader</span><span class="val '+avgTone+'">'+_eodMoneyHtml(data.avgPerTrader)+'</span></div>'
+    +     '</div>'
+    +   '</div>'
+    +   '<div class="ev2-divider"></div>'
+    +   '<div class="ev2-right">'
+    +     '<div class="ev2-right-head">'+_EOD_SVG.trophy+'<span>Top traders</span></div>'
+    +     '<div class="ev2-lb">'+lbRowsHtml+'</div>'
+    +   '</div>'
+    + '</div>'
+    // (3) Footer
+    + '<div class="ev2-foot">'
+    +   '<div class="ev2-foot-brand">'+_EOD_SVG.rewind+'<span>Rewind</span></div>'
+    +   '<span class="ev2-wm">traderewindjournal.com</span>'
+    +   '<span class="ev2-foot-meta">'+memberCount+' member'+(memberCount===1?'':'s')+' &middot; '+data.tradeCount+' trade'+(data.tradeCount===1?'':'s')+'</span>'
+    + '</div>'
+    // Action row
+    + '<div class="ev2-actions">'
+    +   '<button class="ev2-dismiss" onclick="eodDismiss()">Dismiss</button>'
+    +   '<button class="ev2-share" onclick="eodShareCard(this)">Share as image</button>'
     + '</div>'
     + '</div>';
 }
@@ -12810,6 +12890,11 @@ function eodShareCard(btn){
   if(!card) return;
   var origText = btn.textContent;
   btn.disabled = true; btn.textContent = '…';
+  // Toggle .is-capturing so the action row disappears in the rendered
+  // canvas — the export reads like a finished poster, not a dialog.
+  // The class is removed in the .finally() branch so the user gets the
+  // buttons back regardless of success / failure.
+  card.classList.add('is-capturing');
   _eodLoadHtml2Canvas().then(function(h2c){
     // Capture at 2x DPR for retina-quality social export. Background
     // matches --n-bg so the PNG has no transparent fringe.
@@ -12836,12 +12921,13 @@ function eodShareCard(btn){
     a.click();
     a.remove();
     setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
-    btn.disabled = false; btn.textContent = origText || 'Share';
     if(typeof toast === 'function') toast('Recap saved · check your downloads');
   }).catch(function(err){
     console.warn('[eod share]', err && err.message);
-    btn.disabled = false; btn.textContent = origText || 'Share';
     if(typeof toast === 'function') toast('Share failed — try again');
+  }).finally(function(){
+    card.classList.remove('is-capturing');
+    btn.disabled = false; btn.textContent = origText || 'Share as image';
   });
 }
 
@@ -25883,7 +25969,7 @@ function cookieDecline(){
   padding:20px;overflow-y:auto;
 }
 .eod-stage{
-  width:100%;max-width:520px;
+  width:100%;max-width:760px;
   display:flex;flex-direction:column;align-items:stretch;gap:16px;
   margin:auto;
 }
@@ -25891,215 +25977,323 @@ function cookieDecline(){
 .eod-cards.is-sequenced .eod-card{display:none}
 .eod-cards.is-sequenced .eod-card.is-active{display:flex}
 
-/* Card chassis — solid background so html2canvas captures it without
-   gradients bleeding to transparent. Padding intentionally generous
-   so the export feels poster-like at 2x scale. */
+/* ──────────────────────────────────────────────────────────────────
+   EOD CARD V2 — wide share-card layout (.ev2-*).
+   Two-column grid (1-col on mobile): LEFT carries the headline P&L
+   + 3-stat strip; RIGHT carries the "Top trades / traders" board.
+   Card has a 0.5px gold-tinted border + a subtle radial glow in the
+   top-right corner (sage for personal, gold for group) — both kept
+   as static layers so html2canvas captures them at 2x without
+   compositing surprises.
+   ────────────────────────────────────────────────────────────── */
 .eod-card{
+  position:relative;
   background:var(--n-surface);
-  border:1px solid var(--n-border);
-  border-radius:14px;
-  padding:22px 24px 18px;
-  display:flex;flex-direction:column;gap:14px;
+  border:0.5px solid rgba(245,215,124,0.18);
+  border-radius:16px;
+  padding:24px 26px 18px;
+  display:flex;flex-direction:column;gap:18px;
   font-family:var(--n-font-sans);
   color:var(--n-text);
+  overflow:hidden;
 }
+/* Radial glow top-right — pseudo-element keeps the markup clean.
+   Personal flavor = sage. Group flavor = gold. Painted INSIDE the
+   card so html2canvas's overflow:hidden clip captures it cleanly. */
+.eod-card::before{
+  content:'';position:absolute;
+  top:-80px;right:-80px;width:340px;height:340px;
+  background:radial-gradient(closest-side, rgba(95,179,137,0.18) 0%, transparent 70%);
+  pointer-events:none;
+}
+.eod-card.eod-card-group::before{
+  background:radial-gradient(closest-side, rgba(245,215,124,0.22) 0%, transparent 70%);
+}
+.eod-card > *{position:relative;z-index:1}
 
-/* (1) Header row — brand | handle | date */
-.eod-head{
-  display:flex;align-items:baseline;gap:10px;
-  padding-bottom:12px;border-bottom:1px solid var(--n-border);
+/* (1) Header row ────────────────────────────────────────────────
+   LEFT: 44px gradient avatar + handle (serif italic 22px) +
+         subtitle (mono caps).
+   RIGHT: stacked date + time, mono caps.
+   Stacks to a single column on mobile so the avatar stays prominent. */
+.ev2-head{
+  display:flex;align-items:center;gap:14px;
 }
-.eod-brand{
+.ev2-av{
+  flex-shrink:0;
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono);font-size:13px;
+  letter-spacing:0.04em;color:#1a1408;
+  background:linear-gradient(135deg, #f5d77c 0%, #c95f5f 100%);
+  box-shadow:0 4px 14px rgba(245,215,124,0.18);
+}
+.ev2-av.has-image{background:#222}
+.ev2-av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.ev2-head-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.ev2-handle{
   font-family:var(--n-font-display);font-style:italic;
-  font-size:20px;color:var(--n-text);letter-spacing:-0.01em;
+  font-size:22px;line-height:1.1;letter-spacing:-0.01em;
+  color:var(--n-text);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-.eod-brand-dot{
-  display:inline-block;width:7px;height:7px;border-radius:50%;
-  background:var(--n-gold);margin-right:8px;vertical-align:middle;
-  box-shadow:0 0 8px rgba(245,215,124,0.45);
-}
-.eod-handle{
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
+.ev2-subtitle{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.16em;
   text-transform:uppercase;color:var(--n-text-3);
 }
-.eod-date{
-  margin-left:auto;
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
-  text-transform:uppercase;color:var(--n-text-3);
+.ev2-head-meta{
+  margin-left:auto;text-align:right;
+  display:flex;flex-direction:column;gap:2px;flex-shrink:0;
 }
-.eod-subtitle{
+.ev2-head-date{
   font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
-  text-transform:uppercase;color:var(--n-text-3);
-  margin-left:6px;
+  text-transform:uppercase;color:var(--n-text-2);
+}
+.ev2-head-time{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-4);
 }
 
-/* (2) Hero P&L — 56px Instrument Serif Italic, sign-tinted, dimmed cents */
-.eod-hero{
-  text-align:center;
-  font-family:var(--n-font-display);font-style:italic;
-  font-size:56px;line-height:1;letter-spacing:-0.02em;
-  padding:6px 0 4px;
+/* Group flavor — pulsing gold dot replaces the avatar */
+.ev2-pulse{
+  flex-shrink:0;
+  width:10px;height:10px;border-radius:50%;
+  background:var(--n-gold);
+  box-shadow:0 0 0 4px rgba(245,215,124,0.10), 0 0 14px rgba(245,215,124,0.55);
+  align-self:center;
 }
-.eod-hero.pos{color:var(--n-profit)}
-.eod-hero.neg{color:var(--n-loss)}
-.eod-hero.zero{color:var(--n-text-2)}
-.eod-hero .eod-pnl-cents{font-size:0.5em;opacity:0.55;font-style:italic}
 
-/* (3) 3-stat strip — top/bottom borders, three equal cells */
-.eod-stats{
-  display:grid;grid-template-columns:1fr 1fr 1fr;
-  padding:12px 0;
-  border-top:1px solid var(--n-border);
-  border-bottom:1px solid var(--n-border);
-}
-.eod-stat{display:flex;flex-direction:column;align-items:center;gap:4px}
-.eod-stat .lbl{
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.16em;
-  text-transform:uppercase;color:var(--n-text-3);
-}
-.eod-stat .val{
-  font-family:var(--n-font-display);font-style:italic;
-  font-size:22px;line-height:1;color:var(--n-text);
-}
-.eod-stat .val.pos{color:var(--n-profit)}
-.eod-stat .val.neg{color:var(--n-loss)}
-.eod-stat .val .unit{font-size:0.6em;opacity:0.6;margin-left:2px}
-
-/* (4a) Personal trades list — sage/rose tinted rows */
-.eod-list{display:flex;flex-direction:column;gap:6px}
-.eod-row{
+/* (2) Body — 2-col grid with vertical divider in the middle */
+.ev2-body{
   display:grid;
-  grid-template-columns:48px 60px 56px 1fr auto;
-  align-items:center;gap:10px;
-  padding:9px 12px;border-radius:6px;
+  grid-template-columns:1fr 1px 1fr;
+  gap:22px;
+  padding-top:6px;
+}
+.ev2-divider{
+  background:linear-gradient(180deg,
+    transparent 0%,
+    rgba(255,255,255,0.06) 15%,
+    rgba(255,255,255,0.06) 85%,
+    transparent 100%);
+}
+
+/* (3) LEFT column — label + 68px hero P&L + 3-stat strip */
+.ev2-left{display:flex;flex-direction:column;gap:14px}
+.ev2-pnl-label{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+.ev2-hero{
+  display:flex;align-items:baseline;gap:10px;
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:68px;line-height:1;letter-spacing:-0.02em;
+}
+.ev2-hero.pos{color:var(--n-profit)}
+.ev2-hero.neg{color:var(--n-loss)}
+.ev2-hero.zero{color:var(--n-text-2)}
+.ev2-hero .ev2-pnl-cents{
+  font-size:0.42em;opacity:0.55;font-style:italic;letter-spacing:-0.01em;
+}
+.ev2-trend{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:50%;
+  background:currentColor;color:inherit;
+  opacity:0.18;flex-shrink:0;align-self:center;margin-left:6px;
+}
+.ev2-trend svg{width:18px;height:18px;stroke:#000;stroke-width:2.2;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.ev2-hero.pos .ev2-trend,
+.ev2-hero.neg .ev2-trend{opacity:1;background:currentColor}
+.ev2-hero.pos .ev2-trend svg{stroke:#0a0a0a}
+.ev2-hero.neg .ev2-trend svg{stroke:#0a0a0a}
+
+.ev2-stats{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:6px;
+  padding:14px 0 4px;
+  border-top:1px solid var(--n-border);
+}
+.ev2-stat{display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+.ev2-stat .lbl{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+.ev2-stat .val{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:22px;line-height:1;color:var(--n-text);letter-spacing:-0.01em;
+}
+.ev2-stat .val.pos{color:var(--n-profit)}
+.ev2-stat .val.neg{color:var(--n-loss)}
+.ev2-stat .val .unit{font-size:0.55em;opacity:0.6;margin-left:2px}
+
+/* (4) RIGHT column — trophy header + 3 trade/leaderboard rows */
+.ev2-right{display:flex;flex-direction:column;gap:10px;min-width:0}
+.ev2-right-head{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--n-gold);
+}
+.ev2-right-head svg{
+  width:14px;height:14px;stroke:currentColor;stroke-width:1.6;
+  fill:none;stroke-linecap:round;stroke-linejoin:round;
+}
+
+/* Personal — top-3 trade rows */
+.ev2-trades{display:flex;flex-direction:column;gap:6px}
+.ev2-trade{
+  display:grid;
+  grid-template-columns:42px minmax(40px,auto) auto auto 1fr;
+  align-items:center;gap:8px;
+  padding:8px 10px;border-radius:6px;
   border:1px solid transparent;
-  font-family:var(--n-font-sans);
+  background:var(--n-surface-2);
 }
-.eod-row.pos{
-  background:rgba(95,179,137,0.07);border-color:rgba(95,179,137,0.18);
+/* "best" = top trade by P&L value. Sage tint only when the best is
+   profitable; on an all-loss day we drop to a neutral elevated bg so
+   sage-tint + rose-pnl doesn't read as a styling bug. The font-size
+   bump (17px) below applies regardless of tone. */
+.ev2-trade.best.pos{
+  background:linear-gradient(180deg, rgba(95,179,137,0.10) 0%, rgba(95,179,137,0.04) 100%);
+  border-color:rgba(95,179,137,0.28);
 }
-.eod-row.neg{
-  background:rgba(201,95,95,0.07);border-color:rgba(201,95,95,0.18);
+.ev2-trade.best.neg,
+.ev2-trade.best.zero{
+  background:var(--n-surface);
+  border-color:rgba(255,255,255,0.10);
 }
-.eod-row .eod-time{
+.ev2-trade .ev2-time{
   font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.04em;
   color:var(--n-text-3);
 }
-.eod-row .eod-sym{
-  font-family:var(--n-font-mono);font-size:12px;color:var(--n-text);
+.ev2-trade .ev2-sym{
+  font-family:var(--n-font-mono);font-size:11.5px;color:var(--n-text);
   font-weight:500;letter-spacing:0.02em;
 }
-.eod-row .eod-side{
-  display:inline-block;font-family:var(--n-font-mono);font-size:8.5px;
-  letter-spacing:0.18em;text-transform:uppercase;
-  padding:3px 7px;border-radius:3px;text-align:center;
+.ev2-trade .ev2-side{
+  font-family:var(--n-font-mono);font-size:8px;letter-spacing:0.18em;
+  text-transform:uppercase;padding:2px 6px;border-radius:3px;
 }
-.eod-row .eod-side.long{
+.ev2-trade .ev2-side.long{
   background:rgba(95,179,137,0.10);color:var(--n-profit);
   border:1px solid rgba(95,179,137,0.20);
 }
-.eod-row .eod-side.short{
+.ev2-trade .ev2-side.short{
   background:rgba(201,95,95,0.10);color:var(--n-loss);
   border:1px solid rgba(201,95,95,0.20);
 }
-.eod-row .eod-rr{
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.02em;
-  text-align:left;
+.ev2-trade .ev2-rr{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.02em;
 }
-.eod-row .eod-rr.pos{color:var(--n-accent-cool)}
-.eod-row .eod-rr.neg{color:var(--n-loss)}
-.eod-row .eod-rr.empty{color:var(--n-text-4)}
-.eod-row .eod-row-pnl{
+.ev2-trade .ev2-rr.pos{color:var(--n-accent-cool)}
+.ev2-trade .ev2-rr.neg{color:var(--n-loss)}
+.ev2-trade .ev2-rr.empty{color:var(--n-text-4)}
+.ev2-trade .ev2-trade-pnl{
   font-family:var(--n-font-display);font-style:italic;
-  font-size:18px;line-height:1;text-align:right;letter-spacing:-0.01em;
+  font-size:15px;line-height:1;text-align:right;letter-spacing:-0.01em;
 }
-.eod-row .eod-row-pnl.pos{color:var(--n-profit)}
-.eod-row .eod-row-pnl.neg{color:var(--n-loss)}
-.eod-more{
-  text-align:center;padding:8px 12px;
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
-  text-transform:uppercase;color:var(--n-accent-cool);cursor:pointer;
-  border:1px dashed rgba(110,168,255,0.25);border-radius:6px;
-  transition:.15s;
-}
-.eod-more:hover{background:rgba(110,168,255,0.06);border-color:rgba(110,168,255,0.45)}
+.ev2-trade.best .ev2-trade-pnl{font-size:17px}
+.ev2-trade .ev2-trade-pnl.pos{color:var(--n-profit)}
+.ev2-trade .ev2-trade-pnl.neg{color:var(--n-loss)}
 
-/* (4b) Group leaderboard — rank 1 = gold-tinted, 2/3 neutral */
-.eod-lb{display:flex;flex-direction:column;gap:6px}
-.eod-lb-row{
+/* Group — top-3 leaderboard rows */
+.ev2-lb{display:flex;flex-direction:column;gap:6px}
+.ev2-lb-row{
   display:grid;
-  grid-template-columns:32px 30px 1fr 60px auto;
+  grid-template-columns:24px 28px 1fr auto;
   align-items:center;gap:10px;
-  padding:9px 12px;border-radius:6px;
-  border:1px solid transparent;
+  padding:8px 10px;border-radius:6px;
+  border:1px solid transparent;background:var(--n-surface-2);
 }
-.eod-lb-row.rank-1{
-  background:linear-gradient(180deg, rgba(245,215,124,0.12) 0%, rgba(245,215,124,0.05) 100%);
+.ev2-lb-row.rank-1{
+  background:linear-gradient(180deg, rgba(245,215,124,0.12) 0%, rgba(245,215,124,0.04) 100%);
   border-color:rgba(245,215,124,0.32);
 }
-.eod-lb-row.rank-2,
-.eod-lb-row.rank-3{
-  background:var(--n-surface-2);
-  border-color:var(--n-border);
-}
-.eod-lb-rank{
+.ev2-lb-row .ev2-lb-rank{
   font-family:var(--n-font-display);font-style:italic;
-  font-size:22px;line-height:1;text-align:center;letter-spacing:-0.02em;
+  font-size:20px;line-height:1;text-align:center;letter-spacing:-0.02em;
+  color:var(--n-text-2);
 }
-.eod-lb-row.rank-1 .eod-lb-rank{
-  color:var(--n-gold);
-  text-shadow:0 0 12px rgba(245,215,124,0.25);
+.ev2-lb-row.rank-1 .ev2-lb-rank{
+  color:var(--n-gold);text-shadow:0 0 10px rgba(245,215,124,0.25);
 }
-.eod-lb-row.rank-2 .eod-lb-rank,
-.eod-lb-row.rank-3 .eod-lb-rank{color:var(--n-text-2)}
-.eod-lb-row .av{flex-shrink:0}
-.eod-lb-name{
-  display:flex;flex-direction:column;gap:2px;min-width:0;
-}
-.eod-lb-handle{
+.ev2-lb-row .av{flex-shrink:0}
+.ev2-lb-handle{
   font-family:var(--n-font-mono);font-size:11px;color:var(--n-text);
   letter-spacing:0.01em;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-.eod-lb-handle.is-me{color:var(--n-accent-cool)}
-.eod-lb-trades{
+.ev2-lb-handle.is-me{color:var(--n-accent-cool)}
+.ev2-lb-pnl{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:15px;line-height:1;text-align:right;letter-spacing:-0.01em;
+}
+.ev2-lb-row.rank-1 .ev2-lb-pnl{font-size:17px}
+.ev2-lb-pnl.pos{color:var(--n-profit)}
+.ev2-lb-pnl.neg{color:var(--n-loss)}
+
+/* "+N more" affordance — only shown on personal when trades > 3 */
+.ev2-more{
+  display:block;text-align:center;padding:7px 10px;margin-top:2px;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-accent-cool);cursor:pointer;
+  border:1px dashed rgba(110,168,255,0.22);border-radius:5px;
+  transition:.15s;background:transparent;
+}
+.ev2-more:hover{background:rgba(110,168,255,0.06);border-color:rgba(110,168,255,0.45)}
+
+/* (5) Footer — logo + watermark left, secondary info right, actions right */
+.ev2-foot{
+  display:flex;align-items:center;gap:10px;
+  padding-top:12px;margin-top:2px;
+  border-top:1px solid var(--n-border);
+}
+.ev2-foot-brand{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:14px;color:var(--n-text-2);letter-spacing:-0.01em;
+}
+.ev2-foot-brand svg{
+  width:14px;height:14px;stroke:var(--n-text-2);stroke-width:1.6;
+  fill:none;stroke-linecap:round;stroke-linejoin:round;
+}
+.ev2-wm{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-4);
+}
+.ev2-foot-meta{
+  margin-left:auto;
   font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;
   text-transform:uppercase;color:var(--n-text-3);
 }
-.eod-lb-pnl{
-  font-family:var(--n-font-display);font-style:italic;
-  font-size:18px;line-height:1;text-align:right;letter-spacing:-0.01em;
-}
-.eod-lb-pnl.pos{color:var(--n-profit)}
-.eod-lb-pnl.neg{color:var(--n-loss)}
 
-/* (5) Footer — watermark left, Share/Dismiss right */
-.eod-foot{
-  display:flex;align-items:center;gap:10px;
-  padding-top:10px;border-top:1px solid var(--n-border);
+/* Action buttons row — kept separate from footer so it can hide
+   cleanly during html2canvas capture (we add .is-capturing to mute). */
+.ev2-actions{
+  display:flex;align-items:center;gap:8px;
+  padding-top:8px;
 }
-.eod-wm{
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.16em;
-  text-transform:uppercase;color:var(--n-text-4);
-}
-.eod-actions{margin-left:auto;display:flex;gap:8px}
-.eod-actions button{
+.ev2-actions button{
   padding:7px 14px;border-radius:6px;cursor:pointer;
   font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
   text-transform:uppercase;transition:.15s;
 }
-.eod-share{
+.ev2-share{
+  margin-left:auto;
   background:var(--n-text);color:var(--n-bg);border:1px solid var(--n-text);
 }
-.eod-share:hover{background:var(--n-text-2);border-color:var(--n-text-2)}
-.eod-share:disabled{opacity:0.5;cursor:wait}
-.eod-dismiss{
+.ev2-share:hover{background:var(--n-text-2);border-color:var(--n-text-2)}
+.ev2-share:disabled{opacity:0.5;cursor:wait}
+.ev2-dismiss{
   background:transparent;color:var(--n-text-3);
   border:1px solid var(--n-border);
 }
-.eod-dismiss:hover{color:var(--n-text);border-color:var(--n-border)}
+.ev2-dismiss:hover{color:var(--n-text);border-color:var(--n-border)}
+/* During PNG capture we hide the action row so the export reads
+   like a finished poster, not a dialog. */
+.eod-card.is-capturing .ev2-actions{display:none}
 
-/* Sequenced-mode nav — dot indicator + Next */
+/* Sequenced-mode nav — dot indicator + Next (unchanged from v1) */
 .eod-nav{
   display:flex;align-items:center;gap:14px;
   padding:0 6px;
@@ -26119,15 +26313,25 @@ function cookieDecline(){
 }
 .eod-next:hover{border-color:var(--n-border-2);background:var(--n-surface-2)}
 
-/* Mobile — keep the card readable on narrow screens */
-@media (max-width: 540px){
-  .eod-backdrop{padding:12px}
-  .eod-card{padding:18px 16px 14px}
-  .eod-hero{font-size:46px}
-  .eod-stat .val{font-size:18px}
-  .eod-row{grid-template-columns:42px 52px 50px 1fr auto;gap:8px;padding:8px 10px}
-  .eod-lb-row{grid-template-columns:26px 28px 1fr auto;gap:8px;padding:8px 10px}
-  .eod-lb-row .eod-lb-trades{display:none}
+/* Mobile — 2-col grid collapses to 1-col, divider hidden, hero still big */
+@media (max-width: 720px){
+  .eod-stage{max-width:480px}
+  .eod-card{padding:20px 18px 16px;gap:14px}
+  .ev2-body{grid-template-columns:1fr;gap:14px}
+  .ev2-divider{display:none}
+  .ev2-hero{font-size:54px}
+  .ev2-stats{padding-top:10px}
+  .ev2-stat .val{font-size:19px}
+  .ev2-handle{font-size:19px}
+  .ev2-trade{grid-template-columns:38px minmax(36px,auto) auto auto 1fr;gap:7px;padding:7px 9px}
+  .ev2-foot-meta{display:none}
+}
+@media (max-width: 480px){
+  .ev2-head{gap:10px}
+  .ev2-av{width:38px;height:38px;font-size:11.5px}
+  .ev2-hero{font-size:46px}
+  .ev2-trade .ev2-side{display:none}
+  .ev2-foot-brand{font-size:13px}
 }
 
 
