@@ -12639,8 +12639,13 @@ async function _eodGroupData(community, etToday){
   var startISO = new Date(nowMs - 36*3600*1000).toISOString();
   var endISO   = new Date(nowMs +  4*3600*1000).toISOString();
   try {
+    // community_posts schema only carries username + initials + avatar_color.
+    // display_name + avatar_finish + avatar_image_url live on profiles —
+    // the renderFeed path joins them via a follow-up `_sb.from('profiles')`
+    // query (see syncAndLoadCommFeed). Mirror that here so the badge /
+    // modal leaderboard rows can show display names + custom avatars.
     var r = await _sb.from('community_posts')
-      .select('id, user_id, username, display_name, initials, avatar_finish, avatar_color, avatar_image_url, pnl_today, content, metadata, created_at')
+      .select('id, user_id, username, initials, avatar_color, pnl_today, content, metadata, created_at')
       .eq('community_id', community.id)
       .gte('created_at', startISO)
       .lte('created_at', endISO);
@@ -12648,18 +12653,41 @@ async function _eodGroupData(community, etToday){
     var posts = (r.data || []).filter(function(p){
       return _eodEtDate(new Date(p.created_at)) === etToday;
     });
-    // Aggregate by user_id
+
+    // Profile JOIN — one round-trip for every unique poster. Tolerant
+    // of the call failing (e.g. column missing) — the renderer just
+    // falls back to username + the avatar_color stored on the post.
+    var posterIds = posts.map(function(p){ return p.user_id; })
+      .filter(function(id){ return !!id; });
+    posterIds = Array.from(new Set(posterIds));
+    var profMap = {};
+    if(posterIds.length){
+      try {
+        var pf = await _sb.from('profiles')
+          .select('id,username,display_name,initials,color,avatar_finish,avatar_image_url,avatar_initials')
+          .in('id', posterIds);
+        if(pf && !pf.error && pf.data){
+          pf.data.forEach(function(row){ profMap[row.id] = row; });
+        }
+      } catch(e){
+        console.warn('[eod group fetch] profile join skipped:', e && e.message);
+      }
+    }
+
+    // Aggregate by user_id, layering profile data over post-row defaults.
     var byUser = {};
     posts.forEach(function(p){
       var uid = p.user_id || '__anon';
+      var pr  = profMap[uid] || {};
       if(!byUser[uid]){
         byUser[uid] = {
           user_id: uid,
-          username: p.username || 'trader',
-          display_name: p.display_name || p.username || 'Member',
-          initials: p.initials || (p.username||'??').slice(0,2).toUpperCase(),
-          avatar_finish: p.avatar_finish || p.avatar_color || 'chrome',
-          avatar_image_url: p.avatar_image_url || null,
+          username:         pr.username || p.username || 'trader',
+          display_name:     pr.display_name || pr.username || p.username || 'Member',
+          initials:         pr.avatar_initials || pr.initials || p.initials
+                              || ((pr.username || p.username || '??').slice(0,2).toUpperCase()),
+          avatar_finish:    pr.avatar_finish || pr.color || p.avatar_color || 'chrome',
+          avatar_image_url: pr.avatar_image_url || null,
           pnl: 0,
           tradeCount: 0,
           isMe: !!(currentUser && uid === currentUser.id)
