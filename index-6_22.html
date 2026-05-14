@@ -13176,10 +13176,11 @@ function eodDismiss(){
   // opens regardless.
   var container = document.getElementById('eod-cards');
   if(container) container.innerHTML = '';
-  // Invalidate the pre-baked File — it's tied to the now-dismissed
-  // card's data, so the next modal open should re-bake fresh.
-  _eodPrebakedFile = null;
-  _eodPrebakedFor  = null;
+  // Invalidate the pre-baked artifacts — they're tied to the now-
+  // dismissed card's data, so the next modal open should re-bake fresh.
+  _eodPrebakedFile    = null;
+  _eodPrebakedDataUrl = null;
+  _eodPrebakedFor     = null;
   // Only write the dismiss flag when the modal was auto-popped. Widget
   // inflates are "replay" — they shouldn't suppress the natural auto-pop
   // that may still be due. The flag write is the personal-scope key only;
@@ -13265,29 +13266,45 @@ function _eodLoadHtml2Canvas(){
 // browser is actually claiming file-share support (macOS Chrome 100+
 // DOES return true via the system share-sheet — that's a feature,
 // not a false positive; the click should still work).
-// Module-level pre-baked File so the click → share path can run
-// SYNCHRONOUSLY within the user-gesture window. Populated on modal
-// open via _eodPrebake(), cleared on dismiss. Without this, the
-// click → capture (async) → share chain takes long enough that
-// Safari/Chrome's gesture token expires and navigator.share throws
-// NotAllowedError.
-var _eodPrebakedFile = null;
-var _eodPrebakedFor  = null;  // tracks which card the file was baked for
+// Module-level pre-baked artifacts so the click → save/share paths
+// can run SYNCHRONOUSLY within the user-gesture window:
+//   _eodPrebakedFile     — File object for navigator.share()
+//   _eodPrebakedDataUrl  — data:image/png;base64 URL for Safari
+//                          downloads (FileReader is async and would
+//                          otherwise expire the gesture token; pre-
+//                          baking lets the anchor.click() chain stay
+//                          fully synchronous when the user clicks).
+// Populated on modal open via _eodPrebake(), cleared on dismiss.
+var _eodPrebakedFile    = null;
+var _eodPrebakedDataUrl = null;
+var _eodPrebakedFor     = null;  // tracks which card the artifacts were baked for
 async function _eodPrebake(){
   var card = _eodResolveCard();
   if(!card) return;
-  if(_eodPrebakedFor === card && _eodPrebakedFile) return;  // already done
+  if(_eodPrebakedFor === card && _eodPrebakedFile && _eodPrebakedDataUrl) return;
   _eodPrebakedFor = card;
   try {
     console.log('[eod prebake] capturing for', card.dataset.eodDate || '(no date)');
     var file = await _eodCaptureCard(card);
-    if(_eodPrebakedFor === card){  // ignore if user switched cards mid-bake
-      _eodPrebakedFile = file;
-      console.log('[eod prebake] ready —', file.size, 'bytes');
-    }
+    if(_eodPrebakedFor !== card) return;  // user switched cards mid-bake
+    _eodPrebakedFile = file;
+    console.log('[eod prebake] File ready —', file.size, 'bytes; converting to data URL…');
+    // Also pre-read to data URL for Safari's synchronous-click path.
+    var reader = new FileReader();
+    reader.onload = function(){
+      if(_eodPrebakedFor === card){
+        _eodPrebakedDataUrl = reader.result;
+        console.log('[eod prebake] dataUrl ready —', reader.result.length, 'chars');
+      }
+    };
+    reader.onerror = function(){
+      console.warn('[eod prebake] FileReader error — Safari download will fall back');
+    };
+    reader.readAsDataURL(file);
   } catch(e){
     console.warn('[eod prebake] failed (live click will retry):', e && e.message);
     _eodPrebakedFile = null;
+    _eodPrebakedDataUrl = null;
   }
 }
 
@@ -13541,35 +13558,32 @@ function _eodDirectDownload(file){
   }
 }
 
-// Safari-specific download path. Safari's anchor+blob:URL combination
-// triggers "WebKitBlobResource error 1" — it opens the blob URL in a
-// new tab instead of downloading. The macOS share sheet was a wrong
-// fallback (the visible tier is AirDrop/Mail/Messages — "Save to
-// Files" is hidden behind Extensions, terrible UX).
-// Real fix: FileReader → base64 → data: URL. Safari reliably honors
-// the download attribute on data: URLs because the data is inline
-// (no blob-resource lookup that can fail).
-// Returns a Promise so the caller can await + surface errors.
-function _eodSafariDownload(file){
-  return new Promise(function(resolve, reject){
-    var reader = new FileReader();
-    reader.onload = function(){
-      try {
-        var a = document.createElement('a');
-        a.href = reader.result;  // data:image/png;base64,…
-        a.download = file.name;
-        a.rel = 'noopener';
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        var ev = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
-        a.dispatchEvent(ev);
-        setTimeout(function(){ a.remove(); }, 1000);  // no revoke needed for data:
-        resolve(true);
-      } catch(e){ reject(e); }
-    };
-    reader.onerror = function(){ reject(reader.error || new Error('FileReader failed')); };
-    reader.readAsDataURL(file);
-  });
+// Safari-specific download — SYNCHRONOUS path using a pre-baked
+// data URL. Safari's two constraints:
+//   1. Anchor + blob: URL = WebKitBlobResource error 1 (broken).
+//   2. download attribute is only honored when:
+//        - the click is "trusted" (NOT MouseEvent dispatchEvent)
+//        - AND the click runs inside the user-gesture window
+// FileReader.readAsDataURL is async, so reading the data URL on
+// click breaks (1) → (2) since the gesture expires by onload time.
+// Fix: pre-bake the data URL on modal open (see _eodPrebake), so
+// this function is purely synchronous — no FileReader, no await,
+// just create anchor + native .click() inside the gesture.
+function _eodSafariDownloadSync(dataUrl, filename){
+  var a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = filename;
+  a.rel = 'noopener';
+  // Don't display:none — Safari occasionally drops trusted-click
+  // status on display:none anchors. Push it off-screen instead.
+  a.style.cssText = 'position:fixed;top:-9999px;left:-9999px';
+  document.body.appendChild(a);
+  // Native .click() — inherits the calling context's gesture
+  // trust. MouseEvent dispatchEvent does NOT inherit trust; it
+  // produces isTrusted:false events which Safari treats as
+  // non-user clicks and ignores the download attribute on.
+  a.click();
+  setTimeout(function(){ a.remove(); }, 1000);
 }
 
 async function eodDownloadCard(btn){
@@ -13580,12 +13594,33 @@ async function eodDownloadCard(btn){
     if(typeof toast === 'function') toast('Download failed — no PnL Card open');
     return;
   }
+
+  var isSafari = _eodIsSafari();
+  console.log('[eod download] isSafari:', isSafari);
+
+  // SAFARI FAST PATH — must run SYNCHRONOUSLY inside the click event
+  // (no await before .click() or Safari treats it as non-trusted →
+  // navigates to data: URL instead of downloading). Requires the
+  // pre-baked data URL from modal open. If it's not ready, fall
+  // through to the async path (which is less reliable on Safari but
+  // better than nothing).
+  if(isSafari && _eodPrebakedDataUrl && _eodPrebakedFile){
+    console.log('[eod download] → Safari sync path (pre-baked data URL)');
+    try {
+      _eodSafariDownloadSync(_eodPrebakedDataUrl, _eodPrebakedFile.name);
+      if(typeof toast === 'function') toast('Saved · check your downloads');
+      return;
+    } catch(e){
+      console.warn('[eod download] Safari sync path threw:', e && e.message);
+      // fall through to async path below
+    }
+  }
+
   // btn is optional — used only for the disable/loading UI nicety.
   var origText = btn && btn.textContent;
   if(btn){ btn.disabled = true; btn.textContent = '…'; }
   try {
-    // Prefer the pre-baked File from modal open. Synchronous lookup
-    // when present, full capture otherwise.
+    // Pre-baked File lookup, then capture if missing.
     var file = _eodPrebakedFile;
     if(file){
       console.log('[eod download] using pre-baked file —', file.size, 'bytes');
@@ -13595,12 +13630,7 @@ async function eodDownloadCard(btn){
       console.log('[eod download] capture done, file size:', file && file.size, 'bytes');
     }
 
-    var isSafari = _eodIsSafari();
-    console.log('[eod download] isSafari:', isSafari);
-
-    // PRIMARY PATH: every non-Safari browser. Direct anchor download
-    // saves the file straight to the OS's download folder — no share
-    // sheet, distinct UX from the Share button.
+    // PRIMARY PATH: every non-Safari browser. Direct anchor download.
     if(!isSafari){
       console.log('[eod download] → direct anchor (non-Safari)');
       if(_eodDirectDownload(file)){
@@ -13611,24 +13641,25 @@ async function eodDownloadCard(btn){
       return;
     }
 
-    // SAFARI PATH: anchor + blob: URL triggers WebKitBlobResource
-    // error 1. The OS share sheet was a wrong fallback (Save to Files
-    // is buried). Real fix: FileReader → base64 → data: URL +
-    // download attribute. Safari handles data: URLs reliably.
-    console.log('[eod download] → data-URL anchor (Safari)');
+    // SAFARI SLOW PATH: pre-bake wasn't ready, we had to await capture
+    // (gesture is likely already expired). Read to data URL inline
+    // and click anyway — best-effort. If Safari ignores the download
+    // attr at this point (gesture gone), the file shows in a new tab
+    // and the user can right-click → Save Image As. Acceptable
+    // degradation given pre-bake usually saves us first.
+    console.log('[eod download] → Safari async path (post-gesture)');
+    var reader = new FileReader();
+    var dataUrl = await new Promise(function(resolve, reject){
+      reader.onload  = function(){ resolve(reader.result); };
+      reader.onerror = function(){ reject(reader.error || new Error('FileReader failed')); };
+      reader.readAsDataURL(file);
+    });
     try {
-      await _eodSafariDownload(file);
-      if(typeof toast === 'function') toast('Saved · check your downloads');
-    } catch(err){
-      console.warn('[eod download] safari data-url failed:', err && err.message);
-      // True last resort: try the regular anchor anyway. Won't make
-      // anything worse than the WebKitBlobResource error message we
-      // were already getting.
-      if(_eodDirectDownload(file)){
-        if(typeof toast === 'function') toast('Saved · check your downloads');
-      } else {
-        if(typeof toast === 'function') toast('Download failed — try Share instead');
-      }
+      _eodSafariDownloadSync(dataUrl, file.name);
+      if(typeof toast === 'function') toast('Saved · check your downloads (or right-click image → Save As)');
+    } catch(e){
+      console.warn('[eod download] Safari async path threw:', e && e.message);
+      if(typeof toast === 'function') toast('Couldn’t save — right-click the image → Save Image As');
     }
   } catch(err){
     console.warn('[eod download] failed:', err && err.message, err);
@@ -14078,8 +14109,9 @@ function _eodShowModal(cards, source){
   // gesture token and throws NotAllowedError). 250ms tick gives the
   // browser time to paint the modal first so getBoundingClientRect
   // returns the final dimensions.
-  _eodPrebakedFile = null;
-  _eodPrebakedFor  = null;
+  _eodPrebakedFile    = null;
+  _eodPrebakedDataUrl = null;
+  _eodPrebakedFor     = null;
   setTimeout(function(){
     if(typeof _eodPrebake === 'function') _eodPrebake();
   }, 250);
