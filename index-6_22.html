@@ -13161,16 +13161,35 @@ function eodOpenDayReview(etDate){
 
 /* Lazy-load html2canvas from CDN on first Share click. The CDN bundle
    is ~50KB minified, no need to pull it in until the user actually
-   wants to export. Loaded script registers as `window.html2canvas`. */
+   wants to export. Loaded script registers as `window.html2canvas`.
+   _eodH2CPromise memoizes the in-flight load so concurrent calls
+   share one fetch + one <script> tag (previous version would inject
+   a new script tag per call while loading, causing the lib to
+   execute multiple times). */
+var _eodH2CPromise = null;
 function _eodLoadHtml2Canvas(){
-  return new Promise(function(resolve, reject){
-    if(window.html2canvas) return resolve(window.html2canvas);
+  console.log('[eod loader] called — already-loaded?', !!window.html2canvas,
+    '| in-flight?', !!_eodH2CPromise);
+  if(window.html2canvas) return Promise.resolve(window.html2canvas);
+  if(_eodH2CPromise)     return _eodH2CPromise;
+  _eodH2CPromise = new Promise(function(resolve, reject){
     var s = document.createElement('script');
     s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-    s.onload  = function(){ resolve(window.html2canvas); };
-    s.onerror = function(){ reject(new Error('html2canvas load failed')); };
+    s.async = true;
+    s.onload  = function(){
+      console.log('[eod loader] script onload — html2canvas typeof:', typeof window.html2canvas);
+      if(typeof window.html2canvas === 'function') resolve(window.html2canvas);
+      else reject(new Error('html2canvas loaded but global missing'));
+    };
+    s.onerror = function(ev){
+      console.error('[eod loader] script onerror', ev);
+      _eodH2CPromise = null;  // allow retry
+      reject(new Error('html2canvas CDN load failed (blocked / offline?)'));
+    };
     document.head.appendChild(s);
+    console.log('[eod loader] <script> injected, awaiting onload…');
   });
+  return _eodH2CPromise;
 }
 
 /* ── Capture / Download / Share — one capture, two paths ─────────
@@ -13210,31 +13229,76 @@ function _eodCanShareFiles(){
 // Pure capture — returns Promise<File>. Caller wraps the resulting
 // File in a download anchor OR hands it to navigator.share. Toggles
 // .is-capturing on the card so the action row vanishes in the PNG.
+//
+// Hardening layered in after a prod hang at the html2canvas step
+// reported on the empty-state card:
+//   1. Concurrency guard — if the card already has .is-capturing
+//      (= a previous call is still in flight), bail with a clear
+//      message rather than launching a second capture that would
+//      collide with the first.
+//   2. Pre-flight typeof check on the loaded lib — if the CDN load
+//      failed silently, we throw a useful error instead of calling
+//      `undefined(card, opts)`.
+//   3. Timeout race on the html2canvas() call — if it ever runs past
+//      15s (extreme — typical captures are <500ms) we abort with
+//      "capture timeout" so the chain doesn't hang forever.
+//   4. Per-step logs at EVERY substep so the next failure pinpoints
+//      itself in the console.
 async function _eodCaptureCard(card){
   if(!card) throw new Error('no card');
+  if(card.classList.contains('is-capturing')){
+    console.warn('[eod capture] bail — card is already capturing (concurrent call)');
+    throw new Error('capture already in progress');
+  }
   card.classList.add('is-capturing');
   try {
+    console.log('[eod capture] step 1 — awaiting _eodLoadHtml2Canvas()');
     var h2c = await _eodLoadHtml2Canvas();
+    console.log('[eod capture] step 2 — h2c typeof:', typeof h2c,
+      '| window.html2canvas typeof:', typeof window.html2canvas);
+    if(typeof h2c !== 'function'){
+      throw new Error('html2canvas did not load (typeof ' + typeof h2c + ')');
+    }
+    console.log('[eod capture] step 3 — invoking html2canvas on card',
+      'offsetWidth:', card.offsetWidth, 'offsetHeight:', card.offsetHeight);
     // 2x DPR for retina; bg matches --n-bg so the PNG has no fringe.
-    var canvas = await h2c(card, {
-      backgroundColor: '#0a0a0a',
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      // Cap effective width at 1080px (post-scale = 2160px — still
-      // social-friendly without bloating the file).
-      windowWidth: Math.min(card.offsetWidth, 1080)
+    // Race against a 15s timeout so a wedged capture surfaces as a
+    // clean error instead of hanging the promise chain forever.
+    var canvas = await Promise.race([
+      h2c(card, {
+        backgroundColor: '#0a0a0a',
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
+        // Cap effective width at 1080px (post-scale = 2160px — still
+        // social-friendly without bloating the file).
+        windowWidth: Math.min(card.offsetWidth, 1080)
+      }).then(function(c){ console.log('[eod capture] step 3a — html2canvas resolved'); return c; }),
+      new Promise(function(_, reject){
+        setTimeout(function(){ reject(new Error('capture timeout (15s)')); }, 15000);
+      })
+    ]);
+    console.log('[eod capture] step 4 — canvas size:', canvas.width, 'x', canvas.height);
+    var blob = await new Promise(function(resolve, reject){
+      canvas.toBlob(function(b){
+        if(!b){ reject(new Error('toBlob returned null')); return; }
+        resolve(b);
+      }, 'image/png');
     });
-    var blob = await new Promise(function(resolve){
-      canvas.toBlob(function(b){ resolve(b); }, 'image/png');
-    });
-    if(!blob) throw new Error('toBlob failed');
+    console.log('[eod capture] step 5 — blob:', blob && blob.size, 'bytes');
     var filename = 'rewind-pnl-' + (card.dataset.eodDate || _eodEtDate()) + '.png';
     // File (not Blob) — required for navigator.share + nicer for the
     // download anchor (correct filename in the OS save dialog).
-    return new File([blob], filename, { type: 'image/png' });
+    var file = new File([blob], filename, { type: 'image/png' });
+    console.log('[eod capture] step 6 — File created:', filename);
+    return file;
+  } catch(e){
+    console.error('[eod capture] CAPTURE FAILED at', e && e.message, e);
+    throw e;
   } finally {
     card.classList.remove('is-capturing');
+    console.log('[eod capture] finally — is-capturing removed');
   }
 }
 
