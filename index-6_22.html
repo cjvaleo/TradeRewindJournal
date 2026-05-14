@@ -13061,6 +13061,7 @@ function _eodRenderPersonalCard(data){
     // funnel through _eodCaptureCard() so the html2canvas render
     // happens ONCE per click.
     + '<div class="ev2-actions">'
+    +   '<button class="ev2-audit" onclick="_eodAuditCapture()">Audit</button>'
     +   (_eodCanShareFiles()
         ? '<button class="ev2-share" onclick="eodShareCard(this)">Share</button>'
         : '')
@@ -13163,6 +13164,7 @@ function _eodRenderGroupCard(data){
     // [Share?] [Dismiss]. Share is feature-detected via
     // _eodCanShareFiles(). Both funnel through _eodCaptureCard().
     + '<div class="ev2-actions">'
+    +   '<button class="ev2-audit" onclick="_eodAuditCapture()">Audit</button>'
     +   (_eodCanShareFiles()
         ? '<button class="ev2-share" onclick="eodShareCard(this)">Share</button>'
         : '')
@@ -13463,6 +13465,343 @@ async function _eodCaptureCard(card){
     console.log('[eod capture] finally — is-capturing removed, backdrop + dims restored');
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   CAPTURE AUDIT — diagnostic only, runs no Share / no Download
+   Measures the four key elements (.eod-card, .ev2-hero, .ev2-pnl-num,
+   .ev2-trend) in three states:
+     1. LIVE  — current DOM, pre-pinning
+     2. PINNED — after width/height are pinned (mirrors capture)
+     3. CLONE  — inside modern-screenshot's foreignObject SVG, mounted
+                 offscreen for measurement, via onCreateForeignObjectSvg
+   Each state captures bounding rects, computed styles for size +
+   positioning, and gap between number.right and trend.left.
+   Output is rendered into a fixed on-screen panel with COPY +
+   CLOSE buttons so it survives any navigation and is readable on
+   mobile without the console.
+   ───────────────────────────────────────────────────────────────── */
+function _eodSnapRect(el){
+  if(!el) return null;
+  var r = el.getBoundingClientRect();
+  return { x:r.x, y:r.y, w:r.width, h:r.height, left:r.left, right:r.right, top:r.top, bottom:r.bottom };
+}
+function _eodSnapCS(el, props){
+  if(!el) return null;
+  var cs = getComputedStyle(el);
+  var out = {};
+  props.forEach(function(p){ out[p] = cs[p]; });
+  return out;
+}
+function _eodSnapshotCard(rootCard){
+  if(!rootCard) return null;
+  // Find descendants — rootCard itself is the .eod-card.
+  var hero  = rootCard.querySelector('.ev2-hero');
+  var num   = rootCard.querySelector('.ev2-pnl-num');
+  var trend = rootCard.querySelector('.ev2-trend');
+  var svg   = trend ? trend.querySelector('svg') : null;
+  var numR   = _eodSnapRect(num);
+  var trendR = _eodSnapRect(trend);
+  return {
+    card:    _eodSnapRect(rootCard),
+    hero:    _eodSnapRect(hero),
+    num:     numR,
+    trend:   trendR,
+    svg:     _eodSnapRect(svg),
+    gap:     (numR && trendR) ? Math.round(trendR.left - numR.right) : null,
+    heroCS:  _eodSnapCS(hero,  ['display','alignItems','gap','flexWrap','whiteSpace','position','width','flexDirection']),
+    numCS:   _eodSnapCS(num,   ['display','position','fontSize','fontFamily','fontStyle','letterSpacing','flexBasis','flexGrow','flexShrink','paddingRight','width','height','lineHeight']),
+    trendCS: _eodSnapCS(trend, ['display','position','width','height','flexBasis','flexGrow','flexShrink','marginLeft','transform','alignSelf','overflow','minWidth','minHeight']),
+    svgCS:   _eodSnapCS(svg,   ['display','width','height','position','overflow','transform','left','top'])
+  };
+}
+
+// Run the actual capture pipeline (font wait + dim pin + modern-
+// screenshot domToBlob) but with hooks to grab the clone tree.
+// Result blob is discarded. Renders the on-screen panel.
+async function _eodAuditCapture(){
+  var card = _eodResolveCard();
+  if(!card){
+    _eodAuditShowPanel('No PnL Card open — open one before running the audit.');
+    return;
+  }
+  _eodAuditShowPanel('Running capture audit…  (this may take ~1-2 seconds)');
+
+  // 1. LIVE snapshot — current visible DOM, no changes yet
+  var live = _eodSnapshotCard(card);
+
+  // 2. Wait for fonts (same as _eodCaptureCard)
+  if(document.fonts && document.fonts.ready){
+    try {
+      await Promise.race([
+        document.fonts.ready,
+        new Promise(function(r){ setTimeout(r, 3000); })
+      ]);
+    } catch(e){}
+  }
+
+  // 3. Compute capture options (mirror _eodCaptureCard exactly)
+  var capRect = card.getBoundingClientRect();
+  var capW = Math.round(capRect.width)  || card.offsetWidth  || 760;
+  var capH = Math.round(capRect.height) || card.offsetHeight || 330;
+  var capOpts = {
+    backgroundColor: '#0a0a0a',
+    scale: 2,
+    type: 'image/png',
+    width: capW,
+    height: capH
+  };
+
+  // 4. Pin dims (mirror _eodCaptureCard)
+  var prevW = card.style.width;
+  var prevH = card.style.height;
+  card.style.width  = capW + 'px';
+  card.style.height = capH + 'px';
+
+  // 5. PINNED snapshot
+  var pinned = _eodSnapshotCard(card);
+
+  // 6. Load modern-screenshot
+  var ms;
+  try { ms = await _eodLoadHtml2Canvas(); }
+  catch(e){
+    card.style.width = prevW; card.style.height = prevH;
+    _eodAuditShowPanel('Audit aborted: modern-screenshot failed to load — ' + (e && e.message));
+    return;
+  }
+
+  // 7. Capture clone snapshot via onCreateForeignObjectSvg hook.
+  //    modern-screenshot builds an SVG containing a foreignObject
+  //    that wraps the cloned DOM, then rasterizes the SVG. The hook
+  //    fires AFTER the SVG is built and BEFORE rasterization. Inside
+  //    the hook we clone the SVG (so modern-screenshot's original is
+  //    untouched), mount the clone offscreen so its descendants
+  //    have layout, and measure.
+  var cloneSnap = null;
+  var hookCalled = { onClone: 0, onCreateFO: 0 };
+  var hookOpts = Object.assign({}, capOpts, {
+    onCloneNode: function(c){
+      hookCalled.onClone++;
+    },
+    onCreateForeignObjectSvg: function(svg){
+      hookCalled.onCreateFO++;
+      try {
+        var svgClone = svg.cloneNode(true);
+        var stage = document.createElement('div');
+        stage.style.cssText = 'position:fixed;left:-99999px;top:0;width:' + capW + 'px;height:' + capH + 'px;background:#0a0a0a;visibility:hidden;pointer-events:none';
+        stage.appendChild(svgClone);
+        document.body.appendChild(stage);
+        // Force layout
+        void svgClone.getBoundingClientRect();
+        // Drill into the foreignObject → .eod-card
+        var fo = svgClone.querySelector('foreignObject');
+        var clonedCard = fo ? fo.querySelector('.eod-card') : null;
+        if(clonedCard){
+          cloneSnap = _eodSnapshotCard(clonedCard);
+        }
+        document.body.removeChild(stage);
+      } catch(e){
+        console.warn('[audit] foSvg measurement threw:', e && e.message);
+      }
+    }
+  });
+
+  // 8. Trigger the capture (15s timeout race)
+  var blobSize = null;
+  var captureErr = null;
+  try {
+    var blob = await Promise.race([
+      ms.domToBlob(card, hookOpts),
+      new Promise(function(_,r){ setTimeout(function(){ r(new Error('audit capture timeout 15s')); }, 15000); })
+    ]);
+    blobSize = blob ? blob.size : null;
+  } catch(e){
+    captureErr = e && e.message;
+  }
+
+  // 9. Restore dims
+  card.style.width  = prevW;
+  card.style.height = prevH;
+
+  // 10. POST snapshot
+  var post = _eodSnapshotCard(card);
+
+  // 11. Render
+  _eodAuditRenderResults({
+    live: live,
+    pinned: pinned,
+    clone: cloneSnap,
+    post: post,
+    capOpts: capOpts,
+    blobSize: blobSize,
+    captureErr: captureErr,
+    hookCalled: hookCalled
+  });
+}
+
+function _eodAuditRenderResults(d){
+  var L = [];
+  L.push('═══════════════════════════════════════════════');
+  L.push('  EOD CAPTURE AUDIT — ' + new Date().toISOString());
+  L.push('═══════════════════════════════════════════════');
+  L.push('');
+  L.push('domToBlob OPTIONS:');
+  L.push('  width:           ' + d.capOpts.width + 'px');
+  L.push('  height:          ' + d.capOpts.height + 'px');
+  L.push('  scale:           ' + d.capOpts.scale);
+  L.push('  type:            ' + d.capOpts.type);
+  L.push('  backgroundColor: ' + d.capOpts.backgroundColor);
+  L.push('  resulting blob:  ' + (d.blobSize == null ? 'NONE (' + d.captureErr + ')' : d.blobSize + ' bytes'));
+  L.push('  hooks fired:     onCloneNode=' + d.hookCalled.onClone + '  onCreateForeignObjectSvg=' + d.hookCalled.onCreateFO);
+  L.push('');
+
+  function dumpSnap(label, s){
+    L.push(label + ':');
+    if(!s){ L.push('  (no snapshot)'); L.push(''); return; }
+    function fr(name, r){
+      if(!r) return '  ' + name + ': MISSING';
+      return '  ' + name.padEnd(14) + ': x=' + Math.round(r.x) + '  y=' + Math.round(r.y) +
+             '  w=' + Math.round(r.w) + '  h=' + Math.round(r.h);
+    }
+    L.push(fr('.eod-card',     s.card));
+    L.push(fr('.ev2-hero',     s.hero));
+    L.push(fr('.ev2-pnl-num',  s.num));
+    L.push(fr('.ev2-trend',    s.trend));
+    L.push(fr('  svg(in trend)', s.svg));
+    if(s.num && s.trend){
+      L.push('  num.right=' + Math.round(s.num.right) + '  trend.left=' + Math.round(s.trend.left) +
+             '  GAP=' + s.gap + 'px ' + (s.gap == null ? '' : (s.gap < 0 ? '⚠ OVERLAP' : '(positive)')));
+    }
+    if(s.numCS){
+      L.push('  num    cs: font-size=' + s.numCS.fontSize +
+             '  family=' + (s.numCS.fontFamily||'').replace(/['"]/g,'').slice(0,30) +
+             '  style=' + s.numCS.fontStyle +
+             '  line-h=' + s.numCS.lineHeight);
+      L.push('  num    cs: display=' + s.numCS.display +
+             '  flex=' + s.numCS.flexGrow + ' ' + s.numCS.flexShrink + ' ' + s.numCS.flexBasis +
+             '  padding-right=' + s.numCS.paddingRight +
+             '  position=' + s.numCS.position +
+             '  width=' + s.numCS.width);
+    }
+    if(s.heroCS){
+      L.push('  hero   cs: display=' + s.heroCS.display +
+             '  align-items=' + s.heroCS.alignItems +
+             '  gap=' + s.heroCS.gap +
+             '  flex-wrap=' + s.heroCS.flexWrap +
+             '  position=' + s.heroCS.position +
+             '  width=' + s.heroCS.width);
+    }
+    if(s.trendCS){
+      L.push('  trend  cs: display=' + s.trendCS.display +
+             '  w=' + s.trendCS.width + '  h=' + s.trendCS.height +
+             '  min=' + s.trendCS.minWidth + '×' + s.trendCS.minHeight +
+             '  flex=' + s.trendCS.flexGrow + ' ' + s.trendCS.flexShrink + ' ' + s.trendCS.flexBasis);
+      L.push('  trend  cs: position=' + s.trendCS.position +
+             '  margin-left=' + s.trendCS.marginLeft +
+             '  transform=' + s.trendCS.transform +
+             '  align-self=' + s.trendCS.alignSelf +
+             '  overflow=' + s.trendCS.overflow);
+    }
+    if(s.svgCS){
+      L.push('  svg    cs: display=' + s.svgCS.display +
+             '  w=' + s.svgCS.width + '  h=' + s.svgCS.height +
+             '  position=' + s.svgCS.position +
+             '  overflow=' + s.svgCS.overflow +
+             '  transform=' + s.svgCS.transform +
+             '  left=' + s.svgCS.left + '  top=' + s.svgCS.top);
+    }
+    L.push('');
+  }
+
+  dumpSnap('LIVE   (pre-pin, on-screen DOM)', d.live);
+  dumpSnap('PINNED (after card.style.width/height set, just before domToBlob)', d.pinned);
+  dumpSnap('CLONE  (inside modern-screenshot foreignObject, mounted offscreen)', d.clone);
+  dumpSnap('POST   (live after capture, dims restored)', d.post);
+
+  // Delta table — pinned vs clone (>1px flagged)
+  L.push('═══ DELTAS pinned → clone  (>1px flagged ⚠) ═══');
+  if(!d.clone){
+    L.push('  (no clone snapshot — onCreateForeignObjectSvg never fired or threw)');
+  } else {
+    ['card','hero','num','trend','svg'].forEach(function(k){
+      var p = d.pinned && d.pinned[k];
+      var c = d.clone  && d.clone[k];
+      if(!p || !c){ L.push('  ' + k.padEnd(8) + ': MISSING in one snapshot'); return; }
+      var dw = (c.w - p.w);
+      var dh = (c.h - p.h);
+      var line = '  ' + k.padEnd(8) + ': Δw=' + dw.toFixed(1) + 'px  Δh=' + dh.toFixed(1) + 'px';
+      if(Math.abs(dw) > 1 || Math.abs(dh) > 1) line += '   ⚠ DIVERGES';
+      L.push(line);
+    });
+    function fsPx(cs){ return cs ? parseFloat(cs.fontSize) : 0; }
+    var pNumFS = fsPx(d.pinned && d.pinned.numCS);
+    var cNumFS = fsPx(d.clone  && d.clone.numCS);
+    L.push('  num font-size: live=' + pNumFS + 'px  clone=' + cNumFS + 'px  Δ=' + (cNumFS-pNumFS).toFixed(1) + 'px' +
+           (Math.abs(cNumFS-pNumFS) > 1 ? '   ⚠ DIVERGES' : ''));
+    var pGap = d.pinned && d.pinned.gap;
+    var cGap = d.clone  && d.clone.gap;
+    L.push('  num↔trend gap: live=' + pGap + 'px   clone=' + cGap + 'px   Δ=' +
+           (cGap != null && pGap != null ? (cGap - pGap) : '?') + 'px');
+  }
+  L.push('');
+  L.push('Capture rect vs options:');
+  var capRect = d.pinned && d.pinned.card;
+  if(capRect){
+    var dw = Math.round(capRect.w) - d.capOpts.width;
+    var dh = Math.round(capRect.h) - d.capOpts.height;
+    L.push('  rect.w=' + Math.round(capRect.w) + '  opts.w=' + d.capOpts.width + '  Δ=' + dw + (Math.abs(dw)>1?' ⚠':''));
+    L.push('  rect.h=' + Math.round(capRect.h) + '  opts.h=' + d.capOpts.height + '  Δ=' + dh + (Math.abs(dh)>1?' ⚠':''));
+  }
+  L.push('');
+  L.push('END OF AUDIT — share this text + a screenshot of the saved PNG.');
+  _eodAuditShowPanel(L.join('\n'));
+}
+
+function _eodAuditShowPanel(text){
+  var existing = document.getElementById('eod-audit-panel');
+  if(existing) existing.remove();
+  var panel = document.createElement('div');
+  panel.id = 'eod-audit-panel';
+  panel.style.cssText = [
+    'position:fixed','top:12px','right:12px','z-index:2147483647',
+    'background:#0a0a0a','color:#e5e5e5',
+    'font-family:ui-monospace,Menlo,monospace','font-size:11px','line-height:1.45',
+    'border:1px solid #f5d77c','border-radius:6px',
+    'width:min(640px,94vw)','max-height:92vh','overflow:hidden',
+    'padding:10px 12px','box-shadow:0 6px 24px rgba(0,0,0,0.7)'
+  ].join(';');
+  panel.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">'
+    +   '<strong style="color:#f5d77c;font-family:ui-monospace,monospace;font-size:11px;letter-spacing:0.10em">EOD CAPTURE AUDIT</strong>'
+    +   '<div style="display:flex;gap:4px">'
+    +     '<button id="eod-audit-copy"  onclick="_eodAuditCopy()"  style="background:transparent;border:1px solid #444;color:#e5e5e5;font:inherit;padding:3px 8px;border-radius:3px;cursor:pointer">COPY</button>'
+    +     '<button                       onclick="_eodAuditClose()" style="background:transparent;border:1px solid #444;color:#888;font:inherit;padding:3px 8px;border-radius:3px;cursor:pointer">CLOSE</button>'
+    +   '</div>'
+    + '</div>'
+    + '<pre id="eod-audit-text" style="margin:0;padding:0;font:inherit;color:inherit;white-space:pre;word-break:normal;max-height:calc(92vh - 50px);overflow:auto;user-select:text;-webkit-user-select:text"></pre>';
+  document.body.appendChild(panel);
+  document.getElementById('eod-audit-text').textContent = text;
+}
+window._eodAuditCopy = function(){
+  var pre = document.getElementById('eod-audit-text');
+  if(!pre) return;
+  var text = pre.textContent || '';
+  var btn = document.getElementById('eod-audit-copy');
+  var done = function(ok){
+    if(btn){ btn.textContent = ok ? 'COPIED ✓' : 'COPY FAILED'; setTimeout(function(){ if(btn) btn.textContent = 'COPY'; }, 1500); }
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ done(false); });
+  } else {
+    var r = document.createRange(); r.selectNodeContents(pre);
+    var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    done(true);
+  }
+};
+window._eodAuditClose = function(){
+  var p = document.getElementById('eod-audit-panel');
+  if(p) p.remove();
+};
+window._eodAuditCapture = _eodAuditCapture;
 
 // Resolve the active .eod-card without depending on a button reference.
 // Used by eodShareCard so it works whether called:
@@ -27468,6 +27807,21 @@ function cookieDecline(){
   font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
   text-transform:uppercase;transition:.15s;
 }
+
+/* Audit — temporary diagnostic button (gold-tinted). Sits at the
+   left edge of the action row; Share's margin-left:auto pushes the
+   right pair (Share + Dismiss) over. Will be removed once the
+   capture bug is diagnosed and fixed. */
+.ev2-audit{
+  background:rgba(245,215,124,0.08);
+  color:#f5d77c;
+  border:1px solid rgba(245,215,124,0.35);
+}
+.ev2-audit:hover{
+  background:rgba(245,215,124,0.16);
+  border-color:rgba(245,215,124,0.55);
+}
+.ev2-audit:disabled{opacity:0.5;cursor:wait}
 
 /* Share — primary cool-blue (#6ea8ff / --n-accent-cool). Pushes
    itself + Dismiss to the right with margin-left:auto. */
