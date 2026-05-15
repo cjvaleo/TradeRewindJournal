@@ -11357,6 +11357,10 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
       <div id="eod-dots" class="eod-dots"></div>
       <button class="eod-next" onclick="eodNext()">Next &rarr;</button>
     </div>
+    <!-- Close ✕ — STATIC modal chrome. Lives on the stage, NOT inside
+         a card, so card data re-renders (innerHTML / outerHTML swaps in
+         #eod-cards) never touch it and it can't flicker. -->
+    <button id="eod-modal-close" onclick="eodDismiss()" aria-label="Close">&#x2715;</button>
   </div>
 </div>
 
@@ -12840,8 +12844,23 @@ function _eodInitialsFor(handle){
   return (clean ? clean.slice(0,2).toUpperCase() : '??');
 }
 
-function _eodRenderPersonalCard(data){
+/* Content signatures — drive the refresh dedupe. _eodMaybeRefreshOpen*
+   only swaps the card when the signature changes, so an open card can't
+   re-render (and flicker) when renderAll() fires for an unrelated reason.
+   The renderers stamp the sig onto the card root as data-eod-sig. */
+function _eodPersonalSig(data){
+  var rows = (data.trades||[]).map(function(t){ return (t.id||'?')+':'+(t.pnl||0); }).join(',');
+  return [data.tradeCount||0, data.totalPnl||0, data.winRate||0, data.avgR||0, rows].join('|');
+}
+function _eodGroupSig(data){
+  var rows = (data.traders||[]).map(function(t){ return (t.user_id||'?')+':'+(t.pnl||0); }).join(',');
+  return [data.tradeCount||0, data.totalPnl||0, data.winRate||0, data.avgPerTrade||0, rows].join('|');
+}
+
+function _eodRenderPersonalCard(data, reason){
   if(!data) return '';
+  console.log('[eod render] personal — reason:', reason || '(unspecified)',
+    '| trades:', data.tradeCount, '| pnl:', data.totalPnl);
   // Empty-state path — when there are no trades for the recap date we
   // still want the widget click to open SOMETHING. Same chrome as the
   // populated path; the trades list slot becomes a "No trades yet"
@@ -12939,11 +12958,10 @@ function _eodRenderPersonalCard(data){
   // wins the cascade during capture either way.
   var heroTrendBg = data.totalPnl >= 0 ? '#5fb389' : '#c95f5f';
   var heroPnlCol  = data.totalPnl > 0 ? '#5fb389' : data.totalPnl < 0 ? '#c95f5f' : '#a1a1a1';
-  return '<div class="eod-card eod-card-personal" data-eod-date="'+_eodSafe(data.etDate)+'">'
-    // (0) Close — absolute top-right, sits in the corner above the
-    // header's right-edge meta block. .ev2-head gets padding-right
-    // (in CSS) so the date label can't slide under the icon.
-    + '<button class="ev2-close" onclick="eodDismiss()" aria-label="Close">&#x2715;</button>'
+  // The ✕ close button is STATIC modal chrome (#eod-modal-close on the
+  // .eod-stage) — NOT part of this template — so card re-renders never
+  // touch it. data-eod-sig drives the refresh dedupe (see _eodPersonalSig).
+  return '<div class="eod-card eod-card-personal" data-eod-date="'+_eodSafe(data.etDate)+'" data-eod-sig="'+_eodSafe(_eodPersonalSig(data))+'">'
     // (1) Header — date/time spans pinned to nowrap so they can't fold.
     + '<div class="ev2-head">'
     +   '<div class="ev2-av">'+_eodSafe(initials)+'</div>'
@@ -12988,8 +13006,9 @@ function _eodRenderPersonalCard(data){
     +   '<span class="ev2-wm" style="white-space:nowrap">traderewindjournal.com</span>'
     +   '<span class="ev2-foot-meta" style="white-space:nowrap">PnL Card &middot; '+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
     + '</div>'
-    // The action row is gone — Dismiss moved to the top-right ✕ icon
-    // (see the .ev2-close button at the top of this template).
+    // The action row is gone — Dismiss is the static top-right ✕
+    // (#eod-modal-close, modal chrome on the .eod-stage — not part of
+    // this card template).
     //
     // TODO: Share/capture parked — foreignObject rasterization bug
     //       with italic font, see audit findings. Re-enable buttons
@@ -13009,8 +13028,10 @@ function _eodRenderPersonalCard(data){
     + '</div>';
 }
 
-function _eodRenderGroupCard(data){
+function _eodRenderGroupCard(data, reason){
   if(!data) return '';
+  console.log('[eod render] group — reason:', reason || '(unspecified)',
+    '| trades:', data.tradeCount, '| pnl:', data.totalPnl);
   // Empty-state path — when the community has no activity today we
   // still want the badge-click to open SOMETHING. Render an "Awaiting
   // recap" version of the card with the same chrome but a quiet body.
@@ -13064,11 +13085,11 @@ function _eodRenderGroupCard(data){
   // "today, live" framing. The community badge in the left sidebar
   // shows the same number, fetched the same way (_eodGroupData with
   // today's local date). data-community-id lets _eodMaybeRefreshOpenGroup
-  // identify which community the open card belongs to without
-  // storing _eodModalSource-style state on the modal.
-  return '<div class="eod-card eod-card-group" data-eod-date="'+_eodSafe(data.etDate)+'" data-community-id="'+_eodSafe(data.community.id||'')+'">'
-    // (0) Close — absolute top-right (matches personal card).
-    + '<button class="ev2-close" onclick="eodDismiss()" aria-label="Close">&#x2715;</button>'
+  // identify which community the open card belongs to. data-eod-sig
+  // drives the refresh dedupe (see _eodGroupSig). The ✕ close button
+  // is STATIC modal chrome (#eod-modal-close) — not part of this
+  // template — so card re-renders never touch it.
+  return '<div class="eod-card eod-card-group" data-eod-date="'+_eodSafe(data.etDate)+'" data-community-id="'+_eodSafe(data.community.id||'')+'" data-eod-sig="'+_eodSafe(_eodGroupSig(data))+'">'
     // (1) Header — gold pulse instead of avatar
     + '<div class="ev2-head">'
     +   '<span class="ev2-pulse"></span>'
@@ -14205,27 +14226,14 @@ function _eodShowModal(cards){
   }
   modal.style.display = 'flex';
 
-  // Pre-warm the renderer (modern-screenshot) in the background as
-  // soon as the modal is visible — script tag fetch. The Share/Audit
-  // buttons are currently parked (see TODOs in the renderers), but
-  // pre-warming costs ~nothing and keeps the path warm for when we
-  // re-enable them.
-  if(typeof _eodLoadHtml2Canvas === 'function'){
-    _eodLoadHtml2Canvas().catch(function(){ /* silent — share will retry */ });
-  }
-  // Pre-BAKE the File too — fully captured PNG sitting in memory by
-  // the time the user clicks Download/Share. The click handler can
-  // then call navigator.share with the pre-ready File synchronously
-  // inside the user-gesture window (iOS/Safari require this — any
-  // async work between the click and the share call expires the
-  // gesture token and throws NotAllowedError). 250ms tick gives the
-  // browser time to paint the modal first so getBoundingClientRect
-  // returns the final dimensions.
-  _eodPrebakedFile = null;
-  _eodPrebakedFor  = null;
-  setTimeout(function(){
-    if(typeof _eodPrebake === 'function') _eodPrebake();
-  }, 250);
+  // NOTE: the modern-screenshot pre-warm + _eodPrebake() call that used
+  // to run here (250ms after open) were REMOVED. Share/Audit are parked
+  // (see the TODOs in the renderers), so the pre-bake captured nothing
+  // anyone could use — and worse, _eodCaptureCard toggles .is-capturing
+  // on the card + flips the backdrop blur off/on for the capture's
+  // duration, which produced a visible flicker ~250ms after every open.
+  // When Share is un-parked, restore the pre-bake here (and re-add the
+  // _eodPrebakedFile/_eodPrebakedFor null-resets).
 }
 
 /* Both personal AND group cards are now LIVE/today views — neither
@@ -14266,22 +14274,19 @@ function _eodMaybeRefreshOpenPersonal(){
       winRate: 0, avgR: 0, avgRCount: 0, trades: []
     };
   }
-  var html = _eodRenderPersonalCard(data);
+  // Dedupe guard — only swap when the content actually changed. This
+  // keeps the open card from re-rendering (and flickering) when
+  // renderAll() fires for an unrelated reason (e.g. right after open).
+  var newSig = _eodPersonalSig(data);
+  if(personal.getAttribute('data-eod-sig') === newSig){
+    return;  // identical data — no swap, no flicker
+  }
+  var html = _eodRenderPersonalCard(data, 'refresh (trade mutation)');
   if(!html) return;
   // Swap the personal card in place. innerHTML on container would
   // wipe sibling cards if any existed; outerHTML on the personal
-  // element preserves order. Need to re-query the container's last
-  // child to get the new node since outerHTML invalidates `personal`.
+  // element preserves order.
   personal.outerHTML = html;
-  // Pre-bake is tied to the OLD card DOM node — invalidate so the
-  // next Share click re-bakes against the refreshed card.
-  _eodPrebakedFile = null;
-  _eodPrebakedFor  = null;
-  // Re-bake in the background so Share stays snappy if the user
-  // clicks it next. Same 250ms tick the modal-open path uses.
-  setTimeout(function(){
-    if(typeof _eodPrebake === 'function') _eodPrebake();
-  }, 250);
 }
 
 async function eodInflatePersonalFromWidget(){
@@ -14302,7 +14307,7 @@ async function eodInflatePersonalFromWidget(){
       winRate: 0, avgR: 0, avgRCount: 0, trades: []
     };
   }
-  var html = _eodRenderPersonalCard(data);
+  var html = _eodRenderPersonalCard(data, 'open (dash-bar click)');
   if(html) _eodShowModal([{ flavor:'personal', html:html }]);
 }
 async function eodInflateGroupFromWidget(community){
@@ -14319,7 +14324,7 @@ async function eodInflateGroupFromWidget(community){
       totalPnl:0, tradeCount:0, winRate:0, avgPerTrade:0, traders:[]
     };
   }
-  var html = _eodRenderGroupCard(data);
+  var html = _eodRenderGroupCard(data, 'open (community badge)');
   if(html) _eodShowModal([{ flavor:'group', html:html, communityId:community.id }]);
 }
 
@@ -14353,7 +14358,14 @@ async function _eodMaybeRefreshOpenGroup(){
   // If the user dismissed mid-fetch, bail.
   var stillOpen = document.querySelector('#eod-cards .eod-card-group[data-community-id="'+_cssEsc(gid)+'"]');
   if(!stillOpen) return;
-  var html = _eodRenderGroupCard(data);
+  // Dedupe guard — only swap when the content actually changed, so the
+  // open card can't re-render (and flicker) when renderAll() fires for
+  // an unrelated reason.
+  var newSig = _eodGroupSig(data);
+  if(stillOpen.getAttribute('data-eod-sig') === newSig){
+    return;  // identical data — no swap, no flicker
+  }
+  var html = _eodRenderGroupCard(data, 'refresh (trade mutation)');
   if(!html) return;
   stillOpen.outerHTML = html;
 }
@@ -27327,6 +27339,7 @@ function cookieDecline(){
   width:100%;max-width:760px;
   display:flex;flex-direction:column;align-items:stretch;gap:16px;
   margin:auto;
+  position:relative;   /* positioning context for the static #eod-modal-close */
 }
 .eod-cards{display:flex;flex-direction:column;gap:16px}
 .eod-cards.is-sequenced .eod-card{display:none}
@@ -27365,18 +27378,19 @@ function cookieDecline(){
    Stacks to a single column on mobile so the avatar stays prominent. */
 .ev2-head{
   display:flex;align-items:center;gap:14px;
-  /* Reserve a horizontal lane on the right for the absolute-positioned
-     .ev2-close button. Without this the right-edge .ev2-head-meta
-     (date label + "LIVE · TODAY") slides under the close icon. */
+  /* Reserve a horizontal lane on the right for the modal's static
+     #eod-modal-close button, which sits over the card's top-right
+     corner. Without this the right-edge .ev2-head-meta (date label
+     + "LIVE · TODAY") slides under the close icon. */
   padding-right:36px;
 }
 
-/* Close affordance — absolute top-right corner of the card.
-   Replaces the old footer Dismiss button. Small, muted, with a
-   chrome-luxe hairline border that brightens on hover. Hidden
-   during PNG capture so the export reads as a finished card,
-   not a dialog. z-index lifts it above .eod-card > * (z:1). */
-.ev2-close{
+/* Close affordance — STATIC modal chrome. Positioned against the
+   .eod-stage (not the card), so it sits at the card's top-right
+   corner but is never touched by card data re-renders. Small,
+   muted, chrome-luxe hairline border that brightens on hover.
+   z-index keeps it above the card surface. */
+#eod-modal-close{
   position:absolute;
   top:12px;right:12px;
   width:28px;height:28px;
@@ -27390,18 +27404,17 @@ function cookieDecline(){
   cursor:pointer;
   padding:0;
   transition:.15s;
-  z-index:3;
+  z-index:5;
 }
-.ev2-close:hover{
+#eod-modal-close:hover{
   color:var(--n-text);
   border-color:rgba(255,255,255,0.24);
   background:rgba(255,255,255,0.04);
 }
-.ev2-close:focus-visible{
+#eod-modal-close:focus-visible{
   outline:1px solid rgba(245,215,124,0.45);
   outline-offset:1px;
 }
-.eod-card.is-capturing .ev2-close{display:none}
 .ev2-av{
   flex-shrink:0;
   width:44px;height:44px;border-radius:50%;
