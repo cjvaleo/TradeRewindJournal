@@ -29762,25 +29762,40 @@ async function cancelModalOpen(){
 // on any error so the page never breaks.
 async function refreshUpgradePage(){
   var banner = document.getElementById('upgrade-pro-banner');
-  var taCard = document.getElementById('uc-tapremium');
-  if (!banner || !taCard) return;
-  // Reset to default-show. Hides will fire after /api/me resolves.
-  banner.style.display = 'none';
-  taCard.style.display = '';
+  var cards  = document.querySelector('#pg-upgrade .up-cards');
+  if (!banner || !cards) return;
+
+  // Banner-vs-cards view. proPremium=true → banner only (an already-Pro
+  // Trading Ark member has nothing to upgrade to); else the 3 plan cards.
+  function applyView(proPremium){
+    cards.style.display  = proPremium ? 'none'  : '';
+    banner.style.display = proPremium ? 'block' : 'none';
+  }
+
+  // SYNCHRONOUS pre-paint from the _userTier cache. goTo() shows
+  // #pg-upgrade and then calls this function in the SAME synchronous
+  // tick — applying the view here, before the first browser paint,
+  // means a Pro user never sees the plan cards flash. The cache
+  // (window._userTier, populated by refreshUserTier() after sign-in)
+  // uses tier values 'premium' / 'elite' for TA Premium Pro.
+  var t = window._userTier;
+  var cacheProPremium = !!(t && t.isActive && (t.tier === 'premium' || t.tier === 'elite'));
+  applyView(cacheProPremium);
+
+  // ASYNC confirm/correct against /api/me — covers a cold cache
+  // (deep-link / refresh on /upgrade before sign-in resolves) or a
+  // stale one. /api/me tier values are 'pro_premium' / 'pro_elite'.
+  // If the cache was already right this is a no-op; if it was cold
+  // and the user is Pro, this is the only place the correction fires
+  // (a one-frame card flash is possible ONLY in the cold-cache case).
   try {
     var session = await _cancelModalGetSession();
-    if (!session) return;
+    if (!session) return;  // not signed in — leave the cache-based view
     var r = await fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + session.access_token } });
     if (!r.ok) return;
     var me = await r.json();
-    // Hide the TA Premium card for anyone already on a Discord-sourced Pro
-    // tier. pro_premium is the post-consolidation state; pro_elite is kept
-    // defensively (should be zero users after the migration, but safe).
-    if (me && (me.tier === 'pro_premium' || me.tier === 'pro_elite')) {
-      taCard.style.display = 'none';
-      banner.style.display = 'block';
-    }
-  } catch (e) { /* fail open — keep all cards visible */ }
+    applyView(!!(me && (me.tier === 'pro_premium' || me.tier === 'pro_elite')));
+  } catch (e) { /* fail open — keep the cache-based view */ }
 }
 
 // Refresh the Subscription tab — populates the summary card from /api/me
