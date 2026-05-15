@@ -13055,16 +13055,20 @@ function _eodRenderPersonalCard(data){
     +   '<span class="ev2-foot-meta" style="white-space:nowrap">PnL Card &middot; '+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
     + '</div>'
     // Action row — hidden during PNG capture (see .is-capturing rule).
-    // Order: [Download] [Share?] [Dismiss]. Share is feature-detected
-    // via _eodCanShareFiles() so desktop browsers without file-share
-    // support see [Download] [Dismiss] only. Both Download and Share
-    // funnel through _eodCaptureCard() so the html2canvas render
-    // happens ONCE per click.
+    //
+    // TODO: Share/capture parked — foreignObject rasterization bug with
+    //       italic font, see audit findings. Re-enable buttons here.
+    //       The plumbing is intact below this comment — _eodCaptureCard,
+    //       modern-screenshot loader (_eodLoadHtml2Canvas), eodShareCard,
+    //       _eodPrebake, _eodAuditCapture and its panel — all dormant
+    //       but ready. To restore the full footer:
+    //         + '<button class="ev2-audit" onclick="_eodAuditCapture()">Audit</button>'
+    //         + (_eodCanShareFiles()
+    //             ? '<button class="ev2-share" onclick="eodShareCard(this)">Share</button>'
+    //             : '')
+    //       …in front of the Dismiss button below. Same restoration
+    //       lives in _eodRenderGroupCard's footer.
     + '<div class="ev2-actions">'
-    +   '<button class="ev2-audit" onclick="_eodAuditCapture()">Audit</button>'
-    +   (_eodCanShareFiles()
-        ? '<button class="ev2-share" onclick="eodShareCard(this)">Share</button>'
-        : '')
     +   '<button class="ev2-dismiss" onclick="eodDismiss()">Dismiss</button>'
     + '</div>'
     + '</div>';
@@ -13160,14 +13164,14 @@ function _eodRenderGroupCard(data){
     +   '<span class="ev2-wm" style="white-space:nowrap">traderewindjournal.com</span>'
     +   '<span class="ev2-foot-meta" style="white-space:nowrap">'+memberCount+' member'+(memberCount===1?'':'s')+' &middot; '+data.tradeCount+' trade'+(data.tradeCount===1?'':'s')+'</span>'
     + '</div>'
-    // Action row — matches the personal modal. Order: [Download]
-    // [Share?] [Dismiss]. Share is feature-detected via
-    // _eodCanShareFiles(). Both funnel through _eodCaptureCard().
+    // Action row — matches the personal modal.
+    //
+    // TODO: Share/capture parked — foreignObject rasterization bug with
+    //       italic font, see audit findings. Re-enable buttons here.
+    //       See the matching TODO + restore-snippet in
+    //       _eodRenderPersonalCard's footer for the exact button HTML
+    //       to put back in front of Dismiss when we return to this.
     + '<div class="ev2-actions">'
-    +   '<button class="ev2-audit" onclick="_eodAuditCapture()">Audit</button>'
-    +   (_eodCanShareFiles()
-        ? '<button class="ev2-share" onclick="eodShareCard(this)">Share</button>'
-        : '')
     +   '<button class="ev2-dismiss" onclick="eodDismiss()">Dismiss</button>'
     + '</div>'
     + '</div>';
