@@ -29811,8 +29811,16 @@ async function refreshActiveSubCard(){
       setSummary('Pro · Direct', '$20 / month',
         '<div style="' + bodyStyle + '">Full Pro access. Renews monthly via Stripe.</div>');
     } else if (me.tier === 'pro_premium') {
-      setSummary('Pro · Premium', '$10 / month · 50% off via Trading Ark',
-        '<div style="' + bodyStyle + '">Pro features plus Trading Ark Discord community access.</div>');
+      // Free via Trading Ark Premium — no Stripe. Mirrors the pro_elite
+      // branch's no-Stripe handling (incl. the dual-state note for anyone
+      // still carrying a dangling Stripe sub from a previous signup).
+      if (me.hasStripe) {
+        setSummary('Pro · Premium', 'Free via Trading Ark',
+          '<div style="' + bodyStyle + '">Your Trading Ark Premium role covers Rewind Pro at no cost. You also have a Stripe subscription from a previous signup — you can cancel it any time without losing access; your Premium role keeps you Pro.</div>');
+      } else {
+        setSummary('Pro · Premium', 'Free via Trading Ark',
+          '<div style="' + bodyStyle + '">Your Trading Ark Premium role covers Rewind Pro at no cost. There\'s no Stripe billing to manage — your access is included with Trading Ark Premium.</div>');
+      }
     } else if (me.tier === 'pro_elite') {
       if (me.hasStripe) {
         setSummary('Pro · Elite', 'Free with Trading Ark Elite',
@@ -29850,12 +29858,12 @@ async function refreshActiveSubCard(){
 
 /* ── Billing tab — /api/me-driven, mirrors refreshActiveSubCard pattern ──
    Tier × hasStripe matrix:
-     free                       → Free copy + Upgrade CTA
-     pro_elite (any hasStripe)  → Whop link only (Elite is Discord/Whop-
-                                  managed; Stripe portal would 500 in LIVE
-                                  mode for dangling test-mode subs)
-     pro_direct                 → Stripe portal CTA
-     pro_premium                → Stripe portal CTA */
+     free                        → Free copy + Upgrade CTA
+     pro_elite   (any hasStripe) → Whop link, no Stripe (retired tier,
+                                   kept for safety)
+     pro_premium (any hasStripe) → "Included free" copy, no Stripe —
+                                   discord_premium entitlements are free
+     pro_direct                  → Stripe portal CTA */
 async function refreshBillingTab(){
   var sumTitle = document.getElementById('billing-summary-title');
   var sumSub   = document.getElementById('billing-summary-sub');
@@ -29910,8 +29918,23 @@ async function refreshBillingTab(){
       return;
     }
 
-    // State 3: Direct or Premium with Stripe → portal CTA.
-    // Elite handled above (returns early) so never reaches here.
+    // State 2b: Pro Premium — free via Trading Ark, no Stripe billing.
+    // Same no-Stripe handling as Elite (State 2): never route to the
+    // Stripe portal. discord_premium entitlements are free; a dangling
+    // test-mode Stripe sub from a previous Premium signup would still
+    // register hasStripe=true, but the portal lookup would 500 in LIVE
+    // mode. Always handle Premium here, before the portal branch.
+    if (me.tier === 'pro_premium') {
+      var premiumDualNote = me.hasStripe
+        ? ' If you also have a Stripe subscription from a previous Premium signup, contact us at cjvaleo@gmail.com to cancel — your Trading Ark Premium role keeps you Pro regardless.'
+        : '';
+      setSummary('Premium via Trading Ark', 'Included free',
+        '<div style="' + bodyStyle + '">No Stripe billing to manage — your access is included with Trading Ark Premium. Your Pro features stay active as long as you hold the Premium role on Discord.' + premiumDualNote + '</div>');
+      return;
+    }
+
+    // State 3: Direct with Stripe → portal CTA.
+    // Elite + Premium handled above (return early) so never reach here.
     if (me.hasStripe) {
       var titleByTier =
         me.tier === 'pro_direct'  ? 'Pro &middot; Direct'  :
