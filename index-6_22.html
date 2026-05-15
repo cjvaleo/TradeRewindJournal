@@ -12966,6 +12966,10 @@ function _eodRenderPersonalCard(data){
   var heroTrendBg = data.totalPnl >= 0 ? '#5fb389' : '#c95f5f';
   var heroPnlCol  = data.totalPnl > 0 ? '#5fb389' : data.totalPnl < 0 ? '#c95f5f' : '#a1a1a1';
   return '<div class="eod-card eod-card-personal" data-eod-date="'+_eodSafe(data.etDate)+'">'
+    // (0) Close — absolute top-right, sits in the corner above the
+    // header's right-edge meta block. .ev2-head gets padding-right
+    // (in CSS) so the date label can't slide under the icon.
+    + '<button class="ev2-close" onclick="eodDismiss()" aria-label="Close">&#x2715;</button>'
     // (1) Header — date/time spans pinned to nowrap so they can't fold.
     + '<div class="ev2-head">'
     +   '<div class="ev2-av">'+_eodSafe(initials)+'</div>'
@@ -13010,23 +13014,24 @@ function _eodRenderPersonalCard(data){
     +   '<span class="ev2-wm" style="white-space:nowrap">traderewindjournal.com</span>'
     +   '<span class="ev2-foot-meta" style="white-space:nowrap">PnL Card &middot; '+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
     + '</div>'
-    // Action row — hidden during PNG capture (see .is-capturing rule).
+    // The action row is gone — Dismiss moved to the top-right ✕ icon
+    // (see the .ev2-close button at the top of this template).
     //
-    // TODO: Share/capture parked — foreignObject rasterization bug with
-    //       italic font, see audit findings. Re-enable buttons here.
-    //       The plumbing is intact below this comment — _eodCaptureCard,
-    //       modern-screenshot loader (_eodLoadHtml2Canvas), eodShareCard,
-    //       _eodPrebake, _eodAuditCapture and its panel — all dormant
-    //       but ready. To restore the full footer:
-    //         + '<button class="ev2-audit" onclick="_eodAuditCapture()">Audit</button>'
-    //         + (_eodCanShareFiles()
-    //             ? '<button class="ev2-share" onclick="eodShareCard(this)">Share</button>'
-    //             : '')
-    //       …in front of the Dismiss button below. Same restoration
-    //       lives in _eodRenderGroupCard's footer.
-    + '<div class="ev2-actions">'
-    +   '<button class="ev2-dismiss" onclick="eodDismiss()">Dismiss</button>'
-    + '</div>'
+    // TODO: Share/capture parked — foreignObject rasterization bug
+    //       with italic font, see audit findings. Re-enable buttons
+    //       here. The plumbing is intact (_eodCaptureCard,
+    //       _eodLoadHtml2Canvas, eodShareCard, _eodPrebake,
+    //       _eodAuditCapture + audit panel) — all dormant but ready.
+    //       To restore, append an action row before the closing
+    //       div of this template:
+    //         + '<div class="ev2-actions">'
+    //         +   '<button class="ev2-audit" onclick="_eodAuditCapture()">Audit</button>'
+    //         +   (_eodCanShareFiles()
+    //               ? '<button class="ev2-share" onclick="eodShareCard(this)">Share</button>'
+    //               : '')
+    //         + '</div>'
+    //       The ✕ close icon stays as the dismiss affordance regardless.
+    //       Same restoration lives in _eodRenderGroupCard.
     + '</div>';
 }
 
@@ -13088,6 +13093,8 @@ function _eodRenderGroupCard(data){
   // identify which community the open card belongs to without
   // storing _eodModalSource-style state on the modal.
   return '<div class="eod-card eod-card-group" data-eod-date="'+_eodSafe(data.etDate)+'" data-community-id="'+_eodSafe(data.community.id||'')+'">'
+    // (0) Close — absolute top-right (matches personal card).
+    + '<button class="ev2-close" onclick="eodDismiss()" aria-label="Close">&#x2715;</button>'
     // (1) Header — gold pulse instead of avatar
     + '<div class="ev2-head">'
     +   '<span class="ev2-pulse"></span>'
@@ -13126,16 +13133,9 @@ function _eodRenderGroupCard(data){
     +   '<span class="ev2-wm" style="white-space:nowrap">traderewindjournal.com</span>'
     +   '<span class="ev2-foot-meta" style="white-space:nowrap">'+memberCount+' member'+(memberCount===1?'':'s')+' &middot; '+data.tradeCount+' trade'+(data.tradeCount===1?'':'s')+'</span>'
     + '</div>'
-    // Action row — matches the personal modal.
-    //
-    // TODO: Share/capture parked — foreignObject rasterization bug with
-    //       italic font, see audit findings. Re-enable buttons here.
-    //       See the matching TODO + restore-snippet in
-    //       _eodRenderPersonalCard's footer for the exact button HTML
-    //       to put back in front of Dismiss when we return to this.
-    + '<div class="ev2-actions">'
-    +   '<button class="ev2-dismiss" onclick="eodDismiss()">Dismiss</button>'
-    + '</div>'
+    // Action row removed — see ✕ close icon at top of card. TODO
+    // restoration recipe for Share/Audit lives in
+    // _eodRenderPersonalCard.
     + '</div>';
 }
 
@@ -27387,7 +27387,43 @@ function cookieDecline(){
    Stacks to a single column on mobile so the avatar stays prominent. */
 .ev2-head{
   display:flex;align-items:center;gap:14px;
+  /* Reserve a horizontal lane on the right for the absolute-positioned
+     .ev2-close button. Without this the right-edge .ev2-head-meta
+     (date label + "LIVE · TODAY") slides under the close icon. */
+  padding-right:36px;
 }
+
+/* Close affordance — absolute top-right corner of the card.
+   Replaces the old footer Dismiss button. Small, muted, with a
+   chrome-luxe hairline border that brightens on hover. Hidden
+   during PNG capture so the export reads as a finished card,
+   not a dialog. z-index lifts it above .eod-card > * (z:1). */
+.ev2-close{
+  position:absolute;
+  top:12px;right:12px;
+  width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;
+  background:transparent;
+  border:0.5px solid rgba(255,255,255,0.10);
+  border-radius:50%;
+  color:var(--n-text-3);
+  font-family:var(--n-font-mono);
+  font-size:11px;line-height:1;
+  cursor:pointer;
+  padding:0;
+  transition:.15s;
+  z-index:3;
+}
+.ev2-close:hover{
+  color:var(--n-text);
+  border-color:rgba(255,255,255,0.24);
+  background:rgba(255,255,255,0.04);
+}
+.ev2-close:focus-visible{
+  outline:1px solid rgba(245,215,124,0.45);
+  outline-offset:1px;
+}
+.eod-card.is-capturing .ev2-close{display:none}
 .ev2-av{
   flex-shrink:0;
   width:44px;height:44px;border-radius:50%;
