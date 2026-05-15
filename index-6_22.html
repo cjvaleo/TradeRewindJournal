@@ -1213,9 +1213,9 @@
 }
 
 #pg-upgrade .up-cards{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;
 }
-@media (max-width:1200px){ #pg-upgrade .up-cards{grid-template-columns:1fr 1fr} }
+@media (max-width:1100px){ #pg-upgrade .up-cards{grid-template-columns:1fr 1fr} }
 @media (max-width:700px) { #pg-upgrade .up-cards{grid-template-columns:1fr} }
 
 #pg-upgrade .up-card{
@@ -10841,10 +10841,11 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
     <div class="up-sub">One paid tier &middot; 3 ways to unlock</div>
   </div>
 
-  <!-- Elite-already banner — toggled by refreshUpgradePage() when /api/me returns tier=pro_elite. -->
-  <div id="upgrade-elite-banner" style="display:none;max-width:700px;margin:0 auto 28px;background:rgba(95,179,137,0.06);border:1px solid rgba(95,179,137,0.32);padding:16px 20px;border-radius:10px;text-align:center">
-    <div style="font-family:var(--n-font-display);font-style:italic;font-size:22px;color:var(--n-profit);margin-bottom:4px;letter-spacing:-0.01em">You're already Pro &middot; Elite.</div>
-    <div style="font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);line-height:1.5">Trading Ark Elite covers Rewind Pro &mdash; no need to upgrade.</div>
+  <!-- Already-Pro banner — toggled by refreshUpgradePage() when /api/me
+       returns a Discord-sourced Pro tier (pro_premium, or pro_elite defensively). -->
+  <div id="upgrade-pro-banner" style="display:none;max-width:700px;margin:0 auto 28px;background:rgba(95,179,137,0.06);border:1px solid rgba(95,179,137,0.32);padding:16px 20px;border-radius:10px;text-align:center">
+    <div style="font-family:var(--n-font-display);font-style:italic;font-size:22px;color:var(--n-profit);margin-bottom:4px;letter-spacing:-0.01em">You're already Pro &middot; via Trading Ark Premium.</div>
+    <div style="font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);line-height:1.5">Your Trading Ark Premium membership covers Rewind Pro &mdash; no need to upgrade.</div>
   </div>
 
   <div class="up-cards">
@@ -10895,55 +10896,28 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
       <button class="uc-cta direct" onclick="tierUpgradeFlow('direct')">Subscribe &rarr;</button>
     </div>
 
-    <!-- PRO PREMIUM -->
-    <div class="up-card premium">
-      <div class="uc-tag">&#9733; Pro &middot; Premium</div>
-      <div class="uc-h">50% <em class="cool">off.</em></div>
-      <div class="uc-desc">For Trading Ark Premium members ($50/mo on Whop). Discord OAuth required.</div>
-      <div class="uc-price"><span class="uc-strike">$19</span><span class="uc-big cool">$9</span><span class="uc-period">per month</span></div>
-      <div class="uc-feat">&#9733; Trading Ark community</div>
-      <div class="uc-feat">Everything in Pro &middot; Direct</div>
-      <div class="uc-feat">50% off forever (while Premium)</div>
-      <div class="uc-feat">Auto-applied via Discord OAuth</div>
-      <div class="uc-feat-h">Whop bundle perks</div>
-      <div class="uc-feat">Trading Ark Discord access</div>
-      <div class="uc-feat">Trading classes + live alerts</div>
-      <div class="uc-feat">Synced with Discord roles</div>
-      <button class="uc-cta discord" onclick="tierUpgradeFlow('premium')">
-        <svg viewBox="0 0 71 55" width="14" height="14" fill="white"><path d="M60 4.7A58.5 58.5 0 0 0 45.6 0c-.6 1.1-1.4 2.6-1.9 3.8a54 54 0 0 0-16.4 0c-.5-1.2-1.3-2.7-2-3.8C20.5 0 15.5 1.6 11 4.8 1.7 18.6-.8 32 .4 45.3a58.7 58.7 0 0 0 18 9c1.5-2 2.7-4 3.8-6.3-2.1-.8-4-1.7-5.9-2.9.5-.4 1-.7 1.5-1.1 11.4 5.2 23.7 5.2 35 0l1.5 1.1c-1.9 1.1-3.9 2.1-6 2.9 1.1 2.2 2.4 4.3 3.9 6.3a58.7 58.7 0 0 0 18-9c1.5-15.4-2.6-28.8-10.2-40.6zM23.7 37.3c-3.5 0-6.4-3.2-6.4-7.1 0-4 2.8-7.2 6.4-7.2 3.5 0 6.4 3.2 6.4 7.2 0 3.9-2.9 7.1-6.4 7.1zm23.6 0c-3.5 0-6.4-3.2-6.4-7.1 0-4 2.8-7.2 6.4-7.2 3.5 0 6.4 3.2 6.4 7.2 0 3.9-2.8 7.1-6.4 7.1z"/></svg>
-        Sign in with Discord
-      </button>
-      <div class="uc-cta-or">or</div>
-      <a class="uc-cta whop" href="https://whop.com/checkout/plan_tRNqykRyLXsKv?a=christianvaleo" target="_blank" rel="noopener">
-        Buy Premium on Whop
-        <svg viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M20 4L10 14"/><path d="M5 7v12a1 1 0 0 0 1 1h12"/></svg>
-      </a>
-    </div>
-
-    <!-- PRO ELITE -->
-    <div class="up-card elite">
+    <!-- PRO · TRADING ARK PREMIUM — free Pro for TA Premium members.
+         Was the old Premium card; the retired Elite card's green "free"
+         treatment (.up-card.elite) is reused here since this is now the
+         free tier. id is stable for refreshUpgradePage()'s show/hide. -->
+    <div class="up-card elite" id="uc-tapremium">
       <div class="best-pill">Best Value</div>
-      <div class="uc-tag">&#9733; Pro &middot; Elite</div>
+      <div class="uc-tag">&#9733; Pro &middot; Trading Ark Premium</div>
       <div class="uc-h">100% <em class="green">free.</em></div>
-      <div class="uc-desc">For Trading Ark Elite members ($100/mo on Whop). Auto-included.</div>
+      <div class="uc-desc">Included with your Trading Ark Premium membership. Sign in with Discord to unlock &mdash; no card, ever.</div>
       <div class="uc-price"><span class="uc-strike">$19</span><span class="uc-big green">FREE</span><span class="uc-period">included</span></div>
       <div class="uc-feat">&#9733; Trading Ark community</div>
       <div class="uc-feat">Everything in Pro &middot; Direct</div>
-      <div class="uc-feat">100% FREE forever (while Elite)</div>
-      <div class="uc-feat">Priority + first access to new features</div>
+      <div class="uc-feat">100% free while you're a TA Premium member</div>
+      <div class="uc-feat">Auto-synced via your Discord role</div>
       <div class="uc-feat-h">Whop bundle perks</div>
       <div class="uc-feat">Trading Ark Discord (full access)</div>
-      <div class="uc-feat">All Premium perks + Elite-only rooms</div>
-      <div class="uc-feat">Direct DM access to instructors</div>
-      <button class="uc-cta discord-elite" onclick="tierUpgradeFlow('elite')">
+      <div class="uc-feat">Trading classes + live alerts</div>
+      <div class="uc-feat">Priority + first access to new features</div>
+      <button class="uc-cta discord-elite" onclick="tierUpgradeFlow('premium')">
         <svg viewBox="0 0 71 55" width="14" height="14" fill="white"><path d="M60 4.7A58.5 58.5 0 0 0 45.6 0c-.6 1.1-1.4 2.6-1.9 3.8a54 54 0 0 0-16.4 0c-.5-1.2-1.3-2.7-2-3.8C20.5 0 15.5 1.6 11 4.8 1.7 18.6-.8 32 .4 45.3a58.7 58.7 0 0 0 18 9c1.5-2 2.7-4 3.8-6.3-2.1-.8-4-1.7-5.9-2.9.5-.4 1-.7 1.5-1.1 11.4 5.2 23.7 5.2 35 0l1.5 1.1c-1.9 1.1-3.9 2.1-6 2.9 1.1 2.2 2.4 4.3 3.9 6.3a58.7 58.7 0 0 0 18-9c1.5-15.4-2.6-28.8-10.2-40.6zM23.7 37.3c-3.5 0-6.4-3.2-6.4-7.1 0-4 2.8-7.2 6.4-7.2 3.5 0 6.4 3.2 6.4 7.2 0 3.9-2.9 7.1-6.4 7.1zm23.6 0c-3.5 0-6.4-3.2-6.4-7.1 0-4 2.8-7.2 6.4-7.2 3.5 0 6.4 3.2 6.4 7.2 0 3.9-2.8 7.1-6.4 7.1z"/></svg>
         Sign in with Discord
       </button>
-      <div class="uc-cta-or">or</div>
-      <a class="uc-cta whop" href="https://whop.com/checkout/plan_KY7CY81vHFic1?a=christianvaleo" target="_blank" rel="noopener">
-        Get Elite on Whop
-        <svg viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M20 4L10 14"/><path d="M5 7v12a1 1 0 0 0 1 1h12"/></svg>
-      </a>
     </div>
   </div>
 
@@ -26030,9 +26004,13 @@ async function tierUpgradeFlow(plan){
     }
     return;
   }
-  // Premium / Elite → authenticated POST to /oauth/discord/start. The route
-  // verifies the Supabase Bearer token, signs user_id into the OAuth state,
-  // and returns { url } for the Discord authorize page.
+  // Premium → authenticated POST to /oauth/discord/start. The route verifies
+  // the Supabase Bearer token, signs user_id into the OAuth state, and
+  // returns { url } for the Discord authorize page. Branch B of the callback
+  // then grants free Pro on a Premium-role match.
+  // 'elite' is retired (May 2026) — the Elite upgrade card was removed, so
+  // no UI path produces plan==='elite'. The branch is kept as dead-safety in
+  // case the Elite role is ever re-introduced.
   if (plan === 'premium' || plan === 'elite') {
     try {
       var sess = (_sb && _sb.auth && _sb.auth.getSession) ? await _sb.auth.getSession() : { data: { session: null } };
@@ -29770,20 +29748,23 @@ async function cancelModalOpen(){
 // (their Discord role makes Premium redundant). Defaults to showing all cards
 // on any error so the page never breaks.
 async function refreshUpgradePage(){
-  var banner = document.getElementById('upgrade-elite-banner');
-  var premiumCard = document.querySelector('#pg-upgrade .up-card.premium');
-  if (!banner || !premiumCard) return;
+  var banner = document.getElementById('upgrade-pro-banner');
+  var taCard = document.getElementById('uc-tapremium');
+  if (!banner || !taCard) return;
   // Reset to default-show. Hides will fire after /api/me resolves.
   banner.style.display = 'none';
-  premiumCard.style.display = '';
+  taCard.style.display = '';
   try {
     var session = await _cancelModalGetSession();
     if (!session) return;
     var r = await fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + session.access_token } });
     if (!r.ok) return;
     var me = await r.json();
-    if (me && me.tier === 'pro_elite') {
-      premiumCard.style.display = 'none';
+    // Hide the TA Premium card for anyone already on a Discord-sourced Pro
+    // tier. pro_premium is the post-consolidation state; pro_elite is kept
+    // defensively (should be zero users after the migration, but safe).
+    if (me && (me.tier === 'pro_premium' || me.tier === 'pro_elite')) {
+      taCard.style.display = 'none';
       banner.style.display = 'block';
     }
   } catch (e) { /* fail open — keep all cards visible */ }

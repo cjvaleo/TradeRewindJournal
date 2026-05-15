@@ -1,6 +1,5 @@
 import {
   verifyState,
-  signState,
   readCookie,
   serializeCookie,
   encryptToken,
@@ -10,16 +9,21 @@ import { sbService } from '../../_lib/supabase.js';
 import { joinTradingArk } from '../../../lib/community.js';
 
 const STATE_TTL_SECONDS = 600;
-const ELITE_WINDOW_DAYS = 35;
+// 35-day Pro window. The daily cron re-checks the Discord role and pushes
+// this forward each day the role is still held, so it's effectively a
+// rolling entitlement that lapses ~35 days after the role is lost.
+const PRO_WINDOW_DAYS = 35;
 
 // Redirect targets are an allowlisted, fixed set. The destination is decided
 // by branch logic only — never by user-controlled input.
 const REDIRECT = {
-  WELCOME_ELITE:  '/welcome/elite',
-  CHECKOUT_PREM:  '/api/checkout/premium',
-  NO_ACCESS:      '/oauth-no-access',
+  // Elite role retired May 2026 — kept for safety (Branch A is now unreachable
+  // unless the Elite role is re-created in Discord).
+  WELCOME_ELITE:   '/welcome/elite',
+  WELCOME_PREMIUM: '/welcome/premium',
+  NO_ACCESS:       '/oauth-no-access',
   // /oauth-error?reason=... — reason is from a fixed vocabulary below.
-  ERROR_BASE:     '/oauth-error',
+  ERROR_BASE:      '/oauth-error',
 };
 const ERROR_REASONS = new Set([
   'access_denied',
@@ -61,11 +65,12 @@ export default async function handler(req, res) {
   const eliteRoleId    = process.env.TRADING_ARK_ELITE_ROLE_ID;
   const premiumRoleId  = process.env.TRADING_ARK_PREMIUM_ROLE_ID;
   const siteUrl        = process.env.NEXT_PUBLIC_SITE_URL;
-  if (!encKey || !guildId || !eliteRoleId || !premiumRoleId || !siteUrl) {
+  // eliteRoleId is NOT required — the Elite role is retired. If the env var
+  // is unset, Branch A simply never matches (its detection becomes a no-op).
+  if (!encKey || !guildId || !premiumRoleId || !siteUrl) {
     console.error('[oauth/callback] missing env', {
       hasEncKey: !!encKey, hasGuildId: !!guildId,
-      hasEliteRole: !!eliteRoleId, hasPremiumRole: !!premiumRoleId,
-      hasSiteUrl: !!siteUrl,
+      hasPremiumRole: !!premiumRoleId, hasSiteUrl: !!siteUrl,
     });
     res.status(500).json({ error: 'server misconfigured' });
     return;
@@ -89,6 +94,9 @@ export default async function handler(req, res) {
     return;
   }
   const { p: plan, u: userId } = stateData;
+  // plan is informational only — the branch decision is role-based, not
+  // plan-based. 'elite' is still accepted in the state vocabulary for
+  // backward-safety even though the upgrade page no longer offers it.
   if (!userId || (plan !== 'premium' && plan !== 'elite')) {
     res.status(400).json({ error: 'invalid state' });
     return;
@@ -124,7 +132,7 @@ export default async function handler(req, res) {
     return errorRedirect(res, 'role_check_failed', cookiesToSet);
   }
   if (me.status === 401) {
-    return errorRedirect(res, 'token_revoked', cookiesToSet);  // Branch D
+    return errorRedirect(res, 'token_revoked', cookiesToSet);
   }
   if (!me.ok || !me.id) {
     console.warn('[oauth/callback] /users/@me unexpected', { status: me.status });
@@ -140,11 +148,11 @@ export default async function handler(req, res) {
     return errorRedirect(res, 'role_check_failed', cookiesToSet);
   }
   if (member.status === 401) {
-    return errorRedirect(res, 'token_revoked', cookiesToSet);  // Branch D
+    return errorRedirect(res, 'token_revoked', cookiesToSet);
   }
 
   // ── (viii) Decide branch ──
-  // 200 + roles array → check Elite > Premium > none
+  // 200 + roles array → Elite (retired) > Premium > none
   // 404 → not in guild → Branch C
   // other → unexpected; fail safe to role_check_failed
   const roles = Array.isArray(member.roles) ? member.roles : [];
@@ -152,9 +160,11 @@ export default async function handler(req, res) {
   if (member.status === 404) {
     branch = 'C';
   } else if (member.status === 200) {
-    if (roles.includes(eliteRoleId))         branch = 'A';
-    else if (roles.includes(premiumRoleId))  branch = 'B';
-    else                                     branch = 'C';
+    // Elite role retired May 2026 — kept for safety. eliteRoleId may be
+    // undefined; `roles.includes(undefined)` is false, so this is inert.
+    if (eliteRoleId && roles.includes(eliteRoleId)) branch = 'A';
+    else if (roles.includes(premiumRoleId))         branch = 'B';
+    else                                            branch = 'C';
   } else {
     console.warn('[oauth/callback] guild member unexpected status', { status: member.status });
     return errorRedirect(res, 'role_check_failed', cookiesToSet);
@@ -169,10 +179,12 @@ export default async function handler(req, res) {
     ? new Date(Date.now() + tokens.expires_in * 1000).toISOString()
     : null;
   const nowIso = new Date().toISOString();
+  const proUntilIso = new Date(Date.now() + PRO_WINDOW_DAYS * 86400 * 1000).toISOString();
 
   // ── (x) Build profile patch (branch-specific) ──
-  // Branches B and C: ONLY the discord_* fields. NEVER touch is_pro from
-  // here — Stripe's checkout.session.completed webhook is the sole writer.
+  // Both Branch A and Branch B grant free Pro now. Branch B (Premium) is the
+  // live path: Trading Ark Premium is the single paid TA tier, and holding
+  // the role grants Rewind Pro at no cost. There is no Stripe step anymore.
   const patch = {
     discord_user_id:        discordUserId,
     discord_access_token:   encAccess,
@@ -181,10 +193,18 @@ export default async function handler(req, res) {
     last_role_check:        nowIso,
   };
   if (branch === 'A') {
-    patch.is_pro          = true;
-    patch.pro_source      = 'discord_elite';
-    patch.pro_active_until = new Date(Date.now() + ELITE_WINDOW_DAYS * 86400 * 1000).toISOString();
+    // Elite role retired May 2026 - kept for safety. Unreachable unless the
+    // Elite role is re-created in Discord; preserved so it still works if so.
+    patch.is_pro           = true;
+    patch.pro_source       = 'discord_elite';
+    patch.pro_active_until = proUntilIso;
+  } else if (branch === 'B') {
+    // Trading Ark Premium → free Rewind Pro.
+    patch.is_pro           = true;
+    patch.pro_source       = 'discord_premium';
+    patch.pro_active_until = proUntilIso;
   }
+  // Branch C: only the discord_* fields are written (no Pro grant).
 
   // ── (xi) Update profile (RLS bypassed via service role) ──
   const sb = sbService();
@@ -210,8 +230,7 @@ export default async function handler(req, res) {
 
   // ── (xii) Branch-specific redirect ──
   if (branch === 'A') {
-    // Auto-join Trading Ark community. Idempotent + graceful — log on failure
-    // but never fail the OAuth flow over a community-membership side effect.
+    // Elite role retired May 2026 - kept for safety.
     try {
       const joinRes = await joinTradingArk(sb, userId);
       console.log('[community-autojoin] OAuth Branch A', userId, joinRes);
@@ -221,16 +240,15 @@ export default async function handler(req, res) {
     return redirect(res, REDIRECT.WELCOME_ELITE, cookiesToSet);
   }
   if (branch === 'B') {
-    // Forward cookie carries the Premium-confirmed proof to /api/checkout/premium.
-    // Same HMAC scheme as the OAuth state — short-lived, single-purpose.
-    const fwd = signState(
-      { p: 'premium', u: userId, did: discordUserId, t: Math.floor(Date.now() / 1000) },
-      encKey,
-    );
-    cookiesToSet.push(serializeCookie('rwd_premium_confirmed', fwd, {
-      httpOnly: true, sameSite: 'Lax', path: '/', maxAge: 600, secure: isHttps,
-    }));
-    return redirect(res, REDIRECT.CHECKOUT_PREM, cookiesToSet);
+    // Auto-join Trading Ark community. Idempotent + graceful — log on failure
+    // but never fail the OAuth flow over a community-membership side effect.
+    try {
+      const joinRes = await joinTradingArk(sb, userId);
+      console.log('[community-autojoin] OAuth Branch B (premium)', userId, joinRes);
+    } catch (e) {
+      console.warn('[community-autojoin] OAuth Branch B threw', userId, e && e.message);
+    }
+    return redirect(res, REDIRECT.WELCOME_PREMIUM, cookiesToSet);
   }
   // Branch C
   return redirect(res, REDIRECT.NO_ACCESS, cookiesToSet);

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Welcome · Pro Premium — Rewind</title>
+<title>Welcome · Pro — Rewind</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
@@ -19,6 +19,8 @@
     --n-text-3:#6b6b6b;
     --n-text-4:#4a4a4a;
     --n-chrome:linear-gradient(135deg,#f5f5f5 0%,#c8c8c8 35%,#ffffff 50%,#b8b8b8 65%,#e5e5e5 100%);
+    --n-purple:#b366ff;
+    --n-gold:#f5d77c;
     --n-cool:#6ea8ff;
     --n-font-display:'Instrument Serif',Georgia,serif;
     --n-font-sans:'Geist',system-ui,sans-serif;
@@ -28,14 +30,14 @@
   html,body{margin:0;padding:0;min-height:100%;background:var(--n-bg);color:var(--n-text);font-family:var(--n-font-sans);-webkit-font-smoothing:antialiased}
   body{display:grid;place-items:center;padding:48px 20px}
   .card{max-width:520px;width:100%;text-align:center}
-  .tag{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-cool);margin-bottom:24px}
-  .tag .star{margin-right:4px;color:var(--n-cool)}
+  .tag{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-gold);margin-bottom:24px}
+  .tag .star{color:var(--n-gold);margin-right:4px}
   h1{font-family:var(--n-font-display);font-style:italic;font-weight:400;font-size:54px;line-height:1.05;margin:0 0 18px;letter-spacing:-0.01em}
-  h1 .cool{color:var(--n-cool)}
+  h1 .gold{color:var(--n-gold)}
   .lead{font-family:var(--n-font-sans);font-size:16px;color:var(--n-text-2);line-height:1.55;margin:0 0 36px;letter-spacing:-0.005em}
   .perks{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 auto 36px;text-align:left;max-width:440px}
   .perk{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--n-surface);border:1px solid var(--n-border);border-radius:7px;font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);letter-spacing:-0.005em}
-  .perk::before{content:'';width:14px;height:1px;background:var(--n-cool);flex-shrink:0}
+  .perk::before{content:'';width:14px;height:1px;background:var(--n-gold);flex-shrink:0}
   .cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 36px;border:0;border-radius:7px;background:var(--n-chrome);color:#0a0a0a;font-family:var(--n-font-sans);font-size:13px;font-weight:600;letter-spacing:-0.005em;text-decoration:none;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),inset 0 -1px 0 rgba(0,0,0,0.15),0 1px 3px rgba(0,0,0,0.5);transition:transform .08s}
   .cta:hover{transform:translateY(-0.5px)}
   .cta:active{transform:translateY(0.5px)}
@@ -51,32 +53,35 @@
 </head>
 <body>
 
+<!-- Loading state — visible immediately while we poll /api/me -->
 <main class="card" id="loading-pane">
-  <div class="tag">Activating Pro · Premium</div>
+  <div class="tag">Activating Pro</div>
   <h1>Hold tight<span class="dots"></span></h1>
-  <p class="lead">Confirming your payment with Stripe. Usually a couple seconds.</p>
+  <p class="lead">Confirming your Pro features. Usually a couple seconds.</p>
 </main>
 
+<!-- Success state — revealed when /api/me reports tier=pro_premium, isActive=true -->
 <main class="card" id="success-pane" style="display:none">
-  <div class="tag"><span class="star">★</span>Pro · Premium</div>
-  <h1>You're in. <span class="cool">50% off.</span></h1>
-  <p class="lead">Discord linked, Trading Ark Premium role verified, and your 50%-off subscription is active. Pro features unlocked alongside your community access.</p>
+  <div class="tag"><span class="star">★</span>Pro · Trading Ark Premium</div>
+  <h1>You're in. <span class="gold">It's free.</span></h1>
+  <p class="lead">Your Trading Ark Premium membership covers Rewind Pro at no cost. Access stays active as long as you hold the Premium role.</p>
   <div class="perks">
-    <div class="perk">Trading Ark Discord</div>
-    <div class="perk">Live alerts + classes</div>
+    <div class="perk">Trading Ark community</div>
     <div class="perk">Unlimited trades</div>
     <div class="perk">Full analytics</div>
     <div class="perk">Live broker sync</div>
+    <div class="perk">Multi-account</div>
     <div class="perk">PDF journal export</div>
   </div>
   <a class="cta" href="/index-6_22.html">Go to dashboard →</a>
-  <div class="foot">Receipt sent to your email · <a href="mailto:cjvaleo@gmail.com">cjvaleo@gmail.com</a></div>
+  <div class="foot">Questions? <a href="mailto:cjvaleo@gmail.com">cjvaleo@gmail.com</a></div>
 </main>
 
+<!-- Timeout state — after 30s of polling without success -->
 <main class="card" id="timeout-pane" style="display:none">
   <div class="tag">Almost there</div>
   <h1>Just a sec.</h1>
-  <p class="lead">Your Pro features should activate any moment. Refresh if this page doesn't update — your payment is safe and your data is intact.</p>
+  <p class="lead">Your Pro features should activate any moment. Refresh if this page doesn't update — your data is safe.</p>
   <a class="cta" href="javascript:location.reload()">Refresh</a>
   <div class="foot">Need help? <a href="mailto:cjvaleo@gmail.com">cjvaleo@gmail.com</a></div>
 </main>
@@ -84,6 +89,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (async function(){
+  // Per-page constants
+  var EXPECTED_TIER    = 'pro_premium';
   var SUPA_URL         = 'https://efxjxmtjycldvovcbczg.supabase.co';
   var SUPA_KEY         = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmeGp4bXRqeWNsZHZvdmNiY3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyMTE4MTEsImV4cCI6MjA5MTc4NzgxMX0.82aeJ6UtcHxkifdjhLsaAXwHeAjyzI2iQ4KakHy3zik';
   var TIMEOUT_MS       = 30000;
@@ -115,10 +122,9 @@
         });
         if (r.ok) {
           var me = await r.json();
-          // Accept ANY active Pro tier — a discord_elite user who buys Premium
-          // still lands here with tier='pro_elite' (carve-out keeps the durable
-          // source). isActive alone is the right success signal.
-          if (me && me.isActive) {
+          // Accept the expected tier OR any other active Pro tier — the
+          // success signal is "Pro is live", whichever durable source it is.
+          if (me && me.isActive && (me.tier === EXPECTED_TIER || me.tier === 'pro_elite' || me.tier === 'pro_direct')) {
             show('success-pane'); return;
           }
         }

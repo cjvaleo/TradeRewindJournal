@@ -1,11 +1,14 @@
 import { sbAnon, sbService } from './_lib/supabase.js';
 
 // Maps profiles.pro_source → public tier label returned to the SPA.
-// discord_premium folds into pro_premium for forward-compatibility; the
-// product treats Discord-Premium and Stripe-Premium identically for UI.
+// Valid pro_source values (post May-2026 consolidation):
+//   stripe_direct   → pro_direct   ($19/mo Stripe — the only paid path)
+//   discord_premium → pro_premium  (Trading Ark Premium role — free Pro)
+//   discord_elite   → pro_elite    (Elite role retired; kept for safety)
+// `stripe_premium` was removed — the $9/mo Premium-via-Stripe path is gone
+// and the DB CHECK constraint never allowed that value anyway.
 const TIER_MAP = {
   stripe_direct:   'pro_direct',
-  stripe_premium:  'pro_premium',
   discord_premium: 'pro_premium',
   discord_elite:   'pro_elite',
 };
