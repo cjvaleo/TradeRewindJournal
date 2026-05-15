@@ -11145,26 +11145,10 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             </div>
             <div class="toggle on" onclick="this.classList.toggle('on')"></div>
           </div>
-          <!-- EOD recap toggles — persist to user_settings so the
-               popup stays gone permanently when off. The classlist
-               toggle gives instant visual feedback; userSettingSet
-               handles the DB upsert in the background. -->
-          <div class="notif-row">
-            <div class="notif-info">
-              <div class="nm">Personal EOD recap</div>
-              <div class="desc">End-of-day popup with your P&amp;L, trades, and win rate</div>
-            </div>
-            <div id="setting-eod-personal" class="toggle on"
-                 onclick="eodTogglePref('personal', this)"></div>
-          </div>
-          <div class="notif-row">
-            <div class="notif-info">
-              <div class="nm">Group EOD recap</div>
-              <div class="desc">End-of-day leaderboard for every community you're in</div>
-            </div>
-            <div id="setting-eod-group" class="toggle on"
-                 onclick="eodTogglePref('group', this)"></div>
-          </div>
+          <!-- PnL Card auto-pop toggles were here. Both personal +
+               group cards are now live/today views with no auto-pop,
+               so the toggles had nothing to gate. Removed; eod_personal_enabled
+               and eod_group_enabled keys are no longer read or written. -->
           <div class="notif-row">
             <div class="notif-info">
               <div class="nm">Weekly report</div>
@@ -11385,12 +11369,11 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 </div>
 
 <!--
-  EOD RECAP MODAL — fires once per trading day after 4:30pm ET on next
-  page load. Holds 1+ stacked cards: one personal recap + one per
-  community the user is in. ≤2 cards visible together; ≥3 sequenced
-  with Next button. Dismiss writes today's ET date to localStorage so
-  the modal stays gone until tomorrow. Per-flavor opt-out toggles live
-  in Account → Preferences (eod_personal_enabled / eod_group_enabled).
+  PnL CARD MODAL — live/today view, opens on widget click (dashboard
+  PnL bar for personal; community sidebar badge for group). Holds 1+
+  stacked cards; ≤2 visible together, ≥3 sequenced with a Next button.
+  No auto-pop, no localStorage gating, no opt-out toggle — both flavors
+  are intraday views that mirror the dashboard hero's date logic.
 -->
 <div id="eod-modal" class="eod-backdrop" style="display:none"
      onclick="if(event.target===this) eodDismiss()">
@@ -11441,26 +11424,15 @@ function init(){
   renderAll();calcRisk();renderNews();refreshAcctUI();
   rtAutoReset();
   rtScheduleMidnightReset();
-  // EOD widget ticker \u2014 detects ET-date rollover at midnight and
-  // refreshes the dashboard bar + community badges so the recap
-  // advances to the newly-completed day without a page refresh.
-  // 60s cadence is more than fine since the only thing that changes
-  // is "which date is yesterday" \u2014 once-per-day work, with a one-
-  // minute worst-case lag at midnight ET.
+  // PnL widget ticker \u2014 repaints the dashboard bar + community
+  // badges every 60s while the tab is visible. Keeps badges fresh
+  // as other community members log trades AND handles midnight
+  // local rollover (next-day's "today" starts showing automatically).
+  // No rollover branching needed \u2014 renderEodDashBar / renderEodCommBadges
+  // read `_localDate(new Date())` each call, so they self-correct.
   if(!window._eodTicker){
-    window._eodLastEtDate = _eodEtDate();
     window._eodTicker = setInterval(function(){
       if(document.hidden) return;
-      var nowEt = _eodEtDate();
-      var rolled = nowEt !== window._eodLastEtDate;
-      if(rolled){
-        // Midnight ET crossed \u2014 invalidate cached group data so the
-        // next fetch hits the new "yesterday".
-        _eodBadgeCache = {};
-        window._eodLastEtDate = nowEt;
-      }
-      // Always repaint so a fresh trade share lands on the next tick
-      // and any DOM remount (e.g. settings panel toggle) gets re-bound.
       if(typeof renderEodDashBar === 'function') renderEodDashBar();
       if(typeof renderEodCommBadges === 'function') renderEodCommBadges();
     }, 60*1000);
@@ -11503,19 +11475,30 @@ async function switchJournal(j){
 }
 function renderAll(){
   renderDashboard();renderHistory();renderCalPage();renderAnalytics();updateQuickFillBtn();
-  // EOD dashboard bar — repaints whenever trades change (or a period
-  // tab is clicked), so its state stays consistent with what the user
-  // sees in the hero card directly below it.
+  // PnL Card dashboard bar — repaints whenever trades change (or a
+  // period tab is clicked), so its state stays in lockstep with the
+  // hero card directly below it.
   if(typeof renderEodDashBar === 'function'){
     try { renderEodDashBar(); } catch(e){ console.warn('[eod dash bar]', e && e.message); }
   }
-  // Personal PnL Card live re-render — if the modal is open AND it's
-  // showing a personal card (group cards keep their EOD/yesterday
-  // framing and shouldn't repaint on every trade), refresh it in
-  // place so the open card reflects the new totals. No-op when the
-  // modal is closed or the personal card isn't currently mounted.
+  // Community PnL badges — same liveness; the badges show "today's
+  // collective P&L" for every community in the sidebar, so logging
+  // a trade that's shared to a community should reflect immediately.
+  if(typeof renderEodCommBadges === 'function'){
+    try { renderEodCommBadges(); } catch(e){ console.warn('[eod comm badges]', e && e.message); }
+  }
+  // Personal PnL Card live re-render — if the personal modal is open,
+  // swap its inner HTML in place with fresh data. No-op when closed
+  // or showing the group card.
   if(typeof _eodMaybeRefreshOpenPersonal === 'function'){
     try { _eodMaybeRefreshOpenPersonal(); } catch(e){ console.warn('[eod personal refresh]', e && e.message); }
+  }
+  // Group PnL Card live re-render — async (re-fetches from DB), but
+  // fires alongside the others so an open group card stays current
+  // when the user posts to that community. Bails cleanly if the
+  // open card isn't a group card.
+  if(typeof _eodMaybeRefreshOpenGroup === 'function'){
+    _eodMaybeRefreshOpenGroup().catch(function(e){ console.warn('[eod group refresh]', e && e.message); });
   }
 }
 
@@ -11969,14 +11952,10 @@ function openCommFeed(gid){
     editBtn.title = (currentUser&&g.owner_id===currentUser.id) ? 'Edit group' : 'Group info';
   }
   renderFeedPosts(g);renderFeedLeaderboard(g);renderFeedMembers(g);renderTOTD(g);renderHeroPnl(g,_commPeriod);
-  // Per-community group EOD auto-pop — first visit per day per community
-  // after 4:30pm ET. Internal gates handle opt-out + already-shown flag.
-  // The persistent surface for this community lives as a badge inside
-  // the left sidebar's .gitem row (see renderCommSidebar), not as a
-  // card in the right rail.
-  if(typeof eodMaybeShowGroupForCommunity === 'function'){
-    eodMaybeShowGroupForCommunity(g);
-  }
+  // Group PnL Card auto-pop was REMOVED — the card is now a LIVE/today
+  // view, not a once-daily recap, so a forced pop-up on community
+  // visit is the wrong UX. Entry point is the community's badge in
+  // the left sidebar (see renderEodCommBadges / _eodPopulateBadge).
   // Legacy renderers (renderSentInvites/renderMemberCalendars/renderCommunityWidgets/
   // renderDailyChallenge/renderGroupActivity) target IDs not present in the v3
   // chrome layout, so they no-op via their getElementById guards.
@@ -12632,54 +12611,21 @@ function renderFeedPosts(g){
 }
 
 /* ===================================================================
-   EOD RECAP MODAL — personal + group flavors
+   PnL CARD MODAL — personal + group flavors, both LIVE/today
    ───────────────────────────────────────────────────────────────────
-   maybeShowEodRecap() is called from onSignedIn after trades + comms
-   load. Gating logic, in order:
-     1. localStorage 'rw_eod_last_shown' must NOT equal today's ET date
-     2. Current ET time must be ≥ 16:30 (4:30pm market close + 30m buffer)
-     3. User must have at least one trade dated today (ET)
-     4. At least one of (eod_personal_enabled, eod_group_enabled) must be on
-   On dismiss we write today's ET date to localStorage so the modal
-   stays gone until the next trading day, regardless of refreshes.
+   Both cards are live intraday views that share the SAME date source
+   the dashboard hero uses (browser-local YYYY-MM-DD via _localDate).
+   Personal pulls from in-memory `trades`; group pulls from Supabase
+   community_posts. There is no auto-pop, no time-of-day gate, no
+   "already shown today" tracking, no opt-out toggle — those were
+   all tied to the old EOD/yesterday recap model and have been ripped
+   out. Entry points:
+     - Dashboard PnL bar         → eodInflatePersonalFromWidget()
+     - Community sidebar badge   → eodInflateGroupFromWidget(community)
+   Both live-refresh: renderAll() → renderEodDashBar +
+   renderEodCommBadges + _eodMaybeRefreshOpenPersonal +
+   _eodMaybeRefreshOpenGroup. Trade logged → all four surfaces update.
    =================================================================== */
-
-/* Returns 'YYYY-MM-DD' in America/New_York for `d` (default: now).
-   This matches how the trade.date field reads when logged from the US
-   East coast — necessary because the rest of the app uses _localDate
-   (browser TZ), but EOD wants a stable market-day key. */
-function _eodEtDate(d){
-  d = d || new Date();
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/New_York',
-    year: 'numeric', month: '2-digit', day: '2-digit'
-  }).format(d);
-}
-
-/* Yesterday in ET — the EOD recap surface represents the LAST FULLY
-   COMPLETED ET calendar day. Stepping 24h back from now and re-coercing
-   to ET works across DST since Intl handles the zone math. */
-function _eodYesterdayEt(){
-  return _eodEtDate(new Date(Date.now() - 24*3600*1000));
-}
-
-/* Current minute-of-day in America/New_York (0..1439). Kept around for
-   the ticker's date-rollover detection — no longer used for any
-   auto-pop / widget gating. */
-function _eodEtMinutes(){
-  var parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York',
-    hour: '2-digit', minute: '2-digit', hour12: false
-  }).formatToParts(new Date());
-  var h = 0, m = 0;
-  parts.forEach(function(p){
-    if(p.type==='hour')   h = parseInt(p.value, 10);
-    if(p.type==='minute') m = parseInt(p.value, 10);
-  });
-  // Intl can return "24" for midnight in some locales — normalize.
-  if(h === 24) h = 0;
-  return h*60 + m;
-}
 
 /* Pretty date label: "Wed · May 13" — feeds the right side of the
    card header. Localized to the browser's display preferences, NOT
@@ -12765,11 +12711,14 @@ function _eodPersonalData(etToday){
 
 /* Group card data — for one community. Fetches today's posts grouped
    by user_id, sums P&L per user, returns top 3 traders + aggregate
-   stats. Returns null if the fetch fails (we just skip that card). */
-async function _eodGroupData(community, etToday){
+   stats. Returns null if the fetch fails (we just skip that card).
+   Matches the personal card's "today, live" framing — filters by
+   browser-local date so the badge + modal agree with the dashboard
+   hero / personal card date logic. */
+async function _eodGroupData(community, todayLocal){
   if(!_sb || !community || !community.id) return null;
-  // Fetch a generous window (today ± 1 day in UTC) and ET-filter client-side
-  // so DST / off-hours posts still land on the right ET date.
+  // Fetch a generous window (today ± 1 day in UTC) and local-filter
+  // client-side so off-hours / cross-TZ posts still bucket correctly.
   var nowMs = Date.now();
   var startISO = new Date(nowMs - 36*3600*1000).toISOString();
   var endISO   = new Date(nowMs +  4*3600*1000).toISOString();
@@ -12786,7 +12735,10 @@ async function _eodGroupData(community, etToday){
       .lte('created_at', endISO);
     if(r.error) throw r.error;
     var posts = (r.data || []).filter(function(p){
-      return _eodEtDate(new Date(p.created_at)) === etToday;
+      // Browser-local date match — same rule the personal card +
+      // dashboard hero use. Each viewer sees "today" defined by
+      // their own clock; posts get bucketed accordingly.
+      return _localDate(new Date(p.created_at)) === todayLocal;
     });
 
     // Profile JOIN — one round-trip for every unique poster. Tolerant
@@ -12844,7 +12796,10 @@ async function _eodGroupData(community, etToday){
     var avgPerTrade = totalTrades ? (totalPnl / totalTrades) : 0;
     return {
       flavor: 'group',
-      etDate: etToday,
+      // etDate is a misnomer kept for renderer compat — the value is
+      // browser-local YYYY-MM-DD (matches personal card). Don't rename
+      // without updating every reader (renderers, dataset attr, etc.).
+      etDate: todayLocal,
       community: community,
       totalPnl: totalPnl,
       tradeCount: totalTrades,
@@ -12994,10 +12949,11 @@ function _eodRenderPersonalCard(data){
   var handle = (currentUser && acct && acct.username) ? acct.username
              : (currentUser && currentUser.email ? currentUser.email.split('@')[0] : 'you');
   var initials = _eodInitialsFor(handle);
-  // Personal card is LIVE/today now — mirrors the dashboard's "Total
-  // P&L · Today" hero. Subtitle reflects that; header sub-line shows
-  // "Live · Today" instead of the old "Last completed day". Group
-  // card keeps its yesterday-EOD framing (see _eodRenderGroupCard).
+  // Personal card is LIVE/today — mirrors the dashboard's "Total
+  // P&L · Today" hero. Subtitle reads "Trading journal · Today";
+  // header sub-line is "Live · Today". The group card uses the
+  // SAME framing for its own scope (Trading community · Today /
+  // Live · Today) — both flavors are live intraday views now.
   var subtitle = 'Trading journal · Today';
   var trendSvg = data.totalPnl >= 0 ? _EOD_SVG.trendUp : _EOD_SVG.trendDown;
 
@@ -13125,17 +13081,23 @@ function _eodRenderGroupCard(data){
   // full rationale.
   var heroTrendBg = data.totalPnl >= 0 ? '#5fb389' : '#c95f5f';
   var heroPnlCol  = data.totalPnl > 0 ? '#5fb389' : data.totalPnl < 0 ? '#c95f5f' : '#a1a1a1';
-  return '<div class="eod-card eod-card-group" data-eod-date="'+_eodSafe(data.etDate)+'">'
+  // Group card is LIVE/today now — mirrors the personal card's
+  // "today, live" framing. The community badge in the left sidebar
+  // shows the same number, fetched the same way (_eodGroupData with
+  // today's local date). data-community-id lets _eodMaybeRefreshOpenGroup
+  // identify which community the open card belongs to without
+  // storing _eodModalSource-style state on the modal.
+  return '<div class="eod-card eod-card-group" data-eod-date="'+_eodSafe(data.etDate)+'" data-community-id="'+_eodSafe(data.community.id||'')+'">'
     // (1) Header — gold pulse instead of avatar
     + '<div class="ev2-head">'
     +   '<span class="ev2-pulse"></span>'
     +   '<div class="ev2-head-text">'
     +     '<span class="ev2-handle" style="white-space:nowrap">'+_eodSafe(data.community.name||'Community')+'</span>'
-    +     '<span class="ev2-subtitle" style="white-space:nowrap">Community &middot; Day recap</span>'
+    +     '<span class="ev2-subtitle" style="white-space:nowrap">Trading community &middot; Today</span>'
     +   '</div>'
     +   '<div class="ev2-head-meta">'
     +     '<span class="ev2-head-date" style="white-space:nowrap">'+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
-    +     '<span class="ev2-head-time" style="white-space:nowrap">Last completed day</span>'
+    +     '<span class="ev2-head-time" style="white-space:nowrap">Live &middot; Today</span>'
     +   '</div>'
     + '</div>'
     // (2) Body
@@ -13205,16 +13167,9 @@ function eodDismiss(){
   // card's data, so the next modal open should re-bake fresh.
   _eodPrebakedFile = null;
   _eodPrebakedFor  = null;
-  // Only write the dismiss flag when the modal was auto-popped. Widget
-  // inflates are "replay" — they shouldn't suppress the natural auto-pop
-  // that may still be due. The flag write is the personal-scope key only;
-  // per-community group flags are written in eodMaybeShowGroupForCommunity
-  // before the modal opens, so a widget inflate of a group card also has
-  // no effect on group-scope gating.
-  if(_eodModalSource === 'auto'){
-    try { localStorage.setItem('rw_eod_last_shown', _eodEtDate()); } catch(e){}
-  }
-  _eodModalSource = null;
+  // _eodModalSource and the dismiss-flag localStorage write were
+  // removed alongside auto-pop. Every open is now a widget click;
+  // there's no flag to track and nothing to gate.
 }
 
 function eodOpenDayReview(etDate){
@@ -13448,7 +13403,7 @@ async function _eodCaptureCard(card){
     ]);
     if(!blob) throw new Error('domToBlob returned null');
     console.log('[eod capture] step 4 — blob:', blob.size, 'bytes, type:', blob.type);
-    var filename = 'rewind-pnl-' + (card.dataset.eodDate || _eodEtDate()) + '.png';
+    var filename = 'rewind-pnl-' + (card.dataset.eodDate || _localDate(new Date())) + '.png';
     // File (not Blob) — required for navigator.share + nicer for the
     // download anchor (correct filename in the OS save dialog).
     var file = new File([blob], filename, { type: 'image/png' });
@@ -13904,7 +13859,7 @@ async function eodShareCard(btn){
     await navigator.share({
       files: [file],
       title: 'My PnL Card',
-      text:  'My trading recap for ' + (card.dataset.eodDate || _eodEtDate())
+      text:  'My trading recap for ' + (card.dataset.eodDate || _localDate(new Date()))
     });
     console.log('[eod share] share returned successfully');
     // Success — no toast; the OS share-sheet is its own confirmation.
@@ -13999,11 +13954,10 @@ window.renderEodDashBar = renderEodDashBar;
 
 /* ─── EOD COMMUNITY BADGES (left sidebar) ───────────────────────
    Each row in the left "Communities" list (#comm-sidebar-list .gitem)
-   carries a small EOD badge on its right edge. The badge summarizes
-   the community's most recent EOD P&L (today if past 4:30pm ET, else
-   yesterday). Click → inflates the full group EOD modal for THAT
-   community, stopPropagation so the parent .gitem nav handler doesn't
-   also fire.
+   carries a small badge on its right edge showing the community's
+   LIVE/today collective P&L. Click → inflates the full group PnL
+   Card modal (which shows the same number, sourced identically).
+   stopPropagation so the parent .gitem nav handler doesn't also fire.
 
    Async data flow:
      1. renderCommSidebar() paints the row markup synchronously with
@@ -14011,15 +13965,15 @@ window.renderEodDashBar = renderEodDashBar;
      2. renderEodCommBadges() runs after, fires _eodGroupData fetches
         for every community in parallel, then upgrades each badge
         in-place once its data resolves.
-     3. The 60s ticker calls renderEodCommBadges() so badges stay
-        fresh as the day evolves (4:30pm flip, fresh shares).
-   ───────────────────────────────────────────────────────────── */
+     3. The 60s ticker + renderAll() both call renderEodCommBadges()
+        so badges stay live as new community trades arrive AND as
+        the current user logs their own trades.
 
-// Cache so repeated paints don't refetch within the same minute.
-// Keyed by `${gid}|${etDate}` — invalidated implicitly when the ET
-// date rolls or the ticker calls renderEodCommBadges (which always
-// refetches anyway).
-var _eodBadgeCache = {};
+   No cache layer — each render fetches fresh from Supabase. Five
+   parallel queries per render is cheap; the cache used to bucket
+   "yesterday's EOD" data which never changed mid-day, but now the
+   data IS the changing thing, so caching it defeats the purpose.
+   ───────────────────────────────────────────────────────────── */
 
 // ── Bulletproof inline style builders ──
 // We had a prod incident where the badge rendered as a vertical
@@ -14109,20 +14063,13 @@ function _eodBadgeSkeletonHtml(gid){
     + '</div>';
 }
 
-// Async — populates one badge with real data. Always queries yesterday
-// (last completed ET day) — no time-of-day branching anymore.
+// Async — populates one badge with TODAY's live collective P&L.
+// Same date source the personal card uses (browser-local), so the
+// badge and the full PnL Card modal always agree.
 async function _eodPopulateBadge(community){
   var gid = community.id;
-  var pickedDate = _eodYesterdayEt();
-
-  // Check cache first. _eodBadgeCache is keyed by gid|etDate so once a
-  // new ET day rolls the next render fetches fresh.
-  var cacheKey = gid + '|' + pickedDate;
-  var data = _eodBadgeCache[cacheKey];
-  if(data === undefined){
-    data = await _eodGroupData(community, pickedDate);
-    _eodBadgeCache[cacheKey] = data || null;
-  }
+  var pickedDate = _localDate(new Date());
+  var data = await _eodGroupData(community, pickedDate);
 
   // Find the row's badge — the gitem may have re-rendered since the
   // fetch fired, so re-query rather than holding the original node.
@@ -14247,30 +14194,23 @@ function eodOpenGroupModalById(gid){
 window.eodOpenGroupModalById = eodOpenGroupModalById;
 
 /* ── Modal scaffold ─────────────────────────────────────────────
-   Single source of truth for opening the EOD modal with a list of
-   already-rendered card HTML strings. Called from three places:
-     1. maybeShowEodRecap()         — app-open auto-pop (personal only)
-     2. eodInflatePersonalFromWidget — dashboard-bar click
-     3. eodInflateGroupFromWidget    — community-card click
-        + per-community auto-pop in openCommFeed
-   "fromWidget" = true skips the localStorage dismiss-flag write so
-   inflating from a widget doesn't suppress the natural auto-pop
-   that may still be due to fire later.
+   Single source of truth for opening the PnL Card modal. Called from:
+     1. eodInflatePersonalFromWidget — dashboard PnL bar click
+     2. eodInflateGroupFromWidget    — community badge click
+                                      (+ from _eodMaybeRefreshOpenGroup
+                                       indirectly via outerHTML swap)
+   No third caller — auto-pop was removed when both cards became
+   live/today views. There's no longer a `source` distinction worth
+   tracking; every open is a deliberate user click.
    ─────────────────────────────────────────────────────────────── */
 
-// Tracks how the currently-open modal was triggered, so eodDismiss
-// knows whether to write the rw_eod_last_shown flag.
-var _eodModalSource = null;  // 'auto' | 'widget' | null
-
-function _eodShowModal(cards, source){
+function _eodShowModal(cards){
   if(!cards || !cards.length) return;
   var modal = document.getElementById('eod-modal');
   var container = document.getElementById('eod-cards');
   var nav = document.getElementById('eod-nav');
   var dots = document.getElementById('eod-dots');
   if(!modal || !container) return;
-
-  _eodModalSource = source || 'auto';
 
   // ≤2 cards → all visible at once. ≥3 cards → sequenced w/ Next.
   _eodSequenced = cards.length > 2;
@@ -14291,48 +14231,11 @@ function _eodShowModal(cards, source){
   }
   modal.style.display = 'flex';
 
-  // ─────────────────────────────────────────────────────────────────
-  // ARROW GAP DIAG — measure the live-DOM gap between the P&L
-  // number's right edge and the trend arrow's left edge. Fires once
-  // per modal-open, AFTER paint, so the rects are settled. If this
-  // value is negative the bug is in our live CSS. If positive but
-  // the captured PNG still shows overlap, the bug is either in
-  // modern-screenshot's clone OR in italic ink-overhang that
-  // exceeds the logical box's right edge (rects measure boxes, not
-  // ink).
-  // ─────────────────────────────────────────────────────────────────
-  setTimeout(function(){
-    var hero = container.querySelector('.ev2-hero');
-    var num  = container.querySelector('.ev2-pnl-num');
-    var arr  = container.querySelector('.ev2-trend');
-    if(!hero || !num || !arr) return;
-    var numR  = num.getBoundingClientRect();
-    var arrR  = arr.getBoundingClientRect();
-    var heroR = hero.getBoundingClientRect();
-    var gap = Math.round(arrR.left - numR.right);
-    var heroCS = getComputedStyle(hero);
-    var arrCS  = getComputedStyle(arr);
-    console.log('═══ [arrow gap diag] live DOM ═══');
-    console.log('  num.right =', Math.round(numR.right),
-                ' arr.left =', Math.round(arrR.left),
-                ' LOGICAL GAP =', gap + 'px',
-                gap < 0 ? '⚠ NEGATIVE (live CSS bug)' : '(positive)');
-    console.log('  hero display=' + heroCS.display +
-                ' align-items=' + heroCS.alignItems +
-                ' gap=' + heroCS.gap +
-                ' position=' + heroCS.position);
-    console.log('  arr  position=' + arrCS.position +
-                ' display=' + arrCS.display +
-                ' margin-left=' + arrCS.marginLeft +
-                ' transform=' + arrCS.transform +
-                ' flex=' + (arrCS.flex || arrCS.flexBasis));
-    console.log('  num.width=' + Math.round(numR.width) +
-                ' arr.width=' + Math.round(arrR.width) +
-                ' hero.width=' + Math.round(heroR.width));
-  }, 50);
-
   // Pre-warm the renderer (modern-screenshot) in the background as
-  // soon as the modal is visible — script tag fetch.
+  // soon as the modal is visible — script tag fetch. The Share/Audit
+  // buttons are currently parked (see TODOs in the renderers), but
+  // pre-warming costs ~nothing and keeps the path warm for when we
+  // re-enable them.
   if(typeof _eodLoadHtml2Canvas === 'function'){
     _eodLoadHtml2Canvas().catch(function(){ /* silent — share will retry */ });
   }
@@ -14351,51 +14254,13 @@ function _eodShowModal(cards, source){
   }, 250);
 }
 
-/* Personal auto-pop is RETIRED. The personal PnL Card is now a LIVE
-   intraday view (mirrors the dashboard hero), not a once-daily recap,
-   so a forced pop-up on app open is the wrong UX — the dashboard bar
-   is the entry point.
-   maybeShowEodRecap() remains as a no-op stub so existing callers
-   (onSignedIn's setTimeout) don't ReferenceError, and so it's a
-   one-line restore if we ever want auto-pop back. Group auto-pop on
-   community visit is unchanged — see eodMaybeShowGroupForCommunity. */
-async function maybeShowEodRecap(){
-  console.log('[eod auto-pop] skipped — personal card is now live/intraday, no auto-pop');
-  return;
-}
+/* Both personal AND group cards are now LIVE/today views — neither
+   auto-pops. Entry points are the dashboard bar (personal) and the
+   community-list badge (group). No localStorage "already-shown"
+   tracking, no opt-out toggle (the toggles were removed from
+   Preferences in the same cleanup), no time-of-day gating. */
 
-/* Per-community group auto-pop — fires from openCommFeed when the
-   user opens a community feed for the first time today (ET). Independent
-   localStorage key per community so visiting one doesn't suppress
-   the other. */
-async function eodMaybeShowGroupForCommunity(community){
-  if(!community || !community.id) return;
-  // Gate 1 — opt-out toggle
-  var groupEnabled = userSettingGet('eod_group_enabled', true) !== false;
-  if(!groupEnabled) return;
-
-  // Gate 2 — already shown today for THIS community
-  var todayET = _eodEtDate();
-  var lsKey = 'rw_eod_group_last_shown_' + community.id;
-  var lastShown = null;
-  try { lastShown = localStorage.getItem(lsKey); } catch(e){}
-  if(lastShown === todayET) return;
-
-  // Always recap yesterday (last completed ET day). No time-of-day gate.
-  var recapDate = _eodYesterdayEt();
-  var data = await _eodGroupData(community, recapDate);
-  if(!data || !data.tradeCount || !data.traders.length) return;
-
-  var html = _eodRenderGroupCard(data);
-  if(!html) return;
-  // Mark shown BEFORE opening so a refresh mid-modal still gates correctly.
-  try { localStorage.setItem(lsKey, todayET); } catch(e){}
-  _eodShowModal([{ flavor:'group', html:html, communityId:community.id }], 'auto');
-}
-
-/* Widget-click inflate paths — bypass localStorage / time gates so
-   users can replay the recap on demand. source='widget' tells
-   eodDismiss to skip writing the dismiss flag. */
+/* Widget-click inflate paths — opened on demand only. */
 /* Live re-render of the personal PnL Card if it's currently open.
    Called from renderAll() whenever trades mutate (log, edit, delete,
    import), so an open card stays in lockstep with the dashboard hero.
@@ -14403,8 +14268,8 @@ async function eodMaybeShowGroupForCommunity(community){
      - modal is hidden (no work to do)
      - modal is sequenced / showing multiple cards (rare; would need
        index tracking to swap just one)
-     - the open card is the group flavor (group keeps its EOD/yesterday
-       framing — must not repaint on every personal trade)
+     - the open card is the group flavor — _eodMaybeRefreshOpenGroup
+       handles that path (async, re-fetches from DB)
    Replaces the personal card's inline HTML in place. _eodPrebakedFile
    is invalidated so the next Share click re-captures fresh data. */
 function _eodMaybeRefreshOpenPersonal(){
@@ -14464,18 +14329,16 @@ async function eodInflatePersonalFromWidget(){
     };
   }
   var html = _eodRenderPersonalCard(data);
-  if(html) _eodShowModal([{ flavor:'personal', html:html }], 'widget');
+  if(html) _eodShowModal([{ flavor:'personal', html:html }]);
 }
 async function eodInflateGroupFromWidget(community){
   if(!community || !community.id) return;
-  var etDate = _eodPickRelevantDate('group', community);
-  if(!etDate) etDate = _eodEtDate();
+  // Group card is LIVE/today — same date source as the badge AND the
+  // personal card (browser-local). Always open SOMETHING on click
+  // even when the community has no activity yet — _eodRenderGroupCard's
+  // empty branch handles the no-traders case.
+  var etDate = _localDate(new Date());
   var data = await _eodGroupData(community, etDate);
-  // No-data inflate — Christian wants the modal to ALWAYS open from
-  // the badge so the user can see the full v2 card layout (even if
-  // it's just the "no traders today" empty state). Construct a
-  // synthetic empty-data shape so _eodRenderGroupCard's empty branch
-  // takes over the rendering.
   if(!data){
     data = {
       flavor:'group', etDate:etDate, community:community,
@@ -14483,25 +14346,44 @@ async function eodInflateGroupFromWidget(community){
     };
   }
   var html = _eodRenderGroupCard(data);
-  if(html) _eodShowModal([{ flavor:'group', html:html, communityId:community.id }], 'widget');
+  if(html) _eodShowModal([{ flavor:'group', html:html, communityId:community.id }]);
 }
 
-/* Pick the recap date by scope.
-     personal → TODAY in BROWSER LOCAL (live/intraday — mirrors dashboard
-                hero which uses local date; the two MUST agree)
-     group    → YESTERDAY in ET (last completed day — group is still EOD,
-                tied to a community-wide market session)
-   Caller's async fetch is the source of truth for empty/has-data on
-   group; personal callers handle empty inline via the renderer. */
-function _eodPickRelevantDate(scope /*, community */){
-  if(scope === 'personal'){
-    return _localDate(new Date());
+/* Live re-render of the open GROUP PnL Card — async because it needs
+   to re-fetch the community's posts from Supabase. Called from
+   renderAll() so when the current user logs a trade that's shared
+   to the open community, the group modal updates. Bails cleanly
+   when the modal is hidden, sequenced, or showing the personal card.
+   The card knows its community via data-community-id (set in
+   _eodRenderGroupCard). */
+async function _eodMaybeRefreshOpenGroup(){
+  var modal = document.getElementById('eod-modal');
+  if(!modal || modal.style.display === 'none' || !modal.offsetParent) return;
+  var container = document.getElementById('eod-cards');
+  if(!container) return;
+  if(container.classList.contains('is-sequenced')) return;
+  var group = container.querySelector('.eod-card-group');
+  if(!group) return;
+  var gid = group.getAttribute('data-community-id');
+  if(!gid || !Array.isArray(_comms)) return;
+  var community = _comms.find(function(c){ return c.id === gid; });
+  if(!community) return;
+  var etDate = _localDate(new Date());
+  var data = await _eodGroupData(community, etDate);
+  if(!data){
+    data = {
+      flavor:'group', etDate:etDate, community:community,
+      totalPnl:0, tradeCount:0, winRate:0, avgPerTrade:0, traders:[]
+    };
   }
-  return _eodYesterdayEt();
+  // If the user dismissed mid-fetch, bail.
+  var stillOpen = document.querySelector('#eod-cards .eod-card-group[data-community-id="'+_cssEsc(gid)+'"]');
+  if(!stillOpen) return;
+  var html = _eodRenderGroupCard(data);
+  if(!html) return;
+  stillOpen.outerHTML = html;
 }
 
-window.maybeShowEodRecap            = maybeShowEodRecap;
-window.eodMaybeShowGroupForCommunity = eodMaybeShowGroupForCommunity;
 window.eodInflatePersonalFromWidget  = eodInflatePersonalFromWidget;
 window.eodInflateGroupFromWidget     = eodInflateGroupFromWidget;
 window.eodDismiss                    = eodDismiss;
@@ -14509,32 +14391,12 @@ window.eodNext                       = eodNext;
 window.eodShareCard                  = eodShareCard;
 window.eodOpenDayReview              = eodOpenDayReview;
 
-/* Settings toggle handler — flips the .on class for immediate feedback,
-   then persists via userSettingSet so the next page-load reads the new
-   value. Defaults are ON for both flavors so this only writes when a
-   user explicitly disables. */
-function eodTogglePref(flavor, el){
-  var key = flavor === 'group' ? 'eod_group_enabled' : 'eod_personal_enabled';
-  el.classList.toggle('on');
-  var enabled = el.classList.contains('on');
-  if(typeof userSettingSet === 'function'){
-    userSettingSet(key, enabled);
-  }
-}
-window.eodTogglePref = eodTogglePref;
-
-/* Sync the toggle visual state to the stored preference. Called from
-   loadUserSettings success path so the panel reflects DB state when
-   the user opens Preferences. Defaults to "on" if the key is missing. */
-function eodSyncToggleUi(){
-  var personal = userSettingGet('eod_personal_enabled', true) !== false;
-  var group    = userSettingGet('eod_group_enabled',    true) !== false;
-  var p = document.getElementById('setting-eod-personal');
-  var g = document.getElementById('setting-eod-group');
-  if(p) p.classList.toggle('on', !!personal);
-  if(g) g.classList.toggle('on', !!group);
-}
-window.eodSyncToggleUi = eodSyncToggleUi;
+/* eodTogglePref + eodSyncToggleUi were here. Both gated the now-
+   defunct auto-pop. With auto-pop removed there's nothing for the
+   toggles to control, and the Preferences UI rows that called them
+   are also gone. The user_settings keys (eod_personal_enabled,
+   eod_group_enabled) are dormant — if they already exist on a
+   profile they're simply not read. No migration needed. */
 
 /* ── FEED INTERACTIONS ──────────────────────────────── */
 var _likeCounts = {};
@@ -24183,7 +24045,7 @@ async function onSignedIn(user) {
   try { await loadTradesFromDB(user); } catch(e) { console.warn('Trades load skipped:', e.message); }
   try { await loadCommunityFromDB(user); } catch(e) { console.warn('Community load skipped:', e.message); }
   try { await loadPendingInvitesFromDB(user); } catch(e) { console.warn('Invites load skipped:', e.message); }
-  try { await loadUserSettings(); refreshCustomRulesFromSettings(); if(typeof eodSyncToggleUi==='function') eodSyncToggleUi(); } catch(e) { console.warn('Settings load skipped:', e.message); }
+  try { await loadUserSettings(); refreshCustomRulesFromSettings(); } catch(e) { console.warn('Settings load skipped:', e.message); }
   try { await loadSentInvitesFromDB(user); } catch(e) { console.warn('Sent invites load skipped:', e.message); }
   init();
   // Cache the user's tier so free-tier gates (Community, Analytics tabs,
@@ -24201,15 +24063,9 @@ async function onSignedIn(user) {
   goTo(_initialPage);
   handleStripeReturn();
 
-  // EOD recap — fires once per trading day after 4:30pm ET on next page
-  // load. All four gates (time / per-day flag / opt-out / 0-trade) live
-  // inside maybeShowEodRecap so this caller stays cheap. A small delay
-  // lets the dashboard paint first so the modal feels like a moment of
-  // closure rather than a blocking interstitial.
-  setTimeout(function(){
-    try { if(typeof maybeShowEodRecap === 'function') maybeShowEodRecap(); }
-    catch(e){ console.warn('[eod] trigger failed:', e && e.message); }
-  }, 600);
+  // PnL Card auto-pop is GONE — both personal and group cards are
+  // live/today views accessed via their widgets (dashboard bar +
+  // community badge). No app-open interstitial.
 }
 
 /* ── Tab switching ── */
