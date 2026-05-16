@@ -2803,12 +2803,17 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-log .mode-tab{
   font-family:var(--n-font-mono)!important;font-size:11px!important;letter-spacing:0.15em!important;
   text-transform:uppercase;padding:9px 18px!important;border-radius:5px;
-  color:var(--n-text-3)!important;cursor:pointer;display:flex!important;align-items:center;gap:8px;
+  color:#9a9a92!important;cursor:pointer;display:flex!important;align-items:center;gap:8px;
   transition:.12s;background:transparent;border:none!important;text-shadow:none!important;
-  flex:0 0 auto!important;text-align:left;white-space:nowrap;
+  flex:0 0 auto!important;text-align:left;white-space:nowrap;position:relative;
 }
-#pg-log .mode-tab.on{background:var(--n-surface-2);color:var(--n-text);text-shadow:none}
-#pg-log .mode-tab:hover:not(.on){color:var(--n-text-2);background:transparent}
+/* Active tab — unmistakable: sage bg tint, sage text, sage underline. */
+#pg-log .mode-tab.on{background:rgba(95,179,137,0.08);color:#5fb389!important;text-shadow:none}
+#pg-log .mode-tab.on::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;
+  height:2px;border-radius:2px;background:#5fb389;
+}
+#pg-log .mode-tab:hover:not(.on){color:var(--n-text-2)!important;background:rgba(255,255,255,0.03)}
 #pg-log .mode-tab svg{width:11px;height:11px;stroke-width:1.5;fill:none;stroke:currentColor;display:inline-block;margin:0}
 
 #pg-log .lg-card{
@@ -17300,7 +17305,7 @@ function openCalEdit(id){
 
   // Side, symbol, market, date, prices, qty
   cemSetType(t.type||'long');
-  document.getElementById('cem-sym').value=t.sym||'';
+  document.getElementById('cem-sym').value=rwStripSym(t.sym||'');
   document.getElementById('cem-mkt').value=t.market||'Futures';
   document.getElementById('cem-date').value=t.date||'';
   document.getElementById('cem-entry').value=t.entry||'';
@@ -17477,7 +17482,7 @@ function saveCalEdit(){
   // some DOM field values (TV link, preview src) to prevent stale flashes
   // on the next open — so we MUST snapshot every field before closing,
   // otherwise post-close reads would see empty strings.
-  var sym = (document.getElementById('cem-sym').value || '').trim().toUpperCase();
+  var sym = rwStripSym((document.getElementById('cem-sym').value || '').trim().toUpperCase());
   var entry = parseFloat(document.getElementById('cem-entry').value);
   var exit  = parseFloat(document.getElementById('cem-exit').value);
   var qty   = parseFloat(document.getElementById('cem-qty').value) || 1;
@@ -17823,31 +17828,25 @@ var RW_REFL_HANDLERS = {
   cem: {grade:'cemSetGrade',  emotion:'cemSetEmotion',  confidence:'cemSetConf'},
   csv: {grade:'ciReflGrade',  emotion:'ciReflEmotion',  confidence:'ciReflConf'}
 };
-function rwReflDisplay(type, value){
-  if(type==='grade') return RW_REFL.grade.letters[value] || '';
-  var o = RW_REFL[type].opts.filter(function(x){return x.v===value;})[0];
-  return o ? o.t : '';
-}
-// Flip the active button + refresh the serif value display for a
-// reflection row. Shared visual half of every surface's refl handler.
+// Flip the active button for a reflection row. Shared visual half of
+// every surface's refl handler. The selected button picks up its own
+// --dot color for border/bg/text via CSS — no echo label needed.
 function rwReflApply(scope, type, value){
   var attr = RW_REFL[type].attr;
   var cont = document.getElementById(scope+'-'+attr+'-chips');
-  if(cont){
-    var btns = cont.querySelectorAll('.lt-refl-btn');
-    for(var i=0;i<btns.length;i++){
-      btns[i].classList.toggle('active', parseInt(btns[i].getAttribute('data-'+attr))===value);
-    }
+  if(!cont) return;
+  var btns = cont.querySelectorAll('.lt-refl-btn');
+  for(var i=0;i<btns.length;i++){
+    btns[i].classList.toggle('active', parseInt(btns[i].getAttribute('data-'+attr))===value);
   }
-  var disp = document.getElementById(scope+'-'+attr+'-display');
-  if(disp) disp.textContent = rwReflDisplay(type, value);
 }
 window.rwReflApply = rwReflApply;
 function buildReflectionRow(type, scope, value){
   var def = RW_REFL[type], attr = def.attr, hn = RW_REFL_HANDLERS[scope][type];
   var btns = def.opts.map(function(o){
+    // --dot lives on the button so the .active rule can tint border/bg/text.
     return '<button type="button" class="lt-refl-btn'+(o.v===value?' active':'')+'" data-'+attr+'="'+o.v+'" '+
-      'onclick="'+hn+'('+o.v+')"><span class="lt-refl-dot" style="--dot:'+o.d+'"></span>'+
+      'style="--dot:'+o.d+'" onclick="'+hn+'('+o.v+')"><span class="lt-refl-dot"></span>'+
       '<span class="lt-refl-lbl">'+o.t+'</span></button>';
   }).join('');
   var hidden = '';
@@ -17857,8 +17856,7 @@ function buildReflectionRow(type, scope, value){
     hidden = '<input type="hidden" id="'+hid+'" value="'+hval+'"/>';
   }
   return '<div class="rw-field lt-refl-row">'+
-    '<div class="rw-field-l rw-field-l-display"><span>'+def.label+'</span>'+
-      '<span class="rw-display-val" id="'+scope+'-'+attr+'-display">'+rwReflDisplay(type,value)+'</span></div>'+
+    '<div class="rw-field-l">'+def.label+'</div>'+
     '<div class="lt-refl-btns" id="'+scope+'-'+attr+'-chips">'+btns+'</div>'+
     hidden+
   '</div>';
@@ -17904,17 +17902,26 @@ function buildAccountTypeChips(scope, selected){
   return '<div class="rw-chip-row" id="'+RW_ACCT_CONTID[scope]+'">'+chips+'</div>';
 }
 
-// Symbol typeahead option rows — cool-blue code + name.
+// Strip TradingView continuous-contract notation — trailing digits + '!'
+// (NQ1! → NQ, ES2! → ES). Safe no-op on already-bare symbols.
+function rwStripSym(s){
+  return String(s == null ? '' : s).replace(/[0-9]+!$/, '');
+}
+window.rwStripSym = rwStripSym;
+
+// Symbol typeahead option rows — cool-blue code + name. The 1!/2!
+// suffix is stripped from BOTH the displayed code and the saved value.
 function buildSymbolOptionRows(filtered, scope){
   var cls   = (scope==='cem') ? 'cem-sym-opt'  : 'sym-opt';
   var pick  = (scope==='cem') ? 'cemSelectSym' : 'selectSymbol';
   var hov   = (scope==='cem') ? '_cemSymIdx'   : 'symDropIdx';
   var hovFn = (scope==='cem') ? 'cemHighlightSym' : 'highlightSym';
   return filtered.slice(0,12).map(function(s,i){
-    return '<div class="'+cls+'" data-i="'+i+'" data-sym="'+s.sym+'" '+
-      'onmousedown="'+pick+'(\''+s.sym+'\')" onmouseover="'+hov+'='+i+';'+hovFn+'()" '+
+    var disp = rwStripSym(s.sym);
+    return '<div class="'+cls+'" data-i="'+i+'" data-sym="'+disp+'" '+
+      'onmousedown="'+pick+'(\''+disp+'\')" onmouseover="'+hov+'='+i+';'+hovFn+'()" '+
       'style="padding:10px 13px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid rgba(255,255,255,0.06)">'+
-      '<span style="font-family:var(--n-font-mono);font-size:12px;letter-spacing:0.04em;color:#6ea8ff">'+s.sym+'</span>'+
+      '<span style="font-family:var(--n-font-mono);font-size:12px;letter-spacing:0.04em;color:#6ea8ff">'+disp+'</span>'+
       '<span style="font-family:var(--n-font-sans);font-size:12px;color:#dbdad5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+s.name+'</span></div>';
   }).join('');
 }
@@ -19676,7 +19683,7 @@ async function backfillTradesToCommunity(communityId){
 window.backfillTradesToCommunity = backfillTradesToCommunity;
 
 function fullLog(){
-  const sym=document.getElementById('lg-sym').value.trim().toUpperCase();
+  const sym=rwStripSym(document.getElementById('lg-sym').value.trim().toUpperCase());
   const entry=parseFloat(document.getElementById('lg-entry').value),exit=parseFloat(document.getElementById('lg-exit').value);
   const qty=parseFloat(document.getElementById('lg-qty').value)||1,mkt=document.getElementById('lg-mkt').value;
   const accounts=parseFloat(document.getElementById('lg-accounts')?.value)||1;
@@ -19785,7 +19792,7 @@ function fullLog(){
 
 /* ── LOG CONFIRM / RESET ── */
 function confirmLog(){
-  const sym=document.getElementById('lg-sym').value.trim().toUpperCase();
+  const sym=rwStripSym(document.getElementById('lg-sym').value.trim().toUpperCase());
   const entry=parseFloat(document.getElementById('lg-entry').value);
   const exit=parseFloat(document.getElementById('lg-exit').value);
   const qty=parseFloat(document.getElementById('lg-qty').value)||1;
@@ -20854,7 +20861,7 @@ function importCsvTrades(){
 
     var newTrade = {
       id: tradeId,
-      sym: t.sym,
+      sym: rwStripSym(t.sym),
       type: t.direction || t.type || 'long',
       entry: t.entry, exit: t.exit, stop: eStop, qty: t.qty,
       accounts: accounts > 1 ? accounts : undefined,
@@ -21321,7 +21328,7 @@ function ciRenderEnrichZone(idx){
       '<div class="ci-bh-row">' +
         '<span class="ci-bh-date">' + ciEsc(ciBrokerDateTime(t)) + '</span>' +
         '<span class="ci-bh-symdir ' + sideCls + '">' +
-          '<span class="ci-bh-sym">' + ciEsc(t.sym || '—') + '</span>' +
+          '<span class="ci-bh-sym">' + ciEsc(rwStripSym(t.sym) || '—') + '</span>' +
           '<span class="ci-bh-dir">' + sideTxt + '</span>' +
         '</span>' +
       '</div>' +
@@ -27186,14 +27193,17 @@ function cookieDecline(){
 #rw-grade-chips .lt-refl-lbl,
 #cem-grade-chips .lt-refl-lbl,
 #csv-grade-chips .lt-refl-lbl{font-size:10px;letter-spacing:0.03em}
+/* Selected button takes its own dot color — tinted bg, matching border,
+   colored label. Each button carries its own --dot (set by the builder),
+   so intermediate olive shades interpolate automatically. */
 :is(#pg-log,.cem-card) .lt-refl-btn.active{
-  background:rgba(255,255,255,0.04);
-  border-color:var(--n-border-2);
+  background:color-mix(in srgb, var(--dot) 10%, transparent);
+  border-color:color-mix(in srgb, var(--dot) 40%, transparent);
 }
 :is(#pg-log,.cem-card) .lt-refl-btn.active .lt-refl-dot{
-  opacity:1;box-shadow:0 0 7px var(--dot);
+  opacity:1;box-shadow:0 0 8px var(--dot);
 }
-:is(#pg-log,.cem-card) .lt-refl-btn.active .lt-refl-lbl{color:var(--n-text)}
+:is(#pg-log,.cem-card) .lt-refl-btn.active .lt-refl-lbl{color:var(--dot)}
 @media (max-width:720px){
   :is(#pg-log,.cem-card) .lt-refl-lbl{font-size:7.5px}
 }
