@@ -8844,7 +8844,6 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
       <div class="h-title">Log a Trade</div>
       <div class="h-sub">Manual entry &middot; CSV import</div>
     </div>
-    <button class="quick-fill-btn" id="quick-fill-btn" onclick="quickFillLastTrade()" style="display:none">&#9889; Last Trade</button>
   </div>
 
   <!-- MODE TABS -->
@@ -9012,15 +9011,13 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
           <div id="lt-acct-note" class="lt-acct-note" style="display:none"></div>
         </div>
 
-        <!-- ============ 03 ANALYSIS — why ============ -->
+        <!-- ============ EVIDENCE — chart proof ============ -->
         <div class="rw-section">
           <div class="rw-section-h">
-            <span class="rw-section-name">Analysis</span>
+            <span class="rw-section-name">Evidence</span>
           </div>
 
-          <div class="rw-grid rw-grid-analysis">
-
-            <!-- Left: chart evidence (screenshot + TV link) -->
+            <!-- Chart evidence (screenshot + TV link) — full-width section -->
             <div class="rw-field">
               <div class="rw-field-l">Chart evidence</div>
 
@@ -9054,8 +9051,15 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
               </div>
               <div class="rw-helper">Paste your &ldquo;Copy link&rdquo; from TradingView&rsquo;s snapshot menu.</div>
             </div>
+        </div>
 
-            <!-- Right: confluences (tagged analysis) -->
+        <!-- ============ ANALYSIS — your read ============ -->
+        <div class="rw-section">
+          <div class="rw-section-h">
+            <span class="rw-section-name">Analysis</span>
+          </div>
+
+            <!-- Confluences (tagged analysis) -->
             <div class="rw-field" id="lt-sec-confluences">
               <div class="rw-field-l rw-field-l-flex">
                 <span>Tagged analysis</span>
@@ -9107,10 +9111,15 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
               </div>
               <div class="rw-helper">Tag your read on the chart &mdash; filterable in History &amp; Analytics.</div>
             </div>
-          </div>
+
+            <!-- Notes (prose) — moved here from Reflection -->
+            <div class="rw-field">
+              <div class="rw-field-l">Notes</div>
+              <textarea id="lg-notes" class="rw-input rw-textarea" placeholder="Setup, what worked, what didn&rsquo;t, lessons&hellip;" oninput="updateLogPreview()"></textarea>
+            </div>
         </div>
 
-        <!-- ============ 04 REFLECTION — how it felt (Free-tier veiled) ============ -->
+        <!-- ============ REFLECTION — grading (Free-tier veiled) ============ -->
         <div class="rw-section" id="lt-sec-reflection">
           <div class="rw-section-h">
             <span class="rw-section-name">Reflection</span>
@@ -9164,12 +9173,6 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
               <button type="button" class="rw-chip"        data-tier="sage"  data-conf="5" onclick="setConfidenceDots(5)">5&middot;Max</button>
             </div>
             <input type="hidden" id="lg-conf" value="3"/>
-          </div>
-
-          <!-- Notes (prose) -->
-          <div class="rw-field">
-            <div class="rw-field-l">Notes</div>
-            <textarea id="lg-notes" class="rw-input rw-textarea" placeholder="Setup, what worked, what didn&rsquo;t, lessons&hellip;" oninput="updateLogPreview()"></textarea>
           </div>
 
           <!-- LOCK VEIL (free tier only — toggled by applyLogTradeTier) -->
