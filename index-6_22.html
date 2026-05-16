@@ -3355,10 +3355,10 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
 /* SESSION PILLS — one button per trading session, each with its
    own color when active. Maps to the existing 6 sessions. */
-#pg-log .lt-session-pills{
+:is(#pg-log,.cem-card) .lt-session-pills{
   display:flex;flex-wrap:wrap;gap:6px;
 }
-#pg-log .lt-session-pill{
+:is(#pg-log,.cem-card) .lt-session-pill{
   flex:1 1 auto;min-width:0;
   display:flex;flex-direction:column;align-items:center;gap:3px;
   padding:8px 8px;
@@ -3368,38 +3368,38 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   cursor:pointer;transition:all .15s ease;user-select:none;
   text-align:center;
 }
-#pg-log .lt-sess-name{
+:is(#pg-log,.cem-card) .lt-sess-name{
   font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.12em;
   text-transform:uppercase;color:var(--n-text-2);white-space:nowrap;
 }
-#pg-log .lt-sess-time{
+:is(#pg-log,.cem-card) .lt-sess-time{
   font-family:var(--n-font-mono);font-size:8px;letter-spacing:0.04em;
   color:var(--n-text-3);white-space:nowrap;
 }
-#pg-log .lt-session-pill:hover{
+:is(#pg-log,.cem-card) .lt-session-pill:hover{
   border-color:var(--n-border-2);background:var(--n-surface-3);
 }
 /* Active state — killzone color (border + bg tint + name text) */
-#pg-log .lt-session-pill.on.sess-asia{
+:is(#pg-log,.cem-card) .lt-session-pill.on.sess-asia{
   border-color:#4a90e2;background:rgba(74,144,226,0.12);
 }
-#pg-log .lt-session-pill.on.sess-asia .lt-sess-name{color:#7ab1ef}
-#pg-log .lt-session-pill.on.sess-london{
+:is(#pg-log,.cem-card) .lt-session-pill.on.sess-asia .lt-sess-name{color:#7ab1ef}
+:is(#pg-log,.cem-card) .lt-session-pill.on.sess-london{
   border-color:#dc4646;background:rgba(220,70,70,0.12);
 }
-#pg-log .lt-session-pill.on.sess-london .lt-sess-name{color:#e89292}
-#pg-log .lt-session-pill.on.sess-ny-am{
+:is(#pg-log,.cem-card) .lt-session-pill.on.sess-london .lt-sess-name{color:#e89292}
+:is(#pg-log,.cem-card) .lt-session-pill.on.sess-ny-am{
   border-color:#2bb6a4;background:rgba(43,182,164,0.12);
 }
-#pg-log .lt-session-pill.on.sess-ny-am .lt-sess-name{color:#5fd4c1}
-#pg-log .lt-session-pill.on.sess-ny-lunch{
+:is(#pg-log,.cem-card) .lt-session-pill.on.sess-ny-am .lt-sess-name{color:#5fd4c1}
+:is(#pg-log,.cem-card) .lt-session-pill.on.sess-ny-lunch{
   border-color:#f8ce46;background:rgba(248,206,70,0.12);
 }
-#pg-log .lt-session-pill.on.sess-ny-lunch .lt-sess-name{color:#f5d77c}
-#pg-log .lt-session-pill.on.sess-ny-pm{
+:is(#pg-log,.cem-card) .lt-session-pill.on.sess-ny-lunch .lt-sess-name{color:#f5d77c}
+:is(#pg-log,.cem-card) .lt-session-pill.on.sess-ny-pm{
   border-color:#9664dc;background:rgba(150,100,220,0.12);
 }
-#pg-log .lt-session-pill.on.sess-ny-pm .lt-sess-name{color:#b59aee}
+:is(#pg-log,.cem-card) .lt-session-pill.on.sess-ny-pm .lt-sess-name{color:#b59aee}
 
 /* P&L INPUT COLORING — green when positive, red when negative. Applies
    to both the manual #lg-pnl input and the per-row .csv-pnl-input in
@@ -9398,14 +9398,9 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
     <div class="cem-body">
 
-      <!-- ============ 01 SETUP — what + where ============ -->
+      <!-- ============ SETUP ============ -->
       <div class="rw-section cem-section">
-        <div class="rw-section-h">
-          <span class="rw-mono-num">01</span>
-          <span class="rw-section-name">Setup</span>
-          <span class="rw-mono-sub">&mdash; what + where</span>
-          <span class="rw-hr-trail"></span>
-        </div>
+        <div data-rwbuild="header:Setup"></div>
 
         <!-- Row 1 — Side + Account Type -->
         <div class="rw-grid rw-grid-side-acct">
@@ -9422,12 +9417,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
           </div>
           <div class="rw-field">
             <div class="rw-field-l">Account Type <span class="rw-mod-opt">optional</span></div>
-            <div class="rw-chip-row" id="cem-acct-chips">
-              <button type="button" class="rw-chip rw-chip-acct" data-tier="muted" data-acct="paper"  onclick="cemSetAccountType('paper')"><span class="rw-acct-dot" style="background:rgba(255,255,255,0.35)"></span>Paper</button>
-              <button type="button" class="rw-chip rw-chip-acct" data-tier="gold"  data-acct="eval"   onclick="cemSetAccountType('eval')"><span class="rw-acct-dot" style="background:var(--n-gold,#f5d77c)"></span>Eval</button>
-              <button type="button" class="rw-chip rw-chip-acct" data-tier="sage"  data-acct="funded" onclick="cemSetAccountType('funded')"><span class="rw-acct-dot" style="background:var(--n-profit)"></span>Funded</button>
-              <button type="button" class="rw-chip rw-chip-acct" data-tier="cool"  data-acct="live"   onclick="cemSetAccountType('live')"><span class="rw-acct-dot" style="background:var(--n-accent-cool,#6ea8ff)"></span>Live</button>
-            </div>
+            <div data-rwbuild="acct:cem"></div>
             <input type="hidden" id="cem-account-type" value=""/>
           </div>
         </div>
@@ -9462,28 +9452,18 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
           </div>
           <div class="rw-field">
             <div class="rw-field-l">Session</div>
-            <div class="rw-chip-row" id="cem-session-chips">
-              <button type="button" class="rw-chip cem-sess-chip" data-tier="sage" data-session="Asia"     onclick="cemSetSession('Asia')">Asia</button>
-              <button type="button" class="rw-chip cem-sess-chip" data-tier="sage" data-session="London"   onclick="cemSetSession('London')">London</button>
-              <button type="button" class="rw-chip cem-sess-chip" data-tier="sage" data-session="NY AM"    onclick="cemSetSession('NY AM')">NY AM</button>
-              <button type="button" class="rw-chip cem-sess-chip" data-tier="sage" data-session="NY Lunch" onclick="cemSetSession('NY Lunch')">Lunch</button>
-              <button type="button" class="rw-chip cem-sess-chip" data-tier="sage" data-session="NY PM"    onclick="cemSetSession('NY PM')">NY PM</button>
-            </div>
+            <div data-rwbuild="session:cem"></div>
             <input type="hidden" id="cem-session" value=""/>
           </div>
         </div>
       </div>
 
-      <!-- ============ 02 EXECUTION — numbers ============ -->
+      <!-- ============ EXECUTION ============ -->
       <div class="rw-section cem-section">
-        <div class="rw-section-h">
-          <span class="rw-mono-num">02</span>
-          <span class="rw-section-name">Execution</span>
-          <span class="rw-mono-sub">&mdash; numbers</span>
-          <span class="rw-hr-trail"></span>
-        </div>
+        <div data-rwbuild="header:Execution"></div>
 
-        <div class="rw-grid rw-grid-triple">
+        <!-- Entry / Exit -->
+        <div class="rw-grid rw-grid-exec-pair">
           <div class="rw-field">
             <div class="rw-field-l">Entry</div>
             <input class="rw-input rw-numeric" id="cem-entry" type="number" step="any" placeholder="0.00" oninput="cemCalcLive()"/>
@@ -9492,21 +9472,15 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             <div class="rw-field-l">Exit</div>
             <input class="rw-input rw-numeric" id="cem-exit" type="number" step="any" placeholder="0.00" oninput="cemCalcLive()"/>
           </div>
-          <div class="rw-field">
-            <div class="rw-field-l">Stop <span class="rw-mod-opt">optional</span></div>
-            <input class="rw-input rw-numeric" id="cem-stop" type="number" step="any" placeholder="points" oninput="cemCalcLive()"/>
-          </div>
         </div>
 
-        <div class="rw-grid rw-grid-exec-bottom">
+        <!-- Contracts / Points (auto) / P&L (auto) -->
+        <div class="rw-grid rw-grid-triple">
           <div class="rw-field">
             <div class="rw-field-l">Contracts</div>
             <input class="rw-input rw-numeric" id="cem-qty" type="number" step="any" min="1" value="1" oninput="cemCalcLive()"/>
           </div>
-          <div class="rw-field">
-            <div class="rw-field-l"># of Accounts</div>
-            <input class="rw-input rw-numeric" id="cem-accounts" type="number" min="1" value="1" oninput="cemCalcLive()"/>
-          </div>
+          <div data-rwbuild="points:cem"></div>
           <div class="rw-field">
             <div class="rw-field-l rw-field-l-flex">
               <span>P&amp;L $</span>
@@ -9517,6 +9491,9 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
           </div>
         </div>
 
+        <!-- Advanced (collapsible) — Stop Loss + # of Accounts. -->
+        <div data-rwbuild="advanced:cem"></div>
+
         <div class="rw-r-hint" id="cem-r-helper">
           <span><i>+ Add stop to calculate R multiple</i></span>
         </div>
@@ -9525,24 +9502,11 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         <input type="hidden" id="cem-rr" value=""/>
       </div>
 
-      <!-- ============ 03 ANALYSIS — why ============
-           Chunk 4 / Issue 1 — Section is now a 2-col grid like Log Trade:
-             LEFT  Chart evidence (Screenshot + TV link + preview)
-             RIGHT Confluences picker (cem-cf-* prefixed instance)
-           Both columns share the same .rw-field styling. Picker functions
-           are now multi-instance — Edit Modal calls pass cemConfluencesState
-           as the final arg to cf* handlers. -->
+      <!-- ============ EVIDENCE ============ -->
       <div class="rw-section cem-section">
-        <div class="rw-section-h">
-          <span class="rw-mono-num">03</span>
-          <span class="rw-section-name">Analysis</span>
-          <span class="rw-mono-sub">&mdash; why</span>
-          <span class="rw-hr-trail"></span>
-        </div>
+        <div data-rwbuild="header:Evidence"></div>
 
-        <div class="rw-grid rw-grid-analysis">
-
-          <!-- LEFT — Chart evidence (screenshot + TV link + preview) -->
+          <!-- Chart evidence (screenshot + TV link + preview) -->
           <div class="rw-field">
             <div class="rw-field-l">Chart evidence</div>
 
@@ -9572,10 +9536,14 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             </div>
             <div class="rw-helper">Paste your &ldquo;Copy link&rdquo; from TradingView&rsquo;s snapshot menu.</div>
           </div>
+      </div>
 
-          <!-- RIGHT — Confluences picker (cem-cf-* second instance).
-               Every cf* handler in inline onclick passes cemConfluencesState
-               as the final arg so events route to the modal's picker state. -->
+      <!-- ============ ANALYSIS ============ -->
+      <div class="rw-section cem-section">
+        <div data-rwbuild="header:Analysis"></div>
+
+          <!-- Confluences picker (cem-cf-* second instance). Every cf* handler
+               in inline onclick passes cemConfluencesState as the final arg. -->
           <div class="rw-field" id="cem-cf-section">
             <div class="rw-field-l rw-field-l-flex">
               <span>Tagged analysis</span>
@@ -9626,73 +9594,20 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             </div>
             <div class="rw-helper">Tag your read on the chart &mdash; filterable in History &amp; Analytics.</div>
           </div>
-        </div>
+
+          <!-- Notes -->
+          <div class="rw-field">
+            <div class="rw-field-l">Notes</div>
+            <textarea id="cem-notes" class="rw-input rw-textarea" placeholder="Setup, what worked, what didn&rsquo;t, lessons&hellip;"></textarea>
+          </div>
       </div>
 
-      <!-- ============ 04 REFLECTION — how it felt ============ -->
+      <!-- ============ REFLECTION ============ -->
       <div class="rw-section cem-section">
-        <div class="rw-section-h">
-          <span class="rw-mono-num">04</span>
-          <span class="rw-section-name">Reflection</span>
-          <span class="rw-mono-sub">&mdash; how it felt</span>
-          <span class="rw-hr-trail"></span>
-        </div>
-
-        <!-- Setup Grade — 6 chips F D C B A A+ -->
-        <div class="rw-field">
-          <div class="rw-field-l rw-field-l-display">
-            <span>Setup Grade</span>
-            <span class="rw-display-val" id="cem-grade-display" style="color:#e0e0e0">B</span>
-          </div>
-          <div class="rw-chip-row rw-chip-row-grade" id="cem-grade-chips">
-            <button type="button" class="rw-chip rw-chip-grade"        data-tier="rose"  data-grade="1" onclick="cemSetGrade(1)">F</button>
-            <button type="button" class="rw-chip rw-chip-grade"        data-tier="rose"  data-grade="2" onclick="cemSetGrade(2)">D</button>
-            <button type="button" class="rw-chip rw-chip-grade"        data-tier="muted" data-grade="3" onclick="cemSetGrade(3)">C</button>
-            <button type="button" class="rw-chip rw-chip-grade active" data-tier="muted" data-grade="4" onclick="cemSetGrade(4)">B</button>
-            <button type="button" class="rw-chip rw-chip-grade"        data-tier="sage"  data-grade="5" onclick="cemSetGrade(5)">A</button>
-            <button type="button" class="rw-chip rw-chip-grade"        data-tier="sage"  data-grade="6" onclick="cemSetGrade(6)">A+</button>
-          </div>
-          <!-- 0-based GRADES index, saveCalEdit reads this. -->
-          <input type="hidden" id="cem-grade" value="3"/>
-        </div>
-
-        <!-- Emotion — kept existing scale direction (1=worst → 5=best) for back-compat -->
-        <div class="rw-field">
-          <div class="rw-field-l rw-field-l-display">
-            <span>Emotion</span>
-            <span class="rw-display-val" id="cem-emotion-display">Neutral</span>
-          </div>
-          <div class="rw-chip-row" id="cem-emotion-chips">
-            <button type="button" class="rw-chip"        data-tier="rose"  data-emotion="1" onclick="cemSetEmotion(1)">1&middot;Tilt</button>
-            <button type="button" class="rw-chip"        data-tier="rose"  data-emotion="2" onclick="cemSetEmotion(2)">2</button>
-            <button type="button" class="rw-chip active" data-tier="muted" data-emotion="3" onclick="cemSetEmotion(3)">3&middot;Neutral</button>
-            <button type="button" class="rw-chip"        data-tier="sage"  data-emotion="4" onclick="cemSetEmotion(4)">4</button>
-            <button type="button" class="rw-chip"        data-tier="sage"  data-emotion="5" onclick="cemSetEmotion(5)">5&middot;Zone</button>
-          </div>
-          <input type="hidden" id="cem-emotion" value="3"/>
-        </div>
-
-        <!-- Confidence — 5 chips -->
-        <div class="rw-field">
-          <div class="rw-field-l rw-field-l-display">
-            <span>Confidence</span>
-            <span class="rw-display-val" id="cem-conf-display">3<span class="rw-display-suf"> / 5</span></span>
-          </div>
-          <div class="rw-chip-row" id="cem-conf-chips">
-            <button type="button" class="rw-chip"        data-tier="rose"  data-conf="1" onclick="cemSetConf(1)">1&middot;None</button>
-            <button type="button" class="rw-chip"        data-tier="cool"  data-conf="2" onclick="cemSetConf(2)">2</button>
-            <button type="button" class="rw-chip active" data-tier="cool"  data-conf="3" onclick="cemSetConf(3)">3</button>
-            <button type="button" class="rw-chip"        data-tier="cool"  data-conf="4" onclick="cemSetConf(4)">4</button>
-            <button type="button" class="rw-chip"        data-tier="sage"  data-conf="5" onclick="cemSetConf(5)">5&middot;Max</button>
-          </div>
-          <input type="hidden" id="cem-conf" value="3"/>
-        </div>
-
-        <!-- Notes -->
-        <div class="rw-field">
-          <div class="rw-field-l">Notes</div>
-          <textarea id="cem-notes" class="rw-input rw-textarea" placeholder="Setup, what worked, what didn&rsquo;t, lessons&hellip;"></textarea>
-        </div>
+        <div data-rwbuild="header:Reflection"></div>
+        <div data-rwbuild="refl:grade:cem:4"></div>
+        <div data-rwbuild="refl:emotion:cem:3"></div>
+        <div data-rwbuild="refl:confidence:cem:3"></div>
       </div>
     </div>
 
@@ -17040,15 +16955,22 @@ function cemSetType(t){
   if(typeof cemCalcLive==='function') cemCalcLive();
 }
 
-/* ── Session chip selector (replaces cemSelectSession, Chunk 3) ───── */
+/* ── Session killzone-pill selector — uses the shared buildSessionPicker
+   markup (.lt-session-pill). Click-active-again clears. ───────────── */
 function cemSetSession(name){
-  // Click active again → clear (matches Log Trade pattern).
   if(_cemSession === name) name = '';
   _cemSession = name || '';
-  document.getElementById('cem-session').value = _cemSession;
-  document.querySelectorAll('#cem-session-chips .cem-sess-chip').forEach(function(c){
-    c.classList.toggle('active', c.dataset.session === _cemSession);
-  });
+  var h = document.getElementById('cem-session');
+  if(h) h.value = _cemSession;
+  var cont = document.getElementById('cem-session-chips');
+  if(cont){
+    var pills = cont.querySelectorAll('.lt-session-pill');
+    for(var i=0;i<pills.length;i++){
+      var on = pills[i].getAttribute('data-session') === _cemSession;
+      pills[i].classList.toggle('on', on);
+      pills[i].classList.toggle('active', on);
+    }
+  }
 }
 window.cemSetSession = cemSetSession;
 
@@ -17064,56 +16986,28 @@ function cemSetAccountType(t){
 }
 window.cemSetAccountType = cemSetAccountType;
 
-/* ── Grade chip selector (replaces cemUpdateGrade, Chunk 3) ──
-   Idx 1–6 → letter F D C B A A+. Writes 0-based idx to #cem-grade
-   hidden so saveCalEdit's existing GRADES[idx].label read still works.
-   Tier coloring matches Log Trade: F/D rose, C/B muted, A/A+ sage. */
+/* ── Reflection selectors — drive the shared buildReflectionRow markup
+   (.lt-refl-btn) via rwReflApply. Idx 1–6 grade / 1–5 emotion+conf.
+   #cem-grade keeps the 0-based GRADES index saveCalEdit reads. ────── */
 function cemSetGrade(idx){
   idx = Math.max(1, Math.min(6, parseInt(idx)||4));
-  var IDX_TO_LETTER = {1:'F',2:'D',3:'C',4:'B',5:'A',6:'A+'};
-  var letter = IDX_TO_LETTER[idx];
-  var color = (typeof GRADE_COLORS !== 'undefined' && GRADE_COLORS[letter]) ||
-              (typeof GRADE_COLORS !== 'undefined' && GRADE_COLORS[letter==='A+'?'A':letter]) ||
-              '#e0e0e0';
-  // Chips
-  document.querySelectorAll('#cem-grade-chips .rw-chip-grade').forEach(function(c){
-    c.classList.toggle('active', parseInt(c.dataset.grade||'0') === idx);
-  });
-  // Display badge
-  var disp = document.getElementById('cem-grade-display');
-  if(disp){ disp.textContent = letter; disp.style.color = color; }
-  // Hidden value — 0-based GRADES index. _GRADE_TO_IDX already includes 'A+':5.
+  rwReflApply('cem','grade',idx);
   var hidden = document.getElementById('cem-grade');
-  if(hidden) hidden.value = (typeof _GRADE_TO_IDX !== 'undefined' && _GRADE_TO_IDX[letter] != null)
-    ? _GRADE_TO_IDX[letter] : 3;
+  if(hidden) hidden.value = idx - 1;
 }
 window.cemSetGrade = cemSetGrade;
 
-/* ── Emotion chip selector (Chunk 3) ──
-   Existing scale direction preserved (1=Tilt worst → 5=Zone best) for
-   back-compat — same call as Log Trade's setEmotionDots design choice. */
 function cemSetEmotion(n){
   var lvl = Math.max(1, Math.min(5, parseInt(n)||3));
-  document.querySelectorAll('#cem-emotion-chips .rw-chip').forEach(function(c){
-    c.classList.toggle('active', parseInt(c.dataset.emotion||'0') === lvl);
-  });
-  var disp = document.getElementById('cem-emotion-display');
-  if(disp){
-    disp.textContent = (typeof EMOTION_LABELS !== 'undefined' && EMOTION_LABELS[lvl]) || '';
-  }
+  rwReflApply('cem','emotion',lvl);
   var hidden = document.getElementById('cem-emotion');
   if(hidden) hidden.value = String(lvl);
 }
 window.cemSetEmotion = cemSetEmotion;
 
-/* ── Confidence chip selector (Chunk 3) ─────────────────── */
 function cemSetConf(n){
   n = Math.max(1, Math.min(5, parseInt(n)||3));
-  document.querySelectorAll('#cem-conf-chips .rw-chip').forEach(function(c){
-    c.classList.toggle('active', parseInt(c.dataset.conf||'0') === n);
-  });
-  var disp = document.getElementById('cem-conf-display');
-  if(disp) disp.innerHTML = n + '<span class="rw-display-suf"> / 5</span>';
+  rwReflApply('cem','confidence',n);
   var hidden = document.getElementById('cem-conf');
   if(hidden) hidden.value = String(n);
 }
@@ -17249,6 +17143,19 @@ function cemCalcLive(){
     if(pnl != null){
       if(pnl === 0) pnlInput.classList.add('pnl-zero');
       else pnlInput.classList.add(pnl>0 ? 'pnl-positive' : 'pnl-negative');
+    }
+  }
+
+  // Points — raw price move (long: exit-entry, short: entry-exit).
+  var ptsEl = document.getElementById('cem-points');
+  if(ptsEl){
+    ptsEl.classList.remove('pts-pos','pts-neg');
+    if(haveCore){
+      var pts = (_cemType==='long' ? exit-entry : entry-exit);
+      ptsEl.value = (pts>0?'+':'') + (Math.round(pts*100)/100).toFixed(2);
+      ptsEl.classList.add(pts>=0 ? 'pts-pos' : 'pts-neg');
+    } else {
+      ptsEl.value = '';
     }
   }
 
@@ -17630,6 +17537,8 @@ function saveCalEdit(){
   if(accts > 1) t.accounts = accts;
   else delete t.accounts;
   t.pnl=pnl; t.rr=rr;
+  // Points — raw price move (long: exit-entry, short: entry-exit) → trade_data.points.
+  t.points = (sideVal==='long' ? exit-entry : entry-exit);
   // Use snapshots captured before closeCalEdit (which resets _cemSession and
   // clears some DOM values). Reading DOM here would silently zero them out.
   t.notes=notesVal;
@@ -27195,8 +27104,8 @@ function cookieDecline(){
 }
 
 /* Points field — auto-calculated, cool-blue serif italic */
-#pg-log .rw-mod-auto-pts{color:#6ea8ff!important}
-#pg-log .rw-input-points{
+:is(#pg-log,.cem-card) .rw-mod-auto-pts{color:#6ea8ff!important}
+:is(#pg-log,.cem-card) .rw-input-points{
   background:rgba(110,168,255,0.03);
   border-color:rgba(110,168,255,0.2);
   color:#6ea8ff;
@@ -27204,46 +27113,46 @@ function cookieDecline(){
   font-size:16px;letter-spacing:0;
   cursor:default;
 }
-#pg-log .rw-input-points:focus{outline:none;border-color:rgba(110,168,255,0.2)}
+:is(#pg-log,.cem-card) .rw-input-points:focus{outline:none;border-color:rgba(110,168,255,0.2)}
 
 /* Advanced collapsible — dashed card; Stop Loss + # of Accounts inside */
-#pg-log .lt-advanced{
+:is(#pg-log,.cem-card) .lt-advanced{
   border:1px dashed var(--n-border-2);
   border-radius:8px;
   padding:12px 14px;
   margin-bottom:14px;
 }
-#pg-log .lt-adv-head{
+:is(#pg-log,.cem-card) .lt-adv-head{
   display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;
 }
-#pg-log .lt-adv-caret{
+:is(#pg-log,.cem-card) .lt-adv-caret{
   font-size:9px;color:var(--n-text-3);
   display:inline-block;transition:transform .15s ease;
 }
-#pg-log .lt-advanced.open .lt-adv-caret{transform:rotate(90deg)}
-#pg-log .lt-adv-title{
+:is(#pg-log,.cem-card) .lt-advanced.open .lt-adv-caret{transform:rotate(90deg)}
+:is(#pg-log,.cem-card) .lt-adv-title{
   font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;
   text-transform:uppercase;color:var(--n-text-2);
 }
-#pg-log .lt-adv-chips{
+:is(#pg-log,.cem-card) .lt-adv-chips{
   display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;
 }
-#pg-log .lt-advanced.open .lt-adv-chips{display:none}
-#pg-log .lt-adv-chip{
+:is(#pg-log,.cem-card) .lt-advanced.open .lt-adv-chips{display:none}
+:is(#pg-log,.cem-card) .lt-adv-chip{
   font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.04em;
   color:var(--n-text-3);
   background:var(--n-surface-2);border:1px solid var(--n-border);
   border-radius:5px;padding:4px 8px;
 }
-#pg-log .lt-adv-body{margin-top:12px}
-#pg-log .lt-adv-body .rw-grid{margin-bottom:0}
+:is(#pg-log,.cem-card) .lt-adv-body{margin-top:12px}
+:is(#pg-log,.cem-card) .lt-adv-body .rw-grid{margin-bottom:0}
 
 /* Reflection — unified dot+label rows (Setup Grade / Emotion /
    Confidence). Identical shape; hierarchy via the gradient dot,
    not brightness. Best on the left, worst on the right. */
-#pg-log .lt-refl-row{margin-bottom:16px}
-#pg-log .lt-refl-btns{display:flex;gap:6px}
-#pg-log .lt-refl-btn{
+:is(#pg-log,.cem-card) .lt-refl-row{margin-bottom:16px}
+:is(#pg-log,.cem-card) .lt-refl-btns{display:flex;gap:6px}
+:is(#pg-log,.cem-card) .lt-refl-btn{
   flex:1 1 0;min-width:0;
   display:flex;flex-direction:column;align-items:center;gap:6px;
   padding:9px 4px;
@@ -27252,29 +27161,31 @@ function cookieDecline(){
   border-radius:6px;
   cursor:pointer;transition:all .14s ease;user-select:none;
 }
-#pg-log .lt-refl-btn:hover{
+:is(#pg-log,.cem-card) .lt-refl-btn:hover{
   border-color:var(--n-border-2);background:var(--n-surface-3);
 }
-#pg-log .lt-refl-dot{
+:is(#pg-log,.cem-card) .lt-refl-dot{
   width:8px;height:8px;border-radius:50%;flex-shrink:0;
   background:var(--dot,#888);opacity:0.5;transition:all .14s ease;
 }
-#pg-log .lt-refl-lbl{
+:is(#pg-log,.cem-card) .lt-refl-lbl{
   font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.05em;
   text-transform:uppercase;color:var(--n-text-3);
   text-align:center;line-height:1.3;
 }
-#pg-log #rw-grade-chips .lt-refl-lbl{font-size:10px;letter-spacing:0.03em}
-#pg-log .lt-refl-btn.active{
+#rw-grade-chips .lt-refl-lbl,
+#cem-grade-chips .lt-refl-lbl,
+#csv-grade-chips .lt-refl-lbl{font-size:10px;letter-spacing:0.03em}
+:is(#pg-log,.cem-card) .lt-refl-btn.active{
   background:rgba(255,255,255,0.04);
   border-color:var(--n-border-2);
 }
-#pg-log .lt-refl-btn.active .lt-refl-dot{
+:is(#pg-log,.cem-card) .lt-refl-btn.active .lt-refl-dot{
   opacity:1;box-shadow:0 0 7px var(--dot);
 }
-#pg-log .lt-refl-btn.active .lt-refl-lbl{color:var(--n-text)}
+:is(#pg-log,.cem-card) .lt-refl-btn.active .lt-refl-lbl{color:var(--n-text)}
 @media (max-width:720px){
-  #pg-log .lt-refl-lbl{font-size:7.5px}
+  :is(#pg-log,.cem-card) .lt-refl-lbl{font-size:7.5px}
 }
 
 /* Inputs (generic + numeric serif italic) -----------------------------------*/
@@ -27416,7 +27327,7 @@ function cookieDecline(){
 }
 
 /* Session chips: condensed (5 chips share a row) */
-#pg-log .lt-session-pill{padding:7px 10px;font-size:10px}
+:is(#pg-log,.cem-card) .lt-session-pill{padding:7px 10px;font-size:10px}
 
 /* Market locked pill --------------------------------------------------------*/
 #pg-log .rw-market-pill{
@@ -28613,39 +28524,32 @@ function cookieDecline(){
 .cem-card .rw-section:last-of-type{margin-bottom:10px}
 
 /* Section header — slightly smaller than #pg-log */
+/* Section header — bare italic title + hairline gradient underline,
+   matching the Log Trade / CSV enrich surfaces (shared buildSectionHeader). */
 .cem-card .rw-section-h{
-  display:flex;
-  align-items:baseline;
-  gap:9px;
-  margin-bottom:12px;
+  display:block;
+  margin-bottom:14px;
+  margin-top:22px;
 }
-.cem-card .rw-mono-num{
-  font-family:var(--n-font-mono);
-  font-size:9.5px;
-  letter-spacing:0.16em;
-  color:var(--n-text-3);
-  text-transform:uppercase;
-}
+.cem-card .cem-body > .rw-section:first-child .rw-section-h{margin-top:0}
 .cem-card .rw-section-name{
+  display:block;
   font-family:Georgia,'Times New Roman',serif;
   font-style:italic;
-  font-size:16px;
+  font-size:17px;
   font-weight:400;
   color:var(--n-text);
   letter-spacing:-0.01em;
 }
-.cem-card .rw-mono-sub{
-  font-family:var(--n-font-mono);
-  font-size:9.5px;
-  letter-spacing:0.14em;
-  color:var(--n-text-4);
-  text-transform:uppercase;
-}
-.cem-card .rw-hr-trail{
-  flex:1;
+.cem-card .rw-section-name::after{
+  content:'';
+  display:block;
+  margin-top:7px;
+  width:140px;
   height:1px;
-  background:rgba(255,255,255,0.05);
-  margin-left:6px;
+  background:linear-gradient(90deg,
+    rgba(245,244,240,0.18) 0%,
+    rgba(245,244,240,0) 100%);
 }
 
 /* Fields */
