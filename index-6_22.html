@@ -6401,30 +6401,9 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
              padding .3s cubic-bezier(0.4,0,0.2,1);
   position:sticky;top:0;
 }
-#pg-community .csb.collapsed{width:64px!important;padding:24px 8px!important}
-#pg-community .csb.collapsed .csb-head,
-#pg-community .csb.collapsed .csb-tabs,
-#pg-community .csb.collapsed .gname,
-#pg-community .csb.collapsed .gsub,
-#pg-community .csb.collapsed .gmeta,
-#pg-community .csb.collapsed .csb-create,
-#pg-community .csb.collapsed .notif-list,
-#pg-community .csb.collapsed .gitem > div:not(.gicon){display:none}
-#pg-community .csb.collapsed .gitem{justify-content:center;padding:8px}
-#pg-community .csb.collapsed #comm-sidebar-list{padding:0!important}
-#pg-community .csb-collapse-btn{
-  position:absolute;top:18px;right:-13px;
-  width:26px;height:26px;
-  background:var(--n-bg);border:1px solid var(--n-border);
-  color:var(--n-text-3);border-radius:6px;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
-  z-index:5;transition:.15s;
-}
-#pg-community .csb-collapse-btn:hover{
-  color:var(--n-text);border-color:var(--n-border-3);background:var(--n-surface);
-}
-#pg-community .csb-collapse-btn svg{width:14px;height:14px;transition:transform .3s}
-#pg-community .csb.collapsed .csb-collapse-btn svg{transform:rotate(180deg)}
+/* COMMUNITIES sub-sidebar collapse — REMOVED. The panel is always
+   expanded; the .csb.collapsed rules + .csb-collapse-btn styles and
+   the csb-toggle button/handler/localStorage key are all gone. */
 
 /* ── FILTER CHIPS (v6) — rounded pills, white-on-black active ── */
 #pg-community .filters{
@@ -7852,8 +7831,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   }
   #pg-community .csb-head,
   #pg-community .csb-tabs,
-  #pg-community .csb-create,
-  #pg-community .csb-collapse-btn{display:none!important}
+  #pg-community .csb-create{display:none!important}
   #pg-community .gitem{flex-shrink:0;padding:6px 8px}
   #pg-community .gitem .gname,
   #pg-community .gitem .gsub,
@@ -10416,11 +10394,8 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 <!-- COMMUNITY -->
 <div id="pg-community" class="page">
 
-  <!-- LEFT COMMUNITIES SUB-SIDEBAR -->
+  <!-- LEFT COMMUNITIES SUB-SIDEBAR — always expanded, no collapse toggle -->
   <aside class="csb">
-    <button class="csb-collapse-btn" id="csb-toggle" aria-label="Toggle sidebar">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
     <div class="csb-head">Communities</div>
     <div class="csb-tabs">
       <div class="csb-tab on" id="comm-tab-groups" onclick="switchCommSidebar('groups')">Groups</div>
@@ -15632,26 +15607,9 @@ function setCommPeriod(period, btn){
   }
 }
 
-/* ── COMMUNITIES SUB-SIDEBAR COLLAPSE ──────────────────────
-   Persists across reloads via localStorage. Wired once on load. */
-(function initCsbToggle(){
-  function wire(){
-    var btn = document.getElementById('csb-toggle');
-    if(!btn || btn._wired) return false;
-    var csb = btn.closest('.csb');
-    if(!csb) return false;
-    btn._wired = true;
-    if(localStorage.getItem('csbCollapsed') === 'true') csb.classList.add('collapsed');
-    btn.addEventListener('click', function(e){
-      e.stopPropagation();
-      csb.classList.toggle('collapsed');
-      try{ localStorage.setItem('csbCollapsed', csb.classList.contains('collapsed')); }catch(err){}
-    });
-    return true;
-  }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire);
-  else wire();
-})();
+/* COMMUNITIES sub-sidebar collapse — REMOVED. The panel is always
+   expanded; the initCsbToggle wiring + csbCollapsed localStorage key
+   are gone. The csb-toggle button no longer exists in the markup. */
 
 /* Membership lives as a UUID array on `communities.members` — there is
    no separate community_members table in this schema. To kick a user
@@ -28184,11 +28142,6 @@ function cookieDecline(){
 .eod-comm-badge-pnl.pos{color:var(--n-profit)}
 .eod-comm-badge-pnl.neg{color:var(--n-loss)}
 .eod-comm-badge-pnl.zero{color:var(--n-text-2)}
-
-/* Tighten on collapsed sidebar — hide the badge so the avatar column
-   stays narrow. Mobile rule that previously hid the badge entirely
-   was removed; see the mobile block below for the new layout. */
-#pg-community .csb.collapsed .eod-comm-badge{display:none}
 
 /* Mobile — dashboard bar.
    Previously the bar used width:fit-content + margin:0 auto which
