@@ -1969,7 +1969,10 @@ body::before,.bg-grid,.bg-horizon,.bg-horizon2{display:none}
 .sc-lbl{font-size:9px!important}
 .crd-b{padding:10px 12px}
 .comm-grid{grid-template-columns:1fr!important}
-#pg-community.on{flex-direction:column!important;height:auto!important;overflow:visible!important}
+/* Mobile: column layout, vertical content flows into .main's scroll
+   (overflow-y:visible). overflow-x:clip — NOT visible — so a wide
+   descendant can't push a horizontal scrollbar onto .main. */
+#pg-community.on{flex-direction:column!important;height:auto!important;overflow-x:clip!important;overflow-y:visible!important}
 #pg-community.on>div:first-child{flex-direction:column!important;height:auto!important;overflow:visible!important}
 #pg-community.on>div>div:first-child{width:100%!important;height:auto!important;border-right:none!important;border-bottom:1px solid rgba(255,45,155,.2)}
 #comm-sidebar-list{display:flex!important;flex-direction:row!important;gap:6px;overflow-x:auto!important;overflow-y:hidden!important;padding:6px 8px!important;flex:none!important;max-height:80px!important}
@@ -5952,11 +5955,19 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   padding:0!important;margin:0!important;
   background:var(--n-bg);
   width:100%;max-width:100%;position:relative;
-  /* No height lock + no overflow:hidden — page flows inside .main's scroll
-     so sticky side panels (.csb left, .rail right) can actually take effect.
-     align-items:flex-start prevents flex from stretching the sticky columns
-     to the full feed height. */
+  /* No height lock + no overflow-Y clip — page flows inside .main's
+     scroll so sticky side panels (.csb left, .rail right) take effect.
+     align-items:flex-start prevents flex from stretching the sticky
+     columns to the full feed height. */
   align-items:flex-start;
+  /* overflow-x:clip UNCONDITIONALLY — a descendant wider than its
+     column (a wide post embed, a non-shrinking row, rounding at a
+     boundary) must never reach .main, which has overflow-x:auto and
+     would otherwise show a horizontal scrollbar. The 769-1919px
+     media block already clipped here; the >=1920px grid block did
+     NOT — that gap produced the scrollbar at wide viewports. Clip
+     is x-only, so vertical sticky scrolling is unaffected. */
+  overflow-x:clip;
 }
 #pg-community.on > .ph{display:none}
 
@@ -8224,7 +8235,11 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
     flex-direction:column!important;
     height:auto!important;
     max-height:none!important;
-    overflow:visible!important;
+    /* overflow-y:visible so the column flows into .main's vertical
+       scroll; overflow-x:clip so a wide descendant can't push a
+       horizontal scrollbar onto .main (which is overflow-x:auto). */
+    overflow-x:clip!important;
+    overflow-y:visible!important;
     padding:0!important;
   }
   /* Sidebar becomes a horizontal scroll-strip across the top.
