@@ -1315,7 +1315,11 @@
 @media (max-width:700px) { #pg-upgrade .up-cards{grid-template-columns:1fr} }
 
 #pg-upgrade .up-card{
-  padding:22px 20px;
+  /* padding-top reserves a clear strip for the top-corner pills
+     (Best Value, top-right · Active, top-left) so neither overlaps
+     the .uc-tag. Uniform on all cards → headlines/prices stay
+     aligned across the row. */
+  padding:34px 20px 22px;
   background:linear-gradient(180deg, var(--n-surface-2) 0%, var(--n-surface) 100%);
   border:1px solid rgba(255,255,255,0.08);border-radius:16px;
   position:relative;overflow:hidden;
@@ -1344,6 +1348,45 @@
   font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.20em;
   text-transform:uppercase;background:var(--n-profit);color:var(--n-bg);
   padding:3px 8px;border-radius:4px;font-weight:600;
+}
+
+/* "Active" pill — top-left, marks the card matching the user's tier.
+   Toggled by refreshUpgradePage()/_upgradeApplyCards(). Tinted per
+   card; same chip language as the feed-post account chips. */
+#pg-upgrade .uc-active-pill{
+  position:absolute;top:14px;left:14px;
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.16em;
+  text-transform:uppercase;font-weight:600;
+  padding:2px 7px;border-radius:4px;
+}
+#pg-upgrade .uc-active-pill.free{
+  color:#9a9a92;border:1px solid rgba(154,154,146,0.30);background:rgba(154,154,146,0.06);
+}
+#pg-upgrade .uc-active-pill.direct{
+  color:#6ea8ff;border:1px solid rgba(110,168,255,0.30);background:rgba(110,168,255,0.07);
+}
+#pg-upgrade .uc-active-pill.tapremium{
+  color:#5fb389;border:1px solid rgba(95,179,137,0.30);background:rgba(95,179,137,0.07);
+}
+
+/* "Manage billing" CTA — subtle/muted, occupies the same slot as the
+   Subscribe button on the Direct card. */
+#pg-upgrade .uc-cta.uc-cta-manage{
+  background:rgba(255,255,255,0.05);
+  color:var(--n-text-2);
+  border:1px solid var(--n-border-2);
+}
+#pg-upgrade .uc-cta.uc-cta-manage:hover{
+  background:rgba(255,255,255,0.09);color:var(--n-text);
+}
+
+/* "Managed via Trading Ark" — replaces the button on the TA Premium
+   card when it's the user's active plan. margin-top:auto pins it to
+   the card bottom, same as a .uc-cta would sit. */
+#pg-upgrade .uc-cta-managed{
+  margin-top:auto;padding:12px;text-align:center;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-3);
 }
 
 #pg-upgrade .uc-tag{
@@ -10946,6 +10989,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
     <!-- FREE -->
     <div class="up-card free">
+      <span class="uc-active-pill free" id="uc-pill-free" style="display:none">Active</span>
       <div class="uc-tag">&#9733; Free Tier</div>
       <div class="uc-h">Free.</div>
       <div class="uc-desc">A real journal. Free forever &mdash; no caps, no card.</div>
@@ -10963,11 +11007,12 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
       <div class="uc-feat-x">CSV import + multi-account copies</div>
       <div class="uc-feat-x">Advanced analytics + insights</div>
       <div class="uc-feat-x">PDF export + priority support</div>
-      <button class="uc-cta free" disabled>Current plan</button>
+      <button class="uc-cta free" id="uc-cta-free" disabled>Current plan</button>
     </div>
 
     <!-- PRO DIRECT -->
     <div class="up-card direct">
+      <span class="uc-active-pill direct" id="uc-pill-direct" style="display:none">Active</span>
       <div class="uc-tag">&#9733; Pro &middot; Direct</div>
       <div class="uc-h"><em class="gold">Pro.</em></div>
       <div class="uc-desc">Full Pro features + your own communities. Cancel anytime.</div>
@@ -10987,7 +11032,8 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
       <div class="uc-feat-h">Perks</div>
       <div class="uc-feat">Priority email support</div>
       <div class="uc-feat">Early access to new features</div>
-      <button class="uc-cta direct" onclick="tierUpgradeFlow('direct')">Subscribe &rarr;</button>
+      <button class="uc-cta direct" id="uc-cta-direct-sub" onclick="tierUpgradeFlow('direct')">Subscribe &rarr;</button>
+      <button class="uc-cta uc-cta-manage" id="uc-cta-direct-manage" onclick="openStripePortal(this)" style="display:none"><span class="btn-stripe-portal-label">Manage billing &rarr;</span></button>
     </div>
 
     <!-- PRO · TRADING ARK PREMIUM — free Pro for TA Premium members.
@@ -10995,6 +11041,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
          treatment (.up-card.elite) is reused here since this is now the
          free tier. id is stable for refreshUpgradePage()'s show/hide. -->
     <div class="up-card elite" id="uc-tapremium">
+      <span class="uc-active-pill tapremium" id="uc-pill-tapremium" style="display:none">Active</span>
       <div class="best-pill">Best Value</div>
       <div class="uc-tag">&#9733; Pro &middot; Trading Ark Premium</div>
       <div class="uc-h">100% <em class="green">free.</em></div>
@@ -11008,10 +11055,11 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
       <div class="uc-feat">Trading Ark Discord (full access)</div>
       <div class="uc-feat">Trading classes + live alerts</div>
       <div class="uc-feat">Priority + first access to new features</div>
-      <button class="uc-cta discord-elite" onclick="tierUpgradeFlow('premium')">
+      <button class="uc-cta discord-elite" id="uc-cta-ta-signin" onclick="tierUpgradeFlow('premium')">
         <svg viewBox="0 0 71 55" width="14" height="14" fill="white"><path d="M60 4.7A58.5 58.5 0 0 0 45.6 0c-.6 1.1-1.4 2.6-1.9 3.8a54 54 0 0 0-16.4 0c-.5-1.2-1.3-2.7-2-3.8C20.5 0 15.5 1.6 11 4.8 1.7 18.6-.8 32 .4 45.3a58.7 58.7 0 0 0 18 9c1.5-2 2.7-4 3.8-6.3-2.1-.8-4-1.7-5.9-2.9.5-.4 1-.7 1.5-1.1 11.4 5.2 23.7 5.2 35 0l1.5 1.1c-1.9 1.1-3.9 2.1-6 2.9 1.1 2.2 2.4 4.3 3.9 6.3a58.7 58.7 0 0 0 18-9c1.5-15.4-2.6-28.8-10.2-40.6zM23.7 37.3c-3.5 0-6.4-3.2-6.4-7.1 0-4 2.8-7.2 6.4-7.2 3.5 0 6.4 3.2 6.4 7.2 0 3.9-2.9 7.1-6.4 7.1zm23.6 0c-3.5 0-6.4-3.2-6.4-7.1 0-4 2.8-7.2 6.4-7.2 3.5 0 6.4 3.2 6.4 7.2 0 3.9-2.8 7.1-6.4 7.1z"/></svg>
         Sign in with Discord
       </button>
+      <div class="uc-cta-managed" id="uc-cta-ta-managed" style="display:none">Managed via Trading Ark</div>
     </div>
   </div>
 
@@ -29855,44 +29903,84 @@ async function cancelModalOpen(){
   }, 1500);
 })();
 
-// Upgrade page — hide the Premium card for users who are already Pro · Elite
-// (their Discord role makes Premium redundant). Defaults to showing all cards
-// on any error so the page never breaks.
+/* Per-card "current plan" treatment on /upgrade. Applies the Active
+   pill + swaps the CTA on whichever of the 3 cards matches the
+   resolved tier. Pure DOM toggles (display + textContent) — every
+   variant is already in the markup, nothing is reconstructed.
+   tier ∈ 'free' | 'direct' | 'premium' | 'elite'. */
+function _upgradeApplyCards(tier){
+  function show(id, on){
+    var el = document.getElementById(id);
+    if (el) el.style.display = on ? '' : 'none';
+  }
+  var isTA = (tier === 'premium' || tier === 'elite');
+
+  // Active pills — one per card, shown only on the matching tier.
+  show('uc-pill-free',      tier === 'free');
+  show('uc-pill-direct',    tier === 'direct');
+  show('uc-pill-tapremium', isTA);
+
+  // Free card — "Current plan" only when Free is actually current;
+  // a neutral "Free plan" label (still disabled) for Pro users.
+  var freeBtn = document.getElementById('uc-cta-free');
+  if (freeBtn) freeBtn.textContent = (tier === 'free') ? 'Current plan' : 'Free plan';
+
+  // Direct card — Subscribe vs. Manage billing (Stripe portal).
+  show('uc-cta-direct-sub',    tier !== 'direct');
+  show('uc-cta-direct-manage', tier === 'direct');
+
+  // TA Premium card — Discord sign-in vs. "Managed via Trading Ark".
+  show('uc-cta-ta-signin', !isTA);
+  var managed = document.getElementById('uc-cta-ta-managed');
+  if (managed) {
+    managed.style.display = isTA ? '' : 'none';
+    managed.textContent = (tier === 'elite')
+      ? 'Managed via Trading Ark · Elite'
+      : 'Managed via Trading Ark';
+  }
+}
+
+// Upgrade page — banner for Discord-sourced Pro + per-card current-plan
+// treatment. All 3 cards stay visible at every tier; the matching card
+// gets an Active pill and a context-appropriate CTA. Defaults to the
+// free/all-default view on any error so the page never breaks.
 async function refreshUpgradePage(){
   var banner = document.getElementById('upgrade-pro-banner');
   var cards  = document.querySelector('#pg-upgrade .up-cards');
   if (!banner || !cards) return;
 
-  // Banner-vs-cards view. proPremium=true → banner only (an already-Pro
-  // Trading Ark member has nothing to upgrade to); else the 3 plan cards.
-  function applyView(proPremium){
-    cards.style.display  = proPremium ? 'none'  : '';
-    banner.style.display = proPremium ? 'block' : 'none';
+  function applyState(tier){
+    // Banner — at-a-glance status for Discord-sourced Pro (premium/elite).
+    banner.style.display = (tier === 'premium' || tier === 'elite') ? 'block' : 'none';
+    // Cards ALWAYS visible — the per-card treatment carries the context.
+    cards.style.display = '';
+    _upgradeApplyCards(tier);
   }
 
   // SYNCHRONOUS pre-paint from the _userTier cache. goTo() shows
-  // #pg-upgrade and then calls this function in the SAME synchronous
-  // tick — applying the view here, before the first browser paint,
-  // means a Pro user never sees the plan cards flash. The cache
-  // (window._userTier, populated by refreshUserTier() after sign-in)
-  // uses tier values 'premium' / 'elite' for TA Premium Pro.
+  // #pg-upgrade and then calls this in the SAME synchronous tick, so
+  // applying state here lands before the first paint — no flash. The
+  // cache (window._userTier, set by refreshUserTier() after sign-in)
+  // already uses 'free' | 'direct' | 'premium' | 'elite'.
   var t = window._userTier;
-  var cacheProPremium = !!(t && t.isActive && (t.tier === 'premium' || t.tier === 'elite'));
-  applyView(cacheProPremium);
+  var ct = (t && t.isActive && t.tier) ? t.tier : 'free';
+  if (ct !== 'direct' && ct !== 'premium' && ct !== 'elite') ct = 'free';
+  applyState(ct);
 
-  // ASYNC confirm/correct against /api/me — covers a cold cache
-  // (deep-link / refresh on /upgrade before sign-in resolves) or a
-  // stale one. /api/me tier values are 'pro_premium' / 'pro_elite'.
-  // If the cache was already right this is a no-op; if it was cold
-  // and the user is Pro, this is the only place the correction fires
-  // (a one-frame card flash is possible ONLY in the cold-cache case).
+  // ASYNC confirm/correct against /api/me — covers a cold/stale cache
+  // (deep-link or hard refresh on /upgrade before sign-in resolves).
+  // /api/me tiers are 'pro_direct' | 'pro_premium' | 'pro_elite' | 'free'.
   try {
     var session = await _cancelModalGetSession();
     if (!session) return;  // not signed in — leave the cache-based view
     var r = await fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + session.access_token } });
     if (!r.ok) return;
     var me = await r.json();
-    applyView(!!(me && (me.tier === 'pro_premium' || me.tier === 'pro_elite')));
+    var tier = (me && me.tier === 'pro_direct')  ? 'direct'
+             : (me && me.tier === 'pro_premium') ? 'premium'
+             : (me && me.tier === 'pro_elite')   ? 'elite'
+             : 'free';
+    applyState(tier);
   } catch (e) { /* fail open — keep the cache-based view */ }
 }
 
