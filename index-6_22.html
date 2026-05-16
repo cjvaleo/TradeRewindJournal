@@ -3360,50 +3360,46 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 #pg-log .lt-session-pill{
   flex:1 1 auto;min-width:0;
-  padding:9px 12px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:8px 8px;
   background:var(--n-surface-2);
   border:1px solid var(--n-border);
   border-radius:7px;
-  font-family:var(--n-font-mono);font-size:10.5px;letter-spacing:0.14em;
-  text-transform:uppercase;color:var(--n-text-3);
   cursor:pointer;transition:all .15s ease;user-select:none;
-  white-space:nowrap;text-align:center;
+  text-align:center;
+}
+#pg-log .lt-sess-name{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.12em;
+  text-transform:uppercase;color:var(--n-text-2);white-space:nowrap;
+}
+#pg-log .lt-sess-time{
+  font-family:var(--n-font-mono);font-size:8px;letter-spacing:0.04em;
+  color:var(--n-text-3);white-space:nowrap;
 }
 #pg-log .lt-session-pill:hover{
-  border-color:var(--n-border-2);color:var(--n-text-2);
-  background:var(--n-surface-3);
+  border-color:var(--n-border-2);background:var(--n-surface-3);
 }
-/* Active state — session-specific color */
+/* Active state — killzone color (border + bg tint + name text) */
 #pg-log .lt-session-pill.on.sess-asia{
-  color:#8a8a8a;background:rgba(138,138,138,0.10);
-  border-color:rgba(138,138,138,0.30);
-  box-shadow:inset 0 0 0 1px rgba(138,138,138,0.20);
+  border-color:#4a90e2;background:rgba(74,144,226,0.12);
 }
+#pg-log .lt-session-pill.on.sess-asia .lt-sess-name{color:#7ab1ef}
 #pg-log .lt-session-pill.on.sess-london{
-  color:var(--n-accent-cool);background:rgba(110,168,255,0.10);
-  border-color:rgba(110,168,255,0.30);
-  box-shadow:inset 0 0 0 1px rgba(110,168,255,0.20);
+  border-color:#dc4646;background:rgba(220,70,70,0.12);
 }
+#pg-log .lt-session-pill.on.sess-london .lt-sess-name{color:#e89292}
 #pg-log .lt-session-pill.on.sess-ny-am{
-  color:var(--n-profit);background:rgba(95,179,137,0.10);
-  border-color:rgba(95,179,137,0.30);
-  box-shadow:inset 0 0 0 1px rgba(95,179,137,0.20);
+  border-color:#2bb6a4;background:rgba(43,182,164,0.12);
 }
+#pg-log .lt-session-pill.on.sess-ny-am .lt-sess-name{color:#5fd4c1}
 #pg-log .lt-session-pill.on.sess-ny-lunch{
-  color:#f5d77c;background:rgba(245,215,124,0.10);
-  border-color:rgba(245,215,124,0.30);
-  box-shadow:inset 0 0 0 1px rgba(245,215,124,0.20);
+  border-color:#f8ce46;background:rgba(248,206,70,0.12);
 }
+#pg-log .lt-session-pill.on.sess-ny-lunch .lt-sess-name{color:#f5d77c}
 #pg-log .lt-session-pill.on.sess-ny-pm{
-  color:#d4956a;background:rgba(212,149,106,0.10);
-  border-color:rgba(212,149,106,0.30);
-  box-shadow:inset 0 0 0 1px rgba(212,149,106,0.20);
+  border-color:#9664dc;background:rgba(150,100,220,0.12);
 }
-#pg-log .lt-session-pill.on.sess-other{
-  color:#b48ad0;background:rgba(180,138,208,0.10);
-  border-color:rgba(180,138,208,0.30);
-  box-shadow:inset 0 0 0 1px rgba(180,138,208,0.20);
-}
+#pg-log .lt-session-pill.on.sess-ny-pm .lt-sess-name{color:#b59aee}
 
 /* P&L INPUT COLORING — green when positive, red when negative. Applies
    to both the manual #lg-pnl input and the per-row .csv-pnl-input in
@@ -8897,7 +8893,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
               <div class="rw-chip-row" id="rw-acct-chips">
                 <button type="button" class="rw-chip rw-chip-acct" data-tier="muted" data-acct="paper"
                         onclick="setAccountType('paper')">
-                  <span class="rw-acct-dot" style="background:rgba(255,255,255,0.35)"></span>Paper
+                  <span class="rw-acct-dot" style="background:#9a9a92"></span>Paper
                 </button>
                 <button type="button" class="rw-chip rw-chip-acct" data-tier="gold" data-acct="eval"
                         onclick="setAccountType('eval')">
@@ -8943,12 +8939,12 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             </div>
             <div class="rw-field">
               <div class="rw-field-l">Session</div>
-              <div class="rw-chip-row" id="lt-session-pills">
-                <button type="button" class="rw-chip lt-session-pill" data-tier="sage" data-session="Asia"     onclick="setSessionPill('Asia')">Asia</button>
-                <button type="button" class="rw-chip lt-session-pill" data-tier="sage" data-session="London"   onclick="setSessionPill('London')">London</button>
-                <button type="button" class="rw-chip lt-session-pill" data-tier="sage" data-session="NY AM"    onclick="setSessionPill('NY AM')">NY AM</button>
-                <button type="button" class="rw-chip lt-session-pill" data-tier="sage" data-session="NY Lunch" onclick="setSessionPill('NY Lunch')">Lunch</button>
-                <button type="button" class="rw-chip lt-session-pill" data-tier="sage" data-session="NY PM"    onclick="setSessionPill('NY PM')">NY PM</button>
+              <div class="rw-chip-row lt-session-pills" id="lt-session-pills">
+                <button type="button" class="lt-session-pill sess-asia"     data-session="Asia"     onclick="setSessionPill('Asia')"><span class="lt-sess-name">Asia</span><span class="lt-sess-time">8 PM&ndash;12 AM</span></button>
+                <button type="button" class="lt-session-pill sess-london"   data-session="London"   onclick="setSessionPill('London')"><span class="lt-sess-name">London</span><span class="lt-sess-time">2&ndash;5 AM</span></button>
+                <button type="button" class="lt-session-pill sess-ny-am"    data-session="NY AM"    onclick="setSessionPill('NY AM')"><span class="lt-sess-name">NY AM</span><span class="lt-sess-time">9:30&ndash;11 AM</span></button>
+                <button type="button" class="lt-session-pill sess-ny-lunch" data-session="NY Lunch" onclick="setSessionPill('NY Lunch')"><span class="lt-sess-name">Lunch</span><span class="lt-sess-time">12&ndash;1 PM</span></button>
+                <button type="button" class="lt-session-pill sess-ny-pm"    data-session="NY PM"    onclick="setSessionPill('NY PM')"><span class="lt-sess-name">NY PM</span><span class="lt-sess-time">1:30&ndash;4 PM</span></button>
               </div>
               <input type="hidden" id="lg-session" value=""/>
             </div>
@@ -8961,7 +8957,8 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             <span class="rw-section-name">Execution</span>
           </div>
 
-          <div class="rw-grid rw-grid-triple">
+          <!-- Entry / Exit -->
+          <div class="rw-grid rw-grid-exec-pair">
             <div class="rw-field">
               <div class="rw-field-l">Entry</div>
               <input class="rw-input rw-numeric" id="lg-entry" type="number" step="any" placeholder="0.00" oninput="calcLivePnl()"/>
@@ -8970,20 +8967,20 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
               <div class="rw-field-l">Exit</div>
               <input class="rw-input rw-numeric" id="lg-exit" type="number" step="any" placeholder="0.00" oninput="calcLivePnl()"/>
             </div>
-            <div class="rw-field">
-              <div class="rw-field-l">Stop <span class="rw-mod-opt">optional</span></div>
-              <input class="rw-input rw-numeric" id="lg-stop" type="number" step="any" placeholder="points" oninput="calcLivePnl()"/>
-            </div>
           </div>
 
-          <div class="rw-grid rw-grid-exec-bottom">
+          <!-- Contracts / Points (auto) / P&L (auto) -->
+          <div class="rw-grid rw-grid-triple">
             <div class="rw-field">
               <div class="rw-field-l">Contracts</div>
               <input class="rw-input rw-numeric" id="lg-qty" type="number" step="any" min="1" value="1" oninput="calcLivePnl()"/>
             </div>
-            <div class="rw-field">
-              <div class="rw-field-l"># of Accounts</div>
-              <input class="rw-input rw-numeric" id="lg-accounts" type="number" min="1" value="1" oninput="calcLivePnl()"/>
+            <div class="rw-field rw-field-points">
+              <div class="rw-field-l rw-field-l-flex">
+                <span>Points</span>
+                <span class="rw-mod-auto rw-mod-auto-pts">&middot; auto</span>
+              </div>
+              <input class="rw-input rw-numeric rw-input-points" id="lg-points" type="text" readonly tabindex="-1" placeholder="auto"/>
             </div>
             <div class="rw-field">
               <div class="rw-field-l rw-field-l-flex">
@@ -8992,6 +8989,31 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
                 <span class="rw-r-chip" id="lg-r-chip" style="display:none">2.3R</span>
               </div>
               <input class="rw-input rw-numeric rw-input-pnl" id="lg-pnl" type="number" step="any" placeholder="auto-calc" oninput="onPnlInput()"/>
+            </div>
+          </div>
+
+          <!-- Advanced (collapsible) — Stop Loss + # of Accounts.
+               Collapsed by default; the two chips say what's inside. -->
+          <div class="lt-advanced" id="lt-advanced">
+            <div class="lt-adv-head" onclick="toggleAdvanced()">
+              <span class="lt-adv-caret" id="lt-adv-caret">&#9655;</span>
+              <span class="lt-adv-title">Advanced</span>
+            </div>
+            <div class="lt-adv-chips">
+              <span class="lt-adv-chip">&#127919; Stop loss &middot; for RR</span>
+              <span class="lt-adv-chip">&#128218; # of accounts</span>
+            </div>
+            <div class="lt-adv-body" id="lt-adv-body" style="display:none">
+              <div class="rw-grid rw-grid-exec-pair">
+                <div class="rw-field">
+                  <div class="rw-field-l">Stop Loss <span class="rw-mod-opt">optional</span></div>
+                  <input class="rw-input rw-numeric" id="lg-stop" type="number" step="any" placeholder="points" oninput="calcLivePnl()"/>
+                </div>
+                <div class="rw-field">
+                  <div class="rw-field-l"># of Accounts</div>
+                  <input class="rw-input rw-numeric" id="lg-accounts" type="number" min="1" value="1" oninput="calcLivePnl()"/>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -19235,6 +19257,17 @@ function setSessionPill(name){
   updateLogPreview();
 }
 
+/* Execution → Advanced collapsible (Stop Loss + # of Accounts).
+   Collapsed by default; the two chips telegraph what's inside. */
+function toggleAdvanced(){
+  var adv  = document.getElementById('lt-advanced');
+  var body = document.getElementById('lt-adv-body');
+  if(!adv || !body) return;
+  var open = adv.classList.toggle('open');
+  body.style.display = open ? '' : 'none';
+}
+window.toggleAdvanced = toggleAdvanced;
+
 // Toggle pnl-positive / pnl-negative on a P&L input based on its value.
 // Works for both the manual #lg-pnl and any CSV row's .csv-pnl-input.
 function _colorPnlInput(el){
@@ -23281,11 +23314,11 @@ function filterSymbols(){
   const filtered=q?list.filter(s=>s.sym.includes(q)||s.name.toUpperCase().includes(q)):list;
   if(!filtered.length){dd.style.display='none';return;}
   symDropIdx=-1;
-  dd.innerHTML=filtered.slice(0,12).map((s,i)=>`<div class="sym-opt" data-i="${i}" onmousedown="selectSymbol('${s.sym}')" onmouseover="symDropIdx=${i};highlightSym()" style="padding:9px 13px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(191,0,255,.1)"><span style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:var(--cyan)">${s.sym}</span><span style="font-family:'Orbitron',monospace;font-size:15px;color:rgba(255,255,255,.9)">${s.name}</span></div>`).join('');
+  dd.innerHTML=filtered.slice(0,12).map((s,i)=>`<div class="sym-opt" data-i="${i}" data-sym="${s.sym}" onmousedown="selectSymbol('${s.sym}')" onmouseover="symDropIdx=${i};highlightSym()" style="padding:10px 13px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid rgba(255,255,255,0.06)"><span style="font-family:var(--n-font-mono);font-size:12px;letter-spacing:0.04em;color:#6ea8ff">${s.sym}</span><span style="font-family:var(--n-font-sans);font-size:12px;color:#dbdad5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</span></div>`).join('');
   dd.style.display='block';
 }
 
-function highlightSym(){document.querySelectorAll('.sym-opt').forEach((el,i)=>{el.style.background=i===symDropIdx?'rgba(0,180,255,.15)':''});}
+function highlightSym(){document.querySelectorAll('.sym-opt').forEach((el,i)=>{el.style.background=i===symDropIdx?'rgba(255,255,255,0.05)':''});}
 
 function symKeyNav(e){
   const opts=document.querySelectorAll('.sym-opt');
@@ -23337,6 +23370,21 @@ function calcLivePnl(){
     pnlInput.value = pnl!=null ? (Math.round(pnl*100)/100) : '';
   }
   if(typeof _colorPnlInput === 'function') _colorPnlInput(pnlInput);
+
+  // Points — raw price move (long: exit-entry, short: entry-exit).
+  // Positive = points won, negative = points lost. Display only;
+  // fullLog reads #lg-points and writes it to trade_data.points.
+  const ptsEl=document.getElementById('lg-points');
+  if(ptsEl){
+    ptsEl.classList.remove('pts-pos','pts-neg');
+    if(haveCore){
+      const pts=(lgType==='long'?exit-entry:entry-exit);
+      ptsEl.value=(pts>0?'+':'')+(Math.round(pts*100)/100).toFixed(2);
+      ptsEl.classList.add(pts>=0?'pts-pos':'pts-neg');
+    } else {
+      ptsEl.value='';
+    }
+  }
 
   // Auto-fill lg-rr from stop. If user manually edited rr we leave it alone.
   // Manually-edited PnL still feeds rr (so rr reflects the user's number).
@@ -26989,6 +27037,7 @@ function cookieDecline(){
 #pg-log .rw-grid-date-sess{grid-template-columns:0.7fr 1.8fr}
 #pg-log .rw-grid-triple{grid-template-columns:1fr 1fr 1fr}
 #pg-log .rw-grid-exec-bottom{grid-template-columns:1fr 1fr 1.3fr}
+#pg-log .rw-grid-exec-pair{grid-template-columns:1fr 1fr}
 #pg-log .rw-grid-analysis{grid-template-columns:0.95fr 1.3fr;align-items:start}
 
 @media (max-width:720px){
@@ -26997,8 +27046,53 @@ function cookieDecline(){
   #pg-log .rw-grid-date-sess,
   #pg-log .rw-grid-triple,
   #pg-log .rw-grid-exec-bottom,
+  #pg-log .rw-grid-exec-pair,
   #pg-log .rw-grid-analysis{grid-template-columns:1fr}
 }
+
+/* Points field — auto-calculated, cool-blue serif italic */
+#pg-log .rw-mod-auto-pts{color:#6ea8ff!important}
+#pg-log .rw-input-points{
+  background:rgba(110,168,255,0.03);
+  border-color:rgba(110,168,255,0.2);
+  color:#6ea8ff;
+  font-family:'Instrument Serif',Georgia,serif;font-style:italic;
+  font-size:16px;letter-spacing:0;
+  cursor:default;
+}
+#pg-log .rw-input-points:focus{outline:none;border-color:rgba(110,168,255,0.2)}
+
+/* Advanced collapsible — dashed card; Stop Loss + # of Accounts inside */
+#pg-log .lt-advanced{
+  border:1px dashed var(--n-border-2);
+  border-radius:8px;
+  padding:12px 14px;
+  margin-bottom:14px;
+}
+#pg-log .lt-adv-head{
+  display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;
+}
+#pg-log .lt-adv-caret{
+  font-size:9px;color:var(--n-text-3);
+  display:inline-block;transition:transform .15s ease;
+}
+#pg-log .lt-advanced.open .lt-adv-caret{transform:rotate(90deg)}
+#pg-log .lt-adv-title{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--n-text-2);
+}
+#pg-log .lt-adv-chips{
+  display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;
+}
+#pg-log .lt-advanced.open .lt-adv-chips{display:none}
+#pg-log .lt-adv-chip{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.04em;
+  color:var(--n-text-3);
+  background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:5px;padding:4px 8px;
+}
+#pg-log .lt-adv-body{margin-top:12px}
+#pg-log .lt-adv-body .rw-grid{margin-bottom:0}
 
 /* Inputs (generic + numeric serif italic) -----------------------------------*/
 #pg-log .rw-input{
