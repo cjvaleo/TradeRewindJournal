@@ -17811,6 +17811,7 @@ function saveCalEdit(){
           exit:         t.exit != null ? t.exit : null,
           stop:         t.stop != null ? t.stop : null,
           qty:          t.qty != null ? t.qty : null,
+          points:       t.points != null ? t.points : null,
           accounts:     (t.accounts != null && t.accounts > 1) ? t.accounts : null,
           account_type: t.account_type || null,
           confluences:  _cfSnapCem.map(function(p){
@@ -19486,6 +19487,7 @@ async function shareTradeToCommunity(trade){
       exit:         trade.exit != null ? trade.exit : null,
       stop:         trade.stop != null ? trade.stop : null,
       qty:          trade.qty != null ? trade.qty : null,
+      points:       trade.points != null ? trade.points : null,
       accounts:     (trade.accounts != null && trade.accounts > 1) ? trade.accounts : null,
       account_type: trade.account_type || null,
       confluences:  cfSnap
@@ -19622,6 +19624,7 @@ async function backfillTradesToCommunity(communityId){
       exit:         t.exit != null ? t.exit : null,
       stop:         t.stop != null ? t.stop : null,
       qty:          t.qty != null ? t.qty : null,
+      points:       t.points != null ? t.points : null,
       accounts:     (t.accounts != null && t.accounts > 1) ? t.accounts : null,
       account_type: t.account_type || null,
       confluences:  cfSnap
@@ -19699,7 +19702,14 @@ function fullLog(){
   // override so the saved rr matches the saved pnl.
   if(_pnlManual && !_rrManual && risk && risk>0) rr = pnl/risk;
 
-  var newTrade = {id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,pnl,rr,grade,emotion,confidence,images:[...noteImages],created_at:new Date().toISOString(),account_type:accountType,tradingview_link:tradingviewLink||undefined};
+  // Points — raw price move (long: exit-entry, short: entry-exit).
+  // entry+exit are guaranteed numeric past the guard above. saveTradeToSupa
+  // persists the whole trade object into the trade_data JSONB column, so
+  // this lands as trade_data.points — the same key the 216-trade backfill
+  // populated. Not a top-level column.
+  const points = (lgType==='long' ? exit-entry : entry-exit);
+
+  var newTrade = {id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,pnl,rr,points,grade,emotion,confidence,images:[...noteImages],created_at:new Date().toISOString(),account_type:accountType,tradingview_link:tradingviewLink||undefined};
   trades.unshift(newTrade);
   save();renderAll();
 
