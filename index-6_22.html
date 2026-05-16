@@ -8875,10 +8875,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         <!-- ============ 01 SETUP — what + where ============ -->
         <div class="rw-section">
           <div class="rw-section-h">
-            <span class="rw-mono-num">01</span>
             <span class="rw-section-name">Setup</span>
-            <span class="rw-mono-sub">— what + where</span>
-            <span class="rw-hr-trail"></span>
           </div>
 
           <!-- Row 1 (categorical): Side + Account Type -->
@@ -8962,10 +8959,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         <!-- ============ 02 EXECUTION — numbers ============ -->
         <div class="rw-section">
           <div class="rw-section-h">
-            <span class="rw-mono-num">02</span>
             <span class="rw-section-name">Execution</span>
-            <span class="rw-mono-sub">— numbers</span>
-            <span class="rw-hr-trail"></span>
           </div>
 
           <div class="rw-grid rw-grid-triple">
@@ -9021,10 +9015,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         <!-- ============ 03 ANALYSIS — why ============ -->
         <div class="rw-section">
           <div class="rw-section-h">
-            <span class="rw-mono-num">03</span>
             <span class="rw-section-name">Analysis</span>
-            <span class="rw-mono-sub">— why</span>
-            <span class="rw-hr-trail"></span>
           </div>
 
           <div class="rw-grid rw-grid-analysis">
@@ -9122,10 +9113,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         <!-- ============ 04 REFLECTION — how it felt (Free-tier veiled) ============ -->
         <div class="rw-section" id="lt-sec-reflection">
           <div class="rw-section-h">
-            <span class="rw-mono-num">04</span>
             <span class="rw-section-name">Reflection</span>
-            <span class="rw-mono-sub">— how it felt</span>
-            <span class="rw-hr-trail"></span>
           </div>
 
           <!-- Setup Grade (6-chip: F D C B A A+) -->
@@ -9297,10 +9285,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
              picker can return when other broker tutorials exist. -->
         <div class="rw-section ci-section" id="ci-tutorial-section">
           <div class="rw-section-h">
-            <span class="rw-mono-num">01</span>
             <span class="rw-section-name">How to get your Tradovate CSV</span>
-            <span class="rw-mono-sub">&mdash; follow these 3 steps</span>
-            <span class="rw-hr-trail"></span>
           </div>
 
           <!-- TRADOVATE — 3-step SVG tutorial (adapted from tradovate_tutorial_mockup.html) -->
@@ -26930,20 +26915,15 @@ function cookieDecline(){
 #pg-log .rw-section{margin-bottom:28px}
 #pg-log .rw-section:last-of-type{margin-bottom:18px}
 
+/* Section header — just the title now (the leading 01/02… number,
+   the "— suffix", and the trailing rule were removed). A hairline
+   that fades out to the right sits flush-left beneath the title. */
 #pg-log .rw-section-h{
-  display:flex;
-  align-items:baseline;
-  gap:10px;
+  display:block;
   margin-bottom:14px;
 }
-#pg-log .rw-mono-num{
-  font-family:var(--n-font-mono);
-  font-size:10px;
-  letter-spacing:0.16em;
-  color:var(--n-text-3);
-  text-transform:uppercase;
-}
 #pg-log .rw-section-name{
+  display:block;
   font-family:Georgia,'Times New Roman',serif;
   font-style:italic;
   font-size:18px;
@@ -26951,18 +26931,15 @@ function cookieDecline(){
   color:var(--n-text);
   letter-spacing:-0.01em;
 }
-#pg-log .rw-mono-sub{
-  font-family:var(--n-font-mono);
-  font-size:10px;
-  letter-spacing:0.14em;
-  color:var(--n-text-4);
-  text-transform:uppercase;
-}
-#pg-log .rw-hr-trail{
-  flex:1;
+#pg-log .rw-section-name::after{
+  content:'';
+  display:block;
+  margin-top:7px;
+  width:140px;
   height:1px;
-  background:rgba(255,255,255,0.05);
-  margin-left:6px;
+  background:linear-gradient(90deg,
+    rgba(245,244,240,0.18) 0%,
+    rgba(245,244,240,0) 100%);
 }
 
 /* Field shell ---------------------------------------------------------------*/
