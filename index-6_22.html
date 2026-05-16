@@ -17909,6 +17909,21 @@ function rwReflDisplay(type, value){
   var o = RW_REFL[type].opts.filter(function(x){return x.v===value;})[0];
   return o ? o.t : '';
 }
+// Flip the active button + refresh the serif value display for a
+// reflection row. Shared visual half of every surface's refl handler.
+function rwReflApply(scope, type, value){
+  var attr = RW_REFL[type].attr;
+  var cont = document.getElementById(scope+'-'+attr+'-chips');
+  if(cont){
+    var btns = cont.querySelectorAll('.lt-refl-btn');
+    for(var i=0;i<btns.length;i++){
+      btns[i].classList.toggle('active', parseInt(btns[i].getAttribute('data-'+attr))===value);
+    }
+  }
+  var disp = document.getElementById(scope+'-'+attr+'-display');
+  if(disp) disp.textContent = rwReflDisplay(type, value);
+}
+window.rwReflApply = rwReflApply;
 function buildReflectionRow(type, scope, value){
   var def = RW_REFL[type], attr = def.attr, hn = RW_REFL_HANDLERS[scope][type];
   var btns = def.opts.map(function(o){
@@ -20884,6 +20899,13 @@ function importCsvTrades(){
       ? e.tradingview_link
       : '';
 
+    // Points — raw price move (long: exit-entry, short: entry-exit).
+    // Lands as trade_data.points, same key Log Trade writes.
+    var _en = Number(t.entry), _ex = Number(t.exit);
+    var rowPoints = (!isNaN(_en) && !isNaN(_ex))
+      ? ((t.direction||t.type)==='short' ? _en-_ex : _ex-_en)
+      : null;
+
     // Chunk 5 v5 — notes ABSOLUTE-LAST-RESORT fallback chain. The notes
     // textarea has been the only field consistently failing to round-trip.
     // Causes investigated (and ruled out / fixed): camelCase key mismatch
@@ -20925,6 +20947,7 @@ function importCsvTrades(){
       confidence: e.confidence || 3,
       pnl: t.pnl,
       rr: eRR,
+      points: rowPoints,
       images: e.images || [],
       account: t.account,
       // Chunk 5 — new fields parallel to Log Trade / Edit Modal.
@@ -21354,61 +21377,45 @@ function ciRenderEnrichZone(idx){
   if(!e.account_type) e.account_type = '';   // Chunk 5 v4 — snake_case
   if(!Array.isArray(e.images)) e.images = [];
 
-  // Chunk 5 v3 — Grade chips (F D C B A A+). Inline onclick passes `this`
-  // so the targeted handler can flip .active in-place without re-rendering
-  // the whole enrich zone (which would destroy the textarea + TV input).
+  // Reflection values for the shared builders. Grade letter → 1-6 idx.
   var gradeIdxMap = {F:1, D:2, C:3, B:4, A:5, 'A+':6};
   var gradeIdx = gradeIdxMap[e.grade] || 4;
-  var gradeChips = ['F','D','C','B','A','A+'].map(function(letter, i){
-    var ti = i+1;
-    var tier = (letter==='F'||letter==='D')?'rose':(letter==='A'||letter==='A+')?'sage':'muted';
-    var active = ti === gradeIdx ? ' active' : '';
-    return '<button type="button" class="rw-chip rw-chip-grade'+active+'" data-tier="'+tier+'" '+
-           'onclick="ciSetEnrichGrade('+idx+',\''+letter+'\',this)">'+letter+'</button>';
-  }).join('');
 
-  // Emotion: 5 chips (existing scale direction kept — 1=worst → 5=best)
-  var emotionLbls = ['','1·Tilt','2','3·Neutral','4','5·Zone'];
-  var emotionTiers = ['','rose','rose','muted','sage','sage'];
-  var emotionChips = [1,2,3,4,5].map(function(n){
-    var active = n === e.emotion ? ' active' : '';
-    return '<button type="button" class="rw-chip'+active+'" data-tier="'+emotionTiers[n]+'" '+
-           'onclick="ciSetEnrichEmotion('+idx+','+n+',this)">'+emotionLbls[n]+'</button>';
-  }).join('');
-
-  // Confidence: 5 chips
-  var confLbls = ['','1·None','2','3','4','5·Max'];
-  var confTiers = ['','rose','cool','cool','cool','sage'];
-  var confChips = [1,2,3,4,5].map(function(n){
-    var active = n === e.confidence ? ' active' : '';
-    return '<button type="button" class="rw-chip'+active+'" data-tier="'+confTiers[n]+'" '+
-           'onclick="ciSetEnrichConf('+idx+','+n+',this)">'+confLbls[n]+'</button>';
-  }).join('');
-
-  // Session: 5 chips (auto-populated from fill time; user can override).
-  // No toggle-off — clicking any chip SETS that session (avoids the silent
-  // wipe where clicking the auto-detected chip cleared it). To "clear" a
-  // session the user would just pick a different one.
-  var sessionList = ['Asia','London','NY AM','NY Lunch','NY PM'];
-  var sessionChips = sessionList.map(function(s){
-    var active = s === e.session ? ' active' : '';
-    return '<button type="button" class="rw-chip'+active+'" data-tier="sage" '+
-           'onclick="ciSetEnrichSession('+idx+',\''+s+'\',this)">'+s+'</button>';
-  }).join('');
-
-  // Account Type: 4 chips
-  var acctList = [
-    {key:'paper',  label:'Paper',  tier:'muted', dot:'rgba(255,255,255,0.35)'},
-    {key:'eval',   label:'Eval',   tier:'gold',  dot:'var(--n-gold,#f5d77c)'},
-    {key:'funded', label:'Funded', tier:'sage',  dot:'var(--n-profit)'},
-    {key:'live',   label:'Live',   tier:'cool',  dot:'var(--n-accent-cool,#6ea8ff)'}
-  ];
-  var acctChips = acctList.map(function(a){
-    var active = a.key === e.account_type ? ' active' : '';   // Chunk 5 v4 — snake_case
-    return '<button type="button" class="rw-chip rw-chip-acct'+active+'" data-tier="'+a.tier+'" '+
-           'onclick="ciSetEnrichAccount('+idx+',\''+a.key+'\',this)">'+
-           '<span class="rw-acct-dot" style="background:'+a.dot+'"></span>'+a.label+'</button>';
-  }).join('');
+  // ── Read-only broker data (from the parsed CSV row) ──────────────
+  var t = csvParsedTrades[idx] || {};
+  var sideRaw  = String(t.direction || t.type || '').toLowerCase();
+  var isLong   = sideRaw === 'long', isShort = sideRaw === 'short';
+  var sideCls  = isLong ? 'long' : isShort ? 'short' : 'neutral';
+  var sideTxt  = isLong ? '↗ LONG' : isShort ? '↘ SHORT' : '—';
+  var entryN   = (t.entry != null) ? Number(t.entry) : null;
+  var exitN    = (t.exit  != null) ? Number(t.exit)  : null;
+  var brokerPts = (entryN != null && exitN != null)
+    ? (isShort ? entryN - exitN : exitN - entryN) : null;
+  var ptsTxt   = brokerPts != null ? ((brokerPts > 0 ? '+' : '') + brokerPts.toFixed(2)) : '—';
+  var pnlN     = Number(t.pnl) || 0;
+  var pnlTxt   = (pnlN >= 0 ? '+' : '−') + '$' + Math.abs(pnlN).toFixed(2);
+  var pnlCls   = pnlN > 0 ? 'win' : pnlN < 0 ? 'loss' : '';
+  var pxTxt    = (entryN != null && exitN != null)
+    ? (entryN.toFixed(2) + ' → ' + exitN.toFixed(2)) : '—';
+  var brokerHeader =
+    '<div class="ci-bh">' +
+      '<div class="ci-bh-row">' +
+        '<span class="ci-bh-date">' + ciEsc(ciBrokerDateTime(t)) + '</span>' +
+        '<span class="ci-bh-symdir ' + sideCls + '">' +
+          '<span class="ci-bh-sym">' + ciEsc(t.sym || '—') + '</span>' +
+          '<span class="ci-bh-dir">' + sideTxt + '</span>' +
+        '</span>' +
+      '</div>' +
+      '<div class="ci-bh-row">' +
+        '<span class="ci-bh-px">' + pxTxt + '</span>' +
+        '<span class="ci-bh-stat"><span class="ci-bh-k">Points</span>' +
+          '<span class="ci-bh-pts">' + ptsTxt + '</span></span>' +
+        '<span class="ci-bh-stat"><span class="ci-bh-k">P&amp;L</span>' +
+          '<span class="ci-bh-pnl ' + pnlCls + '">' + pnlTxt + '</span></span>' +
+        '<span class="ci-bh-stat"><span class="ci-bh-k">Contracts</span>' +
+          '<span class="ci-bh-v">' + (t.qty || 1) + '</span></span>' +
+      '</div>' +
+    '</div>';
 
   // TV link + validation badge
   var tvOkVis = (e.tradingview_link && typeof _TV_LINK_RE !== 'undefined' && _TV_LINK_RE.test(e.tradingview_link)) ? 'inline-flex' : 'none';
@@ -21430,64 +21437,48 @@ function ciRenderEnrichZone(idx){
   }).join('');
 
   zone.innerHTML =
-    /* Row 1 — Grade · Emotion · Confidence */
-    '<div class="ci-enrich-grid">' +
-      '<div class="rw-field">' +
-        '<div class="rw-field-l">Setup Grade</div>' +
-        '<div class="rw-chip-row rw-chip-row-grade">'+gradeChips+'</div>' +
-      '</div>' +
-      '<div class="rw-field">' +
-        '<div class="rw-field-l">Emotion</div>' +
-        '<div class="rw-chip-row">'+emotionChips+'</div>' +
-      '</div>' +
-      '<div class="rw-field">' +
-        '<div class="rw-field-l">Confidence</div>' +
-        '<div class="rw-chip-row">'+confChips+'</div>' +
-      '</div>' +
-    '</div>' +
-    /* Row 2 — Session (full-width, auto-detected from fill time) */
+    /* ── Read-only broker data ── */
+    brokerHeader +
+    /* ── Account Type ── */
     '<div class="rw-field">' +
-      '<div class="rw-field-l">Session <span class="rw-mod-opt">'+(e.session?'auto-detected':'manual')+'</span></div>' +
-      '<div class="rw-chip-row">'+sessionChips+'</div>' +
+      '<div class="rw-field-l">Account Type <span class="rw-mod-opt">optional</span></div>' +
+      buildAccountTypeChips('csv', e.account_type) +
     '</div>' +
-    /* Row 3 — Account Type · TradingView link */
-    '<div class="ci-enrich-row-double">' +
-      '<div class="rw-field">' +
-        '<div class="rw-field-l">Account Type <span class="rw-mod-opt">optional</span></div>' +
-        '<div class="rw-chip-row">'+acctChips+'</div>' +
+    /* ── Session ── */
+    '<div class="rw-field">' +
+      '<div class="rw-field-l">Session <span class="rw-mod-opt">'+(e.session?'auto-detected':'optional')+'</span></div>' +
+      buildSessionPicker('csv', e.session) +
+    '</div>' +
+    /* ── EVIDENCE — chart proof ── */
+    buildSectionHeader('Evidence') +
+    '<div class="rw-field">' +
+      '<div class="rw-field-l">Chart evidence</div>' +
+      '<div class="rw-dropzone ci-enrich-dropzone" '+
+           'onclick="event.stopPropagation();document.getElementById(\'csv-row-img-input\').click()" '+
+           'ondragover="event.preventDefault();this.classList.add(\'drag-over\')" '+
+           'ondragleave="this.classList.remove(\'drag-over\')" '+
+           'ondrop="event.preventDefault();this.classList.remove(\'drag-over\');ciHandleEnrichDrop('+idx+',event)">' +
+        '<input type="file" id="csv-row-img-input" accept="image/*" multiple style="display:none" '+
+               'onchange="ciHandleEnrichFiles('+idx+',this.files)"/>' +
+        '<svg class="rw-dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">' +
+          '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>' +
+        '<div class="rw-dz-h">Drop screenshot</div>' +
+        '<div class="rw-dz-sub">or click to browse</div>' +
       '</div>' +
-      '<div class="rw-field">' +
-        '<div class="rw-field-l">TradingView link <span class="rw-mod-opt">optional</span></div>' +
-        '<div class="rw-tv-wrap">' +
-          '<svg class="rw-tv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
-            '<polyline points="3,17 9,11 13,15 21,7"/><polyline points="14,7 21,7 21,14"/>' +
-          '</svg>' +
-          '<input type="url" class="rw-tv-input" placeholder="Paste TradingView link…" '+
-                 'value="'+ciEsc(e.tradingview_link)+'" '+
-                 'oninput="ciOnEnrichTV('+idx+', this.value, this.parentNode.querySelector(\'.rw-tv-ok\'))"/>' +
-          '<span class="rw-tv-ok" style="display:'+tvOkVis+'">&#10003; Linked</span>' +
-        '</div>' +
+      '<div class="ci-enrich-thumbs">'+thumbsHtml+'</div>' +
+      '<div class="rw-tv-wrap">' +
+        '<svg class="rw-tv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+          '<polyline points="3,17 9,11 13,15 21,7"/><polyline points="14,7 21,7 21,14"/>' +
+        '</svg>' +
+        '<input type="url" class="rw-tv-input" placeholder="Paste TradingView link…" '+
+               'value="'+ciEsc(e.tradingview_link)+'" '+
+               'oninput="ciOnEnrichTV('+idx+', this.value, this.parentNode.querySelector(\'.rw-tv-ok\'))"/>' +
+        '<span class="rw-tv-ok" style="display:'+tvOkVis+'">&#10003; Linked</span>' +
       '</div>' +
     '</div>' +
-    /* Row 4 — Screenshots · Confluences picker */
-    '<div class="ci-enrich-row-double">' +
-      '<div class="rw-field">' +
-        '<div class="rw-field-l">Screenshots <span class="rw-mod-opt">optional</span></div>' +
-        '<div class="rw-dropzone ci-enrich-dropzone" '+
-             'onclick="event.stopPropagation();document.getElementById(\'csv-row-img-input\').click()" '+
-             'ondragover="event.preventDefault();this.classList.add(\'drag-over\')" '+
-             'ondragleave="this.classList.remove(\'drag-over\')" '+
-             'ondrop="event.preventDefault();this.classList.remove(\'drag-over\');ciHandleEnrichDrop('+idx+',event)">' +
-          '<input type="file" id="csv-row-img-input" accept="image/*" multiple style="display:none" '+
-                 'onchange="ciHandleEnrichFiles('+idx+',this.files)"/>' +
-          '<svg class="rw-dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">' +
-            '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>' +
-          '<div class="rw-dz-h">Drop screenshot</div>' +
-          '<div class="rw-dz-sub">or click to browse</div>' +
-        '</div>' +
-        '<div class="ci-enrich-thumbs">'+thumbsHtml+'</div>' +
-      '</div>' +
-      '<div class="rw-field" id="csv-row-cf-section">' +
+    /* ── ANALYSIS — your read ── */
+    buildSectionHeader('Analysis') +
+    '<div class="rw-field" id="csv-row-cf-section">' +
         '<div class="rw-field-l rw-field-l-flex">' +
           '<span>Confluences <span class="rw-mod-opt">optional</span></span>' +
           '<span class="cf-count" id="csv-row-cf-count">0 added</span>' +
@@ -21529,16 +21520,20 @@ function ciRenderEnrichZone(idx){
         '</div>' +
       '</div>' +
     '</div>' +
-    /* Row 5 — Notes. Chunk 5 v4 — inline oninput retained, but the
-       primary binding is via addEventListener below (more reliable when
-       the textarea is created via innerHTML and the inline attribute
-       parsing has edge-case failures). */
+    /* Notes — inline oninput retained, but the primary binding is via
+       addEventListener below (more reliable when the textarea is created
+       via innerHTML and inline attribute parsing has edge-case failures). */
     '<div class="rw-field">' +
       '<div class="rw-field-l">Notes</div>' +
       '<textarea class="rw-input rw-textarea ci-enrich-notes" data-idx="'+idx+'" '+
                 'placeholder="What happened? Setup, decision, lessons…" '+
                 'oninput="ciOnEnrichNotes('+idx+', this.value)">'+ciEsc(e.notes)+'</textarea>' +
-    '</div>';
+    '</div>' +
+    /* ── REFLECTION — grading ── */
+    buildSectionHeader('Reflection') +
+    buildReflectionRow('grade',      'csv', gradeIdx) +
+    buildReflectionRow('emotion',    'csv', e.emotion) +
+    buildReflectionRow('confidence', 'csv', e.confidence);
 
   // Chunk 5 v4 — bind textarea + TV input via addEventListener as the
   // PRIMARY handler, with multiple event types so a value lands in
@@ -21614,6 +21609,81 @@ function _ciActivateChipInGroup(rowEl, groupSelector, clickedBtn){
   });
   if(clickedBtn) clickedBtn.classList.add('active');
 }
+
+/* ── CSV enrich-row handlers for the shared builders ──────────────────
+   The buildReflectionRow / buildSessionPicker / buildAccountTypeChips
+   markup emits onclick to these (scope 'csv'). They target the single
+   currently-expanded row via ciExpandedRowIdx, mutate csvEnrichment[idx],
+   then refresh the row's status pill + counters live. */
+function ciBrokerDateTime(t){
+  var datePart = '';
+  if(t && t.date){
+    var p = String(t.date).split('-');
+    if(p.length === 3){
+      var MN = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+      datePart = (MN[parseInt(p[1],10)-1] || '') + ' ' + parseInt(p[2],10);
+    } else { datePart = String(t.date); }
+  }
+  var timePart = '';
+  if(t && t._fillTime){
+    try {
+      var d = new Date(t._fillTime);
+      if(!isNaN(d)) timePart = d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+    } catch(e){}
+  }
+  return [datePart, timePart].filter(Boolean).join(' · ') || '—';
+}
+function ciReflGrade(v){
+  var idx = ciExpandedRowIdx; if(idx == null || idx < 0) return;
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  e.grade = RW_REFL.grade.letters[v] || 'B';
+  rwReflApply('csv','grade',v);
+  ciUpdateRowStatus(idx); ciUpdateCounters();
+}
+function ciReflEmotion(v){
+  var idx = ciExpandedRowIdx; if(idx == null || idx < 0) return;
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  e.emotion = parseInt(v) || 3;
+  rwReflApply('csv','emotion',e.emotion);
+  ciUpdateRowStatus(idx); ciUpdateCounters();
+}
+function ciReflConf(v){
+  var idx = ciExpandedRowIdx; if(idx == null || idx < 0) return;
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  e.confidence = parseInt(v) || 3;
+  rwReflApply('csv','confidence',e.confidence);
+  ciUpdateRowStatus(idx); ciUpdateCounters();
+}
+function ciReflSession(name){
+  var idx = ciExpandedRowIdx; if(idx == null || idx < 0) return;
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  e.session = name || '';
+  var cont = document.getElementById('csv-session-pills');
+  if(cont){
+    var pills = cont.querySelectorAll('.lt-session-pill');
+    for(var i=0;i<pills.length;i++){
+      var on = pills[i].getAttribute('data-session') === name;
+      pills[i].classList.toggle('on', on);
+      pills[i].classList.toggle('active', on);
+    }
+  }
+  ciUpdateCounters();
+}
+function ciReflAccount(key){
+  var idx = ciExpandedRowIdx; if(idx == null || idx < 0) return;
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  e.account_type = (e.account_type === key) ? '' : key;
+  var cont = document.getElementById('csv-acct-chips');
+  if(cont){
+    var chips = cont.querySelectorAll('.rw-chip-acct');
+    for(var i=0;i<chips.length;i++){
+      chips[i].classList.toggle('active', !!e.account_type && chips[i].getAttribute('data-acct')===e.account_type);
+    }
+  }
+  ciUpdateRowStatus(idx); ciUpdateCounters();
+}
+window.ciReflGrade=ciReflGrade; window.ciReflEmotion=ciReflEmotion; window.ciReflConf=ciReflConf;
+window.ciReflSession=ciReflSession; window.ciReflAccount=ciReflAccount;
 
 function ciSetEnrichGrade(idx, letter, btn){
   var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
@@ -29641,6 +29711,56 @@ function cookieDecline(){
 #pg-log .ci-enrich .rw-field-l{font-size:9.5px;margin-bottom:6px}
 #pg-log .ci-enrich .rw-input,
 #pg-log .ci-enrich .rw-textarea{padding:7px 10px;font-size:12.5px}
+/* Section headers inside the enrich zone get breathing room above. */
+#pg-log .ci-enrich .rw-section-h{margin-top:20px}
+#pg-log .ci-enrich .rw-field + .rw-field{margin-top:14px}
+
+/* ── CSV enrich row — read-only broker data header ──────────────────── */
+#pg-log .ci-bh{
+  padding:0 0 14px;
+  margin-bottom:6px;
+  border-bottom:1px solid var(--n-border);
+}
+#pg-log .ci-bh-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+#pg-log .ci-bh-row + .ci-bh-row{margin-top:11px}
+#pg-log .ci-bh-date{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.13em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+#pg-log .ci-bh-symdir{
+  display:inline-flex;align-items:stretch;border-radius:6px;
+  overflow:hidden;border:1px solid;
+}
+#pg-log .ci-bh-symdir.long{background:rgba(95,179,137,0.08);border-color:rgba(95,179,137,0.30)}
+#pg-log .ci-bh-symdir.short{background:rgba(201,95,95,0.08);border-color:rgba(201,95,95,0.30)}
+#pg-log .ci-bh-symdir.neutral{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.12)}
+#pg-log .ci-bh-sym{
+  padding:3px 9px;font-family:var(--n-font-mono);font-size:11px;font-weight:600;
+  letter-spacing:0.04em;color:#f5f4f0;
+}
+#pg-log .ci-bh-dir{
+  padding:3px 9px;font-family:var(--n-font-mono);font-size:9.5px;font-weight:600;
+  letter-spacing:0.1em;
+}
+#pg-log .ci-bh-symdir.long .ci-bh-dir{color:#5fb389;border-left:1px solid rgba(95,179,137,0.30)}
+#pg-log .ci-bh-symdir.short .ci-bh-dir{color:#c95f5f;border-left:1px solid rgba(201,95,95,0.30)}
+#pg-log .ci-bh-symdir.neutral .ci-bh-dir{color:var(--n-text-3);border-left:1px solid rgba(255,255,255,0.12)}
+#pg-log .ci-bh-px{
+  font-family:var(--n-font-mono);font-size:12px;color:var(--n-text-2);letter-spacing:0.02em;
+}
+#pg-log .ci-bh-stat{display:inline-flex;align-items:baseline;gap:6px}
+#pg-log .ci-bh-k{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-4);
+}
+#pg-log .ci-bh-v{font-family:var(--n-font-mono);font-size:12px;color:var(--n-text-2)}
+#pg-log .ci-bh-pts{
+  font-family:var(--n-font-display);font-style:italic;font-size:18px;
+  line-height:1;color:#6ea8ff;
+}
+#pg-log .ci-bh-pnl{font-family:var(--n-font-display);font-style:italic;font-size:18px;line-height:1}
+#pg-log .ci-bh-pnl.win{color:#5fb389}
+#pg-log .ci-bh-pnl.loss{color:#c95f5f}
 
 /* ── Phase B — Bottom CTA + Start over ──────────────────────────────── */
 #pg-log .ci-cta-row{
