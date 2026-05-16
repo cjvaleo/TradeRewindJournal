@@ -17411,9 +17411,12 @@ function openCalEdit(id){
   if(delModal) delModal.style.display = 'none';
 
   document.getElementById('cal-edit-modal').style.display='flex';
+  // Lock the page behind the modal — it's a blocking overlay.
+  document.body.style.overflow='hidden';
 }
 function closeCalEdit(){
   document.getElementById('cal-edit-modal').style.display='none';
+  document.body.style.overflow='';
   _cemId=null;
   _cemSession=''; // Chunk 3 — prevent stale session in toggle-clear branch on next open
   _cemTVLink = ''; // Chunk 2.5 — prevent stale TV thumbnail on next modal open
@@ -17456,6 +17459,13 @@ function closeCalEdit(){
     if (typeof cfRenderTFChips === 'function') cfRenderTFChips(cemConfluencesState);
   }
 }
+// ESC closes the Edit Trade modal (standard overlay-modal behavior).
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    var m = document.getElementById('cal-edit-modal');
+    if(m && m.style.display === 'flex') closeCalEdit();
+  }
+});
 function saveCalEdit(){
   // CAPTURE the trade id BEFORE closing the modal — closeCalEdit()
   // nulls _cemId, so any later trades.find(x => x.id == _cemId) would
@@ -28431,24 +28441,27 @@ function cookieDecline(){
   .eod-comm-badge{display:flex !important}
 }
 
-
+/* ============================================================================
+   CALENDAR EDIT MODAL — cem-* component styles.
    Mirrors Log Trade's 4-section flow, compacted ~15% for modal context.
    Re-applies all .rw-* design tokens scoped under .cem-card (since the
    existing .rw-* rules are scoped to #pg-log and don't reach inside this
    modal). Delete-confirm modal nests inside the Edit Modal backdrop.
    ============================================================================ */
 
-/* Backdrop + card frame ----------------------------------------------------*/
+/* Backdrop — full-viewport blocking overlay, flex-centered. */
 .cem-backdrop{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,0.55);
+  background:rgba(10,10,10,0.85);
   backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
   z-index:9990;
   display:flex;
   align-items:center;
   justify-content:center;
   padding:24px 16px;
+  overflow-y:auto;
 }
 .cem-card{
   background:var(--n-bg,#0a0a0a);
