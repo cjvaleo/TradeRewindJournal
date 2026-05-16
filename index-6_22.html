@@ -9147,52 +9147,55 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             <span class="rw-section-name">Reflection</span>
           </div>
 
-          <!-- Setup Grade (6-chip: F D C B A A+) -->
-          <div class="rw-field">
+          <!-- Setup Grade — best (A+) left → worst (F) right.
+               data-grade values stay tied to letters (F=1…A+=6) so
+               setGradeDots keeps writing the correct hidden value. -->
+          <div class="rw-field lt-refl-row">
             <div class="rw-field-l rw-field-l-display">
               <span>Setup Grade</span>
-              <span class="rw-display-val" id="rw-grade-display" style="color:#e0e0e0">B</span>
+              <span class="rw-display-val" id="rw-grade-display">B</span>
             </div>
-            <div class="rw-chip-row rw-chip-row-grade" id="rw-grade-chips">
-              <button type="button" class="rw-chip rw-chip-grade"        data-tier="rose"  data-grade="1" onclick="setGradeDots(1)">F</button>
-              <button type="button" class="rw-chip rw-chip-grade"        data-tier="rose"  data-grade="2" onclick="setGradeDots(2)">D</button>
-              <button type="button" class="rw-chip rw-chip-grade"        data-tier="muted" data-grade="3" onclick="setGradeDots(3)">C</button>
-              <button type="button" class="rw-chip rw-chip-grade active" data-tier="muted" data-grade="4" onclick="setGradeDots(4)">B</button>
-              <button type="button" class="rw-chip rw-chip-grade"        data-tier="sage"  data-grade="5" onclick="setGradeDots(5)">A</button>
-              <button type="button" class="rw-chip rw-chip-grade"        data-tier="sage"  data-grade="6" onclick="setGradeDots(6)">A+</button>
+            <div class="lt-refl-btns" id="rw-grade-chips">
+              <button type="button" class="lt-refl-btn"        data-grade="6" onclick="setGradeDots(6)"><span class="lt-refl-dot" style="--dot:#5fb389"></span><span class="lt-refl-lbl">A+</span></button>
+              <button type="button" class="lt-refl-btn"        data-grade="5" onclick="setGradeDots(5)"><span class="lt-refl-dot" style="--dot:#8cbd7f"></span><span class="lt-refl-lbl">A</span></button>
+              <button type="button" class="lt-refl-btn active" data-grade="4" onclick="setGradeDots(4)"><span class="lt-refl-dot" style="--dot:#c6c596"></span><span class="lt-refl-lbl">B</span></button>
+              <button type="button" class="lt-refl-btn"        data-grade="3" onclick="setGradeDots(3)"><span class="lt-refl-dot" style="--dot:#d4a47a"></span><span class="lt-refl-lbl">C</span></button>
+              <button type="button" class="lt-refl-btn"        data-grade="2" onclick="setGradeDots(2)"><span class="lt-refl-dot" style="--dot:#cf8870"></span><span class="lt-refl-lbl">D</span></button>
+              <button type="button" class="lt-refl-btn"        data-grade="1" onclick="setGradeDots(1)"><span class="lt-refl-dot" style="--dot:#c95f5f"></span><span class="lt-refl-lbl">F</span></button>
             </div>
-            <!-- 0-based GRADES index (B=3 default). setGradeDots writes this. -->
             <input type="hidden" id="lg-grade" value="3"/>
           </div>
 
-          <!-- Emotion (5-chip, scale = existing 1=worst → 5=best for back-compat) -->
-          <div class="rw-field">
+          <!-- Emotion — calm (left) → stressed (right). data-emotion
+               keeps the back-compat scale (5=best calm … 1=worst). -->
+          <div class="rw-field lt-refl-row">
             <div class="rw-field-l rw-field-l-display">
               <span>Emotion</span>
               <span class="rw-display-val" id="rw-emotion-display">Neutral</span>
             </div>
-            <div class="rw-chip-row" id="rw-emotion-chips">
-              <button type="button" class="rw-chip"        data-tier="rose"  data-emotion="1" onclick="setEmotionDots(1)">1&middot;Tilt</button>
-              <button type="button" class="rw-chip"        data-tier="rose"  data-emotion="2" onclick="setEmotionDots(2)">2</button>
-              <button type="button" class="rw-chip active" data-tier="muted" data-emotion="3" onclick="setEmotionDots(3)">3&middot;Neutral</button>
-              <button type="button" class="rw-chip"        data-tier="sage"  data-emotion="4" onclick="setEmotionDots(4)">4</button>
-              <button type="button" class="rw-chip"        data-tier="sage"  data-emotion="5" onclick="setEmotionDots(5)">5&middot;Zone</button>
+            <div class="lt-refl-btns" id="rw-emotion-chips">
+              <button type="button" class="lt-refl-btn"        data-emotion="5" onclick="setEmotionDots(5)"><span class="lt-refl-dot" style="--dot:#5fb389"></span><span class="lt-refl-lbl">Low Cortisol</span></button>
+              <button type="button" class="lt-refl-btn"        data-emotion="4" onclick="setEmotionDots(4)"><span class="lt-refl-dot" style="--dot:#a3c08a"></span><span class="lt-refl-lbl">Relaxed</span></button>
+              <button type="button" class="lt-refl-btn active" data-emotion="3" onclick="setEmotionDots(3)"><span class="lt-refl-dot" style="--dot:#c6c596"></span><span class="lt-refl-lbl">Neutral</span></button>
+              <button type="button" class="lt-refl-btn"        data-emotion="2" onclick="setEmotionDots(2)"><span class="lt-refl-dot" style="--dot:#d4a47a"></span><span class="lt-refl-lbl">Elevated</span></button>
+              <button type="button" class="lt-refl-btn"        data-emotion="1" onclick="setEmotionDots(1)"><span class="lt-refl-dot" style="--dot:#c95f5f"></span><span class="lt-refl-lbl">High Cortisol</span></button>
             </div>
             <input type="hidden" id="lg-emotion" value="3"/>
           </div>
 
-          <!-- Confidence (5-chip) -->
-          <div class="rw-field">
+          <!-- Confidence — locked in (left) → coin flip (right).
+               data-conf keeps the scale (5=best … 1=worst). -->
+          <div class="rw-field lt-refl-row">
             <div class="rw-field-l rw-field-l-display">
               <span>Confidence</span>
-              <span class="rw-display-val" id="rw-conf-display">3<span class="rw-display-suf"> / 5</span></span>
+              <span class="rw-display-val" id="rw-conf-display">Conviction</span>
             </div>
-            <div class="rw-chip-row" id="rw-conf-chips">
-              <button type="button" class="rw-chip"        data-tier="rose"  data-conf="1" onclick="setConfidenceDots(1)">1&middot;None</button>
-              <button type="button" class="rw-chip"        data-tier="cool"  data-conf="2" onclick="setConfidenceDots(2)">2</button>
-              <button type="button" class="rw-chip active" data-tier="cool"  data-conf="3" onclick="setConfidenceDots(3)">3</button>
-              <button type="button" class="rw-chip"        data-tier="cool"  data-conf="4" onclick="setConfidenceDots(4)">4</button>
-              <button type="button" class="rw-chip"        data-tier="sage"  data-conf="5" onclick="setConfidenceDots(5)">5&middot;Max</button>
+            <div class="lt-refl-btns" id="rw-conf-chips">
+              <button type="button" class="lt-refl-btn"        data-conf="5" onclick="setConfidenceDots(5)"><span class="lt-refl-dot" style="--dot:#5fb389"></span><span class="lt-refl-lbl">Locked In</span></button>
+              <button type="button" class="lt-refl-btn"        data-conf="4" onclick="setConfidenceDots(4)"><span class="lt-refl-dot" style="--dot:#a3c08a"></span><span class="lt-refl-lbl">Strong Read</span></button>
+              <button type="button" class="lt-refl-btn active" data-conf="3" onclick="setConfidenceDots(3)"><span class="lt-refl-dot" style="--dot:#c6c596"></span><span class="lt-refl-lbl">Conviction</span></button>
+              <button type="button" class="lt-refl-btn"        data-conf="2" onclick="setConfidenceDots(2)"><span class="lt-refl-dot" style="--dot:#d4a47a"></span><span class="lt-refl-lbl">Hesitant</span></button>
+              <button type="button" class="lt-refl-btn"        data-conf="1" onclick="setConfidenceDots(1)"><span class="lt-refl-dot" style="--dot:#c95f5f"></span><span class="lt-refl-lbl">Coin Flip</span></button>
             </div>
             <input type="hidden" id="lg-conf" value="3"/>
           </div>
@@ -17981,7 +17984,9 @@ const _GRADE_TO_IDX={F:0,D:1,C:2,B:3,A:4,'A+':5}; // Visual redesign: A+ now exp
 const GRADE_COLORS={A:'#5fb389',B:'#e0e0e0',C:'#888',D:'#d49a6a',F:'#c95f5f'};
 const GRADE_PCTS  ={F:20,D:40,C:60,B:80,A:100};
 const EMOTION_COLORS={1:'#c95f5f',2:'#d49a6a',3:'#888',4:'#a8d8a8',5:'#5fb389'};
-const EMOTION_LABELS=['','Tilted','Off','Neutral','Focused','In the zone'];
+/* Redesigned Reflection labels — index = stored value (5=best calm,
+   1=worst stressed). Visual order in the form is flipped (best left). */
+const EMOTION_LABELS=['','High Cortisol','Elevated','Neutral','Relaxed','Low Cortisol'];
 
 function setGradePill(letter){
   // v2: pill UI dropped in favor of dot meter. Route through setGradeDots so any
@@ -18005,13 +18010,13 @@ function setGradeDots(idx){
   var letter = GRADE_IDX_TO_LETTER[idx];
   var color  = (typeof GRADE_COLORS !== 'undefined' && GRADE_COLORS[letter]) || GRADE_COLORS[letter==='A+'?'A':letter] || '#e0e0e0';
 
-  // Chip selector — new primary UI (visual redesign).
-  document.querySelectorAll('#rw-grade-chips .rw-chip-grade').forEach(function(c){
+  // Chip selector — redesigned dot+label buttons.
+  document.querySelectorAll('#rw-grade-chips .lt-refl-btn').forEach(function(c){
     var v = parseInt(c.dataset.grade||'0');
     c.classList.toggle('active', v === idx);
   });
   var disp = document.getElementById('rw-grade-display');
-  if (disp) { disp.textContent = letter; disp.style.color = color; }
+  if (disp) { disp.textContent = letter; }  // off-white; dot carries the color
 
   // Legacy dot row — keep updated for Edit Modal compat (Chunk 3 will move it).
   document.querySelectorAll('#pg-log .lt-grade-dot').forEach(function(d){
@@ -19025,7 +19030,7 @@ window.toggleFreeCapBanner = toggleFreeCapBanner;
 function setEmotionDots(n){
   var lvl = Math.max(1, Math.min(5, parseInt(n)||3));
   // Visual redesign Chunk 2: chip row is primary UI; legacy dot row updated for compat.
-  document.querySelectorAll('#rw-emotion-chips .rw-chip').forEach(function(c){
+  document.querySelectorAll('#rw-emotion-chips .lt-refl-btn').forEach(function(c){
     var v = parseInt(c.dataset.emotion||'0');
     c.classList.toggle('active', v === lvl);
   });
@@ -19065,16 +19070,16 @@ function initReflectionBars(){
   if(c){ c.style.setProperty('--conf-pct', '60%'); }
 }
 
-const CONF_LABELS=['','Unsure','Hesitant','Comfortable','Confident','Conviction'];
+const CONF_LABELS=['','Coin Flip','Hesitant','Conviction','Strong Read','Locked In'];
 function setConfidenceDots(n){
   n = Math.max(1, Math.min(5, parseInt(n)||3));
   // Visual redesign Chunk 2: chip row is primary UI; legacy dot row updated for compat.
-  document.querySelectorAll('#rw-conf-chips .rw-chip').forEach(function(c){
+  document.querySelectorAll('#rw-conf-chips .lt-refl-btn').forEach(function(c){
     var v = parseInt(c.dataset.conf||'0');
     c.classList.toggle('active', v === n);
   });
   var disp = document.getElementById('rw-conf-display');
-  if (disp) disp.innerHTML = n + '<span class="rw-display-suf"> / 5</span>';
+  if (disp) disp.textContent = CONF_LABELS[n] || '';
 
   // Legacy dot row — keep updated for Edit Modal compat (Chunk 3).
   document.querySelectorAll('#pg-log .lt-conf-dot').forEach(function(d){
@@ -27093,6 +27098,45 @@ function cookieDecline(){
 }
 #pg-log .lt-adv-body{margin-top:12px}
 #pg-log .lt-adv-body .rw-grid{margin-bottom:0}
+
+/* Reflection — unified dot+label rows (Setup Grade / Emotion /
+   Confidence). Identical shape; hierarchy via the gradient dot,
+   not brightness. Best on the left, worst on the right. */
+#pg-log .lt-refl-row{margin-bottom:16px}
+#pg-log .lt-refl-btns{display:flex;gap:6px}
+#pg-log .lt-refl-btn{
+  flex:1 1 0;min-width:0;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:9px 4px;
+  background:var(--n-surface-2);
+  border:1px solid var(--n-border);
+  border-radius:6px;
+  cursor:pointer;transition:all .14s ease;user-select:none;
+}
+#pg-log .lt-refl-btn:hover{
+  border-color:var(--n-border-2);background:var(--n-surface-3);
+}
+#pg-log .lt-refl-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+  background:var(--dot,#888);opacity:0.5;transition:all .14s ease;
+}
+#pg-log .lt-refl-lbl{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.05em;
+  text-transform:uppercase;color:var(--n-text-3);
+  text-align:center;line-height:1.3;
+}
+#pg-log #rw-grade-chips .lt-refl-lbl{font-size:10px;letter-spacing:0.03em}
+#pg-log .lt-refl-btn.active{
+  background:rgba(255,255,255,0.04);
+  border-color:var(--n-border-2);
+}
+#pg-log .lt-refl-btn.active .lt-refl-dot{
+  opacity:1;box-shadow:0 0 7px var(--dot);
+}
+#pg-log .lt-refl-btn.active .lt-refl-lbl{color:var(--n-text)}
+@media (max-width:720px){
+  #pg-log .lt-refl-lbl{font-size:7.5px}
+}
 
 /* Inputs (generic + numeric serif italic) -----------------------------------*/
 #pg-log .rw-input{
