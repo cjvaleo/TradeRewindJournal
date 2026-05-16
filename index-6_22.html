@@ -8855,9 +8855,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
         <!-- ============ 01 SETUP — what + where ============ -->
         <div class="rw-section">
-          <div class="rw-section-h">
-            <span class="rw-section-name">Setup</span>
-          </div>
+          <div data-rwbuild="header:Setup"></div>
 
           <!-- Row 1 (categorical): Side + Account Type -->
           <div class="rw-grid rw-grid-side-acct">
@@ -8876,24 +8874,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             </div>
             <div class="rw-field">
               <div class="rw-field-l">Account Type <span class="rw-mod-opt">optional</span></div>
-              <div class="rw-chip-row" id="rw-acct-chips">
-                <button type="button" class="rw-chip rw-chip-acct" data-tier="muted" data-acct="paper"
-                        onclick="setAccountType('paper')">
-                  <span class="rw-acct-dot" style="background:#9a9a92"></span>Paper
-                </button>
-                <button type="button" class="rw-chip rw-chip-acct" data-tier="gold" data-acct="eval"
-                        onclick="setAccountType('eval')">
-                  <span class="rw-acct-dot" style="background:var(--n-gold,#f5d77c)"></span>Eval
-                </button>
-                <button type="button" class="rw-chip rw-chip-acct" data-tier="sage" data-acct="funded"
-                        onclick="setAccountType('funded')">
-                  <span class="rw-acct-dot" style="background:var(--n-profit)"></span>Funded
-                </button>
-                <button type="button" class="rw-chip rw-chip-acct" data-tier="cool" data-acct="live"
-                        onclick="setAccountType('live')">
-                  <span class="rw-acct-dot" style="background:var(--n-accent-cool,#6ea8ff)"></span>Live
-                </button>
-              </div>
+              <div data-rwbuild="acct:rw"></div>
               <input type="hidden" id="lg-account-type" value=""/>
             </div>
           </div>
@@ -8925,13 +8906,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             </div>
             <div class="rw-field">
               <div class="rw-field-l">Session</div>
-              <div class="rw-chip-row lt-session-pills" id="lt-session-pills">
-                <button type="button" class="lt-session-pill sess-asia"     data-session="Asia"     onclick="setSessionPill('Asia')"><span class="lt-sess-name">Asia</span><span class="lt-sess-time">8 PM&ndash;12 AM</span></button>
-                <button type="button" class="lt-session-pill sess-london"   data-session="London"   onclick="setSessionPill('London')"><span class="lt-sess-name">London</span><span class="lt-sess-time">2&ndash;5 AM</span></button>
-                <button type="button" class="lt-session-pill sess-ny-am"    data-session="NY AM"    onclick="setSessionPill('NY AM')"><span class="lt-sess-name">NY AM</span><span class="lt-sess-time">9:30&ndash;11 AM</span></button>
-                <button type="button" class="lt-session-pill sess-ny-lunch" data-session="NY Lunch" onclick="setSessionPill('NY Lunch')"><span class="lt-sess-name">Lunch</span><span class="lt-sess-time">12&ndash;1 PM</span></button>
-                <button type="button" class="lt-session-pill sess-ny-pm"    data-session="NY PM"    onclick="setSessionPill('NY PM')"><span class="lt-sess-name">NY PM</span><span class="lt-sess-time">1:30&ndash;4 PM</span></button>
-              </div>
+              <div data-rwbuild="session:rw"></div>
               <input type="hidden" id="lg-session" value=""/>
             </div>
           </div>
@@ -8939,9 +8914,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
         <!-- ============ 02 EXECUTION — numbers ============ -->
         <div class="rw-section">
-          <div class="rw-section-h">
-            <span class="rw-section-name">Execution</span>
-          </div>
+          <div data-rwbuild="header:Execution"></div>
 
           <!-- Entry / Exit -->
           <div class="rw-grid rw-grid-exec-pair">
@@ -8961,13 +8934,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
               <div class="rw-field-l">Contracts</div>
               <input class="rw-input rw-numeric" id="lg-qty" type="number" step="any" min="1" value="1" oninput="calcLivePnl()"/>
             </div>
-            <div class="rw-field rw-field-points">
-              <div class="rw-field-l rw-field-l-flex">
-                <span>Points</span>
-                <span class="rw-mod-auto rw-mod-auto-pts">&middot; auto</span>
-              </div>
-              <input class="rw-input rw-numeric rw-input-points" id="lg-points" type="text" readonly tabindex="-1" placeholder="auto"/>
-            </div>
+            <div data-rwbuild="points:rw"></div>
             <div class="rw-field">
               <div class="rw-field-l rw-field-l-flex">
                 <span>P&amp;L $</span>
@@ -8978,30 +8945,8 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             </div>
           </div>
 
-          <!-- Advanced (collapsible) — Stop Loss + # of Accounts.
-               Collapsed by default; the two chips say what's inside. -->
-          <div class="lt-advanced" id="lt-advanced">
-            <div class="lt-adv-head" onclick="toggleAdvanced()">
-              <span class="lt-adv-caret" id="lt-adv-caret">&#9655;</span>
-              <span class="lt-adv-title">Advanced</span>
-            </div>
-            <div class="lt-adv-chips">
-              <span class="lt-adv-chip">&#127919; Stop loss &middot; for RR</span>
-              <span class="lt-adv-chip">&#128218; # of accounts</span>
-            </div>
-            <div class="lt-adv-body" id="lt-adv-body" style="display:none">
-              <div class="rw-grid rw-grid-exec-pair">
-                <div class="rw-field">
-                  <div class="rw-field-l">Stop Loss <span class="rw-mod-opt">optional</span></div>
-                  <input class="rw-input rw-numeric" id="lg-stop" type="number" step="any" placeholder="points" oninput="calcLivePnl()"/>
-                </div>
-                <div class="rw-field">
-                  <div class="rw-field-l"># of Accounts</div>
-                  <input class="rw-input rw-numeric" id="lg-accounts" type="number" min="1" value="1" oninput="calcLivePnl()"/>
-                </div>
-              </div>
-            </div>
-          </div>
+          <!-- Advanced (collapsible) — Stop Loss + # of Accounts. -->
+          <div data-rwbuild="advanced:rw"></div>
 
           <!-- R-multiple inline hint (visible only when stop empty) -->
           <div class="rw-r-hint" id="lt-r-helper">
@@ -9021,9 +8966,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
         <!-- ============ EVIDENCE — chart proof ============ -->
         <div class="rw-section">
-          <div class="rw-section-h">
-            <span class="rw-section-name">Evidence</span>
-          </div>
+          <div data-rwbuild="header:Evidence"></div>
 
             <!-- Chart evidence (screenshot + TV link) — full-width section -->
             <div class="rw-field">
@@ -9063,9 +9006,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
         <!-- ============ ANALYSIS — your read ============ -->
         <div class="rw-section">
-          <div class="rw-section-h">
-            <span class="rw-section-name">Analysis</span>
-          </div>
+          <div data-rwbuild="header:Analysis"></div>
 
             <!-- Confluences (tagged analysis) -->
             <div class="rw-field" id="lt-sec-confluences">
@@ -9129,62 +9070,11 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
         <!-- ============ REFLECTION — grading (Free-tier veiled) ============ -->
         <div class="rw-section" id="lt-sec-reflection">
-          <div class="rw-section-h">
-            <span class="rw-section-name">Reflection</span>
-          </div>
+          <div data-rwbuild="header:Reflection"></div>
 
-          <!-- Setup Grade — best (A+) left → worst (F) right.
-               data-grade values stay tied to letters (F=1…A+=6) so
-               setGradeDots keeps writing the correct hidden value. -->
-          <div class="rw-field lt-refl-row">
-            <div class="rw-field-l rw-field-l-display">
-              <span>Setup Grade</span>
-              <span class="rw-display-val" id="rw-grade-display">B</span>
-            </div>
-            <div class="lt-refl-btns" id="rw-grade-chips">
-              <button type="button" class="lt-refl-btn"        data-grade="6" onclick="setGradeDots(6)"><span class="lt-refl-dot" style="--dot:#5fb389"></span><span class="lt-refl-lbl">A+</span></button>
-              <button type="button" class="lt-refl-btn"        data-grade="5" onclick="setGradeDots(5)"><span class="lt-refl-dot" style="--dot:#8cbd7f"></span><span class="lt-refl-lbl">A</span></button>
-              <button type="button" class="lt-refl-btn active" data-grade="4" onclick="setGradeDots(4)"><span class="lt-refl-dot" style="--dot:#c6c596"></span><span class="lt-refl-lbl">B</span></button>
-              <button type="button" class="lt-refl-btn"        data-grade="3" onclick="setGradeDots(3)"><span class="lt-refl-dot" style="--dot:#d4a47a"></span><span class="lt-refl-lbl">C</span></button>
-              <button type="button" class="lt-refl-btn"        data-grade="2" onclick="setGradeDots(2)"><span class="lt-refl-dot" style="--dot:#cf8870"></span><span class="lt-refl-lbl">D</span></button>
-              <button type="button" class="lt-refl-btn"        data-grade="1" onclick="setGradeDots(1)"><span class="lt-refl-dot" style="--dot:#c95f5f"></span><span class="lt-refl-lbl">F</span></button>
-            </div>
-            <input type="hidden" id="lg-grade" value="3"/>
-          </div>
-
-          <!-- Emotion — calm (left) → stressed (right). data-emotion
-               keeps the back-compat scale (5=best calm … 1=worst). -->
-          <div class="rw-field lt-refl-row">
-            <div class="rw-field-l rw-field-l-display">
-              <span>Emotion</span>
-              <span class="rw-display-val" id="rw-emotion-display">Neutral</span>
-            </div>
-            <div class="lt-refl-btns" id="rw-emotion-chips">
-              <button type="button" class="lt-refl-btn"        data-emotion="5" onclick="setEmotionDots(5)"><span class="lt-refl-dot" style="--dot:#5fb389"></span><span class="lt-refl-lbl">Low Cortisol</span></button>
-              <button type="button" class="lt-refl-btn"        data-emotion="4" onclick="setEmotionDots(4)"><span class="lt-refl-dot" style="--dot:#a3c08a"></span><span class="lt-refl-lbl">Relaxed</span></button>
-              <button type="button" class="lt-refl-btn active" data-emotion="3" onclick="setEmotionDots(3)"><span class="lt-refl-dot" style="--dot:#c6c596"></span><span class="lt-refl-lbl">Neutral</span></button>
-              <button type="button" class="lt-refl-btn"        data-emotion="2" onclick="setEmotionDots(2)"><span class="lt-refl-dot" style="--dot:#d4a47a"></span><span class="lt-refl-lbl">Elevated</span></button>
-              <button type="button" class="lt-refl-btn"        data-emotion="1" onclick="setEmotionDots(1)"><span class="lt-refl-dot" style="--dot:#c95f5f"></span><span class="lt-refl-lbl">High Cortisol</span></button>
-            </div>
-            <input type="hidden" id="lg-emotion" value="3"/>
-          </div>
-
-          <!-- Confidence — locked in (left) → coin flip (right).
-               data-conf keeps the scale (5=best … 1=worst). -->
-          <div class="rw-field lt-refl-row">
-            <div class="rw-field-l rw-field-l-display">
-              <span>Confidence</span>
-              <span class="rw-display-val" id="rw-conf-display">Conviction</span>
-            </div>
-            <div class="lt-refl-btns" id="rw-conf-chips">
-              <button type="button" class="lt-refl-btn"        data-conf="5" onclick="setConfidenceDots(5)"><span class="lt-refl-dot" style="--dot:#5fb389"></span><span class="lt-refl-lbl">Locked In</span></button>
-              <button type="button" class="lt-refl-btn"        data-conf="4" onclick="setConfidenceDots(4)"><span class="lt-refl-dot" style="--dot:#a3c08a"></span><span class="lt-refl-lbl">Strong Read</span></button>
-              <button type="button" class="lt-refl-btn active" data-conf="3" onclick="setConfidenceDots(3)"><span class="lt-refl-dot" style="--dot:#c6c596"></span><span class="lt-refl-lbl">Conviction</span></button>
-              <button type="button" class="lt-refl-btn"        data-conf="2" onclick="setConfidenceDots(2)"><span class="lt-refl-dot" style="--dot:#d4a47a"></span><span class="lt-refl-lbl">Hesitant</span></button>
-              <button type="button" class="lt-refl-btn"        data-conf="1" onclick="setConfidenceDots(1)"><span class="lt-refl-dot" style="--dot:#c95f5f"></span><span class="lt-refl-lbl">Coin Flip</span></button>
-            </div>
-            <input type="hidden" id="lg-conf" value="3"/>
-          </div>
+          <div data-rwbuild="refl:grade:rw:4"></div>
+          <div data-rwbuild="refl:emotion:rw:3"></div>
+          <div data-rwbuild="refl:confidence:rw:3"></div>
 
           <!-- LOCK VEIL (free tier only — toggled by applyLogTradeTier) -->
           <div class="lock-veil" id="lt-veil-reflection" style="display:none">
@@ -17109,9 +16999,7 @@ function cemFilterSym(){
   var filtered=q?list.filter(function(s){return s.sym.includes(q)||s.name.toUpperCase().includes(q);}):list;
   if(!filtered.length){dd.style.display='none';return;}
   _cemSymIdx=-1;
-  dd.innerHTML=filtered.slice(0,12).map(function(s,i){
-    return '<div class="cem-sym-opt" data-i="'+i+'" data-sym="'+s.sym+'" onmousedown="cemSelectSym(\''+s.sym+'\')" onmouseover="_cemSymIdx='+i+';cemHighlightSym()" style="padding:8px 12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(191,0,255,.1)"><span style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;letter-spacing:1px;color:var(--cyan)">'+s.sym+'</span><span style="font-family:\'Orbitron\',monospace;font-size:15px;color:rgba(255,255,255,.7)">'+s.name+'</span></div>';
-  }).join('');
+  dd.innerHTML=buildSymbolOptionRows(filtered,'cem');
   dd.style.display='block';
 }
 function cemHighlightSym(){
@@ -17980,6 +17868,194 @@ function setLgType(t){
   if(hint){ hint.textContent='auto'; hint.classList.add('hint-auto'); hint.classList.remove('hint-manual'); }
   if(typeof calcLivePnl==='function') calcLivePnl();
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   SHARED FORM-COMPONENT BUILDERS
+   Single source of markup for the Setup/Execution/Reflection form
+   components used by THREE surfaces: Log Trade (scope 'rw'), the
+   Calendar Edit modal (scope 'cem'), and the CSV Import enrich row
+   (scope 'csv'). Each builder returns an HTML string; the onclick it
+   emits is routed to the scope's handler via the *_HANDLERS maps so a
+   design change here propagates to every surface at once.
+   ═══════════════════════════════════════════════════════════════════ */
+
+// Reflection rows — Setup Grade / Emotion / Confidence. opts are in
+// display order (best left → worst right). `d` is the gradient dot.
+var RW_REFL = {
+  grade: {
+    label:'Setup Grade', attr:'grade',
+    opts:[{v:6,t:'A+',d:'#5fb389'},{v:5,t:'A',d:'#8cbd7f'},{v:4,t:'B',d:'#c6c596'},
+          {v:3,t:'C',d:'#d4a47a'},{v:2,t:'D',d:'#cf8870'},{v:1,t:'F',d:'#c95f5f'}],
+    letters:{6:'A+',5:'A',4:'B',3:'C',2:'D',1:'F'}
+  },
+  emotion: {
+    label:'Emotion', attr:'emotion',
+    opts:[{v:5,t:'Low Cortisol',d:'#5fb389'},{v:4,t:'Relaxed',d:'#a3c08a'},
+          {v:3,t:'Neutral',d:'#c6c596'},{v:2,t:'Elevated',d:'#d4a47a'},{v:1,t:'High Cortisol',d:'#c95f5f'}]
+  },
+  confidence: {
+    label:'Confidence', attr:'conf',
+    opts:[{v:5,t:'Locked In',d:'#5fb389'},{v:4,t:'Strong Read',d:'#a3c08a'},
+          {v:3,t:'Conviction',d:'#c6c596'},{v:2,t:'Hesitant',d:'#d4a47a'},{v:1,t:'Coin Flip',d:'#c95f5f'}]
+  }
+};
+var RW_REFL_HANDLERS = {
+  rw:  {grade:'setGradeDots', emotion:'setEmotionDots', confidence:'setConfidenceDots'},
+  cem: {grade:'cemSetGrade',  emotion:'cemSetEmotion',  confidence:'cemSetConf'},
+  csv: {grade:'ciReflGrade',  emotion:'ciReflEmotion',  confidence:'ciReflConf'}
+};
+function rwReflDisplay(type, value){
+  if(type==='grade') return RW_REFL.grade.letters[value] || '';
+  var o = RW_REFL[type].opts.filter(function(x){return x.v===value;})[0];
+  return o ? o.t : '';
+}
+function buildReflectionRow(type, scope, value){
+  var def = RW_REFL[type], attr = def.attr, hn = RW_REFL_HANDLERS[scope][type];
+  var btns = def.opts.map(function(o){
+    return '<button type="button" class="lt-refl-btn'+(o.v===value?' active':'')+'" data-'+attr+'="'+o.v+'" '+
+      'onclick="'+hn+'('+o.v+')"><span class="lt-refl-dot" style="--dot:'+o.d+'"></span>'+
+      '<span class="lt-refl-lbl">'+o.t+'</span></button>';
+  }).join('');
+  var hidden = '';
+  if(scope==='rw' || scope==='cem'){
+    var hid = (scope==='rw'?'lg-':'cem-') + attr;
+    var hval = (type==='grade') ? (value-1) : value;
+    hidden = '<input type="hidden" id="'+hid+'" value="'+hval+'"/>';
+  }
+  return '<div class="rw-field lt-refl-row">'+
+    '<div class="rw-field-l rw-field-l-display"><span>'+def.label+'</span>'+
+      '<span class="rw-display-val" id="'+scope+'-'+attr+'-display">'+rwReflDisplay(type,value)+'</span></div>'+
+    '<div class="lt-refl-btns" id="'+scope+'-'+attr+'-chips">'+btns+'</div>'+
+    hidden+
+  '</div>';
+}
+
+// Session killzone pills — two-line name + time microtext.
+var RW_SESSIONS = [
+  {name:'Asia',     cls:'sess-asia',     label:'Asia',   time:'8 PM–12 AM'},
+  {name:'London',   cls:'sess-london',   label:'London', time:'2–5 AM'},
+  {name:'NY AM',    cls:'sess-ny-am',    label:'NY AM',  time:'9:30–11 AM'},
+  {name:'NY Lunch', cls:'sess-ny-lunch', label:'Lunch',  time:'12–1 PM'},
+  {name:'NY PM',    cls:'sess-ny-pm',    label:'NY PM',  time:'1:30–4 PM'}
+];
+var RW_SESSION_HANDLERS = {rw:'setSessionPill', cem:'cemSetSession', csv:'ciReflSession'};
+var RW_SESSION_CONTID   = {rw:'lt-session-pills', cem:'cem-session-chips', csv:'csv-session-pills'};
+function buildSessionPicker(scope, selected){
+  var hn = RW_SESSION_HANDLERS[scope];
+  var pills = RW_SESSIONS.map(function(s){
+    var on = (s.name===selected) ? ' on active' : '';
+    return '<button type="button" class="lt-session-pill '+s.cls+on+'" data-session="'+s.name+'" '+
+      'onclick="'+hn+'(\''+s.name+'\')"><span class="lt-sess-name">'+s.label+'</span>'+
+      '<span class="lt-sess-time">'+s.time+'</span></button>';
+  }).join('');
+  return '<div class="rw-chip-row lt-session-pills" id="'+RW_SESSION_CONTID[scope]+'">'+pills+'</div>';
+}
+
+// Account-type chips — 4 chips with colored dots.
+var RW_ACCTS = [
+  {key:'paper',  label:'Paper',  tier:'muted', dot:'#9a9a92'},
+  {key:'eval',   label:'Eval',   tier:'gold',  dot:'var(--n-gold,#f5d77c)'},
+  {key:'funded', label:'Funded', tier:'sage',  dot:'var(--n-profit)'},
+  {key:'live',   label:'Live',   tier:'cool',  dot:'var(--n-accent-cool,#6ea8ff)'}
+];
+var RW_ACCT_HANDLERS = {rw:'setAccountType', cem:'cemSetAccountType', csv:'ciReflAccount'};
+var RW_ACCT_CONTID   = {rw:'rw-acct-chips', cem:'cem-acct-chips', csv:'csv-acct-chips'};
+function buildAccountTypeChips(scope, selected){
+  var hn = RW_ACCT_HANDLERS[scope];
+  var chips = RW_ACCTS.map(function(a){
+    return '<button type="button" class="rw-chip rw-chip-acct'+(a.key===selected?' active':'')+'" '+
+      'data-tier="'+a.tier+'" data-acct="'+a.key+'" onclick="'+hn+'(\''+a.key+'\')">'+
+      '<span class="rw-acct-dot" style="background:'+a.dot+'"></span>'+a.label+'</button>';
+  }).join('');
+  return '<div class="rw-chip-row" id="'+RW_ACCT_CONTID[scope]+'">'+chips+'</div>';
+}
+
+// Symbol typeahead option rows — cool-blue code + name.
+function buildSymbolOptionRows(filtered, scope){
+  var cls   = (scope==='cem') ? 'cem-sym-opt'  : 'sym-opt';
+  var pick  = (scope==='cem') ? 'cemSelectSym' : 'selectSymbol';
+  var hov   = (scope==='cem') ? '_cemSymIdx'   : 'symDropIdx';
+  var hovFn = (scope==='cem') ? 'cemHighlightSym' : 'highlightSym';
+  return filtered.slice(0,12).map(function(s,i){
+    return '<div class="'+cls+'" data-i="'+i+'" data-sym="'+s.sym+'" '+
+      'onmousedown="'+pick+'(\''+s.sym+'\')" onmouseover="'+hov+'='+i+';'+hovFn+'()" '+
+      'style="padding:10px 13px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid rgba(255,255,255,0.06)">'+
+      '<span style="font-family:var(--n-font-mono);font-size:12px;letter-spacing:0.04em;color:#6ea8ff">'+s.sym+'</span>'+
+      '<span style="font-family:var(--n-font-sans);font-size:12px;color:#dbdad5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+s.name+'</span></div>';
+  }).join('');
+}
+
+// Section header — bare title + hairline gradient underline (via ::after).
+function buildSectionHeader(title){
+  return '<div class="rw-section-h"><span class="rw-section-name">'+title+'</span></div>';
+}
+
+// Points field — read-only auto-calc display (cool-blue serif via CSS).
+function buildPointsField(scope){
+  var id = (scope==='cem') ? 'cem-points' : 'lg-points';
+  return '<div class="rw-field rw-field-points">'+
+    '<div class="rw-field-l rw-field-l-flex"><span>Points</span>'+
+      '<span class="rw-mod-auto rw-mod-auto-pts">· auto</span></div>'+
+    '<input class="rw-input rw-numeric rw-input-points" id="'+id+'" type="text" readonly tabindex="-1" placeholder="auto"/>'+
+  '</div>';
+}
+
+// Advanced collapsible — Stop Loss + # of Accounts behind two chips.
+function buildAdvancedToggle(scope){
+  var P    = (scope==='cem') ? 'cem' : 'lt';
+  var calc = (scope==='cem') ? 'cemCalcLive()' : 'calcLivePnl()';
+  var stopId = (scope==='cem') ? 'cem-stop' : 'lg-stop';
+  var acctId = (scope==='cem') ? 'cem-accounts' : 'lg-accounts';
+  return '<div class="lt-advanced" id="'+P+'-advanced">'+
+    '<div class="lt-adv-head" onclick="rwToggleAdvanced(\''+scope+'\')">'+
+      '<span class="lt-adv-caret" id="'+P+'-adv-caret">▷</span>'+
+      '<span class="lt-adv-title">Advanced</span>'+
+    '</div>'+
+    '<div class="lt-adv-chips">'+
+      '<span class="lt-adv-chip">🎯 Stop loss · for RR</span>'+
+      '<span class="lt-adv-chip">📚 # of accounts</span>'+
+    '</div>'+
+    '<div class="lt-adv-body" id="'+P+'-adv-body" style="display:none">'+
+      '<div class="rw-grid rw-grid-exec-pair">'+
+        '<div class="rw-field"><div class="rw-field-l">Stop Loss <span class="rw-mod-opt">optional</span></div>'+
+          '<input class="rw-input rw-numeric" id="'+stopId+'" type="number" step="any" placeholder="points" oninput="'+calc+'"/></div>'+
+        '<div class="rw-field"><div class="rw-field-l"># of Accounts</div>'+
+          '<input class="rw-input rw-numeric" id="'+acctId+'" type="number" min="1" value="1" oninput="'+calc+'"/></div>'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+function rwToggleAdvanced(scope){
+  var P = (scope==='cem') ? 'cem' : 'lt';
+  var adv = document.getElementById(P+'-advanced'), body = document.getElementById(P+'-adv-body');
+  if(!adv || !body) return;
+  var open = adv.classList.toggle('open');
+  body.style.display = open ? '' : 'none';
+}
+window.rwToggleAdvanced = rwToggleAdvanced;
+
+// Declarative mount — replaces every [data-rwbuild] placeholder in the
+// static HTML (Log Trade page + Calendar Edit modal) with builder output.
+function rwBuildFromSpec(spec){
+  var p = spec.split(':');
+  switch(p[0]){
+    case 'header':   return buildSectionHeader(p.slice(1).join(':'));
+    case 'acct':     return buildAccountTypeChips(p[1], '');
+    case 'session':  return buildSessionPicker(p[1], '');
+    case 'points':   return buildPointsField(p[1]);
+    case 'advanced': return buildAdvancedToggle(p[1]);
+    case 'refl':     return buildReflectionRow(p[1], p[2], parseInt(p[3]));
+  }
+  return '';
+}
+function rwMountStaticBuilders(){
+  var phs = document.querySelectorAll('[data-rwbuild]');
+  for(var i=0;i<phs.length;i++){
+    var html = rwBuildFromSpec(phs[i].getAttribute('data-rwbuild'));
+    if(html) phs[i].outerHTML = html;
+  }
+}
+document.addEventListener('DOMContentLoaded', rwMountStaticBuilders);
 
 // ── LOG TRADE V2 — pill handlers, manual-override flags, live preview ──
 let _pnlManual=false, _rrManual=false;
@@ -23312,7 +23388,7 @@ function filterSymbols(){
   const filtered=q?list.filter(s=>s.sym.includes(q)||s.name.toUpperCase().includes(q)):list;
   if(!filtered.length){dd.style.display='none';return;}
   symDropIdx=-1;
-  dd.innerHTML=filtered.slice(0,12).map((s,i)=>`<div class="sym-opt" data-i="${i}" data-sym="${s.sym}" onmousedown="selectSymbol('${s.sym}')" onmouseover="symDropIdx=${i};highlightSym()" style="padding:10px 13px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid rgba(255,255,255,0.06)"><span style="font-family:var(--n-font-mono);font-size:12px;letter-spacing:0.04em;color:#6ea8ff">${s.sym}</span><span style="font-family:var(--n-font-sans);font-size:12px;color:#dbdad5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</span></div>`).join('');
+  dd.innerHTML=buildSymbolOptionRows(filtered,'rw');
   dd.style.display='block';
 }
 
