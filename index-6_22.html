@@ -3613,21 +3613,24 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   box-shadow:0 0 6px rgba(95,179,137,0.55);
   animation:status-pulse 2.4s ease-in-out infinite;
 }
-#pg-log .lt-preview-card{
-  background:var(--n-surface);border:1px solid var(--n-border);
-  border-radius:11px;padding:16px 18px;
-  display:flex;flex-direction:column;gap:10px;
-  transition:.18s;
-}
-#pg-log .lt-preview-card.profit{border-left:3px solid rgba(95,179,137,0.45)}
-#pg-log .lt-preview-card.loss{border-left:3px solid rgba(201,95,95,0.45)}
+/* Live Preview card host — the real .fp2-post component renders
+   inside it (and brings its own card chrome), so the host itself
+   is a bare block. Only the empty state draws a dashed placeholder. */
+#pg-log .lt-preview-card{display:block}
 #pg-log .lt-preview-card.empty{
-  align-items:center;justify-content:center;
+  display:flex;align-items:center;justify-content:center;
   min-height:160px;color:var(--n-text-4);
+  border:1px dashed var(--n-border-2);border-radius:11px;
   font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;
   text-transform:uppercase;
 }
 #pg-log .lt-preview-empty{text-align:center;padding:18px}
+
+/* Points pill beside the feed-card P&L (community feed + Live Preview) */
+:is(#pg-community,#lt-preview-card) .fp2-pts{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.04em;
+  color:#6ea8ff;margin-left:7px;vertical-align:middle;white-space:nowrap;
+}
 
 #pg-log .pc-head{display:flex;align-items:center;gap:10px}
 #pg-log .pc-head .av{
@@ -6518,8 +6521,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
    RIGHT (1fr): P&L (right-aligned) + chart screenshot
    Stacks vertically at <=768px. No like / share / comment / stats grid.
    ────────────────────────────────────────────────────────────────── */
-#pg-community .post.fp2-post{
-  display:grid;
+:is(#pg-community,#lt-preview-card) .post.fp2-post{  display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,1fr);
   gap:24px;
   padding:20px;
@@ -6527,95 +6529,81 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   border:1px solid rgba(255,255,255,0.06);
   border-radius:14px;
 }
-#pg-community .fp2-left,
-#pg-community .fp2-right{display:flex;flex-direction:column;gap:12px;min-width:0}
+:is(#pg-community,#lt-preview-card) .fp2-left,#pg-community .fp2-right{display:flex;flex-direction:column;gap:12px;min-width:0}
 
 /* Author — 30px avatar + display name (bold) + @handle (muted) */
-#pg-community .fp2-head{display:flex;align-items:center;gap:9px;min-width:0}
-#pg-community .fp2-head .av{width:30px!important;height:30px!important;flex-shrink:0}
-#pg-community .fp2-author{display:flex;align-items:baseline;gap:7px;min-width:0;flex-wrap:wrap}
-#pg-community .fp2-name{
-  font-family:var(--n-font-sans);font-size:13px;font-weight:600;color:#f5f4f0;
+:is(#pg-community,#lt-preview-card) .fp2-head{display:flex;align-items:center;gap:9px;min-width:0}
+:is(#pg-community,#lt-preview-card) .fp2-head .av{width:30px!important;height:30px!important;flex-shrink:0}
+:is(#pg-community,#lt-preview-card) .fp2-author{display:flex;align-items:baseline;gap:7px;min-width:0;flex-wrap:wrap}
+:is(#pg-community,#lt-preview-card) .fp2-name{  font-family:var(--n-font-sans);font-size:13px;font-weight:600;color:#f5f4f0;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;
 }
-#pg-community .fp2-handle{
-  font-family:var(--n-font-mono);font-size:11px;font-weight:400;color:#e8e7e2;
+:is(#pg-community,#lt-preview-card) .fp2-handle{  font-family:var(--n-font-mono);font-size:11px;font-weight:400;color:#e8e7e2;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 
 /* Date + account chip row */
-#pg-community .fp2-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-#pg-community .fp2-date{
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.1em;
+:is(#pg-community,#lt-preview-card) .fp2-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+:is(#pg-community,#lt-preview-card) .fp2-date{  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.1em;
   text-transform:uppercase;color:#d6d5d0;
 }
-#pg-community .fp2-acct{
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;
+:is(#pg-community,#lt-preview-card) .fp2-acct{  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;
   text-transform:uppercase;padding:2px 7px;border-radius:4px;
   /* color / border / background set inline per account type */
 }
 
 /* Symbol + direction — combined pill, divider-joined, tinted by side */
-#pg-community .fp2-symdir{
-  display:inline-flex;align-items:stretch;align-self:flex-start;max-width:100%;
+:is(#pg-community,#lt-preview-card) .fp2-symdir{  display:inline-flex;align-items:stretch;align-self:flex-start;max-width:100%;
   border-radius:6px;overflow:hidden;border:1px solid transparent;
   font-family:var(--n-font-mono);
 }
-#pg-community .fp2-symdir.long{background:rgba(95,179,137,0.08);border-color:rgba(95,179,137,0.30)}
-#pg-community .fp2-symdir.short{background:rgba(201,95,95,0.08);border-color:rgba(201,95,95,0.30)}
-#pg-community .fp2-symdir.neutral{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.12)}
-#pg-community .fp2-sym{
-  padding:4px 9px;font-size:11px;font-weight:600;letter-spacing:0.04em;color:#f5f4f0;
+:is(#pg-community,#lt-preview-card) .fp2-symdir.long{background:rgba(95,179,137,0.08);border-color:rgba(95,179,137,0.30)}
+:is(#pg-community,#lt-preview-card) .fp2-symdir.short{background:rgba(201,95,95,0.08);border-color:rgba(201,95,95,0.30)}
+:is(#pg-community,#lt-preview-card) .fp2-symdir.neutral{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.12)}
+:is(#pg-community,#lt-preview-card) .fp2-sym{  padding:4px 9px;font-size:11px;font-weight:600;letter-spacing:0.04em;color:#f5f4f0;
   white-space:nowrap;
 }
-#pg-community .fp2-symdir-div{width:1px;align-self:stretch;flex-shrink:0}
-#pg-community .fp2-symdir.long .fp2-symdir-div{background:rgba(95,179,137,0.30)}
-#pg-community .fp2-symdir.short .fp2-symdir-div{background:rgba(201,95,95,0.30)}
-#pg-community .fp2-symdir.neutral .fp2-symdir-div{background:rgba(255,255,255,0.12)}
-#pg-community .fp2-dir{
-  padding:4px 9px;font-size:10px;font-weight:600;letter-spacing:0.1em;white-space:nowrap;
+:is(#pg-community,#lt-preview-card) .fp2-symdir-div{width:1px;align-self:stretch;flex-shrink:0}
+:is(#pg-community,#lt-preview-card) .fp2-symdir.long .fp2-symdir-div{background:rgba(95,179,137,0.30)}
+:is(#pg-community,#lt-preview-card) .fp2-symdir.short .fp2-symdir-div{background:rgba(201,95,95,0.30)}
+:is(#pg-community,#lt-preview-card) .fp2-symdir.neutral .fp2-symdir-div{background:rgba(255,255,255,0.12)}
+:is(#pg-community,#lt-preview-card) .fp2-dir{  padding:4px 9px;font-size:10px;font-weight:600;letter-spacing:0.1em;white-space:nowrap;
 }
-#pg-community .fp2-symdir.long .fp2-dir{color:#5fb389}
-#pg-community .fp2-symdir.short .fp2-dir{color:#c95f5f}
-#pg-community .fp2-symdir.neutral .fp2-dir{color:var(--n-text-3)}
+:is(#pg-community,#lt-preview-card) .fp2-symdir.long .fp2-dir{color:#5fb389}
+:is(#pg-community,#lt-preview-card) .fp2-symdir.short .fp2-dir{color:#c95f5f}
+:is(#pg-community,#lt-preview-card) .fp2-symdir.neutral .fp2-dir{color:var(--n-text-3)}
 
 /* Confluences — uppercase label + wrap of subtle chips */
-#pg-community .fp2-conf{display:flex;flex-direction:column;gap:5px}
-#pg-community .fp2-conf-label{
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.16em;
+:is(#pg-community,#lt-preview-card) .fp2-conf{display:flex;flex-direction:column;gap:5px}
+:is(#pg-community,#lt-preview-card) .fp2-conf-label{  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.16em;
   text-transform:uppercase;color:#d6d5d0;
 }
-#pg-community .fp2-conf-chips{display:flex;flex-wrap:wrap;gap:5px}
-#pg-community .fp2-conf-chip{
-  font-family:var(--n-font-sans);font-size:10px;color:var(--n-text-2);
+:is(#pg-community,#lt-preview-card) .fp2-conf-chips{display:flex;flex-wrap:wrap;gap:5px}
+:is(#pg-community,#lt-preview-card) .fp2-conf-chip{  font-family:var(--n-font-sans);font-size:10px;color:var(--n-text-2);
   background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
   padding:3px 7px;border-radius:4px;
 }
-#pg-community .fp2-conf-chip em{font-style:normal;color:#d6d5d0;margin-right:3px}
+:is(#pg-community,#lt-preview-card) .fp2-conf-chip em{font-style:normal;color:#d6d5d0;margin-right:3px}
 
 /* Notes — capped to the left column, never bleeds into the right one */
-#pg-community .fp2-notes{
-  font-family:var(--n-font-sans);font-size:12.5px;color:#f0efea;
+:is(#pg-community,#lt-preview-card) .fp2-notes{  font-family:var(--n-font-sans);font-size:12.5px;color:#f0efea;
   line-height:1.55;white-space:pre-wrap;
   overflow-wrap:break-word;word-break:break-word;
 }
 
 /* Right column — P&L (right-aligned) + chart */
-#pg-community .fp2-pnl{
-  font-family:var(--n-font-display);font-style:italic;
+:is(#pg-community,#lt-preview-card) .fp2-pnl{  font-family:var(--n-font-display);font-style:italic;
   font-size:34px;line-height:1;letter-spacing:-0.01em;text-align:right;
 }
-#pg-community .fp2-pnl.profit{color:#5fb389}
-#pg-community .fp2-pnl.loss{color:#c95f5f}
-#pg-community .fp2-pnl.zero{color:var(--n-text-3)}
-#pg-community .fp2-image{
-  width:100%;border-radius:10px;overflow:hidden;cursor:pointer;
+:is(#pg-community,#lt-preview-card) .fp2-pnl.profit{color:#5fb389}
+:is(#pg-community,#lt-preview-card) .fp2-pnl.loss{color:#c95f5f}
+:is(#pg-community,#lt-preview-card) .fp2-pnl.zero{color:var(--n-text-3)}
+:is(#pg-community,#lt-preview-card) .fp2-image{  width:100%;border-radius:10px;overflow:hidden;cursor:pointer;
   border:1px solid rgba(255,255,255,0.08);background:var(--n-surface);
   transition:border-color .15s;
 }
-#pg-community .fp2-image:hover{border-color:rgba(255,255,255,0.16)}
-#pg-community .fp2-image img{
-  display:block;width:100%;
+:is(#pg-community,#lt-preview-card) .fp2-image:hover{border-color:rgba(255,255,255,0.16)}
+:is(#pg-community,#lt-preview-card) .fp2-image img{  display:block;width:100%;
   /* Height-capped, not aspect-locked. Wide TradingView screenshots
      scale to the column width and land well under 260px tall, shown
      in full. A rare tall screenshot is clamped to 260px and
@@ -6629,16 +6617,14 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
    Container query so it tracks the real feed-column width at any
    viewport / nav state. */
 @container (max-width:560px){
-  #pg-community .post.fp2-post{
-    grid-template-columns:1fr;gap:14px;padding:16px;
+  :is(#pg-community,#lt-preview-card) .post.fp2-post{    grid-template-columns:1fr;gap:14px;padding:16px;
   }
-  #pg-community .fp2-pnl{font-size:28px}
+  :is(#pg-community,#lt-preview-card) .fp2-pnl{font-size:28px}
 }
 /* Fallback for engines without @container support — stack at the
    tablet breakpoint so phones never get a cramped 2-col post. */
 @media (max-width:768px){
-  #pg-community .post.fp2-post{
-    grid-template-columns:1fr;gap:14px;padding:16px;
+  :is(#pg-community,#lt-preview-card) .post.fp2-post{    grid-template-columns:1fr;gap:14px;padding:16px;
   }
 }
 
@@ -9219,11 +9205,13 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         </div>
       </div>
 
-      <!-- LIVE COMMUNITY PREVIEW -->
+      <!-- LIVE PREVIEW — renders the trade-in-progress through the
+           SAME feed-post component (renderFeedPostCard) it will post
+           as. updateLogPreview() re-renders it on every field change. -->
       <div class="lt-preview">
-        <div class="lt-preview-h"><span class="dot"></span><span>Community Preview &middot; Live</span></div>
+        <div class="lt-preview-h"><span class="dot"></span><span>Live Preview &middot; Your Card</span></div>
         <div id="lt-preview-card" class="lt-preview-card empty">
-          <div class="lt-preview-empty">Fill in symbol &amp; entry to see preview</div>
+          <div class="lt-preview-empty">Fill in symbol &amp; entry to see your card</div>
         </div>
         <div class="lt-preview-note">Auto-shares to all your communities on submit.</div>
       </div>
@@ -12560,23 +12548,38 @@ function renderFeedPosts(g){
   // — each row is wrapped in a truthy check and omitted otherwise.
   // ──────────────────────────────────────────────────────────────────
 
-  // Account-type chip — colored text + 25%-opacity border + 4% bg.
-  // account_type values in the schema are paper|eval|funded|live;
-  // 'paper' surfaces to the user as "Personal".
-  var ACCT2 = {
-    funded: { label:'Funded',   txt:'#f5d77c', bd:'rgba(245,215,124,0.25)', bg:'rgba(245,215,124,0.04)' },
-    eval:   { label:'Eval',     txt:'#6ea8ff', bd:'rgba(110,168,255,0.25)', bg:'rgba(110,168,255,0.04)' },
-    live:   { label:'Live',     txt:'#5fb389', bd:'rgba(95,179,137,0.25)',  bg:'rgba(95,179,137,0.04)'  },
-    paper:  { label:'Personal', txt:'#e8e7e2', bd:'rgba(154,154,146,0.30)', bg:'rgba(154,154,146,0.05)' }
-  };
+  el.innerHTML = visible.map(renderFeedPostCard).join('');
 
-  el.innerHTML = visible.map(function(p){
+  if (hasMore) {
+    var remaining = total - _feedShown;
+    var nextBatch = Math.min(30, remaining);
+    el.innerHTML +=
+      '<button class="btn-sec" style="width:100%;margin-top:8px" onclick="_feedShown+=30;renderFeedPosts(_comm)">'
+      + 'Load ' + nextBatch + ' more · ' + remaining + ' remaining'
+      + '</button>';
+  }
+}
+
+/* Account-type chip palette — module scope so renderFeedPostCard
+   (used by BOTH the community feed and the Log Trade Live Preview)
+   can read it. Schema values: paper | eval | funded | live. */
+var ACCT2 = {
+  funded: { label:'Funded', txt:'#f5d77c', bd:'rgba(245,215,124,0.25)', bg:'rgba(245,215,124,0.04)' },
+  eval:   { label:'Eval',   txt:'#6ea8ff', bd:'rgba(110,168,255,0.25)', bg:'rgba(110,168,255,0.04)' },
+  live:   { label:'Live',   txt:'#5fb389', bd:'rgba(95,179,137,0.25)',  bg:'rgba(95,179,137,0.04)'  },
+  paper:  { label:'Paper',  txt:'#e8e7e2', bd:'rgba(154,154,146,0.30)', bg:'rgba(154,154,146,0.05)' }
+};
+
+/* Feed post card — the two-column .fp2-* component. Extracted from
+   renderFeedPosts so the Log Trade "Live Preview" can render the
+   trade-in-progress through the EXACT same component: updateLogPreview()
+   builds a synthetic post object and calls this. Takes a post-shaped
+   object, returns the card HTML string. */
+function renderFeedPostCard(p){
     var t = p.trade || {};
     var pnl = p.pnl || 0;
     var postId = p.isMe ? (t.id || '') : (p.row ? p.row.id : '');
     var safePid = safeText(postId);
-    var likes = _likeCounts[postId] || 0;
-    var youLiked = !!_myLikes[postId];
 
     // Parse metadata once. PostgREST sometimes returns JSONB as a string;
     // be tolerant. `meta` is the denormalized snapshot of the trade at
@@ -12702,6 +12705,17 @@ function renderFeedPosts(g){
         + '</div>'
       : '';
 
+    // ── Points — small "+10.0 PTS" beside the P&L (cool blue).
+    // Reads p.points (Live Preview) or meta.points (feed posts that
+    // were shared after trade_data.points started being written).
+    var ptsRaw = (p.points != null) ? p.points
+               : (meta.points != null ? meta.points : null);
+    var ptsHtml = '';
+    if(ptsRaw != null && ptsRaw !== '' && !isNaN(parseFloat(ptsRaw))){
+      var pv = parseFloat(ptsRaw);
+      ptsHtml = '<span class="fp2-pts">'+(pv>0?'+':'')+(Math.round(pv*10)/10)+' PTS</span>';
+    }
+
     // ── Two-column card. No like / share / comment / stats grid. ─────
     return '<div class="post fp2-post '+pnlClass+'" data-pid="'+safePid+'">'
       // LEFT — author / date+account / sym-dir / confluences / notes
@@ -12723,22 +12737,12 @@ function renderFeedPosts(g){
       +   confHtml
       +   notesHtml
       + '</div>'
-      // RIGHT — P&L (right-aligned) + chart
+      // RIGHT — P&L (right-aligned) + Points + chart
       + '<div class="fp2-right">'
-      +   '<div class="fp2-pnl '+pnlClass+'">'+pnlStr+'</div>'
+      +   '<div class="fp2-pnl '+pnlClass+'">'+pnlStr+ptsHtml+'</div>'
       +   postImgHtml
       + '</div>'
       + '</div>';
-  }).join('');
-
-  if (hasMore) {
-    var remaining = total - _feedShown;
-    var nextBatch = Math.min(30, remaining);
-    el.innerHTML +=
-      '<button class="btn-sec" style="width:100%;margin-top:8px" onclick="_feedShown+=30;renderFeedPosts(_comm)">'
-      + 'Load ' + nextBatch + ' more · ' + remaining + ' remaining'
-      + '</button>';
-  }
 }
 
 /* ===================================================================
@@ -19303,82 +19307,61 @@ function _safeText(s){
     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
+/* Live Preview — renders the trade-in-progress through renderFeedPostCard,
+   the SAME component the community feed uses. Builds a synthetic
+   post-shaped object from the live form fields; re-runs on every
+   field change (form oninput handlers + calcLivePnl all call this). */
 function updateLogPreview(){
   var card=document.getElementById('lt-preview-card');
   if(!card) return;
+  if(typeof renderFeedPostCard!=='function') return;
 
-  var symRaw=(document.getElementById('lg-sym')||{}).value||'';
-  var sym=symRaw.trim().toUpperCase();
+  var sym=((document.getElementById('lg-sym')||{}).value||'').trim().toUpperCase();
   var entry=parseFloat((document.getElementById('lg-entry')||{}).value);
-  var pnl=parseFloat((document.getElementById('lg-pnl')||{}).value);
-  var rr=parseFloat((document.getElementById('lg-rr')||{}).value);
-  var notes=((document.getElementById('lg-notes')||{}).value||'').trim();
-  var accts=parseInt((document.getElementById('lg-accounts')||{}).value)||1;
-  var session=(document.getElementById('lg-session')||{}).value||'';
-  var gradePillEl=document.querySelector('#pg-log .lt-grade-pill.on');
-  var grade = gradePillEl ? gradePillEl.dataset.grade : null;
-  var conf = parseInt((document.getElementById('lg-conf')||{}).value)||0;
 
-  // Empty state — until they've entered a symbol AND an entry price
+  // Empty state — symbol AND entry price both required.
   if(!sym || isNaN(entry)){
-    card.className = 'lt-preview-card empty';
-    card.innerHTML = '<div class="lt-preview-empty">Fill in symbol &amp; entry to see preview</div>';
+    card.className='lt-preview-card empty';
+    card.innerHTML='<div class="lt-preview-empty">Fill in symbol &amp; entry to see your card</div>';
     return;
   }
 
+  var pnl     = parseFloat((document.getElementById('lg-pnl')||{}).value);
+  var pts     = parseFloat((document.getElementById('lg-points')||{}).value);
+  var notes   = ((document.getElementById('lg-notes')||{}).value||'').trim();
+  var dateVal = (document.getElementById('lg-date')||{}).value||'';
+  var acctType= (document.getElementById('lg-account-type')||{}).value||'';
   var sideRaw = (typeof lgType==='string'?lgType:'long');
-  var sideClass = sideRaw === 'short' ? 'short' : 'long';
-  var sideText = sideRaw === 'short' ? '↘ Short' : '↗ Long';
-  var hasPnl = !isNaN(pnl);
-  var isWin = hasPnl ? pnl>=0 : true;
-  var pnlClass = hasPnl ? (isWin ? 'profit' : 'loss') : '';
-  var pnlStr = hasPnl
-    ? ((isWin?'+':'−')+'$'+Math.abs(pnl).toLocaleString(undefined,{maximumFractionDigits:2}))
-    : '—';
 
-  // Avatar — 8-finish convention used elsewhere; pull from acct profile
-  var profile = (typeof acct==='object' && acct) ? acct : {};
-  var username = profile.username || profile.handle || 'you';
-  var initials = profile.avatar_initials || profile.initials
-              || (typeof username==='string' ? username.slice(0,2).toUpperCase() : 'YO');
-  var finish   = profile.avatar_finish || profile.color || 'sapphire';
-
-  var chips = [];
-  if(grade){
-    var cls = grade==='A' ? 'pc-chip grade-a' : 'pc-chip';
-    chips.push('<span class="'+cls+'">'+_safeText(grade)+' Setup</span>');
+  // Confluences snapshot straight off the picker state.
+  var cf=[];
+  if(typeof confluencesState!=='undefined' && Array.isArray(confluencesState.selected)){
+    cf=confluencesState.selected.map(function(c){
+      return { name:c.name||'', timeframe:c.timeframe||null };
+    });
   }
-  if(!isNaN(rr) && rr!==0){
-    chips.push('<span class="pc-chip rr">'+(rr>0?'+':'')+rr+'R</span>');
-  }
-  if(session){
-    chips.push('<span class="pc-chip">'+_safeText(session)+'</span>');
-  }
-  if(accts>1){
-    chips.push('<span class="pc-chip multi-acct">×'+accts+' accts</span>');
-  }
-  if(conf>=1 && conf<=5){
-    var dots = '●'.repeat(conf) + '○'.repeat(5-conf);
-    chips.push('<span class="pc-chip">Conviction '+dots+'</span>');
+  // Screenshot — first attached note image, if any.
+  var img='';
+  if(typeof noteImages!=='undefined' && Array.isArray(noteImages) && noteImages.length){
+    img=noteImages[0];
   }
 
-  card.className = 'lt-preview-card' + (hasPnl ? (isWin ? ' profit' : ' loss') : '');
-  card.innerHTML =
-    '<div class="pc-head">'+
-      '<div class="av '+_safeText(finish)+'">'+_safeText(initials)+'</div>'+
-      '<div class="pc-author">'+
-        '<div class="pc-name">'+_safeText(username)+'</div>'+
-        '<div class="pc-handle">@'+_safeText(username)+'</div>'+
-      '</div>'+
-      '<span class="pc-time">Just now</span>'+
-    '</div>'+
-    '<div class="pc-trade-body">'+
-      '<span class="pc-sym">'+_safeText(sym)+'</span>'+
-      '<span class="pc-side '+sideClass+'">'+sideText+'</span>'+
-      '<span class="pc-pnl '+pnlClass+'">'+pnlStr+'</span>'+
-    '</div>'+
-    (notes?'<div class="pc-notes">'+_safeText(notes)+'</div>':'')+
-    (chips.length?'<div class="pc-chips">'+chips.join('')+'</div>':'');
+  var profile=(typeof acct==='object'&&acct)?acct:{};
+  var p={
+    isMe:true, isText:false,
+    trade:{ id:'', sym:sym, type:sideRaw, date:dateVal, notes:notes, account_type:acctType },
+    pnl: isNaN(pnl)?0:pnl,
+    points: isNaN(pts)?null:pts,
+    metadata:{ confluences:cf, account_type:acctType, date:dateVal },
+    username:        profile.username || 'you',
+    display_name:    profile.name || profile.display_name || '',
+    avatar_finish:   profile.avatar_finish || profile.color || '',
+    avatar_initials: profile.avatar_initials || profile.initials || '',
+    avatar_image_url:profile.avatar_image_url || null,
+    image_url:       img || ''
+  };
+  card.className='lt-preview-card';
+  card.innerHTML=renderFeedPostCard(p);
 }
 
 document.addEventListener('DOMContentLoaded', function(){
