@@ -6562,7 +6562,13 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 }
 #pg-community .fp2-image:hover{border-color:rgba(255,255,255,0.16)}
 #pg-community .fp2-image img{
-  display:block;width:100%;aspect-ratio:16/10;object-fit:cover;
+  display:block;width:100%;
+  /* Height-capped, not aspect-locked. Wide TradingView screenshots
+     scale to the column width and land well under 260px tall, shown
+     in full. A rare tall screenshot is clamped to 260px and
+     object-fit:cover crops it to the column width cleanly — no
+     letterboxing, no janky stretch. */
+  max-height:260px;object-fit:cover;
 }
 
 /* Responsive — stack the two columns when the POST itself is narrower
