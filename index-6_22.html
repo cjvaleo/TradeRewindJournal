@@ -6360,9 +6360,11 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 #pg-community .period-tab.on{background:var(--n-surface-3);color:var(--n-text)}
 
 #pg-community .hero-pnl{
-  /* Feed column capped at 800px, centered — matches .filters +
-     #comm-feed-posts so hero / tabs / posts read as one column. */
-  margin:24px auto 32px;max-width:800px;
+  /* Group P&L hero — intentionally WIDER than the 800px posts /
+     filters column below it: it fills the full feed column. No
+     max-width cap; margin auto keeps it centered if the feed
+     column is ever wider than the card. */
+  margin:24px auto 32px;
   padding:32px 36px 36px;
   border:1px solid var(--n-border);border-radius:14px;
   background:radial-gradient(ellipse 700px 300px at 50% 0%,var(--n-surface-2) 0%,var(--n-bg) 80%);
