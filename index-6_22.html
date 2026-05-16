@@ -6203,7 +6203,14 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
    grand. */
 #pg-community .filters,
 #pg-community #comm-feed-posts{
-  max-width:640px;margin-left:auto;margin-right:auto;
+  max-width:720px;margin-left:auto;margin-right:auto;
+  /* Query container — feed posts size their 2-col/1-col layout off
+     THIS element's width, not the viewport. The feed column's width
+     swings widely with viewport (the fixed nav + csb + rail eat
+     ~810px), so a viewport media query can't tell when a post is
+     genuinely too narrow for two columns. See the @container rule
+     on .fp2-post. */
+  container-type:inline-size;
 }
 #pg-community .rail{
   width:300px;padding:32px 22px;
@@ -6453,142 +6460,128 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 #pg-community .post.loss{border-left:3px solid rgba(201,95,95,0.45)}
 
 /* ──────────────────────────────────────────────────────────────────
-   CHUNK 7 — Minimal feed-post layout (.fp-* classes).
-   Post IS the container. No nested trade-card border. Element order
-   below mirrors the renderer in renderFeedPosts: author / headline /
-   conf / notes / image / actions.
+   Community feed post — TWO-COLUMN layout (.fp2-* classes).
+   LEFT  (1fr): author · date+account · sym/dir pill · confluences · notes
+   RIGHT (1fr): P&L (right-aligned) + chart screenshot
+   Stacks vertically at <=768px. No like / share / comment / stats grid.
    ────────────────────────────────────────────────────────────────── */
+#pg-community .post.fp2-post{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:24px;
+  padding:20px;
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:14px;
+}
+#pg-community .fp2-left,
+#pg-community .fp2-right{display:flex;flex-direction:column;gap:12px;min-width:0}
 
-/* (1) Author row — 28px avatar + handle + time + acct dot+label right */
-#pg-community .post.fp-post{padding:14px 16px 10px}
-#pg-community .fp-head{
-  display:flex;align-items:center;gap:10px;margin-bottom:10px;
+/* Author — 30px avatar + display name (bold) + @handle (muted) */
+#pg-community .fp2-head{display:flex;align-items:center;gap:9px;min-width:0}
+#pg-community .fp2-head .av{width:30px!important;height:30px!important;flex-shrink:0}
+#pg-community .fp2-author{display:flex;align-items:baseline;gap:7px;min-width:0;flex-wrap:wrap}
+#pg-community .fp2-name{
+  font-family:var(--n-font-sans);font-size:13px;font-weight:600;color:#f5f4f0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;
 }
-#pg-community .fp-head .av{flex-shrink:0}
-#pg-community .fp-author{
-  display:flex;align-items:baseline;gap:8px;min-width:0;flex:1;
+#pg-community .fp2-handle{
+  font-family:var(--n-font-mono);font-size:11px;font-weight:400;color:#9a9a92;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-#pg-community .fp-handle{
-  font-family:var(--n-font-mono);font-size:12px;
-  color:var(--n-text);letter-spacing:0.01em;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-#pg-community .fp-time{
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.04em;
-  color:var(--n-text-3);flex-shrink:0;
-}
-#pg-community .fp-acct{
-  display:inline-flex;align-items:center;gap:6px;margin-left:auto;
-  font-family:var(--n-font-sans);font-size:11px;color:var(--n-text-2);
-  flex-shrink:0;
-}
-#pg-community .fp-acct-dot{
-  width:6px;height:6px;border-radius:50%;
-  box-shadow:0 0 0 1px rgba(255,255,255,0.04);
-}
-#pg-community .fp-acct-label{letter-spacing:0.02em}
 
-/* (2) Headline row — sym + side LEFT, R-chip + big serif P&L RIGHT */
-#pg-community .fp-headline{
-  display:flex;justify-content:space-between;align-items:baseline;
-  gap:12px;margin-bottom:10px;
+/* Date + account chip row */
+#pg-community .fp2-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#pg-community .fp2-date{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.1em;
+  text-transform:uppercase;color:#56554f;
 }
-#pg-community .fp-headline-l{
-  display:flex;align-items:baseline;gap:10px;min-width:0;
+#pg-community .fp2-acct{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;
+  text-transform:uppercase;padding:2px 7px;border-radius:4px;
+  /* color / border / background set inline per account type */
 }
-#pg-community .fp-headline-r{
-  display:flex;align-items:baseline;gap:10px;flex-shrink:0;
+
+/* Symbol + direction — combined pill, divider-joined, tinted by side */
+#pg-community .fp2-symdir{
+  display:inline-flex;align-items:stretch;align-self:flex-start;max-width:100%;
+  border-radius:6px;overflow:hidden;border:1px solid transparent;
+  font-family:var(--n-font-mono);
 }
-#pg-community .fp-sym{
-  font-family:var(--n-font-mono);font-size:13px;
-  color:var(--n-text);font-weight:500;letter-spacing:0.02em;
+#pg-community .fp2-symdir.long{background:rgba(95,179,137,0.08);border-color:rgba(95,179,137,0.30)}
+#pg-community .fp2-symdir.short{background:rgba(201,95,95,0.08);border-color:rgba(201,95,95,0.30)}
+#pg-community .fp2-symdir.neutral{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.12)}
+#pg-community .fp2-sym{
+  padding:4px 9px;font-size:11px;font-weight:600;letter-spacing:0.04em;color:#f5f4f0;
+  white-space:nowrap;
 }
-#pg-community .fp-side{
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
-  text-transform:uppercase;padding:3px 8px;border-radius:4px;
-  font-weight:500;
+#pg-community .fp2-symdir-div{width:1px;align-self:stretch;flex-shrink:0}
+#pg-community .fp2-symdir.long .fp2-symdir-div{background:rgba(95,179,137,0.30)}
+#pg-community .fp2-symdir.short .fp2-symdir-div{background:rgba(201,95,95,0.30)}
+#pg-community .fp2-symdir.neutral .fp2-symdir-div{background:rgba(255,255,255,0.12)}
+#pg-community .fp2-dir{
+  padding:4px 9px;font-size:10px;font-weight:600;letter-spacing:0.1em;white-space:nowrap;
 }
-#pg-community .fp-side.long{
-  background:rgba(95,179,137,0.10);color:var(--n-profit);
-  border:1px solid rgba(95,179,137,0.20);
+#pg-community .fp2-symdir.long .fp2-dir{color:#5fb389}
+#pg-community .fp2-symdir.short .fp2-dir{color:#c95f5f}
+#pg-community .fp2-symdir.neutral .fp2-dir{color:var(--n-text-3)}
+
+/* Confluences — uppercase label + wrap of subtle chips */
+#pg-community .fp2-conf{display:flex;flex-direction:column;gap:5px}
+#pg-community .fp2-conf-label{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.16em;
+  text-transform:uppercase;color:#56554f;
 }
-#pg-community .fp-side.short{
-  background:rgba(201,95,95,0.10);color:var(--n-loss);
-  border:1px solid rgba(201,95,95,0.20);
+#pg-community .fp2-conf-chips{display:flex;flex-wrap:wrap;gap:5px}
+#pg-community .fp2-conf-chip{
+  font-family:var(--n-font-sans);font-size:10px;color:var(--n-text-2);
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
+  padding:3px 7px;border-radius:4px;
 }
-#pg-community .fp-rr{
-  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.02em;
+#pg-community .fp2-conf-chip em{font-style:normal;color:#56554f;margin-right:3px}
+
+/* Notes — capped to the left column, never bleeds into the right one */
+#pg-community .fp2-notes{
+  font-family:var(--n-font-sans);font-size:12.5px;color:#c8c7c2;
+  line-height:1.55;white-space:pre-wrap;
+  overflow-wrap:break-word;word-break:break-word;
 }
-#pg-community .fp-rr.pos{color:var(--n-accent-cool)}
-#pg-community .fp-rr.neg{color:var(--n-loss)}
-#pg-community .fp-pnl{
+
+/* Right column — P&L (right-aligned) + chart */
+#pg-community .fp2-pnl{
   font-family:var(--n-font-display);font-style:italic;
-  font-size:26px;line-height:1;letter-spacing:-0.01em;
-  text-shadow:none;
+  font-size:34px;line-height:1;letter-spacing:-0.01em;text-align:right;
 }
-#pg-community .fp-pnl.profit{color:var(--n-profit)}
-#pg-community .fp-pnl.loss{color:var(--n-loss)}
-#pg-community .fp-pnl.zero{color:var(--n-text-3)}
-
-/* (3) Confluence pills — reuses .cf-pill-mini token tier colors */
-#pg-community .fp-conf{margin-bottom:10px}
-#pg-community .fp-conf .cf-mini-row{gap:5px}
-
-/* (4) Notes prose — 3-line clamp with Show more toggle */
-#pg-community .fp-notes{
-  position:relative;margin-bottom:10px;cursor:pointer;
+#pg-community .fp2-pnl.profit{color:#5fb389}
+#pg-community .fp2-pnl.loss{color:#c95f5f}
+#pg-community .fp2-pnl.zero{color:var(--n-text-3)}
+#pg-community .fp2-image{
+  width:100%;border-radius:10px;overflow:hidden;cursor:pointer;
+  border:1px solid rgba(255,255,255,0.08);background:var(--n-surface);
+  transition:border-color .15s;
 }
-#pg-community .fp-notes-body{
-  font-family:var(--n-font-sans);font-size:14px;
-  color:var(--n-text);line-height:1.5;white-space:pre-wrap;
-  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
-  overflow:hidden;
-}
-#pg-community .fp-notes[data-collapsed="0"] .fp-notes-body{
-  -webkit-line-clamp:unset;overflow:visible;display:block;
-}
-#pg-community .fp-notes-more{
-  display:none;margin-top:4px;padding:0;background:transparent;border:none;
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.12em;
-  text-transform:uppercase;color:var(--n-accent-cool);cursor:pointer;
-}
-/* Show "Show more" only when the prose is actually clamped */
-#pg-community .fp-notes[data-collapsed="1"] .fp-notes-body{position:relative}
-#pg-community .fp-notes[data-collapsed="1"]:hover .fp-notes-more,
-#pg-community .fp-notes[data-collapsed="1"] .fp-notes-more{display:inline-block}
-#pg-community .fp-notes[data-collapsed="0"] .fp-notes-more{display:inline-block}
-#pg-community .fp-notes[data-collapsed="0"] .fp-notes-more::before{content:'Show less'}
-#pg-community .fp-notes[data-collapsed="0"] .fp-notes-more{font-size:0;letter-spacing:0}
-#pg-community .fp-notes[data-collapsed="0"] .fp-notes-more::before{font-size:10px;letter-spacing:0.12em}
-
-/* (5) Screenshot — single image, 180px tall, full-width, 8px radius */
-#pg-community .fp-image{
-  margin-bottom:10px;border-radius:8px;overflow:hidden;
-  background:var(--n-surface);cursor:pointer;
-  border:1px solid var(--n-border);transition:.15s;
-}
-#pg-community .fp-image:hover{border-color:var(--n-border-2)}
-#pg-community .fp-image img{
-  display:block;width:100%;height:180px;object-fit:cover;
+#pg-community .fp2-image:hover{border-color:rgba(255,255,255,0.16)}
+#pg-community .fp2-image img{
+  display:block;width:100%;aspect-ratio:16/10;object-fit:cover;
 }
 
-/* (6) Engagement bar — heart, reply, share. No top border (post body has
-   enough breathing room per spec). No trophy/TOTD. */
-#pg-community .fp-actions{
-  display:flex;align-items:center;gap:18px;
-  padding-top:4px;
+/* Responsive — stack the two columns when the POST itself is narrower
+   than ~560px (two comfortable columns + gap + padding don't fit).
+   Container query so it tracks the real feed-column width at any
+   viewport / nav state. */
+@container (max-width:560px){
+  #pg-community .post.fp2-post{
+    grid-template-columns:1fr;gap:14px;padding:16px;
+  }
+  #pg-community .fp2-pnl{font-size:28px}
 }
-#pg-community .fp-actions .fp-act-share{margin-left:auto}
-#pg-community .fp-act{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:4px 6px;background:transparent;border:none;
-  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.04em;
-  color:var(--n-text-3);cursor:pointer;border-radius:4px;transition:.12s;
+/* Fallback for engines without @container support — stack at the
+   tablet breakpoint so phones never get a cramped 2-col post. */
+@media (max-width:768px){
+  #pg-community .post.fp2-post{
+    grid-template-columns:1fr;gap:14px;padding:16px;
+  }
 }
-#pg-community .fp-act:hover{color:var(--n-text);background:rgba(255,255,255,0.03)}
-#pg-community .fp-act svg{width:16px;height:16px;stroke-width:1.8;fill:none;stroke:currentColor}
-#pg-community .fp-act.liked{color:var(--n-loss)}
-#pg-community .fp-act.liked svg{fill:currentColor}
 
 /* Ultra-wide — cap the community page width + align internal feed
    items. At normal widths (≤1920px) the existing 3-column flex layout
@@ -6700,13 +6693,6 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   }
 }
 
-/* Mobile — tighten padding, allow R+P&L to wrap below sym/side */
-@media (max-width: 720px){
-  #pg-community .post.fp-post{padding:12px 13px 9px}
-  #pg-community .fp-headline{flex-wrap:wrap;gap:8px}
-  #pg-community .fp-pnl{font-size:22px}
-  #pg-community .fp-image img{height:160px}
-}
 
 /* POST HEAD */
 #pg-community .post-head{
@@ -12499,14 +12485,14 @@ function renderFeedPosts(g){
   // — each row is wrapped in a truthy check and omitted otherwise.
   // ──────────────────────────────────────────────────────────────────
 
-  // Tier swatches for the Account dot+label, matched against the rw-chip
-  // tokens used in Log Trade / Edit Modal / History (Chunk 6) for
-  // cross-surface visual consistency.
-  var ACCT_META = {
-    paper:  { label:'Paper',  dot:'rgba(255,255,255,0.35)' },
-    eval:   { label:'Eval',   dot:'var(--n-gold,#f5d77c)' },
-    funded: { label:'Funded', dot:'var(--n-profit)' },
-    live:   { label:'Live',   dot:'var(--n-accent-cool,#6ea8ff)' }
+  // Account-type chip — colored text + 25%-opacity border + 4% bg.
+  // account_type values in the schema are paper|eval|funded|live;
+  // 'paper' surfaces to the user as "Personal".
+  var ACCT2 = {
+    funded: { label:'Funded',   txt:'#f5d77c', bd:'rgba(245,215,124,0.25)', bg:'rgba(245,215,124,0.04)' },
+    eval:   { label:'Eval',     txt:'#6ea8ff', bd:'rgba(110,168,255,0.25)', bg:'rgba(110,168,255,0.04)' },
+    live:   { label:'Live',     txt:'#5fb389', bd:'rgba(95,179,137,0.25)',  bg:'rgba(95,179,137,0.04)'  },
+    paper:  { label:'Personal', txt:'#9a9a92', bd:'rgba(154,154,146,0.30)', bg:'rgba(154,154,146,0.05)' }
   };
 
   el.innerHTML = visible.map(function(p){
@@ -12529,31 +12515,41 @@ function renderFeedPosts(g){
     }
     meta = meta || {};
 
-    // ── (1) Author row data ──────────────────────────────────────────
+    // ── Author ───────────────────────────────────────────────────────
     var avHtml = renderUserAvatar({
       avatar_finish: p.avatar_finish || p.color || p.avatar_color,
       avatar_initials: p.avatar_initials || p.initials,
       avatar_image_url: p.avatar_image_url,
       username: p.username,
       name: p.username
-    }, 'sm'); // 28px per Chunk 7 spec
+    }, 'sm');
+    var dispName = safeText(p.display_name || (meta && meta.display_name) || p.username || _memberHandle(p) || 'Member');
+    var handle   = safeText(_memberHandle(p));
 
-    // Account Type dot+label — prefer denormalized meta.account_type, fall
-    // back to t.account_type for own posts where the full trade is in
-    // memory. Skipped entirely if neither is set.
+    // ── Date — "MAY 14" from the trade's logged date ─────────────────
+    var rawDate = meta.date || t.date || p.date || '';
+    var dateLabel = '';
+    if(rawDate){
+      var dStr = String(rawDate);
+      var dObj = new Date(/^\d{4}-\d{2}-\d{2}$/.test(dStr) ? dStr + 'T12:00:00' : dStr);
+      if(!isNaN(dObj)){
+        dateLabel = dObj.toLocaleDateString('en-US', { month:'short', day:'numeric' }).toUpperCase();
+      }
+    }
+
+    // ── Account chip — funded gold / eval blue / live sage / paper gray.
+    // Skipped entirely when the trade carries no account_type.
     var acctKey  = String((meta.account_type || t.account_type || '')).toLowerCase();
-    var acctMeta = ACCT_META[acctKey];
-    var acctHtml = acctMeta
-      ? '<span class="fp-acct">'
-        +   '<span class="fp-acct-dot" style="background:'+acctMeta.dot+'"></span>'
-        +   '<span class="fp-acct-label">'+acctMeta.label+'</span>'
+    var am       = ACCT2[acctKey];
+    var acctHtml = am
+      ? '<span class="fp2-acct" style="color:'+am.txt+';border:1px solid '+am.bd+';background:'+am.bg+'">'
+        +   am.label
         + '</span>'
       : '';
 
-    // ── (2) Headline row: sym + side LEFT, R-chip + big P&L RIGHT ────
-    // Extract sym/side: for JSON-content (own) trades pull from `t`; for
-    // text-content posts split the stored header on " · ". Empty cells
-    // (sparse imports) just render blank — the row collapses cleanly.
+    // ── Symbol + direction ───────────────────────────────────────────
+    // sym/side: JSON-content (own) trades from `t`; text posts split the
+    // stored header on " · ". Combined into one divider-joined pill.
     var bodySym  = '';
     var bodySide = '';
     if(p.isText){
@@ -12565,47 +12561,46 @@ function renderFeedPosts(g){
     } else {
       bodySym  = t.sym || '';
       var srLow = String(t.type||'').toLowerCase();
-      bodySide = srLow === 'short' ? '↘ Short' : srLow === 'long' ? '↗ Long' : '';
+      bodySide = srLow === 'short' ? 'short' : srLow === 'long' ? 'long' : '';
     }
-    var sideClass = /short/i.test(bodySide) ? 'short' : 'long';
-    var pnlClass  = pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : 'zero';
-    var pnlStr    = (pnl >= 0 ? '+' : '−') + '$' + Math.abs(pnl).toLocaleString();
+    var hasSym  = !!bodySym;
+    var hasSide = !!bodySide;
+    var sideClass = /short/i.test(bodySide) ? 'short' : (hasSide ? 'long' : 'neutral');
+    var dirLabel  = sideClass === 'short' ? '↘ SHORT' : sideClass === 'long' ? '↗ LONG' : '';
+    var symDirHtml = (hasSym || hasSide)
+      ? '<div class="fp2-symdir '+sideClass+'">'
+        + (hasSym  ? '<span class="fp2-sym">'+safeText(bodySym)+'</span>' : '')
+        + (hasSym && hasSide ? '<span class="fp2-symdir-div"></span>' : '')
+        + (hasSide ? '<span class="fp2-dir">'+dirLabel+'</span>' : '')
+        + '</div>'
+      : '';
 
-    // R-multiple chip — only when stop was set (otherwise rr can't be
-    // derived). Sign follows P&L: losing trades show negative R.
-    var hasStop = (meta.stop != null && meta.stop !== '') || (t.stop != null && t.stop !== '');
-    var rrRaw   = meta.rr != null ? meta.rr : t.rr;
-    var rrNum   = Number(rrRaw);
-    var rrHtml  = '';
-    if(hasStop && isFinite(rrNum) && rrNum !== 0){
-      var rrSign   = (pnl < 0) ? -1 : 1;
-      var rrSigned = rrSign * Math.abs(rrNum);
-      var rrCls    = rrSigned < 0 ? 'neg' : 'pos';
-      var rrTxt    = (rrSigned>0?'+':'') + rrSigned.toFixed(1) + 'R';
-      rrHtml = '<span class="fp-rr '+rrCls+'">'+rrTxt+'</span>';
-    }
+    var pnlClass = pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : 'zero';
+    var pnlStr   = (pnl >= 0 ? '+' : '−') + '$' + Math.abs(pnl).toLocaleString();
 
-    var headlineHtml = '<div class="fp-headline">'
-      + '<div class="fp-headline-l">'
-      +   (bodySym  ? '<span class="fp-sym">'+safeText(bodySym)+'</span>' : '')
-      +   (bodySide ? '<span class="fp-side '+sideClass+'">'+safeText(bodySide)+'</span>' : '')
-      + '</div>'
-      + '<div class="fp-headline-r">'
-      +   rrHtml
-      +   '<span class="fp-pnl '+pnlClass+'">'+pnlStr+'</span>'
-      + '</div>'
-      + '</div>';
-
-    // ── (3) Confluence pills (denormalized snapshot) ─────────────────
-    // Reuses cfRenderMiniPillsHtml for TF-tier coloring identical to the
-    // History row + Calendar Sidebar. Skipped entirely if no pills.
+    // ── Confluences — uppercase label + wrap of subtle chips.
+    // Skipped entirely (label included) when the trade has none.
     var cfList = Array.isArray(meta.confluences) ? meta.confluences : [];
     var confHtml = '';
-    if(cfList.length && typeof cfRenderMiniPillsHtml === 'function'){
-      confHtml = '<div class="fp-conf">'+cfRenderMiniPillsHtml(cfList, {limit:6, wrapClass:'cf-mini-row'})+'</div>';
+    if(cfList.length){
+      var chips = cfList.map(function(c){
+        var nm = (typeof c === 'string') ? c : (c && (c.name || c.label || c.text) || '');
+        if(!nm) return '';
+        var tf = (c && typeof c === 'object' && c.timeframe) ? c.timeframe : '';
+        return '<span class="fp2-conf-chip">'
+          + (tf ? '<em>'+safeText(tf)+'</em>' : '')
+          + safeText(nm)
+          + '</span>';
+      }).filter(Boolean).join('');
+      if(chips){
+        confHtml = '<div class="fp2-conf">'
+          + '<div class="fp2-conf-label">Confluences</div>'
+          + '<div class="fp2-conf-chips">'+chips+'</div>'
+          + '</div>';
+      }
     }
 
-    // ── (4) Notes prose — truncated at 3 lines via CSS ──────────────
+    // ── Notes prose — capped to the left column width ────────────────
     var bodyNotes = '';
     if(p.isText){
       var nlines  = String(p.text||'').split('\n');
@@ -12614,15 +12609,11 @@ function renderFeedPosts(g){
       bodyNotes = t.notes || '';
     }
     var notesHtml = bodyNotes
-      ? '<div class="fp-notes" data-collapsed="1" onclick="this.dataset.collapsed=this.dataset.collapsed==\'1\'?\'0\':\'1\'">'
-        +   '<div class="fp-notes-body">'+commEsc(bodyNotes)+'</div>'
-        +   '<button class="fp-notes-more" type="button">Show more</button>'
-        + '</div>'
+      ? '<div class="fp2-notes">'+commEsc(bodyNotes)+'</div>'
       : '';
 
-    // ── (5) Screenshot — single, full-width, 180px tall ─────────────
-    // Falls back to TV /x/ snapshot via getTradeImagesWithTV for own
-    // posts where the JSON content carries the tradingview_link.
+    // ── Screenshot / chart — right column. TV /x/ snapshot fallback
+    // for own posts whose JSON content carries the tradingview_link.
     var imgUrl = '';
     if(p.image_url){
       imgUrl = safeURL(p.image_url);
@@ -12631,51 +12622,37 @@ function renderFeedPosts(g){
       if(_ownImgs && _ownImgs.length) imgUrl = safeURL(_ownImgs[0]);
     }
     var postImgHtml = imgUrl
-      ? '<div class="fp-image" onclick="openScreenshotLightbox(\''+imgUrl+'\')">'
+      ? '<div class="fp2-image" onclick="openScreenshotLightbox(\''+imgUrl+'\')">'
         +   '<img src="'+imgUrl+'" alt="Trade screenshot" loading="lazy">'
         + '</div>'
       : '';
 
-    // ── (6) Engagement bar — heart + share. Reply removed this release;
-    //    feedReply / feedSubmitReply / feedRenderReplies + the realtime
-    //    sub remain in code but neutered so the table + data stay
-    //    untouched and we can flip replies back on without re-stitching
-    //    the renderer. No trophy/TOTD.
-    var actionsHtml = '<div class="fp-actions">'
-      + '<button class="fp-act'+(youLiked?' liked':'')+'" onclick="feedLike(this)" data-id="'+safePid+'"'+(youLiked?' data-liked="1"':'')+'>'
-      +   '<svg viewBox="0 0 24 24" fill="'+(youLiked?'currentColor':'none')+'" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
-      +   '<span id="like-count-'+safePid+'">'+likes+'</span>'
-      + '</button>'
-      + '<button class="fp-act fp-act-share" onclick="event.stopPropagation()" title="Share">'
-      +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>'
-      + '</button>'
-      + '</div>';
-
-    return '<div class="post fp-post '+pnlClass+'" data-pid="'+safePid+'">'
-      // (1) Author row
-      + '<div class="fp-head">'
-      +   avHtml
-      +   '<div class="fp-author">'
-      +     '<span class="fp-handle">@'+safeText(_memberHandle(p))+'</span>'
-      +     '<span class="fp-time">'+_relTime(p.date)+'</span>'
+    // ── Two-column card. No like / share / comment / stats grid. ─────
+    return '<div class="post fp2-post '+pnlClass+'" data-pid="'+safePid+'">'
+      // LEFT — author / date+account / sym-dir / confluences / notes
+      + '<div class="fp2-left">'
+      +   '<div class="fp2-head">'
+      +     avHtml
+      +     '<div class="fp2-author">'
+      +       '<span class="fp2-name">'+dispName+'</span>'
+      +       '<span class="fp2-handle">@'+handle+'</span>'
+      +     '</div>'
       +   '</div>'
-      +   acctHtml
+      +   ((dateLabel || acctHtml)
+          ? '<div class="fp2-meta">'
+            + (dateLabel ? '<span class="fp2-date">'+dateLabel+'</span>' : '')
+            + acctHtml
+            + '</div>'
+          : '')
+      +   symDirHtml
+      +   confHtml
+      +   notesHtml
       + '</div>'
-      // (2) Headline
-      + headlineHtml
-      // (3) Confluence pills (skipped if empty)
-      + confHtml
-      // (4) Notes (skipped if empty)
-      + notesHtml
-      // (5) Screenshot (skipped if no image)
-      + postImgHtml
-      // (6) Engagement bar
-      + actionsHtml
-      // Reply box markup intentionally removed this release. The
-      // existing feedReply / feedSubmitReply / feedRenderReplies
-      // handlers + the realtime sub on community_post_replies stay
-      // wired so the data path is reversible — just no UI to trigger
-      // them.
+      // RIGHT — P&L (right-aligned) + chart
+      + '<div class="fp2-right">'
+      +   '<div class="fp2-pnl '+pnlClass+'">'+pnlStr+'</div>'
+      +   postImgHtml
+      + '</div>'
       + '</div>';
   }).join('');
 
