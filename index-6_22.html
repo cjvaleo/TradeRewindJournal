@@ -6203,7 +6203,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
    grand. */
 #pg-community .filters,
 #pg-community #comm-feed-posts{
-  max-width:720px;margin-left:auto;margin-right:auto;
+  max-width:800px;margin-left:auto;margin-right:auto;
   /* Query container — feed posts size their 2-col/1-col layout off
      THIS element's width, not the viewport. The feed column's width
      swings widely with viewport (the fixed nav + csb + rail eat
@@ -6360,7 +6360,10 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 #pg-community .period-tab.on{background:var(--n-surface-3);color:var(--n-text)}
 
 #pg-community .hero-pnl{
-  margin:24px 0 32px;padding:32px 36px 36px;
+  /* Feed column capped at 800px, centered — matches .filters +
+     #comm-feed-posts so hero / tabs / posts read as one column. */
+  margin:24px auto 32px;max-width:800px;
+  padding:32px 36px 36px;
   border:1px solid var(--n-border);border-radius:14px;
   background:radial-gradient(ellipse 700px 300px at 50% 0%,var(--n-surface-2) 0%,var(--n-bg) 80%);
   position:relative;overflow:hidden;
@@ -6425,7 +6428,9 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
 /* ── FILTER CHIPS (v6) — rounded pills, white-on-black active ── */
 #pg-community .filters{
-  display:flex;gap:6px;margin-bottom:20px;
+  display:flex;gap:6px;
+  /* 800px centered — matches .hero-pnl + #comm-feed-posts. */
+  margin:0 auto 20px;max-width:800px;
   padding-bottom:14px;border-bottom:1px solid var(--n-border);
   flex-wrap:wrap;
 }
@@ -6688,15 +6693,9 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
     margin: 0 auto;
   }
 
-  /* Inner items align to the feed's left edge — no centered 640px
-     focus column at this size (the 1200px feed cap IS the focus
-     column). Keeps hero / tabs / filters / posts at one left edge. */
-  #pg-community .filters,
-  #pg-community #comm-feed-posts{
-    max-width: none;
-    margin-left: 0;
-    margin-right: 0;
-  }
+  /* Hero / filters / posts keep their base 800px cap + centering at
+     every width (the prior ultra-wide rule that un-capped them here
+     was removed — the feed column is now a consistent 800px column). */
 }
 
 
