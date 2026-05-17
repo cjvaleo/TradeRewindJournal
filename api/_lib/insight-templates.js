@@ -447,6 +447,52 @@ function detectHeadsUp(a){
   };
 }
 
+// ════════════════════════════════════════════════════════════════════
+// COACH NOTES — 3 cards for the Personal tab: an observation from the
+// user's own data, a community comparison (placeholder until the
+// community endpoint ships), and one thing worth trying. body is a small
+// HTML string — values wrapped in <b class="cn-sage|cn-rose"> highlights.
+// ════════════════════════════════════════════════════════════════════
+function detectCoach(a){
+  const cards = [];
+
+  // Card 1 — Observation.
+  const bs = a.best_session, ws = a.worst_session;
+  if(bs && ws && bs.name!==ws.name && bs.count>=3 && ws.count>=3){
+    cards.push({ category:'Observation',
+      body:'Your <b class="cn-sage">'+bs.name+'</b> trades win '+pct(bs.win_rate)+
+        ', while <b class="cn-rose">'+ws.name+'</b> drags at '+pct(ws.win_rate)+
+        '. Same trader — very different windows.' });
+  } else if(a.best_day && a.best_day.count>=3 && a.best_day.avg_pnl>0){
+    cards.push({ category:'Observation',
+      body:'<b class="cn-sage">'+a.best_day.name+'s</b> are your strongest day — '+
+        money(a.best_day.avg_pnl)+' average per trade over the last 30 days.' });
+  } else {
+    cards.push({ category:'Observation',
+      body:'Over the last 30 days you held a <b class="cn-sage">'+pct(a.win_rate)+'</b> win rate '+
+        'across '+a.trade_count+' trades — a steady base to build on.' });
+  }
+
+  // Card 2 — vs Community (placeholder until /api/community/avg-grades ships).
+  cards.push({ category:'vs Community',
+    body:'Community benchmarks are coming soon — you’ll see how your grade calibration '+
+      'and session edge compare against other Rewind traders.' });
+
+  // Card 3 — Worth Trying.
+  if(bs && bs.count>=3){
+    cards.push({ category:'Worth Trying',
+      body:'<b class="cn-sage">'+bs.name+'</b> is carrying your edge ('+
+        (hasR(bs)?fmtR(bs.expectancy_R)+' expectancy':pct(bs.win_rate)+' win rate')+
+        '). Worth weighting more of your focus — and size — into that window.' });
+  } else {
+    cards.push({ category:'Worth Trying',
+      body:'Tag a confluence and a grade on every trade for two weeks — it’s what turns '+
+        'these notes from broad to <b class="cn-sage">specific to you</b>.' });
+  }
+
+  return { cards: cards };
+}
+
 // ── dispatch ────────────────────────────────────────────────────────
 export function renderInsight(type, analytics){
   switch(type){
@@ -454,8 +500,9 @@ export function renderInsight(type, analytics){
     case 'working':   return detectWorking(analytics);
     case 'off':       return detectOff(analytics);
     case 'heads_up':  return detectHeadsUp(analytics);
+    case 'coach':     return detectCoach(analytics);
     default: throw new Error('unknown insight type: '+type);
   }
 }
 
-export const INSIGHT_TYPES = ['headline','working','off','heads_up'];
+export const INSIGHT_TYPES = ['headline','working','off','heads_up','coach'];
