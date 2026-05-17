@@ -4877,13 +4877,21 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 .rvp-bb-empty-ic{width:46px;height:46px;margin-bottom:16px}
 .rvp-bb-empty-t{font-size:13px;line-height:1.5;color:#9a9a92;max-width:210px}
 .rvp-bb-empty-s{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.06em;color:#56554f;margin-top:9px}
-.rvp-bb-divider{height:1px;background:rgba(255,255,255,.06);margin-bottom:18px}
-.rvp-wr{display:flex;flex-direction:column;gap:12px}
-.rvp-wr-row{display:grid;grid-template-columns:68px 1fr 36px;align-items:center;gap:10px}
-.rvp-wr-label{font-size:12px;color:#bdbcb6}
-.rvp-wr-track{height:8px;border-radius:4px;background:rgba(255,255,255,.05);overflow:hidden}
-.rvp-wr-fill{height:100%;border-radius:4px}
-.rvp-wr-val{font-family:var(--n-font-mono);font-size:10px;color:#9a9a92;text-align:right}
+.rvp-wr{display:flex;flex-direction:column;gap:14px}
+.rvp-wr-row{display:flex;flex-direction:column;gap:6px}
+.rvp-wr-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.rvp-wr-name{font-size:13px;color:#f5f4f0}
+.rvp-wr-nodata .rvp-wr-name{color:#56554f}
+.rvp-wr-count{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.05em;color:#9a9a92;text-align:right;white-space:nowrap}
+.rvp-wr-nodata .rvp-wr-count{color:#56554f}
+.rvp-wr-bottom{display:flex;align-items:center;gap:10px}
+.rvp-wr-track{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.04);overflow:hidden}
+.rvp-wr-nodata .rvp-wr-track{background:rgba(255,255,255,.025)}
+.rvp-wr-fill{height:100%;border-radius:3px}
+.rvp-wr-val{min-width:60px;text-align:right;white-space:nowrap}
+.rvp-wr-num{font-family:var(--n-font-display);font-style:italic;font-size:16px;color:#f0efea}
+.rvp-wr-nodata .rvp-wr-num{color:#56554f}
+.rvp-wr-wr{font-family:var(--n-font-mono);font-size:9px;color:#9a9a92;margin-left:4px}
 /* responsive */
 @media (max-width:900px){
   .rvp-coach-grid{grid-template-columns:1fr}
@@ -22508,7 +22516,6 @@ function rvBehaviorCol(title, dim, cfg){
   if(total < 15) return rvBehaviorEmpty(title, total);
   return '<div class="rvp-bb-col">'+
     '<div class="rvp-bb-title">'+rvEsc(title)+'</div>'+
-    '<div class="rvp-bb-divider"></div>'+
     rvWinBars(dim, cfg)+
   '</div>';
 }
@@ -22530,12 +22537,23 @@ function rvWinBars(dim, cfg){
   var rows = cfg.states.map(function(st){
     var w = by[st] || { win_rate:null, count:0 };
     var v = w.win_rate;
-    var width = v==null ? 0 : Math.max(0, Math.min(100, v));
-    var col = rvQualityColor(v, w.count);
-    return '<div class="rvp-wr-row">'+
-      '<div class="rvp-wr-label">'+rvEsc(cfg.labels[st])+'</div>'+
-      '<div class="rvp-wr-track"><div class="rvp-wr-fill" style="width:'+width+'%;background:'+col+'"></div></div>'+
-      '<div class="rvp-wr-val">'+(v==null?'—':v+'%')+'</div>'+
+    var count = w.count || 0;
+    var hasData = v != null && count > 0;
+    var width = hasData ? Math.max(0, Math.min(100, v)) : 0;
+    var col = rvQualityColor(v, count);
+    var countTxt = count === 1 ? '1 trade' : count + ' trades';
+    var valHtml = hasData
+      ? '<span class="rvp-wr-num" style="color:'+col+'">'+v+'%</span><span class="rvp-wr-wr">WR</span>'
+      : '<span class="rvp-wr-num">—</span>';
+    return '<div class="rvp-wr-row'+(hasData?'':' rvp-wr-nodata')+'">'+
+      '<div class="rvp-wr-top">'+
+        '<span class="rvp-wr-name">'+rvEsc(cfg.labels[st])+'</span>'+
+        '<span class="rvp-wr-count">'+rvEsc(countTxt)+'</span>'+
+      '</div>'+
+      '<div class="rvp-wr-bottom">'+
+        '<div class="rvp-wr-track"><div class="rvp-wr-fill" style="width:'+width+'%;background:'+col+'"></div></div>'+
+        '<div class="rvp-wr-val">'+valHtml+'</div>'+
+      '</div>'+
     '</div>';
   });
   return '<div class="rvp-wr">'+rows.join('')+'</div>';
