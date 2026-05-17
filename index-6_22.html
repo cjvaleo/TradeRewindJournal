@@ -22293,7 +22293,7 @@ var RVP_GRADE = {
 // rose = losing. A state with no trades shows as muted grey.
 function rvQualityColor(winRate, count){
   if(!count || winRate == null) return 'rgba(255,255,255,.08)';
-  if(winRate > 70) return '#5fb389';
+  if(winRate >= 70) return '#5fb389';
   if(winRate >= 50) return 'rgba(95,179,137,.6)';
   if(winRate >= 30) return 'rgba(245,215,124,.7)';
   return '#c95f5f';
@@ -22535,11 +22535,14 @@ function rvDonut(dim){
   var byWr = {};
   (dim.win_rates||[]).forEach(function(w){ byWr[w.state] = w; });
   var r = 52, C = 2*Math.PI*r;
-  var off = 0, segs = '', dom = '—', domPct = -1;
+  var off = 0, segs = '', dom = '—', domPct = -1, domState = null;
   dist.forEach(function(d){
     var p = Number(d.pct)||0;
-    if(p > domPct){ domPct = p; dom = p+'%'; }
+    if(p > domPct){ domPct = p; dom = p+'%'; domState = d.state; }
   });
+  // Center number wears the dominant state's win-rate colour.
+  var domWr = (domState && byWr[domState]) || {};
+  var domColor = domState ? rvQualityColor(domWr.win_rate, domWr.count) : '#f0efea';
   dist.forEach(function(d){
     var p = Number(d.pct)||0;
     if(p <= 0) return;
@@ -22556,7 +22559,7 @@ function rvDonut(dim){
       '<circle cx="65" cy="65" r="'+r+'" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="14"/>'+
       segs+
     '</svg>'+
-    '<div class="rvp-donut-c">'+dom+'</div>'+
+    '<div class="rvp-donut-c" style="color:'+domColor+'">'+dom+'</div>'+
   '</div>';
 }
 function rvWinBars(dim, cfg){
