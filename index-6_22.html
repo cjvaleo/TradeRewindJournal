@@ -4800,11 +4800,160 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 /* ── ANALYTICS REDESIGN ─────────────────────────────── */
 
 #pg-analytics.page.on{
-  padding:32px 40px 48px;
+  padding:0;
   background:var(--n-bg);
   position:relative;z-index:1;
 }
 #pg-analytics.on > .ph{display:none}
+
+/* ════════ THE BRIEF — /analytics page (Phase 1) ════════ */
+.brief{max-width:1300px;margin:0 auto;padding:36px 44px 64px;color:#f0efea;font-family:var(--n-font-sans)}
+/* header */
+.brief-header{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.brief-eyebrow{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#8a8a82;margin-bottom:12px}
+.brief-title{font-family:var(--n-font-display);font-style:italic;font-weight:400;font-size:54px;line-height:1;letter-spacing:-0.01em;color:#f5f4f0;margin:0}
+.brief-head-r{display:flex;gap:8px}
+.brief-chip{font-family:var(--n-font-mono);font-size:10.5px;letter-spacing:0.08em;text-transform:uppercase;color:#bdbcb6;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.10);border-radius:7px;padding:8px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.brief-chip:hover{border-color:rgba(255,255,255,0.18);color:#f0efea}
+.brief-chip-car{font-size:8px;opacity:0.6}
+.brief-hr{height:1px;width:140px;margin:18px 0 28px;background:linear-gradient(90deg,rgba(245,244,240,0.18),rgba(245,244,240,0))}
+/* dots / diamond */
+.brief-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+.brief-dot-gold{background:#f5d77c;box-shadow:0 0 8px rgba(245,215,124,0.5)}
+.brief-dot-sage{background:#5fb389}
+.brief-dot-rose{background:#c95f5f}
+.brief-diamond{color:#5fb389;font-size:9px}
+/* today's watch */
+.brief-watch{background:linear-gradient(135deg,rgba(245,215,124,0.06),rgba(110,168,255,0.05));border:1px solid rgba(245,215,124,0.18);border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.brief-watch-tag{display:flex;align-items:center;gap:8px;font-family:var(--n-font-mono);font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:#f5d77c}
+.brief-watch-ctx{color:#8a8a82;letter-spacing:0.1em}
+.brief-watch-sentence{font-family:var(--n-font-display);font-style:italic;font-size:24px;line-height:1.4;color:#f0efea;margin:14px 0 18px}
+.brief-watch-sentence em{color:#5fb389;font-style:italic}
+.brief-watch-stats{display:flex;gap:36px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,0.06);padding-top:16px}
+.brief-stat-l{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.13em;text-transform:uppercase;color:#8a8a82;margin-bottom:5px}
+.brief-stat-v{font-family:var(--n-font-display);font-style:italic;font-size:22px;color:#f0efea}
+.brief-stat-v.sage{color:#5fb389}
+/* 14-day strip */
+.brief-strip{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px 20px;margin-bottom:30px}
+.brief-strip-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
+.brief-strip-title{font-family:var(--n-font-mono);font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:#bdbcb6}
+.brief-strip-sub{font-size:11px;color:#7a7a72}
+.brief-strip-cells{display:grid;grid-template-columns:repeat(14,1fr);gap:6px}
+.brief-cell{height:36px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:var(--n-font-mono);font-size:9px}
+.brief-cell-win{background:rgba(95,179,137,0.14);border:1px solid rgba(95,179,137,0.28);color:#7fc9a3}
+.brief-cell-loss{background:rgba(201,95,95,0.13);border:1px solid rgba(201,95,95,0.26);color:#d98a8a}
+.brief-cell-none{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05)}
+.brief-cell-today{border:1px solid rgba(245,215,124,0.55);color:#f5d77c;letter-spacing:0.04em}
+.brief-strip-dates{display:grid;grid-template-columns:repeat(14,1fr);gap:6px;margin-top:8px}
+.brief-strip-dates span{text-align:center;font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.04em;color:#6e6e66}
+.brief-strip-dates span.on{color:#f5d77c}
+/* generic block / tags / headings */
+.brief-block{margin-bottom:34px}
+.brief-sec-tag{display:flex;align-items:center;gap:8px;font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#cfcec8;margin-bottom:14px}
+.brief-sec-meta{color:#7a7a72;letter-spacing:0.1em}
+.brief-h2{font-family:var(--n-font-display);font-style:italic;font-weight:400;font-size:26px;color:#f5f4f0;margin:0}
+.brief-sub{font-size:12px;color:#8a8a82;margin:5px 0 16px}
+/* headline anchor */
+.brief-anchor{position:relative;background:linear-gradient(135deg,rgba(95,179,137,0.06),rgba(110,168,255,0.05) 55%,rgba(245,215,124,0.05));border:1px solid rgba(255,255,255,0.07);border-radius:18px;padding:34px 38px 34px 42px;overflow:hidden}
+.brief-anchor-stripe{position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#5fb389,#6ea8ff,#f5d77c)}
+.brief-anchor-sentence{font-family:var(--n-font-display);font-style:italic;font-size:30px;line-height:1.3;color:#f5f4f0;margin:0 0 14px}
+.brief-anchor-context{font-size:13px;line-height:1.6;color:#bdbcb6;max-width:780px;margin:0}
+/* working / off */
+.brief-wo{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.brief-wo-title{display:flex;align-items:center;gap:8px;font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#cfcec8;margin-bottom:14px}
+.brief-card{border-radius:14px;padding:20px 22px;margin-bottom:14px}
+.brief-card:last-child{margin-bottom:0}
+.brief-card-sage{background:rgba(95,179,137,0.03);border:1px solid rgba(95,179,137,0.14)}
+.brief-card-rose{background:rgba(201,95,95,0.03);border:1px solid rgba(201,95,95,0.14)}
+.brief-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.brief-card-tag{font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.13em;text-transform:uppercase}
+.brief-tag-sage{color:#5fb389}
+.brief-tag-rose{color:#c95f5f}
+.brief-spark{display:flex;align-items:flex-end;gap:3px;height:18px}
+.brief-spark i{width:4px;border-radius:1px;display:block}
+.brief-spark-sage i{background:rgba(95,179,137,0.5)}
+.brief-spark-rose i{background:rgba(201,95,95,0.5)}
+.brief-card-stmt{font-size:14.5px;line-height:1.55;color:#f0efea;margin:0 0 10px}
+.brief-card-stmt em{font-family:var(--n-font-display);font-style:italic;font-size:20px}
+.brief-stat-sage{color:#5fb389}
+.brief-stat-rose{color:#c95f5f}
+.brief-card-sample{font-size:11.5px;font-style:italic;color:#7a7a72}
+/* heatmap + drill */
+.brief-heat-grid{display:grid;grid-template-columns:2fr 1.2fr;gap:18px}
+.brief-heatmap{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:24px 28px}
+.brief-hm-row{display:grid;grid-template-columns:54px repeat(5,1fr);gap:6px}
+.brief-hm-row + .brief-hm-row{margin-top:6px}
+.brief-hm-sess{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#8a8a82;text-align:center;align-self:center}
+.brief-hm-day{font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:#8a8a82;display:flex;align-items:center}
+.brief-hm-cell{height:44px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--n-font-mono);font-size:10px}
+.hm-p1{background:rgba(95,179,137,0.10);color:#7fc9a3}
+.hm-p2{background:rgba(95,179,137,0.22);color:#9fd9bb}
+.hm-p3{background:rgba(95,179,137,0.38);color:#cdeedd}
+.hm-n1{background:rgba(201,95,95,0.10);color:#d98a8a}
+.hm-n2{background:rgba(201,95,95,0.22);color:#e6a3a3}
+.brief-hm-cell.hm-best{border:1.5px solid rgba(95,179,137,0.8);box-shadow:0 0 12px rgba(95,179,137,0.3)}
+.brief-drill{background:rgba(95,179,137,0.04);border:1px solid rgba(95,179,137,0.20);border-radius:14px;padding:22px}
+.brief-drill-head{font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#5fb389}
+.brief-drill-big{font-family:var(--n-font-display);font-style:italic;font-size:30px;color:#5fb389;margin-top:6px;line-height:1}
+.brief-drill-sub{font-size:11.5px;color:#8a8a82;margin-top:5px}
+.brief-drill-hr{height:1px;background:rgba(255,255,255,0.07);margin:14px 0}
+.brief-drill-row{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.brief-drill-thumb{width:38px;height:30px;border-radius:4px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);flex-shrink:0}
+.brief-drill-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+.brief-drill-sym{font-family:var(--n-font-mono);font-size:11px;color:#e8e7e2}
+.brief-drill-meta{font-size:10.5px;color:#7a7a72}
+.brief-drill-more{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#6e6e66;margin-top:4px}
+/* dig deeper */
+.brief-dig-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.brief-dig-card{text-align:left;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:18px;cursor:pointer;font-family:inherit;color:inherit}
+.brief-dig-card:hover{border-color:rgba(255,255,255,0.16);background:rgba(255,255,255,0.04)}
+.brief-dig-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.brief-dig-tag{font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.13em;text-transform:uppercase;color:#8a8a82}
+.brief-dig-arrow{color:#6e6e66}
+.brief-dig-stat{font-family:var(--n-font-display);font-style:italic;font-size:21px;color:#f5f4f0}
+.brief-dig-desc{font-size:11.5px;color:#8a8a82;margin-top:4px}
+/* equity curve */
+.brief-eq-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.brief-eq-net{text-align:right}
+.brief-eq-net-v{font-family:var(--n-font-display);font-style:italic;font-size:32px;color:#5fb389;line-height:1}
+.brief-eq-net-l{font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;color:#8a8a82;margin-top:5px}
+.brief-eq-chart{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:24px 26px;height:240px;box-sizing:border-box}
+.brief-eq-svg{width:100%;height:100%;display:block}
+.brief-eq-fill{fill:url(#briefEqGrad)}
+.brief-eq-line{fill:none;stroke:#5fb389;stroke-width:2;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.brief-eq-mk{stroke:#0a0a0a;stroke-width:2}
+.brief-eq-mk-sage{fill:#5fb389}
+.brief-eq-mk-rose{fill:#c95f5f}
+.brief-eq-mk-hr{height:1px;background:rgba(255,255,255,0.07);margin:16px 0 12px}
+.brief-eq-markers{display:flex;gap:28px;flex-wrap:wrap}
+.brief-eq-marker{display:flex;align-items:center;gap:7px;font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.06em;color:#8a8a82}
+.brief-mk-dot{width:6px;height:6px;border-radius:50%}
+.brief-mk-dot.sage{background:#5fb389}
+.brief-mk-dot.rose{background:#c95f5f}
+/* responsive */
+@media (max-width:900px){
+  .brief{padding:28px 22px 52px}
+  .brief-title{font-size:42px}
+  .brief-wo{grid-template-columns:1fr}
+  .brief-heat-grid{grid-template-columns:1fr}
+  .brief-dig-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:600px){
+  .brief{padding:20px 14px 44px}
+  .brief-title{font-size:34px}
+  .brief-header{flex-direction:column;align-items:flex-start;gap:14px}
+  .brief-watch-sentence{font-size:19px}
+  .brief-watch-stats{gap:18px}
+  .brief-anchor{padding:24px 20px 24px 24px}
+  .brief-anchor-sentence{font-size:21px}
+  .brief-h2{font-size:22px}
+  .brief-cell{font-size:0;height:30px}
+  .brief-strip-dates span{font-size:7px}
+  .brief-hm-cell{font-size:8px;height:38px}
+  .brief-hm-row{grid-template-columns:38px repeat(5,1fr)}
+  .brief-dig-grid{grid-template-columns:1fr}
+  .brief-watch-sentence{font-size:18px}
+}
 
 #pg-analytics .an-head{
   display:flex;align-items:flex-start;justify-content:space-between;
@@ -8644,7 +8793,6 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
     <div class="ni" data-page="history" onclick="goTo('history')"><svg viewBox="0 0 16 16"><line x1="3" y1="5" x2="13" y2="5"/><line x1="3" y1="8" x2="13" y2="8"/><line x1="3" y1="11" x2="9" y2="11"/></svg><span class="ni-label">History</span></div>
 
     <div class="sb-sec">Insights</div>
-    <div class="ni" data-page="equity" onclick="goTo('equity')"><svg viewBox="0 0 16 16"><polyline points="2,13 5,8 8,10 11,5 14,7"/><line x1="2" y1="13" x2="14" y2="13"/></svg><span class="ni-label">Equity Curve</span></div>
     <div class="ni" data-page="analytics" onclick="goTo('analytics')"><svg viewBox="0 0 16 16"><rect x="2" y="8" width="3" height="5" rx=".5"/><rect x="6" y="5" width="3" height="8" rx=".5"/><rect x="10" y="2" width="3" height="11" rx=".5"/></svg><span class="ni-label">Analytics</span></div>
 
     <div class="sb-sec">Connect</div>
@@ -9880,266 +10028,276 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
          and scrolls the day panel into view. -->
   </div>
 </div>
-<!-- EQUITY -->
-<div id="pg-equity" class="page">
-  <div class="desktop-rec-banner" data-banner-page="equity"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span><b>Best on desktop.</b> This view is designed for a wider screen — some panels are hidden or simplified on mobile.</span><button class="drb-dismiss" onclick="dismissDesktopBanner()">Got it</button></div>
-
-  <!-- HEADER -->
-  <div class="eq-head">
-    <div>
-      <div class="h-title">Equity Curve</div>
-      <div class="h-sub">P&amp;L growth over time</div>
-    </div>
-    <div class="eq-controls">
-      <div class="tab-group">
-        <div class="tab on" onclick="setEqTf('1W',this)">1W</div>
-        <div class="tab" onclick="setEqTf('1M',this)">1M</div>
-        <div class="tab" onclick="setEqTf('ALL',this)">All</div>
-      </div>
-      <div class="tab-group">
-        <div class="tab on" onclick="setEqMode('dollar',this)">$</div>
-        <div class="tab" onclick="setEqMode('r',this)">R</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- FREE-TIER 30-DAY CAP BANNER -->
-  <div id="equity-cap-banner" class="free-cap-banner" style="display:none">
-    <div class="fcb-text">Showing the last 30 days &middot; <strong>Free plan</strong></div>
-    <button class="fcb-cta" onclick="openUpgradeModal('equity')">Unlock unlimited &rarr;</button>
-  </div>
-
-  <!-- STATS ROW -->
-  <div class="eq-stats">
-    <div class="n-stat-card">
-      <div class="stat-label">Net P&amp;L</div>
-      <div class="stat-value" id="es-pnl">&mdash;</div>
-    </div>
-    <div class="n-stat-card">
-      <div class="stat-label">Peak Equity</div>
-      <div class="stat-value" id="es-peak">&mdash;</div>
-    </div>
-    <div class="n-stat-card">
-      <div class="stat-label">Max Drawdown</div>
-      <div class="stat-value" id="es-dd">&mdash;</div>
-    </div>
-    <div class="n-stat-card">
-      <div class="stat-label">Current DD</div>
-      <div class="stat-value" id="es-cdd">&mdash;</div>
-    </div>
-    <div class="n-stat-card">
-      <div class="stat-label">Recovery Factor</div>
-      <div class="stat-value" id="es-rf">&mdash;</div>
-      <div class="stat-sub">net P&amp;L &divide; max DD</div>
-    </div>
-  </div>
-
-  <!-- MAIN EQUITY CHART -->
-  <div class="chart-card">
-    <div class="chart-head">
-      <div class="chart-title">Equity</div>
-      <div class="chart-meta" id="es-chart-meta"></div>
-    </div>
-    <div style="position:relative;width:100%;height:380px">
-      <canvas id="equity-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
-      <div id="equity-tooltip" style="display:none;position:absolute;pointer-events:none;white-space:nowrap;transform:translateX(-50%)"></div>
-      <div id="equity-crosshair" style="display:none;position:absolute;top:0;bottom:0;width:1px;pointer-events:none"></div>
-    </div>
-    <div class="chart-legend">
-      <div class="legend-item"><span class="swatch line"></span>Equity</div>
-      <div class="legend-item"><span class="swatch fill"></span>Profit zone</div>
-    </div>
-  </div>
-
-  <!-- DRAWDOWN CHART -->
-  <div class="chart-card">
-    <div class="chart-head">
-      <div class="chart-title loss">Drawdown</div>
-      <div class="chart-meta">Depth below equity peak over time</div>
-    </div>
-    <div style="position:relative;width:100%;height:160px">
-      <canvas id="dd-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
-    </div>
-  </div>
-
-</div>
 <!-- ANALYTICS -->
 <div id="pg-analytics" class="page">
-  <div class="desktop-rec-banner" data-banner-page="analytics"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span><b>Best on desktop.</b> This view is designed for a wider screen — some panels are hidden or simplified on mobile.</span><button class="drb-dismiss" onclick="dismissDesktopBanner()">Got it</button></div>
+ <!-- ════════ THE BRIEF — Phase 1 static layout (hardcoded sample data) ════════ -->
+ <div class="brief">
 
-  <!-- HEADER -->
-  <div class="an-head">
-    <div>
-      <div class="h-title">Analytics</div>
-      <div class="h-sub">What is creating your edge</div>
+  <!-- ── HEADER ── -->
+  <div class="brief-header">
+    <div class="brief-head-l">
+      <div class="brief-eyebrow">Your Trading &middot; Saturday, May 16</div>
+      <h1 class="brief-title">The Brief</h1>
     </div>
-    <div class="tab-group" id="an-period-tabs">
-      <div class="tab" onclick="setAnPeriod('1W',this)">This Week</div>
-      <div class="tab" onclick="setAnPeriod('1M',this)">This Month</div>
-      <div class="tab on" onclick="setAnPeriod('ALL',this)">All Time</div>
+    <div class="brief-head-r">
+      <button type="button" class="brief-chip">Last 30 days <span class="brief-chip-car">&#9662;</span></button>
+      <button type="button" class="brief-chip">All accounts <span class="brief-chip-car">&#9662;</span></button>
     </div>
   </div>
+  <div class="brief-hr"></div>
 
-  <!-- ALERTS BANNER -->
-  <div id="an-alerts"></div>
+  <!-- ── TODAY'S WATCH ── -->
+  <section class="brief-watch">
+    <div class="brief-watch-tag">
+      <span class="brief-dot brief-dot-gold"></span>Today's Watch
+      <span class="brief-watch-ctx">8:53 AM ET &middot; NY AM opens in 37min</span>
+    </div>
+    <p class="brief-watch-sentence">Saturday &mdash; market's closed. Last logged trade was Friday: your <em>+$1,800 MNQ short</em>. Solid finish to the week.</p>
+    <div class="brief-watch-stats">
+      <div class="brief-stat"><div class="brief-stat-l">Days since last trade</div><div class="brief-stat-v">1</div></div>
+      <div class="brief-stat"><div class="brief-stat-l">This week net</div><div class="brief-stat-v sage">+$2,280</div></div>
+      <div class="brief-stat"><div class="brief-stat-l">30-day net</div><div class="brief-stat-v sage">+$5,420</div></div>
+      <div class="brief-stat"><div class="brief-stat-l">Heads up</div><div class="brief-stat-v">All clear</div></div>
+    </div>
+  </section>
 
-  <!-- SECTION TABS -->
-  <div class="sec-tabs">
-    <div class="sec-tab on" onclick="showAnalyticsPanel('performance',this)"><span class="num">01</span>Performance</div>
-    <div class="sec-tab"     onclick="showAnalyticsPanel('quality',this)"><span class="num">02</span>Quality</div>
-    <div class="sec-tab" data-locked="behavior"   onclick="onAnalyticsTabClick('behavior',this)"><span class="num">03</span>Behavior<svg class="tab-lock-icon" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
-    <div class="sec-tab" data-locked="time"       onclick="onAnalyticsTabClick('time',this)"><span class="num">04</span>Time<svg class="tab-lock-icon" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
-    <div class="sec-tab" data-locked="psychology" onclick="onAnalyticsTabClick('psychology',this)"><span class="num">05</span>Psychology<svg class="tab-lock-icon" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
-  </div>
+  <!-- ── 14-DAY P&L STRIP ── -->
+  <section class="brief-strip">
+    <div class="brief-strip-head">
+      <span class="brief-strip-title">Last 14 days</span>
+      <span class="brief-strip-sub">P&amp;L by day &middot; click to expand</span>
+    </div>
+    <div class="brief-strip-cells">
+      <div class="brief-cell brief-cell-none"></div>
+      <div class="brief-cell brief-cell-win">+$320</div>
+      <div class="brief-cell brief-cell-loss">-$140</div>
+      <div class="brief-cell brief-cell-win">+$580</div>
+      <div class="brief-cell brief-cell-win">+$210</div>
+      <div class="brief-cell brief-cell-loss">-$90</div>
+      <div class="brief-cell brief-cell-none"></div>
+      <div class="brief-cell brief-cell-none"></div>
+      <div class="brief-cell brief-cell-win">+$1,240</div>
+      <div class="brief-cell brief-cell-win">+$430</div>
+      <div class="brief-cell brief-cell-loss">-$260</div>
+      <div class="brief-cell brief-cell-win">+$310</div>
+      <div class="brief-cell brief-cell-win">+$1,800</div>
+      <div class="brief-cell brief-cell-none brief-cell-today">today</div>
+    </div>
+    <div class="brief-strip-dates">
+      <span>S 3</span><span>M 4</span><span>T 5</span><span>W 6</span><span>T 7</span><span>F 8</span><span>S 9</span>
+      <span>S 10</span><span>M 11</span><span>T 12</span><span>W 13</span><span>T 14</span><span>F 15</span><span class="on">S 16</span>
+    </div>
+  </section>
 
-  <!-- ========== PERFORMANCE PANEL ========== -->
-  <div class="panel on" id="panel-performance">
-    <div class="panel-intro">
+  <!-- ── THE HEADLINE ── -->
+  <section class="brief-block">
+    <div class="brief-sec-tag">
+      <span class="brief-diamond">&#9670;</span>The Headline
+      <span class="brief-sec-meta">Refreshed today</span>
+    </div>
+    <div class="brief-anchor">
+      <div class="brief-anchor-stripe"></div>
+      <p class="brief-anchor-sentence">Your NY AM killzone is pulling away from the rest of your day &mdash; a 71% win rate this month, up from 54% across everything else.</p>
+      <p class="brief-anchor-context">Twenty-three trades in the 9:30&ndash;11 AM window, carrying an expectancy of +1.8R. It's the clearest edge in your last 30 days &mdash; and the gap is still widening week over week.</p>
+    </div>
+  </section>
+
+  <!-- ── WHAT'S WORKING / WHAT'S OFF ── -->
+  <section class="brief-block">
+    <div class="brief-wo">
+      <div class="brief-wo-col">
+        <div class="brief-wo-title"><span class="brief-dot brief-dot-sage"></span>What's Working</div>
+
+        <div class="brief-card brief-card-sage">
+          <div class="brief-card-top">
+            <span class="brief-card-tag brief-tag-sage">Pattern &middot; Time</span>
+            <span class="brief-spark brief-spark-sage"><i style="height:40%"></i><i style="height:60%"></i><i style="height:45%"></i><i style="height:80%"></i><i style="height:100%"></i></span>
+          </div>
+          <p class="brief-card-stmt">Your NY AM session wins <em class="brief-stat-sage">71%</em> of the time, against 54% across the rest of your day.</p>
+          <div class="brief-card-sample">23 trades &middot; 30 days</div>
+        </div>
+
+        <div class="brief-card brief-card-sage">
+          <div class="brief-card-top">
+            <span class="brief-card-tag brief-tag-sage">Pattern &middot; Setup</span>
+            <span class="brief-spark brief-spark-sage"><i style="height:55%"></i><i style="height:50%"></i><i style="height:75%"></i><i style="height:65%"></i><i style="height:95%"></i></span>
+          </div>
+          <p class="brief-card-stmt">Trades tagged "FVG + Liq Sweep" carry an expectancy of <em class="brief-stat-sage">+2.1R</em> &mdash; your sharpest read.</p>
+          <div class="brief-card-sample">14 trades &middot; 30 days</div>
+        </div>
+
+        <div class="brief-card brief-card-sage">
+          <div class="brief-card-top">
+            <span class="brief-card-tag brief-tag-sage">Pattern &middot; Day</span>
+            <span class="brief-spark brief-spark-sage"><i style="height:35%"></i><i style="height:55%"></i><i style="height:50%"></i><i style="height:70%"></i><i style="height:100%"></i></span>
+          </div>
+          <p class="brief-card-stmt">Mondays pull their weight &mdash; <em class="brief-stat-sage">+$1,240</em> average per trade this month.</p>
+          <div class="brief-card-sample">9 trades &middot; 30 days</div>
+        </div>
+      </div>
+
+      <div class="brief-wo-col">
+        <div class="brief-wo-title"><span class="brief-dot brief-dot-rose"></span>What's Off</div>
+
+        <div class="brief-card brief-card-rose">
+          <div class="brief-card-top">
+            <span class="brief-card-tag brief-tag-rose">Risk &middot; Sizing</span>
+            <span class="brief-spark brief-spark-rose"><i style="height:45%"></i><i style="height:55%"></i><i style="height:70%"></i><i style="height:85%"></i><i style="height:100%"></i></span>
+          </div>
+          <p class="brief-card-stmt">After two losses your size jumps to <em class="brief-stat-rose">4.1</em> contracts, against your usual 2.3.</p>
+          <div class="brief-card-sample">8 occurrences &middot; 30 days</div>
+        </div>
+
+        <div class="brief-card brief-card-rose">
+          <div class="brief-card-top">
+            <span class="brief-card-tag brief-tag-rose">Pattern &middot; Time</span>
+            <span class="brief-spark brief-spark-rose"><i style="height:90%"></i><i style="height:65%"></i><i style="height:75%"></i><i style="height:50%"></i><i style="height:60%"></i></span>
+          </div>
+          <p class="brief-card-stmt">London is your weakest window &mdash; a 38% win rate and <em class="brief-stat-rose">-$840</em> net.</p>
+          <div class="brief-card-sample">11 trades &middot; 30 days</div>
+        </div>
+
+        <div class="brief-card brief-card-rose">
+          <div class="brief-card-top">
+            <span class="brief-card-tag brief-tag-rose">Pattern &middot; Day</span>
+            <span class="brief-spark brief-spark-rose"><i style="height:100%"></i><i style="height:70%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:65%"></i></span>
+          </div>
+          <p class="brief-card-stmt">Thursdays run red &mdash; <em class="brief-stat-rose">-$210</em> average per trade across the window.</p>
+          <div class="brief-card-sample">12 trades &middot; 30 days</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── WHEN YOU TRADE BEST ── -->
+  <section class="brief-block">
+    <h2 class="brief-h2">When You Trade Best</h2>
+    <div class="brief-sub">Day &times; Session &middot; hover to drill</div>
+    <div class="brief-heat-grid">
+
+      <div class="brief-heatmap">
+        <div class="brief-hm-row brief-hm-head">
+          <span class="brief-hm-corner"></span>
+          <span class="brief-hm-sess">Asia</span><span class="brief-hm-sess">London</span>
+          <span class="brief-hm-sess">NY AM</span><span class="brief-hm-sess">Lunch</span><span class="brief-hm-sess">NY PM</span>
+        </div>
+        <div class="brief-hm-row">
+          <span class="brief-hm-day">Mon</span>
+          <span class="brief-hm-cell hm-p1">+0.3R</span><span class="brief-hm-cell hm-n1">-0.2R</span>
+          <span class="brief-hm-cell hm-p2">+0.9R</span><span class="brief-hm-cell hm-p1">+0.1R</span><span class="brief-hm-cell hm-n1">-0.4R</span>
+        </div>
+        <div class="brief-hm-row">
+          <span class="brief-hm-day">Tue</span>
+          <span class="brief-hm-cell hm-n2">-0.6R</span><span class="brief-hm-cell hm-p1">+0.4R</span>
+          <span class="brief-hm-cell hm-p2">+1.2R</span><span class="brief-hm-cell hm-n1">-0.3R</span><span class="brief-hm-cell hm-p1">+0.2R</span>
+        </div>
+        <div class="brief-hm-row">
+          <span class="brief-hm-day">Wed</span>
+          <span class="brief-hm-cell hm-p2">+0.7R</span><span class="brief-hm-cell hm-p1">+0.5R</span>
+          <span class="brief-hm-cell hm-p3 hm-best">+2.4R</span><span class="brief-hm-cell hm-p2">+0.8R</span><span class="brief-hm-cell hm-p2">+0.6R</span>
+        </div>
+        <div class="brief-hm-row">
+          <span class="brief-hm-day">Thu</span>
+          <span class="brief-hm-cell hm-n1">-0.1R</span><span class="brief-hm-cell hm-n2">-0.8R</span>
+          <span class="brief-hm-cell hm-p1">+0.5R</span><span class="brief-hm-cell hm-p1">+0.3R</span><span class="brief-hm-cell hm-n2">-0.5R</span>
+        </div>
+        <div class="brief-hm-row">
+          <span class="brief-hm-day">Fri</span>
+          <span class="brief-hm-cell hm-p1">+0.5R</span><span class="brief-hm-cell hm-p1">+0.2R</span>
+          <span class="brief-hm-cell hm-p3">+1.6R</span><span class="brief-hm-cell hm-p1">+0.4R</span><span class="brief-hm-cell hm-p2">+1.1R</span>
+        </div>
+      </div>
+
+      <div class="brief-drill">
+        <div class="brief-drill-head">&#9656; Wed &middot; NY AM</div>
+        <div class="brief-drill-big">+2.4R</div>
+        <div class="brief-drill-sub">Avg expectancy &middot; 7 trades</div>
+        <div class="brief-drill-hr"></div>
+        <div class="brief-drill-list">
+          <div class="brief-drill-row">
+            <span class="brief-drill-thumb"></span>
+            <span class="brief-drill-info"><span class="brief-drill-sym">MNQ &#8599; +$1,800</span><span class="brief-drill-meta">May 15 &middot; FVG + Liq Sweep</span></span>
+          </div>
+          <div class="brief-drill-row">
+            <span class="brief-drill-thumb"></span>
+            <span class="brief-drill-info"><span class="brief-drill-sym">ES &#8599; +$640</span><span class="brief-drill-meta">May 13 &middot; OB retest</span></span>
+          </div>
+          <div class="brief-drill-row">
+            <span class="brief-drill-thumb"></span>
+            <span class="brief-drill-info"><span class="brief-drill-sym">NQ &#8600; +$920</span><span class="brief-drill-meta">May 8 &middot; Liq sweep</span></span>
+          </div>
+        </div>
+        <div class="brief-drill-more">+ 4 more</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── DIG DEEPER ── -->
+  <section class="brief-block">
+    <h2 class="brief-h2">Dig Deeper</h2>
+    <div class="brief-dig-grid">
+      <button type="button" class="brief-dig-card">
+        <div class="brief-dig-top"><span class="brief-dig-tag">Setups</span><span class="brief-dig-arrow">&rarr;</span></div>
+        <div class="brief-dig-stat">12 confluences</div>
+        <div class="brief-dig-desc">tagged across 47 trades</div>
+      </button>
+      <button type="button" class="brief-dig-card">
+        <div class="brief-dig-top"><span class="brief-dig-tag">Sessions</span><span class="brief-dig-arrow">&rarr;</span></div>
+        <div class="brief-dig-stat">5 sessions</div>
+        <div class="brief-dig-desc">NY AM carries the edge</div>
+      </button>
+      <button type="button" class="brief-dig-card">
+        <div class="brief-dig-top"><span class="brief-dig-tag">Quality</span><span class="brief-dig-arrow">&rarr;</span></div>
+        <div class="brief-dig-stat">1.8 avg R:R</div>
+        <div class="brief-dig-desc">expectancy +0.9R</div>
+      </button>
+      <button type="button" class="brief-dig-card">
+        <div class="brief-dig-top"><span class="brief-dig-tag">Behavior</span><span class="brief-dig-arrow">&rarr;</span></div>
+        <div class="brief-dig-stat">3.2 / day</div>
+        <div class="brief-dig-desc">trades per session</div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ── YOUR EQUITY CURVE ── -->
+  <section class="brief-block">
+    <div class="brief-eq-head">
       <div>
-        <h2>Performance Breakdown</h2>
-        <p>Where the P&amp;L is coming from</p>
+        <h2 class="brief-h2">Your Equity Curve</h2>
+        <div class="brief-sub">30-day cumulative &middot; key moments flagged</div>
       </div>
-      <div class="panel-meta" id="an-perf-meta"></div>
-    </div>
-
-    <div class="perf-grid">
-      <div class="an-card">
-        <div class="an-card-head"><span class="an-card-title">By Instrument</span></div>
-        <div id="an-mkt"></div>
-      </div>
-      <div class="an-card">
-        <div class="an-card-head"><span class="an-card-title">By Session</span></div>
-        <div id="an-session"></div>
-      </div>
-      <div class="an-card">
-        <div class="an-card-head"><span class="an-card-title">Top Symbols</span></div>
-        <div id="an-syms"></div>
-      </div>
-      <div class="an-card">
-        <div class="an-card-head"><span class="an-card-title">By Day of Week</span></div>
-        <div id="an-dow"></div>
-      </div>
-      <div class="an-card">
-        <div class="an-card-head"><span class="an-card-title">Long vs Short</span></div>
-        <div id="an-dir"></div>
-      </div>
-      <div class="an-card">
-        <div class="an-card-head"><span class="an-card-title">By Month</span></div>
-        <div id="an-month"></div>
+      <div class="brief-eq-net">
+        <div class="brief-eq-net-v">+$5,420</div>
+        <div class="brief-eq-net-l">Net &middot; 30 days</div>
       </div>
     </div>
-  </div>
-
-  <!-- ========== QUALITY PANEL ========== -->
-  <div class="panel" id="panel-quality">
-    <div class="panel-intro">
-      <div>
-        <h2>Trade Quality</h2>
-        <p>Core profitability metrics</p>
-      </div>
-      <div class="panel-meta" id="an-qual-meta"></div>
+    <div class="brief-eq-chart">
+      <svg viewBox="0 0 920 210" preserveAspectRatio="none" class="brief-eq-svg">
+        <defs>
+          <linearGradient id="briefEqGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#5fb389" stop-opacity="0.28"/>
+            <stop offset="100%" stop-color="#5fb389" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path class="brief-eq-fill" d="M10,185 L80,165 L150,148 L215,160 L285,138 L355,120 L420,132 L490,148 L525,154 L600,118 L675,92 L745,78 L820,50 L882,30 L912,33 L912,200 L10,200 Z"/>
+        <path class="brief-eq-line" d="M10,185 L80,165 L150,148 L215,160 L285,138 L355,120 L420,132 L490,148 L525,154 L600,118 L675,92 L745,78 L820,50 L882,30 L912,33"/>
+        <circle class="brief-eq-mk brief-eq-mk-rose" cx="215" cy="160" r="5"/>
+        <circle class="brief-eq-mk brief-eq-mk-rose" cx="525" cy="154" r="5"/>
+        <circle class="brief-eq-mk brief-eq-mk-sage" cx="745" cy="78" r="5"/>
+        <circle class="brief-eq-mk brief-eq-mk-sage" cx="882" cy="30" r="5"/>
+      </svg>
     </div>
-
-    <div class="qual-grid">
-      <div class="qual-card"><div class="lbl">Avg Winner</div><div class="val" id="an-aw">&mdash;</div></div>
-      <div class="qual-card"><div class="lbl">Avg Loser</div><div class="val" id="an-al">&mdash;</div></div>
-      <div class="qual-card"><div class="lbl">Breakevens</div><div class="val" id="an-be">&mdash;</div></div>
-      <div class="qual-card"><div class="lbl">Avg R:R</div><div class="val" id="an-rr">&mdash;</div></div>
-      <div class="qual-card"><div class="lbl">Expectancy</div><div class="val" id="an-exp">&mdash;</div></div>
-      <div class="qual-card"><div class="lbl">Profit Factor</div><div class="val" id="an-pf">&mdash;</div></div>
+    <div class="brief-eq-mk-hr"></div>
+    <div class="brief-eq-markers">
+      <span class="brief-eq-marker"><span class="brief-mk-dot rose"></span>Tilt &middot; Apr 22</span>
+      <span class="brief-eq-marker"><span class="brief-mk-dot rose"></span>Dip &middot; May 4</span>
+      <span class="brief-eq-marker"><span class="brief-mk-dot sage"></span>Streak start &middot; May 11</span>
+      <span class="brief-eq-marker"><span class="brief-mk-dot sage"></span>Best day &middot; May 15</span>
     </div>
-  </div>
+  </section>
 
-  <!-- ========== BEHAVIOR PANEL ========== -->
-  <div class="panel" id="panel-behavior">
-    <div class="panel-intro">
-      <div>
-        <h2>Behavior &amp; Discipline</h2>
-        <p>Execution patterns &amp; alerts</p>
-      </div>
-    </div>
-
-    <div class="beh-grid">
-      <div class="an-card">
-        <div class="an-card-head"><span class="an-card-title">Win / Loss Streaks</span></div>
-        <div id="an-streak"></div>
-      </div>
-      <div class="an-card">
-        <div class="an-card-head"><span class="an-card-title">Overtrading Detector</span></div>
-        <div id="an-overtrade"></div>
-      </div>
-      <div class="an-card">
-        <div class="an-card-head"><span class="an-card-title">Trades Per Day</span><span class="an-card-meta">last 14d</span></div>
-        <div id="an-tpd"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== TIME PANEL ========== -->
-  <div class="panel" id="panel-time">
-    <div class="panel-intro">
-      <div>
-        <h2>Time of Day Performance</h2>
-        <p>When you actually print</p>
-      </div>
-      <div class="panel-meta">avg P&amp;L by session</div>
-    </div>
-
-    <div class="an-card">
-      <div id="an-tod-heatmap"></div>
-    </div>
-  </div>
-
-  <!-- ========== PSYCHOLOGY PANEL ========== -->
-  <div class="panel" id="panel-psychology">
-    <div class="panel-intro">
-      <div>
-        <h2>Psychology</h2>
-        <p>Grade &middot; Emotion &middot; Confidence</p>
-      </div>
-    </div>
-
-    <div class="psy-grid-2">
-      <div class="an-card">
-        <div class="an-card-head"><span class="an-card-title">Grade Breakdown</span></div>
-        <table class="psy-table" id="psy-grade-table">
-          <thead>
-            <tr>
-              <th>Grade</th>
-              <th class="right">Trades</th>
-              <th class="right">WR%</th>
-              <th class="right">Avg P&amp;L</th>
-              <th class="right">Total</th>
-            </tr>
-          </thead>
-          <tbody id="psy-grade-body"></tbody>
-        </table>
-      </div>
-
-      <div class="an-card">
-        <div class="an-card-head"><span class="an-card-title">Emotional Cost</span><span class="an-card-meta">avg P&amp;L by score</span></div>
-        <div id="psy-emotion-cost"></div>
-        <div class="psy-insight" id="psy-emotion-insight"></div>
-      </div>
-    </div>
-
-    <div class="psy-grid-2">
-      <div class="an-card">
-        <div class="an-card-head"><span class="an-card-title">Confidence Calibration</span></div>
-        <div id="psy-conf-bars"></div>
-        <div class="psy-insight" id="psy-conf-insight"></div>
-      </div>
-      <div class="an-card">
-        <div class="an-card-head"><span class="an-card-title">Your Optimal State</span></div>
-        <div id="psy-optimal"></div>
-      </div>
-    </div>
-
-    <div class="an-card">
-      <div class="an-card-head"><span class="an-card-title">Grade &times; Emotion Matrix</span><span class="an-card-meta">avg P&amp;L at each combo</span></div>
-      <div id="psy-matrix"></div>
-    </div>
-  </div>
+ </div>
 </div>
 <!-- BROKER SYNC -->
 <div id="pg-sync" class="page">
@@ -16189,7 +16347,7 @@ function goTo(pg){
     }
     if (typeof cfRenderPills === 'function') cfRenderPills();
   }
-  if(pg==='equity'){requestAnimationFrame(function(){requestAnimationFrame(function(){renderEquity();});});}
+  /* Equity Curve page retired — its content moved into The Brief (/analytics). */
   if(pg==='upgrade' && typeof refreshUpgradePage === 'function') refreshUpgradePage();
 }
 
@@ -22167,7 +22325,10 @@ function setAnPeriod(p,el){
   if(el) el.classList.add('on');
   refreshAnalytics();
 }
-function renderAnalytics(){refreshAnalytics();}
+/* The Brief (/analytics) is a static page in Phase 1 — nothing to render.
+   Phase 2 wires it to api/insights/generate. The old 5-tab refreshAnalytics
+   is retained as dead code (its #an-* targets no longer exist). */
+function renderAnalytics(){}
 
 function showAnalyticsPanel(name, btn){
   document.querySelectorAll('#pg-analytics .panel').forEach(function(p){p.classList.remove('on');});
