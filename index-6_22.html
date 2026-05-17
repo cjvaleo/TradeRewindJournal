@@ -2454,7 +2454,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
 #pg-calendar .day-trade-card .dr-spacer{flex:1}
 
-/* R-multiple chip (cool blue for positive R, rose for negative) */
+/* Risk:Reward chip (cool blue for positive R, rose for negative) */
 #pg-calendar .day-trade-card .dr-r-chip{
   display:inline-flex;
   align-items:center;
@@ -3241,11 +3241,11 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── LOG TRADE V2 ─────────────────────────────────── */
-#pg-log .lt-grid{
-  display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:36px;align-items:flex-start;
-}
-#pg-log .lt-form{min-width:0;display:flex;flex-direction:column;gap:24px}
-#pg-log .lt-preview{position:sticky;top:24px}
+/* Two-column form — centered, max-width capped. Setup+Execution left,
+   Evidence+Analysis right; Reflection + actions span full width below. */
+#pg-log .lt-form{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+#pg-log .lt-cols{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start}
+#pg-log .lt-col{min-width:0;display:flex;flex-direction:column;gap:24px}
 
 #pg-log .lt-section{
   background:var(--n-surface);border:1px solid var(--n-border);
@@ -4200,9 +4200,10 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   box-shadow:0 0 0 1px rgba(95,179,137,0.7),0 4px 18px rgba(95,179,137,0.18);
 }
 
+@media (max-width:900px){
+  #pg-log .lt-cols{grid-template-columns:1fr;gap:24px}
+}
 @media (max-width:1100px){
-  #pg-log .lt-grid{grid-template-columns:1fr;gap:20px}
-  #pg-log .lt-preview{position:static}
   #pg-log .lt-rr-help-wrap{display:none}
   #pg-log .lt-triple{grid-template-columns:1fr 1fr}
   #pg-log #live-calc{padding:12px;gap:8px}
@@ -4620,7 +4621,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   color:var(--n-text-4);font-family:var(--n-font-mono);font-size:11px;
 }
 
-/* ── CHUNK 6: R-multiple column ────────────────────────────
+/* ── CHUNK 6: Risk:Reward column ────────────────────────────
    Mono cool-blue chip when the trade had a stop set. Loss rows
    tint rose to match the cell-pnl.neg language. When stop is
    missing we fall through to a muted em-dash. */
@@ -6814,7 +6815,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   white-space:pre-wrap;
 }
 
-/* META CHIPS — grade / R-multiple / session under the trade body */
+/* META CHIPS — grade / Risk:Reward / session under the trade body */
 #pg-community .post-chips{
   display:flex;flex-wrap:wrap;gap:5px;
   margin-top:10px;margin-bottom:10px;
@@ -8855,8 +8856,9 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
          rw-emotion-display, rw-conf-display, rw-grade-chips, rw-emotion-chips,
          rw-conf-chips, rw-acct-chips, lg-tv-ok -->
   <div id="mode-manual" class="mode-panel on">
-    <div class="lt-grid">
-      <div class="lt-form">
+    <div class="lt-form">
+      <div class="lt-cols">
+        <div class="lt-col">
 
         <!-- ============ 01 SETUP — what + where ============ -->
         <div class="rw-section">
@@ -8953,9 +8955,9 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
           <!-- Advanced (collapsible) — Stop Loss + # of Accounts. -->
           <div data-rwbuild="advanced:rw"></div>
 
-          <!-- R-multiple inline hint (visible only when stop empty) -->
+          <!-- Risk:Reward inline hint (visible only when stop empty) -->
           <div class="rw-r-hint" id="lt-r-helper">
-            <span id="lt-r-helper-text"><i>+ Add stop to calculate R multiple</i></span>
+            <span id="lt-r-helper-text"><i>+ Add stop to calculate Risk:Reward</i></span>
           </div>
 
           <!-- Hidden / off-screen compat targets — JS continues to read/write these. -->
@@ -8968,6 +8970,9 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
           </div>
           <div id="lt-acct-note" class="lt-acct-note" style="display:none"></div>
         </div>
+        </div><!-- /lt-col (left) -->
+
+        <div class="lt-col">
 
         <!-- ============ EVIDENCE — chart proof ============ -->
         <div class="rw-section">
@@ -9069,9 +9074,11 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             <!-- Notes (prose) — moved here from Reflection -->
             <div class="rw-field">
               <div class="rw-field-l">Notes</div>
-              <textarea id="lg-notes" class="rw-input rw-textarea" placeholder="Setup, what worked, what didn&rsquo;t, lessons&hellip;" oninput="updateLogPreview()"></textarea>
+              <textarea id="lg-notes" class="rw-input rw-textarea" placeholder="Setup, what worked, what didn&rsquo;t, lessons&hellip;"></textarea>
             </div>
         </div>
+        </div><!-- /lt-col (right) -->
+      </div><!-- /lt-cols -->
 
         <!-- ============ REFLECTION — grading (Free-tier veiled) ============ -->
         <div class="rw-section" id="lt-sec-reflection">
@@ -9098,19 +9105,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
           <button class="lt-submit" onclick="confirmLog()">+ Log Trade</button>
           <button class="lt-reset" onclick="resetLogForm()">&#8634; Reset</button>
         </div>
-      </div>
-
-      <!-- LIVE PREVIEW — renders the trade-in-progress through the
-           SAME feed-post component (renderFeedPostCard) it will post
-           as. updateLogPreview() re-renders it on every field change. -->
-      <div class="lt-preview">
-        <div class="lt-preview-h"><span class="dot"></span><span>Live Preview &middot; Your Card</span></div>
-        <div id="lt-preview-card" class="lt-preview-card empty">
-          <div class="lt-preview-empty">Fill in symbol &amp; entry to see your card</div>
-        </div>
-        <div class="lt-preview-note">Auto-shares to all your communities on submit.</div>
-      </div>
-    </div>
+      </div><!-- /lt-form -->
 
     <!-- CONFIRM OVERLAY -->
     <div id="log-confirm">
@@ -9402,6 +9397,8 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
     </div>
 
     <div class="cem-body">
+      <div class="cem-cols">
+        <div class="cem-col">
 
       <!-- ============ SETUP ============ -->
       <div class="rw-section cem-section">
@@ -9500,12 +9497,15 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         <div data-rwbuild="advanced:cem"></div>
 
         <div class="rw-r-hint" id="cem-r-helper">
-          <span><i>+ Add stop to calculate R multiple</i></span>
+          <span><i>+ Add stop to calculate Risk:Reward</i></span>
         </div>
 
         <!-- Hidden compat target — cemCalcLive writes here. -->
         <input type="hidden" id="cem-rr" value=""/>
       </div>
+        </div><!-- /cem-col (left) -->
+
+        <div class="cem-col">
 
       <!-- ============ EVIDENCE ============ -->
       <div class="rw-section cem-section">
@@ -9606,6 +9606,8 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             <textarea id="cem-notes" class="rw-input rw-textarea" placeholder="Setup, what worked, what didn&rsquo;t, lessons&hellip;"></textarea>
           </div>
       </div>
+        </div><!-- /cem-col (right) -->
+      </div><!-- /cem-cols -->
 
       <!-- ============ REFLECTION ============ -->
       <div class="rw-section cem-section">
@@ -9726,7 +9728,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             <th>Exit</th>
             <th>Qty</th>
             <th class="right">P&amp;L</th>
-            <th class="right">R</th><!-- Chunk 6 — R-multiple column -->
+            <th class="right">R</th><!-- Chunk 6 — Risk:Reward column -->
             <th class="center">Notes</th>
             <th>Confluences</th>
             <th></th>
@@ -10616,8 +10618,8 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         </div></div>
       </div>
 
-      <!-- R-multiple targets -->
-      <div class="crd"><div class="crd-h"><div class="crd-title">R-Multiple Targets</div></div>
+      <!-- Risk:Reward targets -->
+      <div class="crd"><div class="crd-h"><div class="crd-title">Risk:Reward Targets</div></div>
         <div style="padding:4px 14px 10px">
           <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bord)">
             <span style="font-family:'Orbitron',monospace;font-size:15px;color:rgba(255,255,255,.88)">1R <span style="color:rgba(255,255,255,.65)">— break even on 50% WR</span></span>
@@ -10846,7 +10848,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
       <div class="uc-feat-h">Advanced Insights</div>
       <div class="uc-feat">P&amp;L by session &middot; symbol &middot; setup &middot; emotion</div>
       <div class="uc-feat">Heatmap day &times; hour</div>
-      <div class="uc-feat">Holding time + R-multiple analysis</div>
+      <div class="uc-feat">Holding time + Risk:Reward analysis</div>
       <div class="uc-feat-h">Perks</div>
       <div class="uc-feat">Priority email support</div>
       <div class="uc-feat">Early access to new features</div>
@@ -17062,7 +17064,7 @@ function cemOnTVPreviewError(imgEl){
 }
 window.cemOnTVPreviewError = cemOnTVPreviewError;
 
-/* ── R-multiple chip render (Chunk 3) ──
+/* ── Risk:Reward chip render (Chunk 3) ──
    Reads #cem-rr (hidden, auto-written by cemCalcLive when stop is set)
    and toggles the inline chip next to the P&L label. Cool blue for
    positive R, rose-tinted for negative. */
@@ -18060,9 +18062,9 @@ function setGradeDots(idx){
   if (typeof updateLogPreview === 'function') updateLogPreview();
 }
 
-// Render the conditional R-multiple helper (fix #5). Reads #lg-stop + #lg-rr.
+// Render the conditional Risk:Reward helper (fix #5). Reads #lg-stop + #lg-rr.
 // Three states:
-//   • Stop empty → "Add a stop loss to calculate your R multiple."
+//   • Stop empty → "Add a stop loss to calculate your Risk:Reward."
 //   • Stop filled, R uncomputable → "Fill entry, exit, and contracts…"
 //   • Stop filled, R computed → big colored "+3.2R" + formula line
 function _renderRHelper(){
@@ -18074,12 +18076,12 @@ function _renderRHelper(){
   var pnl  = parseFloat((document.getElementById('lg-pnl')||{}).value);
   if (!stop || stop <= 0) {
     helper.className = 'r-helper';
-    txt.textContent  = 'Add a stop loss to calculate your R multiple.';
+    txt.textContent  = 'Add a stop loss to calculate your Risk:Reward.';
     return;
   }
   if (isNaN(rr)) {
     helper.className = 'r-helper';
-    txt.textContent  = 'Fill entry, exit, and contracts to see your R multiple.';
+    txt.textContent  = 'Fill entry, exit, and contracts to see your Risk:Reward.';
     return;
   }
   helper.className = 'r-helper active';
@@ -19206,7 +19208,7 @@ function onTVPreviewError(imgEl){
 }
 window.onTVPreviewError = onTVPreviewError;
 
-/* ── R-MULTIPLE chip render (Visual redesign Chunk 2) ──
+/* ── Risk:Reward chip render (Visual redesign Chunk 2) ──
    Reads #lg-rr (hidden, auto-filled by calcLivePnl when stop is set) and
    shows/hides the inline chip next to the P&L label. Called from calcLivePnl. */
 function renderRChip(){
@@ -19325,67 +19327,12 @@ function _safeText(s){
     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-/* Live Preview — renders the trade-in-progress through renderFeedPostCard,
-   the SAME component the community feed uses. Builds a synthetic
-   post-shaped object from the live form fields; re-runs on every
-   field change (form oninput handlers + calcLivePnl all call this). */
-function updateLogPreview(){
-  var card=document.getElementById('lt-preview-card');
-  if(!card) return;
-  if(typeof renderFeedPostCard!=='function') return;
-
-  var sym=((document.getElementById('lg-sym')||{}).value||'').trim().toUpperCase();
-  var entry=parseFloat((document.getElementById('lg-entry')||{}).value);
-
-  // Empty state — symbol AND entry price both required.
-  if(!sym || isNaN(entry)){
-    card.className='lt-preview-card empty';
-    card.innerHTML='<div class="lt-preview-empty">Fill in symbol &amp; entry to see your card</div>';
-    return;
-  }
-
-  var pnl     = parseFloat((document.getElementById('lg-pnl')||{}).value);
-  var pts     = parseFloat((document.getElementById('lg-points')||{}).value);
-  var notes   = ((document.getElementById('lg-notes')||{}).value||'').trim();
-  var dateVal = (document.getElementById('lg-date')||{}).value||'';
-  var acctType= (document.getElementById('lg-account-type')||{}).value||'';
-  var sideRaw = (typeof lgType==='string'?lgType:'long');
-
-  // Confluences snapshot straight off the picker state.
-  var cf=[];
-  if(typeof confluencesState!=='undefined' && Array.isArray(confluencesState.selected)){
-    cf=confluencesState.selected.map(function(c){
-      return { name:c.name||'', timeframe:c.timeframe||null };
-    });
-  }
-  // Screenshot — first attached note image, if any.
-  var img='';
-  if(typeof noteImages!=='undefined' && Array.isArray(noteImages) && noteImages.length){
-    img=noteImages[0];
-  }
-
-  var profile=(typeof acct==='object'&&acct)?acct:{};
-  var p={
-    isMe:true, isText:false,
-    trade:{ id:'', sym:sym, type:sideRaw, date:dateVal, notes:notes, account_type:acctType },
-    pnl: isNaN(pnl)?0:pnl,
-    points: isNaN(pts)?null:pts,
-    metadata:{ confluences:cf, account_type:acctType, date:dateVal },
-    username:        profile.username || 'you',
-    display_name:    profile.name || profile.display_name || '',
-    avatar_finish:   profile.avatar_finish || profile.color || '',
-    avatar_initials: profile.avatar_initials || profile.initials || '',
-    avatar_image_url:profile.avatar_image_url || null,
-    image_url:       img || ''
-  };
-  card.className='lt-preview-card';
-  card.innerHTML=renderFeedPostCard(p);
-}
-
-document.addEventListener('DOMContentLoaded', function(){
-  // Initial preview render once acct + DOM are ready (defer one tick).
-  setTimeout(function(){ try{ updateLogPreview(); }catch(e){} }, 60);
-});
+/* Live Preview retired — the Log Trade page no longer renders a
+   trade-in-progress card. updateLogPreview is kept as a no-op so the
+   many form-field callsites that invoke it stay harmless. To preview a
+   card, save the trade and view it in Community. (renderFeedPostCard
+   itself is retained — the community feed still uses it.) */
+function updateLogPreview(){}
 
 /* Populate the Share-to-Community <select> on the Log Trade page.
    Pulls every community where the current user is owner OR a member
@@ -19476,7 +19423,7 @@ async function shareTradeToCommunity(trade){
     var screenshotUrl = _extractTradeScreenshot(trade);
 
     // Metadata — drives the chip strip in the post template (grade,
-    // R-multiple, session, market, emotion, confidence). Stored as
+    // Risk:Reward, session, market, emotion, confidence). Stored as
     // JSONB so we can extend later without another column add.
     //
     // Chunk 7 — also bakes account_type + confluences denormalized snapshot
@@ -21363,8 +21310,12 @@ function ciRenderEnrichZone(idx){
   }).join('');
 
   zone.innerHTML =
-    /* ── Read-only broker data ── */
+    /* ── Read-only broker data (full width) ── */
     brokerHeader +
+    /* ── Two-column editable layout ── */
+    '<div class="ci-cols">' +
+    /* ── LEFT — Account Type + Session ── */
+    '<div class="ci-col">' +
     /* ── Account Type ── */
     '<div class="rw-field">' +
       '<div class="rw-field-l">Account Type <span class="rw-mod-opt">optional</span></div>' +
@@ -21375,6 +21326,9 @@ function ciRenderEnrichZone(idx){
       '<div class="rw-field-l">Session <span class="rw-mod-opt">'+(e.session?'auto-detected':'optional')+'</span></div>' +
       buildSessionPicker('csv', e.session) +
     '</div>' +
+    '</div>' + /* /ci-col (left) */
+    /* ── RIGHT — Evidence + Analysis ── */
+    '<div class="ci-col">' +
     /* ── EVIDENCE — chart proof ── */
     buildSectionHeader('Evidence') +
     '<div class="rw-field">' +
@@ -21445,17 +21399,17 @@ function ciRenderEnrichZone(idx){
           '</div>' +
         '</div>' +
       '</div>' +
-    '</div>' +
-    /* Notes — inline oninput retained, but the primary binding is via
-       addEventListener below (more reliable when the textarea is created
-       via innerHTML and inline attribute parsing has edge-case failures). */
+    /* Notes — part of the Analysis column. Inline oninput retained, but
+       the primary binding is via addEventListener below. */
     '<div class="rw-field">' +
       '<div class="rw-field-l">Notes</div>' +
       '<textarea class="rw-input rw-textarea ci-enrich-notes" data-idx="'+idx+'" '+
                 'placeholder="What happened? Setup, decision, lessons…" '+
                 'oninput="ciOnEnrichNotes('+idx+', this.value)">'+ciEsc(e.notes)+'</textarea>' +
     '</div>' +
-    /* ── REFLECTION — grading ── */
+    '</div>' + /* /ci-col (right) */
+    '</div>' + /* /ci-cols */
+    /* ── REFLECTION — grading (full width) ── */
     buildSectionHeader('Reflection') +
     buildReflectionRow('grade',      'csv', gradeIdx) +
     buildReflectionRow('emotion',    'csv', e.emotion) +
@@ -22099,7 +22053,7 @@ async function renderHistory(){
   const tb=document.getElementById('hist-body');
   if(!ft.length){
     // Chunk 6 — colspan bumped 11 → 13 to span the two new columns
-    // (Account Type after Dir, R-multiple after P&L).
+    // (Account Type after Dir, Risk:Reward after P&L).
     tb.innerHTML = '<tr><td colspan="13" class="h-empty">No trades found</td></tr>';
     return;
   }
@@ -22143,7 +22097,7 @@ async function renderHistory(){
       + '<span class="acct-label">'+meta.label+'</span>'
       + '</td>';
   }
-  // Chunk 6 — R-multiple chip. Only renders when a stop was set on the
+  // Chunk 6 — Risk:Reward chip. Only renders when a stop was set on the
   // trade (otherwise rr can't be derived). Sign follows P&L: profitable
   // trades show positive R (cool blue), losses show negative R (rose).
   function _fmtRR(t){
@@ -22176,7 +22130,7 @@ async function renderHistory(){
       ? '<td class="cell-conf">'+cfRenderMiniPillsHtml(cf, {limit:3, wrapClass:'cf-mini-row'})+'</td>'
       : '<td class="cell-conf empty">—</td>';
     // Chunk 6 — row template now has 13 cells. Account Type sits between
-    // Direction and Entry (matching the <th> order); R-multiple sits
+    // Direction and Entry (matching the <th> order); Risk:Reward sits
     // between P&L and Notes. Header order is the source of truth — keep
     // these aligned if either is touched.
     return '<tr>'
@@ -27371,7 +27325,7 @@ function cookieDecline(){
   color:var(--n-text-4);
 }
 
-/* R-multiple chip inline next to P&L label ----------------------------------*/
+/* Risk:Reward chip inline next to P&L label ----------------------------------*/
 #pg-log .rw-r-chip{
   display:inline-flex;
   align-items:center;
@@ -27387,7 +27341,7 @@ function cookieDecline(){
   margin-left:auto;
 }
 
-/* R-multiple hint ("+ Add stop…") -------------------------------------------*/
+/* Risk:Reward hint ("+ Add stop…") -------------------------------------------*/
 #pg-log .rw-r-hint{
   font-family:var(--n-font-mono);
   font-size:10px;
@@ -28541,6 +28495,13 @@ function cookieDecline(){
   margin:0 -8px;
   padding:0 8px 4px;
 }
+/* Two-column internal layout — Setup+Execution left, Evidence+Analysis
+   right; Reflection spans full width below. */
+.cem-card .cem-cols{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+.cem-card .cem-col{min-width:0}
+@media (max-width:900px){
+  .cem-card .cem-cols{grid-template-columns:1fr;gap:0}
+}
 
 /* Compact section spacing (was 28px in #pg-log → 20px here) */
 .cem-card .rw-section{margin-bottom:20px}
@@ -28778,7 +28739,7 @@ function cookieDecline(){
 .cem-card .rw-chip-row-grade{gap:3px}
 .cem-card .rw-chip-row-grade .rw-chip{flex:1;padding:7px 5px;font-size:10.5px;letter-spacing:0.08em}
 
-/* R-multiple chip + hint */
+/* Risk:Reward chip + hint */
 .cem-card .rw-r-chip{
   display:inline-flex;
   align-items:center;
@@ -29641,6 +29602,13 @@ function cookieDecline(){
 /* Section headers inside the enrich zone get breathing room above. */
 #pg-log .ci-enrich .rw-section-h{margin-top:20px}
 #pg-log .ci-enrich .rw-field + .rw-field{margin-top:14px}
+/* Two-column editable layout below the read-only broker header. */
+#pg-log .ci-enrich .ci-cols{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+#pg-log .ci-enrich .ci-col{min-width:0}
+#pg-log .ci-enrich .ci-col > .rw-section-h:first-child{margin-top:0}
+@media (max-width:900px){
+  #pg-log .ci-enrich .ci-cols{grid-template-columns:1fr;gap:0}
+}
 
 /* ── CSV enrich row — read-only broker data header ──────────────────── */
 #pg-log .ci-bh{
