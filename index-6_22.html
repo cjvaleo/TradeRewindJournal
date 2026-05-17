@@ -4877,9 +4877,6 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 .rvp-bb-empty-ic{width:46px;height:46px;margin-bottom:16px}
 .rvp-bb-empty-t{font-size:13px;line-height:1.5;color:#9a9a92;max-width:210px}
 .rvp-bb-empty-s{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.06em;color:#56554f;margin-top:9px}
-.rvp-bb-hero{text-align:center;margin-bottom:18px}
-.rvp-bb-hero-state{font-family:var(--n-font-display);font-style:italic;font-weight:400;font-size:28px;line-height:1.15;color:#f5f4f0}
-.rvp-bb-hero-wr{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;margin-top:7px}
 .rvp-bb-divider{height:1px;background:rgba(255,255,255,.06);margin-bottom:18px}
 .rvp-wr{display:flex;flex-direction:column;gap:12px}
 .rvp-wr-row{display:grid;grid-template-columns:68px 1fr 36px;align-items:center;gap:10px}
@@ -22511,7 +22508,6 @@ function rvBehaviorCol(title, dim, cfg){
   if(total < 15) return rvBehaviorEmpty(title, total);
   return '<div class="rvp-bb-col">'+
     '<div class="rvp-bb-title">'+rvEsc(title)+'</div>'+
-    rvBehaviorHero(dim, cfg)+
     '<div class="rvp-bb-divider"></div>'+
     rvWinBars(dim, cfg)+
   '</div>';
@@ -22526,27 +22522,6 @@ function rvBehaviorEmpty(title, count){
       '<div class="rvp-bb-empty-t">Need 15+ trades to see meaningful patterns. You have '+(Number(count)||0)+'.</div>'+
       '<div class="rvp-bb-empty-s">Keep logging.</div>'+
     '</div>'+
-  '</div>';
-}
-// Dominant-state callout — the state the trader spends the most time in,
-// with its win rate as the headline fact.
-function rvBehaviorHero(dim, cfg){
-  var dist = dim.distribution || [];
-  var byWr = {};
-  (dim.win_rates||[]).forEach(function(w){ byWr[w.state] = w; });
-  var domState = null, domPct = -1;
-  dist.forEach(function(d){
-    var p = Number(d.pct)||0;
-    if(p > domPct){ domPct = p; domState = d.state; }
-  });
-  var label = (domState && cfg.labels[domState]) || '—';
-  var wr = (domState && byWr[domState]) || {};
-  var v = wr.win_rate;
-  var wrColor = rvQualityColor(v, wr.count);
-  var wrText = v==null ? 'no win-rate data' : v+'% win rate';
-  return '<div class="rvp-bb-hero">'+
-    '<div class="rvp-bb-hero-state">'+rvEsc(label)+'</div>'+
-    '<div class="rvp-bb-hero-wr" style="color:'+wrColor+'">'+rvEsc(wrText)+'</div>'+
   '</div>';
 }
 function rvWinBars(dim, cfg){
