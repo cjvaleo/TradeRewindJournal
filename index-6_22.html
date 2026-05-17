@@ -5059,6 +5059,80 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   .rv-table tr{display:block;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.07)}
 }
 
+/* ════════ REVIEW · Rules tab v11 (Session 4) ════════ */
+.rv-top{display:grid;grid-template-columns:1fr 1.6fr;gap:22px;margin-bottom:30px;align-items:start}
+/* Discipline circle */
+.rv-disc{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:26px 24px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.rv-donut{position:relative;width:200px;height:200px}
+.rv-donut svg{width:200px;height:200px;display:block}
+.rv-donut-bg{fill:none;stroke:rgba(255,255,255,0.05);stroke-width:14}
+.rv-donut-fg{fill:none;stroke:#5fb389;stroke-width:14;stroke-linecap:round;filter:drop-shadow(0 0 8px rgba(95,179,137,0.4));transition:stroke-dasharray .5s ease}
+.rv-donut-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.rv-donut-pct{font-family:var(--n-font-display);font-style:italic;font-size:64px;line-height:1;color:#5fb389}
+.rv-donut-l{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#8a8a82;margin-top:4px}
+.rv-disc-sub{font-size:12px;color:#bdbcb6;text-align:center;line-height:1.5}
+.rv-disc-cost{color:#c95f5f}
+/* Today's Review v11 */
+.rv-today-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}
+.rv-today-tag{display:flex;align-items:center;gap:8px;font-family:var(--n-font-mono);font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:#f5d77c}
+.rv-today-tag .meta{color:#8a8a82;letter-spacing:0.08em;text-transform:none;font-size:10px}
+.rv-today-headline{font-family:var(--n-font-display);font-style:italic;font-size:22px;color:#f0efea;margin-top:8px}
+.rv-saved-note{font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:#5fb389;margin-bottom:8px}
+.rv-trow{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:9px;margin-top:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05)}
+.rv-trow-followed{background:rgba(95,179,137,0.06);border-color:rgba(95,179,137,0.16)}
+.rv-trow-broken{background:rgba(201,95,95,0.06);border-color:rgba(201,95,95,0.18)}
+.rv-trow-main{flex:1;min-width:0}
+.rv-trow-name{font-size:13px;color:#f0efea}
+.rv-trow-micro{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:#8a8a82;margin-top:3px}
+.rv-trow-tg{display:flex;gap:6px;flex-shrink:0}
+.rv-yn{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.06em;text-transform:uppercase;width:48px;padding:7px 0;border-radius:6px;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.02);color:#8a8a82;cursor:pointer}
+.rv-yn.on-yes{background:rgba(95,179,137,0.18);border-color:rgba(95,179,137,0.5);color:#5fb389}
+.rv-yn.on-no{background:rgba(201,95,95,0.18);border-color:rgba(201,95,95,0.5);color:#c95f5f}
+/* Active Rules — default chip + broken row tint */
+.rv-default-chip{font-family:var(--n-font-mono);font-size:7.5px;letter-spacing:0.1em;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:rgba(95,179,137,0.14);color:#5fb389;vertical-align:middle;margin-left:6px}
+.rv-tr-broken td{background:rgba(201,95,95,0.025)}
+/* Add Your Own — cool-blue */
+.rv-addown-head{font-family:var(--n-font-display);font-style:italic;font-size:22px;color:#f5f4f0;padding-bottom:7px;margin-bottom:14px;border-bottom:1px solid;border-image:linear-gradient(90deg,rgba(110,168,255,0.5),rgba(110,168,255,0)) 1}
+.rv-addown-card{background:rgba(110,168,255,0.03);border:1px solid rgba(110,168,255,0.18);border-radius:14px;padding:22px 24px}
+.rv-field-l{display:block;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#9a9a92;margin:14px 0 6px}
+.rv-field-l:first-child{margin-top:0}
+.rv-field-l .opt{color:#6e6e66;letter-spacing:0.06em}
+.rv-input{width:100%;box-sizing:border-box;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.10);border-radius:7px;padding:9px 12px;font-family:var(--n-font-sans);font-size:13px;color:#f0efea}
+.rv-input:focus{outline:none;border-color:rgba(110,168,255,0.4)}
+.rv-textarea{min-height:58px;resize:vertical}
+.rv-type-toggle{display:flex;gap:6px}
+.rv-tt{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:8px 16px;border-radius:6px;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.02);color:#8a8a82;cursor:pointer}
+.rv-tt.on{background:rgba(110,168,255,0.12);border-color:rgba(110,168,255,0.4);color:#6ea8ff}
+.rv-add-btn{margin-top:18px;font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;background:#5fb389;color:#06140d;border:0;border-radius:7px;padding:11px 24px;cursor:pointer;font-weight:600}
+/* Paywall */
+.rv-paywall{max-width:440px;margin:30px auto;text-align:center;background:linear-gradient(135deg,rgba(245,215,124,0.06),rgba(110,168,255,0.05));border:1px solid rgba(245,215,124,0.20);border-radius:16px;padding:34px 32px}
+.rv-paywall-badge{display:inline-block;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.16em;color:#f5d77c;border:1px solid rgba(245,215,124,0.4);border-radius:999px;padding:4px 12px;margin-bottom:16px}
+.rv-paywall-h{font-family:var(--n-font-display);font-style:italic;font-size:28px;color:#f5f4f0}
+.rv-paywall-sub{font-size:13px;color:#bdbcb6;margin-top:8px;line-height:1.55}
+.rv-paywall-list{list-style:none;padding:0;margin:18px 0 22px;text-align:left;display:inline-block}
+.rv-paywall-list li{font-size:12.5px;color:#cfcec8;padding:6px 0 6px 22px;position:relative}
+.rv-paywall-list li::before{content:'✓';position:absolute;left:0;color:#5fb389}
+.rv-paywall-cta{font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;background:#5fb389;color:#06140d;border:0;border-radius:8px;padding:13px 30px;cursor:pointer;font-weight:600}
+/* 4 PM popup */
+.rv-4pm-ov{position:fixed;inset:0;z-index:10000;background:rgba(10,10,10,0.82);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:24px}
+.rv-4pm-card{position:relative;max-width:380px;width:100%;background:linear-gradient(135deg,rgba(245,215,124,0.08),rgba(110,168,255,0.05)),var(--n-surface,#121212);border:1px solid rgba(245,215,124,0.22);border-radius:16px;padding:30px 30px 26px;text-align:center}
+.rv-4pm-x{position:absolute;top:12px;right:14px;background:none;border:0;color:#7a7a72;font-size:20px;cursor:pointer;line-height:1}
+.rv-4pm-x:hover{color:#f0efea}
+.rv-4pm-dot{margin-bottom:14px}
+.rv-4pm-dot .rv-dot{width:10px;height:10px}
+.rv-4pm-h{font-family:var(--n-font-display);font-style:italic;font-size:24px;color:#f5f4f0;line-height:1.25}
+.rv-4pm-sub{font-size:13px;color:#9a9a92;margin-top:8px}
+.rv-4pm-cta{margin-top:20px;font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;background:#5fb389;color:#06140d;border:0;border-radius:8px;padding:12px 30px;cursor:pointer;font-weight:600}
+@media (max-width:900px){
+  .rv-top{grid-template-columns:1fr;gap:18px}
+  .rv-donut,.rv-donut svg{width:170px;height:170px}
+  .rv-donut-pct{font-size:52px}
+}
+@media (max-width:600px){
+  .rv-today-head{flex-direction:column;gap:10px}
+  .rv-trow{flex-wrap:wrap}
+}
+
 #pg-analytics .an-head{
   display:flex;align-items:flex-start;justify-content:space-between;
   margin-bottom:24px;flex-wrap:wrap;gap:14px;border:none;padding:0;
@@ -22452,27 +22526,41 @@ function renderAnalytics(){
   if(_rvState.tab === 'rules') rvLoadRules();
 }
 
+// The 5 seeded defaults — matched by name to show the "Default" chip.
+var RV_DEFAULT_NAMES = {
+  '1 mini per trade':1, '1 win = done':1, 'First trade loss → half size':1,
+  'Only A+ setups':1, 'No trades on Friday':1
+};
+
+// Trade-save hook — fire-and-forget auto-evaluation after a trade saves.
+function rvEvalTradeSilently(tradeId){
+  if(!tradeId) return;
+  rvFetch('/api/rules/evaluate', { method:'POST', body:{ trade_id:String(tradeId) } })
+    .then(function(r){ if(!r.ok && r.status!==403 && r.status!==404) console.warn('[rv eval hook]', r.status); })
+    .catch(function(e){ console.warn('[rv eval hook]', e && e.message); });
+}
+window.rvEvalTradeSilently = rvEvalTradeSilently;
+
 async function rvLoadRules(){
   var root = document.getElementById('rv-rules-root');
   if(!root) return;
   root.innerHTML = '<div class="rv-loading">Loading your rules&hellip;</div>';
-  var res = await Promise.all([
-    rvFetch('/api/rules'),
-    rvFetch('/api/rules/today'),
-    rvFetch('/api/rules/weekly-scorecard'),
-  ]);
-  var rulesR = res[0], todayR = res[1], scR = res[2];
-  if(rulesR.status === 403){
-    root.innerHTML = '<div class="rv-msg">The Review system is a Pro feature.<br>Upgrade to build and track your trading rules.</div>';
-    return;
+  var rulesR = await rvFetch('/api/rules');
+  if(rulesR.status === 403){ root.innerHTML = rvPaywallHtml(); return; }
+  if(!rulesR.ok){ root.innerHTML = '<div class="rv-msg">Couldn’t load your rules — try again in a moment.</div>'; return; }
+  var rules = (rulesR.data && rulesR.data.rules) || [];
+  // First visit — seed the 5 defaults, then re-fetch.
+  if(rules.length === 0){
+    var seedR = await rvFetch('/api/rules/seed-defaults', { method:'POST' });
+    if(seedR.ok){
+      rulesR = await rvFetch('/api/rules');
+      rules = (rulesR.data && rulesR.data.rules) || [];
+    }
   }
-  if(!rulesR.ok){
-    root.innerHTML = '<div class="rv-msg">Couldn’t load your rules — try again in a moment.</div>';
-    return;
-  }
-  _rvState.rules     = (rulesR.data && rulesR.data.rules) || [];
-  _rvState.templates = (rulesR.data && rulesR.data.templates) || [];
-  _rvState.today     = todayR.ok ? todayR.data : null;
+  var todayR = await rvFetch('/api/rules/today');
+  var scR = await rvFetch('/api/rules/weekly-scorecard');
+  _rvState.rules = rules;
+  _rvState.today = todayR.ok ? todayR.data : null;
   _rvState.scorecard = scR.ok ? scR.data : null;
   _rvState.reviewChoices = {};
   rvRenderRulesTab();
@@ -22480,73 +22568,103 @@ async function rvLoadRules(){
 
 function rvRenderRulesTab(){
   var root = document.getElementById('rv-rules-root');
-  if(root) root.innerHTML = rvTodayHtml() + rvScorecardHtml() + rvActiveRulesHtml() + rvLibraryHtml();
+  if(root) root.innerHTML =
+    '<div class="rv-top">' + rvDisciplineHtml() + rvTodayHtml() + '</div>' +
+    rvActiveRulesHtml() +
+    rvAddYourOwnHtml();
 }
 
-// ── Today's Review ──────────────────────────────────────────────────
+// ── Discipline Circle ───────────────────────────────────────────────
+function rvDisciplineHtml(){
+  var o = (_rvState.scorecard && _rvState.scorecard.overall) || null;
+  var pct = o ? o.adherence_pct : null;
+  var pctNum = pct==null ? 0 : pct;
+  var C = 2 * Math.PI * 86;
+  var dash = (pctNum/100) * C;
+  var scRules = (_rvState.scorecard && _rvState.scorecard.rules) || [];
+  var brokenSet = {};
+  scRules.forEach(function(r){ if(r.broken > 0) brokenSet[r.rule_id] = true; });
+  var active = _rvState.rules.filter(function(r){ return r.is_active; });
+  var clean = active.filter(function(r){ return !brokenSet[r.id]; }).length;
+  var cost = o ? o.cost_impact : 0;
+  var costLine = (cost < 0) ? ' &middot; <span class="rv-disc-cost">'+rvMoney(cost)+' from breaks</span>' : '';
+  return '<section class="rv-disc">'+
+    '<div class="rv-donut">'+
+      '<svg viewBox="0 0 200 200">'+
+        '<circle class="rv-donut-bg" cx="100" cy="100" r="86"/>'+
+        '<circle class="rv-donut-fg" cx="100" cy="100" r="86" transform="rotate(-90 100 100)" '+
+          'stroke-dasharray="'+dash.toFixed(1)+' '+C.toFixed(1)+'"/>'+
+      '</svg>'+
+      '<div class="rv-donut-c"><div class="rv-donut-pct">'+(pct==null?'—':pctNum+'%')+'</div>'+
+        '<div class="rv-donut-l">Followed</div></div>'+
+    '</div>'+
+    '<div class="rv-disc-sub">'+clean+' of '+active.length+' rules followed this week'+costLine+'</div>'+
+  '</section>';
+}
+
+// ── Today's Review (v11) — one row per active rule, day's evals grouped ──
 function rvTodayHtml(){
   var t = _rvState.today;
   var evals = (t && t.evaluations) || [];
-  var day = (t && t.trading_day) || new Date().toISOString().slice(0,10);
-  var rows;
-  if(!evals.length){
-    rows = '<div class="rv-empty">No evaluations yet today — they appear once you log a trade.</div>';
-  } else {
-    rows = evals.map(function(e){
-      var rule = e.rules || {};
-      var subj = rule.rule_type === 'subjective';
-      var choice = _rvState.reviewChoices[e.id];
-      if(choice === undefined){
-        choice = (!subj && (e.auto_detected_status==='followed' || e.auto_detected_status==='broken'))
-          ? e.auto_detected_status
-          : (e.status==='followed' || e.status==='broken' ? e.status : null);
-        _rvState.reviewChoices[e.id] = choice;
-      }
-      var meta = subj ? 'Subjective · self-review'
-                      : 'Auto · ' + (e.auto_detected_status || 'unknown');
-      return '<div class="rv-eval" data-eid="'+e.id+'">'+
-        '<div class="rv-eval-main">'+
-          '<div class="rv-eval-name">'+rvEsc(rule.name||'Rule')+'</div>'+
-          '<div class="rv-eval-meta">'+meta+'</div>'+
-        '</div>'+
-        '<div class="rv-eval-toggle">'+
-          '<button type="button" class="rv-tg'+(choice==='followed'?' sel-followed':'')+'" '+
-            'onclick="rvSetReview(\''+e.id+'\',\'followed\')">'+(subj?'Yes':'Followed')+'</button>'+
-          '<button type="button" class="rv-tg'+(choice==='broken'?' sel-broken':'')+'" '+
-            'onclick="rvSetReview(\''+e.id+'\',\'broken\')">'+(subj?'No':'Broke it')+'</button>'+
+  var byRule = {};
+  evals.forEach(function(e){ (byRule[e.rule_id] || (byRule[e.rule_id]=[])).push(e); });
+  var active = _rvState.rules.filter(function(r){ return r.is_active; });
+  var rows = '';
+  if(evals.length){
+    rows = active.map(function(r){
+      var rEvals = byRule[r.id] || [];
+      if(!rEvals.length) return '';
+      var total = rEvals.length;
+      var followedCount = rEvals.filter(function(e){ return e.auto_detected_status==='followed'; }).length;
+      var subj = r.rule_type==='subjective';
+      var brokeAny = rEvals.some(function(e){ return e.auto_detected_status==='broken'; });
+      var verdict = subj ? null : (brokeAny ? 'broken' : 'followed');
+      var key = 'rule:'+r.id;
+      var choice = _rvState.reviewChoices[key];
+      if(choice === undefined){ choice = verdict; _rvState.reviewChoices[key] = choice; }
+      var micro = subj
+        ? 'self-review · '+total+' trade'+(total===1?'':'s')
+        : 'auto: '+(verdict==='followed'?'✓ followed':'✗ broke')+' · '+followedCount+'/'+total+' trades';
+      var tint = subj ? '' : (verdict==='broken' ? ' rv-trow-broken' : ' rv-trow-followed');
+      return '<div class="rv-trow'+tint+'">'+
+        '<div class="rv-trow-main"><div class="rv-trow-name">'+rvEsc(r.name)+'</div>'+
+          '<div class="rv-trow-micro">'+micro+'</div></div>'+
+        '<div class="rv-trow-tg">'+
+          '<button type="button" class="rv-yn'+(choice==='followed'?' on-yes':'')+'" onclick="rvSetReview(\''+key+'\',\'followed\')">Yes</button>'+
+          '<button type="button" class="rv-yn'+(choice==='broken'?' on-no':'')+'" onclick="rvSetReview(\''+key+'\',\'broken\')">No</button>'+
         '</div>'+
       '</div>';
     }).join('');
   }
-  return '<section class="rv-sec rv-today">'+
-    '<div class="rv-today-tag"><span class="rv-dot gold"></span>Today’s Review <span class="meta">'+rvEsc(day)+'</span></div>'+
-    '<div class="rv-today-sub">Confirm how today’s trades measured against your rules.</div>'+
-    rows +
-    (evals.length
-      ? '<div class="rv-today-foot"><span class="rv-saved-note" id="rv-saved-note" style="display:none">Saved ✓</span>'+
-        '<button type="button" class="rv-save" id="rv-save-btn" onclick="rvSaveReview()">Save Review</button></div>'
-      : '')+
+  if(!rows) rows = '<div class="rv-empty">No trades logged today yet — your review appears once you log a trade.</div>';
+  return '<section class="rv-today" id="rv-today-anchor">'+
+    '<div class="rv-today-head">'+
+      '<div><div class="rv-today-tag"><span class="rv-dot gold"></span>Today’s Review '+
+        '<span class="meta">auto-filled, edit if wrong</span></div>'+
+        '<div class="rv-today-headline">Quick check before you close out.</div></div>'+
+      (evals.length ? '<button type="button" class="rv-save" id="rv-save-btn" onclick="rvSaveReview()">Save Review</button>' : '')+
+    '</div>'+
+    '<div class="rv-saved-note" id="rv-saved-note" style="display:none">Review saved ✓</div>'+
+    rows+
   '</section>';
 }
-function rvSetReview(eid, status){
-  _rvState.reviewChoices[eid] = status;
-  var row = document.querySelector('.rv-eval[data-eid="'+eid+'"]');
-  if(row){
-    var btns = row.querySelectorAll('.rv-tg');
-    btns[0].classList.toggle('sel-followed', status==='followed');
-    btns[1].classList.toggle('sel-broken', status==='broken');
-  }
+function rvSetReview(key, status){
+  _rvState.reviewChoices[key] = status;
+  rvRenderRulesTab();
 }
 window.rvSetReview = rvSetReview;
 
 async function rvSaveReview(){
   var evals = (_rvState.today && _rvState.today.evaluations) || [];
+  var byRule = {};
+  evals.forEach(function(e){ (byRule[e.rule_id] || (byRule[e.rule_id]=[])).push(e); });
   var reviews = [];
-  evals.forEach(function(e){
-    var ch = _rvState.reviewChoices[e.id];
+  Object.keys(byRule).forEach(function(rid){
+    var ch = _rvState.reviewChoices['rule:'+rid];
     if(ch!=='followed' && ch!=='broken') return;
-    var subj = e.rules && e.rules.rule_type==='subjective';
-    reviews.push({ id:e.id, status:ch, user_overrode: subj ? false : (ch !== e.auto_detected_status) });
+    byRule[rid].forEach(function(e){
+      reviews.push({ id:e.id, status:ch, user_overrode: (ch !== e.auto_detected_status) });
+    });
   });
   if(!reviews.length) return;
   var btn = document.getElementById('rv-save-btn');
@@ -22554,8 +22672,8 @@ async function rvSaveReview(){
   var r = await rvFetch('/api/rules/review', { method:'POST', body:{ reviews:reviews } });
   if(btn){ btn.disabled = false; btn.textContent = 'Save Review'; }
   if(r.ok){
-    var note = document.getElementById('rv-saved-note');
-    if(note) note.style.display = '';
+    var n = document.getElementById('rv-saved-note'); if(n) n.style.display = '';
+    try{ localStorage.setItem('rv_reviewed_'+new Date().toISOString().slice(0,10), '1'); }catch(e){}
     rvRefreshSidebarPill();
     setTimeout(rvLoadRules, 700);
   } else if(typeof toast === 'function'){
@@ -22564,50 +22682,30 @@ async function rvSaveReview(){
 }
 window.rvSaveReview = rvSaveReview;
 
-// ── Weekly Scorecard ────────────────────────────────────────────────
-function rvScorecardHtml(){
-  var o = (_rvState.scorecard && _rvState.scorecard.overall) || null;
-  var pct = o ? o.adherence_pct : null;
-  var cls = pct==null ? '' : (pct>=70 ? '' : (pct>=50 ? 'mid' : 'bad'));
-  var cost = o ? o.cost_impact : 0;
-  return '<section class="rv-sec">'+
-    '<div class="rv-sec-tag"><span class="rv-dot sage"></span>Weekly Scorecard</div>'+
-    '<div class="rv-scorecard">'+
-      '<div class="rv-sc-pct"><div class="rv-sc-big '+cls+'">'+(pct==null?'—':pct+'%')+'</div>'+
-        '<div class="rv-sc-l">Discipline · 7 days</div></div>'+
-      '<div class="rv-sc-meta">'+
-        '<div><div class="rv-sc-stat-v sage">'+((o&&o.followed)||0)+'</div><div class="rv-sc-l">Followed</div></div>'+
-        '<div><div class="rv-sc-stat-v rose">'+((o&&o.broken)||0)+'</div><div class="rv-sc-l">Broken</div></div>'+
-        '<div><div class="rv-sc-stat-v">'+((o&&o.pending_review)||0)+'</div><div class="rv-sc-l">Pending</div></div>'+
-        '<div><div class="rv-sc-stat-v'+(cost<0?' rose':'')+'">'+rvMoney(cost)+'</div><div class="rv-sc-l">Cost of breaks</div></div>'+
-      '</div>'+
-    '</div>'+
-  '</section>';
-}
-
 // ── Active Rules table ──────────────────────────────────────────────
 function rvActiveRulesHtml(){
   var rules = _rvState.rules;
   var scMap = {};
-  if(_rvState.scorecard && _rvState.scorecard.rules){
-    _rvState.scorecard.rules.forEach(function(r){ scMap[r.rule_id] = r; });
-  }
+  ((_rvState.scorecard && _rvState.scorecard.rules) || []).forEach(function(r){ scMap[r.rule_id] = r; });
   var body;
   if(!rules.length){
-    body = '<div class="rv-empty">No rules yet — add one from the library below.</div>';
+    body = '<div class="rv-empty">No rules yet — add one below.</div>';
   } else {
     body = '<table class="rv-table"><thead><tr>'+
       '<th>Rule</th><th>Type</th><th class="c">This Week</th><th class="r">Impact</th><th class="c">Active</th><th></th>'+
       '</tr></thead><tbody>'+
       rules.map(function(r){
         var sc = scMap[r.id];
+        var broke = !!(sc && sc.broken > 0);
         var week = sc ? (sc.followed+'/'+(sc.followed+sc.broken)) : '—';
-        var hasCost = sc && sc.cost_impact < 0;
+        var hasCost = !!(sc && sc.cost_impact < 0);
         var impact = hasCost ? rvMoney(sc.cost_impact) : '—';
-        var subj = r.rule_type === 'subjective';
-        return '<tr>'+
-          '<td><div class="rv-rule-name">'+rvEsc(r.name)+'</div>'+
-            (r.description ? '<div class="rv-rule-desc">'+rvEsc(r.description)+'</div>' : '')+'</td>'+
+        var subj = r.rule_type==='subjective';
+        var isDef = RV_DEFAULT_NAMES[r.name];
+        return '<tr'+(broke?' class="rv-tr-broken"':'')+'>'+
+          '<td><div class="rv-rule-name">'+rvEsc(r.name)+
+            (isDef?' <span class="rv-default-chip">Default</span>':'')+'</div>'+
+            (r.description?'<div class="rv-rule-desc">'+rvEsc(r.description)+'</div>':'')+'</td>'+
           '<td><span class="rv-type-badge '+(subj?'rv-type-subj':'rv-type-auto')+'">'+(subj?'SUBJECT.':'AUTO')+'</span></td>'+
           '<td class="c rv-week">'+week+'</td>'+
           '<td class="r"><span class="rv-impact'+(hasCost?' rose':'')+'">'+impact+'</span></td>'+
@@ -22623,42 +22721,70 @@ function rvActiveRulesHtml(){
 }
 async function rvToggleRule(id, makeActive){
   await rvFetch('/api/rules/'+id, { method:'PATCH', body:{ is_active: !!makeActive } });
-  rvLoadRules();
-  rvRefreshSidebarPill();
+  rvLoadRules(); rvRefreshSidebarPill();
 }
 window.rvToggleRule = rvToggleRule;
 async function rvDeleteRule(id){
   if(!confirm('Delete this rule? Its evaluation history is removed too.')) return;
   await rvFetch('/api/rules/'+id, { method:'DELETE' });
-  rvLoadRules();
-  rvRefreshSidebarPill();
+  rvLoadRules(); rvRefreshSidebarPill();
 }
 window.rvDeleteRule = rvDeleteRule;
 
-// ── Rule Library ────────────────────────────────────────────────────
-function rvLibraryHtml(){
-  var tpls = _rvState.templates || [];
-  var have = {};
-  _rvState.rules.forEach(function(r){ have[r.name] = true; });
-  var cards = tpls.map(function(t){
-    var added = !!have[t.name];
-    return '<button type="button" class="rv-lib-card'+(added?' added':'')+'"'+
-      (added ? '' : ' onclick="rvAddTemplate(\''+t.key+'\')"')+'>'+
-      '<div class="rv-lib-top"><span class="rv-lib-cat">'+rvEsc(t.category)+'</span>'+
-        '<span class="rv-lib-add">'+(added?'✓':'+')+'</span></div>'+
-      '<div class="rv-lib-name">'+rvEsc(t.name)+'</div>'+
-      '<div class="rv-lib-desc">'+rvEsc(t.description||'')+'</div>'+
-    '</button>';
-  }).join('');
-  return '<section class="rv-sec"><div class="rv-sec-tag">Rule Library <span class="meta">click to add</span></div>'+
-    '<div class="rv-lib-grid">'+cards+'</div></section>';
+// ── Add Your Own ────────────────────────────────────────────────────
+var _rvAddType = 'subjective';
+function rvAddYourOwnHtml(){
+  return '<section class="rv-sec rv-addown">'+
+    '<div class="rv-addown-head">Add Your Own</div>'+
+    '<div class="rv-addown-card">'+
+      '<label class="rv-field-l">Rule name</label>'+
+      '<input type="text" class="rv-input" id="rv-add-name" maxlength="80" placeholder="e.g. Wait for the retest"/>'+
+      '<label class="rv-field-l">Description <span class="opt">optional</span></label>'+
+      '<textarea class="rv-input rv-textarea" id="rv-add-desc" placeholder="What does following this rule look like?"></textarea>'+
+      '<label class="rv-field-l">Type</label>'+
+      '<div class="rv-type-toggle">'+
+        '<button type="button" class="rv-tt'+(_rvAddType==='subjective'?' on':'')+'" id="rv-tt-subj" onclick="rvSetAddType(\'subjective\')">Subjective</button>'+
+        '<button type="button" class="rv-tt'+(_rvAddType==='data'?' on':'')+'" id="rv-tt-auto" onclick="rvSetAddType(\'data\')">Auto</button>'+
+      '</div>'+
+      '<button type="button" class="rv-add-btn" onclick="rvAddOwnRule()">+ Add Rule</button>'+
+    '</div>'+
+  '</section>';
 }
-async function rvAddTemplate(key){
-  var r = await rvFetch('/api/rules', { method:'POST', body:{ template_key:key } });
-  if(r.ok) rvLoadRules();
-  else if(typeof toast === 'function') toast('Couldn’t add rule');
+function rvSetAddType(t){
+  _rvAddType = t;
+  var s=document.getElementById('rv-tt-subj'), a=document.getElementById('rv-tt-auto');
+  if(s) s.classList.toggle('on', t==='subjective');
+  if(a) a.classList.toggle('on', t==='data');
 }
-window.rvAddTemplate = rvAddTemplate;
+window.rvSetAddType = rvSetAddType;
+async function rvAddOwnRule(){
+  var nameEl=document.getElementById('rv-add-name'), descEl=document.getElementById('rv-add-desc');
+  var name=((nameEl&&nameEl.value)||'').trim();
+  if(!name){ if(typeof toast==='function') toast('Give your rule a name'); return; }
+  var desc=((descEl&&descEl.value)||'').trim();
+  var r = await rvFetch('/api/rules', { method:'POST', body:{
+    name:name, description:desc||null, rule_type:_rvAddType,
+    condition:{ type:'subjective_check', prompt: desc||name }
+  }});
+  if(r.ok){ _rvAddType='subjective'; rvLoadRules(); rvRefreshSidebarPill(); }
+  else if(typeof toast==='function') toast('Couldn’t add rule');
+}
+window.rvAddOwnRule = rvAddOwnRule;
+
+// ── Paywall (free users) ────────────────────────────────────────────
+function rvPaywallHtml(){
+  return '<div class="rv-paywall">'+
+    '<div class="rv-paywall-badge">★ PRO</div>'+
+    '<div class="rv-paywall-h">Rules is a Pro feature</div>'+
+    '<div class="rv-paywall-sub">Turn your trading discipline into a system you can measure.</div>'+
+    '<ul class="rv-paywall-list">'+
+      '<li>Build rules from proven trading guardrails</li>'+
+      '<li>Every trade you log is auto-checked against them</li>'+
+      '<li>A daily review and a weekly discipline scorecard</li>'+
+    '</ul>'+
+    '<button type="button" class="rv-paywall-cta" onclick="goTo(\'upgrade\')">Upgrade to Pro</button>'+
+  '</div>';
+}
 
 // ── Sidebar discipline pill ─────────────────────────────────────────
 async function rvRefreshSidebarPill(){
@@ -22675,8 +22801,59 @@ async function rvRefreshSidebarPill(){
   pill.classList.remove('good','mid','bad');
   pill.classList.add(pct>70 ? 'good' : (pct<50 ? 'bad' : 'mid'));
 }
-// Warm the pill once after auth settles.
+
+// ── 4 PM ET review prompt ───────────────────────────────────────────
+async function rvCheck4pmPopup(){
+  try{
+    if(typeof isFreeTier === 'function' && isFreeTier()) return;          // Pro only
+    var today = new Date().toISOString().slice(0,10);
+    if(localStorage.getItem('rv_4pm_dismissed_'+today)) return;            // dismissed today
+    if(localStorage.getItem('rv_reviewed_'+today)) return;                 // already reviewed
+    var etHour = parseInt(new Date().toLocaleString('en-US',{timeZone:'America/New_York',hour12:false,hour:'2-digit'}),10);
+    if(!(etHour >= 16)) return;                                            // past 4 PM ET
+    if(typeof trades === 'undefined' || !trades.some(function(t){ return String(t.date||'').slice(0,10)===today; })) return; // trades today
+    var r = await rvFetch('/api/rules');
+    if(!r.ok) return;
+    var active = ((r.data && r.data.rules) || []).filter(function(x){ return x.is_active; });
+    if(!active.length) return;                                             // ≥1 active rule
+    rvShow4pmModal();
+  }catch(e){}
+}
+function rvShow4pmModal(){
+  if(document.getElementById('rv-4pm-popup')) return;
+  var ov = document.createElement('div');
+  ov.id = 'rv-4pm-popup';
+  ov.className = 'rv-4pm-ov';
+  ov.innerHTML =
+    '<div class="rv-4pm-card">'+
+      '<button type="button" class="rv-4pm-x" onclick="rvDismiss4pm()" aria-label="Close">&times;</button>'+
+      '<div class="rv-4pm-dot"><span class="rv-dot gold"></span></div>'+
+      '<div class="rv-4pm-h">Ready to review today’s trading?</div>'+
+      '<div class="rv-4pm-sub">Quick check on your rules.</div>'+
+      '<button type="button" class="rv-4pm-cta" onclick="rvGo4pmReview()">Review Now</button>'+
+    '</div>';
+  ov.addEventListener('click', function(e){ if(e.target===ov) rvDismiss4pm(); });
+  document.body.appendChild(ov);
+}
+function rvDismiss4pm(){
+  try{ localStorage.setItem('rv_4pm_dismissed_'+new Date().toISOString().slice(0,10),'1'); }catch(e){}
+  var m=document.getElementById('rv-4pm-popup'); if(m) m.remove();
+}
+window.rvDismiss4pm = rvDismiss4pm;
+function rvGo4pmReview(){
+  var m=document.getElementById('rv-4pm-popup'); if(m) m.remove();
+  goTo('analytics');
+  rvTab('rules');
+  setTimeout(function(){
+    var a=document.getElementById('rv-today-anchor');
+    if(a) a.scrollIntoView({ block:'start', behavior:'smooth' });
+  }, 400);
+}
+window.rvGo4pmReview = rvGo4pmReview;
+
+// Warm the sidebar pill + run the 4 PM check once auth has settled.
 setTimeout(function(){ try{ rvRefreshSidebarPill(); }catch(e){} }, 2600);
+setTimeout(function(){ try{ rvCheck4pmPopup(); }catch(e){} }, 4200);
 
 function showAnalyticsPanel(name, btn){
   document.querySelectorAll('#pg-analytics .panel').forEach(function(p){p.classList.remove('on');});
@@ -27139,6 +27316,9 @@ async function saveTradeToSupa(trade) {
       updated_at: new Date().toISOString()
     }, { onConflict: 'id' });
     if(r && r.error) throw r.error;
+    // Trade-save hook (Session 3) — silently auto-evaluate the trade
+    // against the user's rules. Fire-and-forget; never blocks the save.
+    if(typeof rvEvalTradeSilently === 'function') rvEvalTradeSilently(trade.id);
   } catch(e) {
     console.error('[saveTradeToSupa]', e);
     var now = Date.now();

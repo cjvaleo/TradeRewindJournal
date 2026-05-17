@@ -143,3 +143,23 @@ for (const t of RULE_TEMPLATES) _byKey[t.key] = t;
 export function getTemplate(key) {
   return _byKey[key] || null;
 }
+
+// The 5 starter rules seeded by POST /api/rules/seed-defaults for a user
+// with zero rules. All data-type, active, is_template:false.
+export const DEFAULT_RULES = [
+  { name:'1 mini per trade',
+    description:'Trade a single contract on every entry.',
+    rule_type:'data', condition:{ type:'max_contract_size', value:1 } },
+  { name:'1 win = done',
+    description:'After your first winning trade, the day is finished.',
+    rule_type:'data', condition:{ type:'stop_after_first_win' } },
+  { name:'First trade loss → half size',
+    description:'If your first trade loses, cut size to half for the rest of the day.',
+    rule_type:'data', condition:{ type:'half_size_after_first_loss' } },
+  { name:'Only A+ setups',
+    description:"Only take setups you'd grade A+.",
+    rule_type:'data', condition:{ type:'only_grade', grades:['A+'] } },
+  { name:'No trades on Friday',
+    description:'Sit out Fridays — protect the week.',
+    rule_type:'data', condition:{ type:'skip_day_of_week', days:['friday'] } },
+];

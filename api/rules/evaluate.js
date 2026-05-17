@@ -87,12 +87,14 @@ export default async function handler(req, res) {
   await sb.from('rule_evaluations').delete()
     .eq('user_id', user.id).eq('trade_id', tradeId);
 
+  // Every fresh evaluation lands as pending_review — the engine's verdict
+  // is kept in auto_detected_status; the user confirms it in Today's Review.
   const rows = results.map(r => ({
     user_id: user.id,
     rule_id: r.rule_id,
     trading_day,
     trade_id: tradeId,
-    status: r.status,
+    status: 'pending_review',
     auto_detected_status: r.auto_detected_status,
     user_overrode: false,
     cost_impact: r.cost_impact,

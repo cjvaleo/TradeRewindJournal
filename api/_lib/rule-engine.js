@@ -95,6 +95,32 @@ const EVALUATORS = {
     }
     return 'broken'; // the n trades right before this one all lost
   },
+  only_grade(trade, cond){
+    const grades = (cond.grades||[]).map(g=>String(g).toUpperCase());
+    const g = trade.grade ? String(trade.grade).toUpperCase() : null;
+    if(!g) return 'unknown';
+    return grades.indexOf(g) >= 0 ? 'followed' : 'broken';
+  },
+  stop_after_first_win(trade, cond, ctx){
+    const list = (ctx && ctx.dayTrades) || [];
+    const idx = dayIndex(trade, ctx);
+    if(idx < 0) return 'unknown';
+    let firstWin = -1;
+    for(let i=0;i<list.length;i++){
+      const p = tradePnl(list[i]);
+      if(p != null && p > 0){ firstWin = i; break; }
+    }
+    if(firstWin < 0) return 'followed';            // no win yet — rule not triggered
+    return idx > firstWin ? 'broken' : 'followed'; // any trade after the first win breaks it
+  },
+  half_size_after_first_loss(trade, cond, ctx){
+    const list = (ctx && ctx.dayTrades) || [];
+    const idx = dayIndex(trade, ctx);
+    if(idx <= 0) return 'followed';                // the first trade can't break this
+    const firstPnl = tradePnl(list[0]);
+    if(firstPnl == null || firstPnl >= 0) return 'followed'; // first trade wasn't a loss
+    return tradeQty(trade) > tradeQty(list[0]) / 2 ? 'broken' : 'followed';
+  },
   subjective_check(){ return 'unknown'; }, // never auto-resolved
 };
 
