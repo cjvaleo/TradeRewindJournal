@@ -4871,8 +4871,12 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 .rvp-wo-sample{margin-top:auto;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6a6a62}
 /* ── Section 4 — Behavior Breakdown ── */
 .rvp-bb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.rvp-bb-col{background:rgba(255,255,255,.018);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:22px}
+.rvp-bb-col{display:flex;flex-direction:column;background:rgba(255,255,255,.018);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:22px}
 .rvp-bb-title{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#9a9a92;text-align:center;margin-bottom:16px}
+.rvp-bb-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:26px 6px}
+.rvp-bb-empty-ic{width:46px;height:46px;margin-bottom:16px}
+.rvp-bb-empty-t{font-size:13px;line-height:1.5;color:#9a9a92;max-width:210px}
+.rvp-bb-empty-s{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.06em;color:#56554f;margin-top:9px}
 .rvp-donut{position:relative;width:130px;height:130px;margin:0 auto 20px}
 .rvp-donut svg{display:block;width:130px;height:130px}
 .rvp-donut-c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--n-font-display);font-style:italic;font-size:24px;color:#f0efea}
@@ -22274,18 +22278,26 @@ function renderAnalytics(){
 var RVP_DISCIPLINE = {
   states:['locked_in','confident','hesitant','tilted'],
   labels:{ locked_in:'Locked In', confident:'Confident', hesitant:'Hesitant', tilted:'Tilted' },
-  colors:{ locked_in:'#5fb389', confident:'#4f9276', hesitant:'#f5d77c', tilted:'#c95f5f' },
 };
 var RVP_EMOTION = {
   states:['low','neutral','elevated','high'],
   labels:{ low:'Low', neutral:'Neutral', elevated:'Elevated', high:'High' },
-  colors:{ low:'#5fb389', neutral:'#4f9276', elevated:'#f5d77c', high:'#c95f5f' },
 };
 var RVP_GRADE = {
   states:['A+','A','B','C'],
   labels:{ 'A+':'A+', 'A':'A', 'B':'B', 'C':'C' },
-  colors:{ 'A+':'#6ea8ff', 'A':'#5fb389', 'B':'#4f9276', 'C':'#c95f5f' },
 };
+
+// Behavior Breakdown — a state's colour is read straight off its win
+// rate, so the donut and the bars tell the same story: sage = winning,
+// rose = losing. A state with no trades shows as muted grey.
+function rvQualityColor(winRate, count){
+  if(!count || winRate == null) return 'rgba(255,255,255,.08)';
+  if(winRate > 70) return '#5fb389';
+  if(winRate >= 50) return 'rgba(95,179,137,.6)';
+  if(winRate >= 30) return 'rgba(245,215,124,.7)';
+  return '#c95f5f';
+}
 
 async function rvLoadPersonal(){
   var root = document.getElementById('rv-personal-root');
@@ -22493,24 +22505,35 @@ function rvBehaviorBreakdownHtml(){
   '</section>';
 }
 function rvBehaviorCol(title, dim, cfg){
-  dim = dim || { distribution:[], win_rates:[], trend_4_week:[] };
-  var colors = cfg.colors;
-  // Setup Grade — A+ turns rose when its win rate sits below 50% (over-grading).
-  if(cfg === RVP_GRADE){
-    var ap = (dim.win_rates||[]).filter(function(w){ return w.state==='A+'; })[0];
-    if(ap && ap.win_rate!=null && ap.win_rate < 50){
-      colors = Object.assign({}, cfg.colors, { 'A+':'#c95f5f' });
-    }
-  }
+  dim = dim || { distribution:[], win_rates:[], trend_4_week:[], total:0 };
+  // Populated values for this field — too few and the patterns are noise.
+  var total = dim.total != null
+    ? dim.total
+    : (dim.win_rates||[]).reduce(function(s,w){ return s + (w.count||0); }, 0);
+  if(total < 15) return rvBehaviorEmpty(title, total);
   return '<div class="rvp-bb-col">'+
     '<div class="rvp-bb-title">'+rvEsc(title)+'</div>'+
-    rvDonut(dim, cfg, colors)+
-    rvWinBars(dim, cfg, colors)+
+    rvDonut(dim)+
+    rvWinBars(dim, cfg)+
     rvTrend(dim)+
   '</div>';
 }
-function rvDonut(dim, cfg, colors){
+function rvBehaviorEmpty(title, count){
+  return '<div class="rvp-bb-col">'+
+    '<div class="rvp-bb-title">'+rvEsc(title)+'</div>'+
+    '<div class="rvp-bb-empty">'+
+      '<svg class="rvp-bb-empty-ic" viewBox="0 0 48 48" aria-hidden="true">'+
+        '<circle cx="24" cy="24" r="21" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="2"/>'+
+      '</svg>'+
+      '<div class="rvp-bb-empty-t">Need 15+ trades to see meaningful patterns. You have '+(Number(count)||0)+'.</div>'+
+      '<div class="rvp-bb-empty-s">Keep logging.</div>'+
+    '</div>'+
+  '</div>';
+}
+function rvDonut(dim){
   var dist = dim.distribution || [];
+  var byWr = {};
+  (dim.win_rates||[]).forEach(function(w){ byWr[w.state] = w; });
   var r = 52, C = 2*Math.PI*r;
   var off = 0, segs = '', dom = '—', domPct = -1;
   dist.forEach(function(d){
@@ -22520,8 +22543,10 @@ function rvDonut(dim, cfg, colors){
   dist.forEach(function(d){
     var p = Number(d.pct)||0;
     if(p <= 0) return;
+    var wr = byWr[d.state] || {};
+    var col = rvQualityColor(wr.win_rate, wr.count);
     var len = (p/100)*C;
-    segs += '<circle cx="65" cy="65" r="'+r+'" fill="none" stroke="'+(colors[d.state]||'#56554f')+'" '+
+    segs += '<circle cx="65" cy="65" r="'+r+'" fill="none" stroke="'+col+'" '+
       'stroke-width="14" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" '+
       'stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 65 65)"/>';
     off += len;
@@ -22534,16 +22559,17 @@ function rvDonut(dim, cfg, colors){
     '<div class="rvp-donut-c">'+dom+'</div>'+
   '</div>';
 }
-function rvWinBars(dim, cfg, colors){
+function rvWinBars(dim, cfg){
   var by = {};
   (dim.win_rates||[]).forEach(function(w){ by[w.state] = w; });
   var rows = cfg.states.map(function(st){
-    var w = by[st] || { win_rate:null };
+    var w = by[st] || { win_rate:null, count:0 };
     var v = w.win_rate;
     var width = v==null ? 0 : Math.max(0, Math.min(100, v));
+    var col = rvQualityColor(v, w.count);
     return '<div class="rvp-wr-row">'+
       '<div class="rvp-wr-label">'+rvEsc(cfg.labels[st])+'</div>'+
-      '<div class="rvp-wr-track"><div class="rvp-wr-fill" style="width:'+width+'%;background:'+(colors[st]||'#56554f')+'"></div></div>'+
+      '<div class="rvp-wr-track"><div class="rvp-wr-fill" style="width:'+width+'%;background:'+col+'"></div></div>'+
       '<div class="rvp-wr-val">'+(v==null?'—':v+'%')+'</div>'+
     '</div>';
   });
