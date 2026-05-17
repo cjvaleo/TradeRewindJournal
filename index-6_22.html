@@ -28504,16 +28504,10 @@ function cookieDecline(){
 }
 /* Two-column internal layout — Setup+Execution left, Evidence+Analysis
    right; Reflection spans full width below. */
-.cem-card .cem-cols{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;position:relative}
+.cem-card .cem-cols{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start}
 .cem-card .cem-col{min-width:0}
-.cem-card .cem-cols::before{
-  content:'';position:absolute;top:0;bottom:0;left:50%;width:1px;
-  transform:translateX(-50%);pointer-events:none;
-  background:linear-gradient(180deg,rgba(245,244,240,0),rgba(245,244,240,0.08),rgba(245,244,240,0));
-}
 @media (max-width:900px){
   .cem-card .cem-cols{grid-template-columns:1fr;gap:0}
-  .cem-card .cem-cols::before{display:none}
 }
 
 /* Compact section spacing (was 28px in #pg-log → 20px here) */
@@ -29616,17 +29610,11 @@ function cookieDecline(){
 #pg-log .ci-enrich .rw-section-h{margin-top:20px}
 #pg-log .ci-enrich .rw-field + .rw-field{margin-top:14px}
 /* Two-column editable layout below the read-only broker header. */
-#pg-log .ci-enrich .ci-cols{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;position:relative}
+#pg-log .ci-enrich .ci-cols{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start}
 #pg-log .ci-enrich .ci-col{min-width:0}
 #pg-log .ci-enrich .ci-col > .rw-section-h:first-child{margin-top:0}
-#pg-log .ci-enrich .ci-cols::before{
-  content:'';position:absolute;top:0;bottom:0;left:50%;width:1px;
-  transform:translateX(-50%);pointer-events:none;
-  background:linear-gradient(180deg,rgba(245,244,240,0),rgba(245,244,240,0.08),rgba(245,244,240,0));
-}
 @media (max-width:900px){
   #pg-log .ci-enrich .ci-cols{grid-template-columns:1fr;gap:0}
-  #pg-log .ci-enrich .ci-cols::before{display:none}
 }
 
 /* ── CSV enrich row — read-only broker data header ──────────────────── */
