@@ -4903,6 +4903,81 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   .rvp-bb-col{max-width:420px;margin:0 auto;width:100%}
 }
 
+/* ════════ COMMUNITY TAB — /analytics Review page (Session 5) ════════ */
+.rvc-live-badge{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.06em;text-transform:lowercase;background:rgba(255,255,255,.04);border-radius:999px;padding:2px 6px;margin-left:7px;color:#9a9a92}
+.rv-tab.on .rvc-live-badge{color:#5fb389;background:rgba(95,179,137,.12)}
+/* selector */
+.rvc-selector{margin-bottom:36px}
+.rvc-sel-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.rvc-sel-label{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#56554f}
+.rvc-sel-sub{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.07em;color:#9a9a92;margin-top:7px}
+.rvc-join{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#bdbcb6;background:transparent;border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:9px 14px;cursor:pointer;transition:.12s}
+.rvc-join:hover{border-color:rgba(255,255,255,.18);color:#f0efea}
+.rvc-pills{display:flex;flex-wrap:wrap;gap:8px}
+.rvc-pill{display:inline-flex;align-items:center;gap:9px;padding:10px 16px;border-radius:9px;cursor:pointer;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);transition:.12s}
+.rvc-pill:hover{border-color:rgba(255,255,255,.16)}
+.rvc-pill-name{font-family:var(--n-font-display);font-style:italic;font-size:15px;color:#9a9a92}
+.rvc-pill-badge{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.03em;padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.05);color:#9a9a92}
+.rvc-pill.on{border-color:#5fb389;background:rgba(95,179,137,.06)}
+.rvc-pill.on .rvc-pill-name{color:#f5f4f0}
+.rvc-pill.on .rvc-pill-badge{background:rgba(95,179,137,.16);color:#5fb389}
+/* combos table */
+.rvc-table{background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.06);border-radius:12px;overflow:hidden}
+.rvc-tr{display:grid;grid-template-columns:1fr 76px 92px 92px}
+.rvc-thead{background:rgba(255,255,255,.03)}
+.rvc-th{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#9a9a92;padding:12px 18px}
+.rvc-th.num{text-align:right}
+.rvc-row{border-top:1px solid rgba(255,255,255,.04)}
+.rvc-row.worst{background:rgba(201,95,95,.02)}
+.rvc-td{padding:14px 18px}
+.rvc-td.combo{font-size:13px;color:#f0efea;line-height:1.45}
+.rvc-td.combo .tf{font-family:var(--n-font-mono);font-size:11px;color:#7a7a72}
+.rvc-td.num{font-family:var(--n-font-mono);font-size:11px;text-align:right}
+.rvc-td.trades{color:#dbdad5}
+.rvc-td.wr,.rvc-td.rr{font-weight:600}
+.rvc-td-k{display:none;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#7a7a72;margin-right:7px}
+.rvc-note{font-size:11px;font-style:italic;color:#7a7a72;line-height:1.55;margin-top:12px}
+/* best-session / most-used split */
+.rvc-split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rvc-card{background:rgba(255,255,255,.018);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:22px 24px}
+.rvc-card-head{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#9a9a92;margin-bottom:14px}
+.rvc-card-stat{font-family:var(--n-font-display);font-style:italic;font-weight:400;font-size:30px;line-height:1.05;color:#f5f4f0}
+.rvc-card-stat .tf{font-family:var(--n-font-mono);font-style:normal;font-size:18px;color:#7a7a72;margin-left:5px}
+.rvc-card-sub{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.06em;color:#9a9a92;margin:8px 0 18px}
+.rvc-blist{display:flex;flex-direction:column;gap:11px}
+.rvc-brow{display:grid;grid-template-columns:64px 1fr 44px;align-items:center;gap:10px}
+.rvc-brow.conf{grid-template-columns:116px 1fr 44px}
+.rvc-blabel{font-family:var(--n-font-mono);font-size:10px;color:#e8e7e2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rvc-btrack{height:6px;border-radius:3px;background:rgba(255,255,255,.05);overflow:hidden}
+.rvc-bfill{height:100%;border-radius:3px;background:#5fb389}
+.rvc-bfill.dim{background:rgba(95,179,137,.4)}
+.rvc-bval{font-family:var(--n-font-mono);font-size:10px;color:#9a9a92;text-align:right}
+/* avg contracts */
+.rvc-contracts{background:rgba(255,255,255,.018);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:24px 28px}
+.rvc-contracts-head{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#9a9a92;margin-bottom:18px}
+.rvc-stats{display:flex;justify-content:space-between;gap:32px;flex-wrap:wrap}
+.rvc-stat{flex:1;min-width:118px}
+.rvc-stat-v{font-family:var(--n-font-display);font-style:italic;font-weight:400;font-size:36px;line-height:1}
+.rvc-stat-l{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#7a7a72;margin-top:9px}
+.rvc-contracts-note{border-top:1px solid rgba(255,255,255,.06);margin-top:20px;padding-top:16px;font-size:12px;font-style:italic;color:#9a9a92;line-height:1.55}
+/* thin / privacy */
+.rvc-thin{font-size:12px;color:#7a7a72;text-align:center;line-height:1.5;padding:22px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.06);border-radius:12px}
+.rvc-privacy{text-align:center;font-size:11px;font-style:italic;color:#56554f;margin-top:38px}
+@media (max-width:900px){
+  .rvc-split{grid-template-columns:1fr}
+}
+@media (max-width:600px){
+  .rvc-tr{grid-template-columns:1fr}
+  .rvc-thead{display:none}
+  .rvc-td{padding:3px 18px}
+  .rvc-row .rvc-td.combo{padding-top:14px}
+  .rvc-row .rvc-td:last-child{padding-bottom:14px}
+  .rvc-td.num{text-align:left}
+  .rvc-td-k{display:inline-block}
+  .rvc-stats{gap:18px}
+  .rvc-stat{min-width:104px}
+}
+
 /* ════════ REVIEW PAGE — tabs + Rules tab (Session 2) ════════ */
 .rv{max-width:1300px;margin:0 auto;padding:30px 44px 64px;color:#f0efea;font-family:var(--n-font-sans)}
 .rv-panel{display:none}
@@ -10163,8 +10238,9 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
  <!-- ════════ REVIEW PAGE — Analytics tab (The Brief) + Rules tab ════════ -->
  <div class="rv">
   <div class="rv-tabs">
-    <button type="button" class="rv-tab on" id="rv-tab-analytics" onclick="rvTab('analytics')">Personal</button>
-    <button type="button" class="rv-tab"    id="rv-tab-rules"     onclick="rvTab('rules')">Rules</button>
+    <button type="button" class="rv-tab on" id="rv-tab-analytics"  onclick="rvTab('analytics')">Personal</button>
+    <button type="button" class="rv-tab"    id="rv-tab-community"  onclick="rvTab('community')">Community<span class="rvc-live-badge">live</span></button>
+    <button type="button" class="rv-tab"    id="rv-tab-rules"      onclick="rvTab('rules')">Rules</button>
   </div>
 
   <!-- ══ PERSONAL TAB — JS-rendered from /api/personal/* + insights ══ -->
@@ -10173,6 +10249,13 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
       <div class="rv-loading">Loading your personal review&hellip;</div>
     </div>
   </div><!-- /rv-panel-analytics -->
+
+  <!-- ══ COMMUNITY TAB — JS-rendered from the 7 /api/community endpoints ══ -->
+  <div class="rv-panel" id="rv-panel-community">
+    <div id="rv-community-root">
+      <div class="rv-loading">Loading community&hellip;</div>
+    </div>
+  </div>
 
   <!-- ══ RULES TAB — JS-rendered from the 8 /api/rules endpoints ══ -->
   <div class="rv-panel" id="rv-panel-rules">
@@ -22254,16 +22337,23 @@ async function rvFetch(path, opts){
   }
 }
 
+var RV_TABS = {
+  analytics: { btn:'rv-tab-analytics', panel:'rv-panel-analytics' },
+  community: { btn:'rv-tab-community', panel:'rv-panel-community' },
+  rules:     { btn:'rv-tab-rules',     panel:'rv-panel-rules' },
+};
 function rvTab(name){
+  if(!RV_TABS[name]) name = 'analytics';
   _rvState.tab = name;
-  var ta=document.getElementById('rv-tab-analytics'), tr=document.getElementById('rv-tab-rules');
-  var pa=document.getElementById('rv-panel-analytics'), pr=document.getElementById('rv-panel-rules');
-  if(ta) ta.classList.toggle('on', name==='analytics');
-  if(tr) tr.classList.toggle('on', name==='rules');
-  if(pa) pa.classList.toggle('on', name==='analytics');
-  if(pr) pr.classList.toggle('on', name==='rules');
+  Object.keys(RV_TABS).forEach(function(n){
+    var t = RV_TABS[n];
+    var btn = document.getElementById(t.btn), pan = document.getElementById(t.panel);
+    if(btn) btn.classList.toggle('on', name===n);
+    if(pan) pan.classList.toggle('on', name===n);
+  });
   if(name==='rules') rvLoadRules();
-  if(name==='analytics') rvLoadPersonal();
+  else if(name==='community') rvLoadCommunity();
+  else rvLoadPersonal();
 }
 window.rvTab = rvTab;
 
@@ -22272,6 +22362,7 @@ window.rvTab = rvTab;
 function renderAnalytics(){
   rvRefreshSidebarPill();
   if(_rvState.tab === 'rules') rvLoadRules();
+  else if(_rvState.tab === 'community') rvLoadCommunity();
   else rvLoadPersonal();
 }
 
@@ -22568,6 +22659,272 @@ function rvPersonalPaywallHtml(){
       '<li>A 30-day equity curve and performance summary</li>'+
       '<li>Coach Notes tailored to your own data</li>'+
       '<li>A behavior breakdown of discipline, emotion, and grade</li>'+
+    '</ul>'+
+    '<button type="button" class="rv-paywall-cta" onclick="goTo(\'upgrade\')">Upgrade to Pro</button>'+
+  '</div>';
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   COMMUNITY TAB (Session 5) — 5 sections rendered from /api/community/*
+   ═══════════════════════════════════════════════════════════════════ */
+var _rvCommunity = { loaded:false, id:null, list:[], data:null };
+
+function rvcNum(n){ n = Number(n); return Number.isFinite(n) ? n.toLocaleString('en-US') : '—'; }
+function rvCommunityIdFromHash(){
+  var m = /community=([a-z0-9_]+)/i.exec(location.hash||'');
+  return m ? m[1] : 'all_rewind_users';
+}
+function rvCommName(){
+  var c = (_rvCommunity.list||[]).filter(function(x){ return x.id===_rvCommunity.id; })[0];
+  return c ? c.name : 'the community';
+}
+function rvCommThin(){
+  var p = _rvCommunity.data && _rvCommunity.data.pulse;
+  return !p || (Number(p.trade_count)||0) < 50;
+}
+function rvcThinMsg(){
+  return '<div class="rvc-thin">Insufficient community data — needs at least 50 trades to display patterns.</div>';
+}
+
+async function rvLoadCommunity(){
+  var root = document.getElementById('rv-community-root');
+  if(!root) return;
+  if(_rvCommunity.loaded) return;
+  root.innerHTML = '<div class="rv-loading">Loading community&hellip;</div>';
+  var listR = await rvFetch('/api/community/list');
+  if(listR.status === 403){ root.innerHTML = rvCommunityPaywallHtml(); _rvCommunity.loaded = true; return; }
+  if(!listR.ok){ root.innerHTML = '<div class="rv-msg">Couldn’t load communities — try again in a moment.</div>'; return; }
+  _rvCommunity.list = listR.data || [];
+  _rvCommunity.loaded = true;
+  var id = rvCommunityIdFromHash();
+  if(!_rvCommunity.list.some(function(c){ return c.id===id; })) id = 'all_rewind_users';
+  await rvCommunityFetch(id);
+}
+
+async function rvCommunityFetch(id){
+  _rvCommunity.id = id;
+  var root = document.getElementById('rv-community-root');
+  if(root && !_rvCommunity.data) root.innerHTML = '<div class="rv-loading">Loading community&hellip;</div>';
+  var q = '?community_id=' + encodeURIComponent(id);
+  var eps = ['pulse','coach-notes','setup-combinations','best-session','most-used-confluence','avg-contracts'];
+  var r = await Promise.all(eps.map(function(e){ return rvFetch('/api/community/'+e+q); }));
+  _rvCommunity.data = {
+    pulse:      r[0].ok ? r[0].data : null,
+    coach:      r[1].ok ? r[1].data : null,
+    combos:     r[2].ok ? r[2].data : null,
+    sessions:   r[3].ok ? r[3].data : null,
+    confluence: r[4].ok ? r[4].data : null,
+    contracts:  r[5].ok ? r[5].data : null,
+  };
+  rvRenderCommunity();
+}
+
+function rvCommunitySelect(id){
+  if(id === _rvCommunity.id) return;
+  try{ history.replaceState(null, '', '#community='+id); }catch(e){}
+  rvCommunityFetch(id);
+}
+window.rvCommunitySelect = rvCommunitySelect;
+
+function rvRenderCommunity(){
+  var root = document.getElementById('rv-community-root');
+  if(!root) return;
+  root.innerHTML =
+    rvcSelectorHtml() +
+    rvcCoachHtml() +
+    rvcCombosHtml() +
+    rvcSplitHtml() +
+    rvcContractsHtml() +
+    '<div class="rvc-privacy">All community data is fully anonymized and aggregated. '+
+      'No individual trader can be identified.</div>';
+}
+
+// ── 1 — selector ────────────────────────────────────────────────────
+function rvcSelectorHtml(){
+  var p = _rvCommunity.data && _rvCommunity.data.pulse;
+  var sub = p
+    ? rvcNum(p.trade_count)+' trades · '+rvcNum(p.trader_count)+' traders · last 7 days'
+    : 'last 7 days';
+  var pills = (_rvCommunity.list||[]).map(function(c){
+    var on = c.id === _rvCommunity.id;
+    return '<button type="button" class="rvc-pill'+(on?' on':'')+'" onclick="rvCommunitySelect(\''+c.id+'\')">'+
+      '<span class="rvc-pill-name">'+rvEsc(c.name)+'</span>'+
+      '<span class="rvc-pill-badge">'+rvcNum(c.trader_count)+'</span>'+
+    '</button>';
+  }).join('');
+  return '<section class="rvc-selector">'+
+    '<div class="rvc-sel-top">'+
+      '<div>'+
+        '<div class="rvc-sel-label">Viewing Community</div>'+
+        '<div class="rvc-sel-sub">'+rvEsc(sub)+'</div>'+
+      '</div>'+
+      '<button type="button" class="rvc-join" title="Coming soon">+ Join Community</button>'+
+    '</div>'+
+    '<div class="rvc-pills">'+pills+'</div>'+
+  '</section>';
+}
+
+// ── 2 — coach notes ─────────────────────────────────────────────────
+function rvcCoachHtml(){
+  var head = '<div class="rvp-coach-head"><span class="rvp-dot-gold"></span>Coach Notes'+
+    '<span class="rvp-coach-meta">observations from '+rvEsc(rvCommName())+'</span></div>';
+  if(rvCommThin()) return '<section class="rvp-sec">'+head+rvcThinMsg()+'</section>';
+  var c = _rvCommunity.data.coach;
+  var cards = [];
+  if(c){
+    [c.observation, c.trend, c.worth_trying].forEach(function(card){
+      if(!card) return;
+      cards.push('<div class="rvp-coach-card">'+
+        '<div class="rvp-coach-cat">'+rvEsc(card.title||'')+'</div>'+
+        '<div class="rvp-coach-body">'+rvEsc(card.body||'')+'</div>'+
+      '</div>');
+    });
+  }
+  var body = cards.length ? '<div class="rvp-coach-grid">'+cards.join('')+'</div>' : rvcThinMsg();
+  return '<section class="rvp-sec">'+head+body+'</section>';
+}
+
+// ── 3 — winning setup combinations (hero table) ─────────────────────
+function rvcComboName(cm){
+  return rvEsc(cm.confluence_a)+' <span class="tf">('+rvEsc(cm.tf_a)+')</span> + '+
+         rvEsc(cm.confluence_b)+' <span class="tf">('+rvEsc(cm.tf_b)+')</span>';
+}
+function rvcComboPlain(cm){
+  return cm.confluence_a+' ('+cm.tf_a+') + '+cm.confluence_b+' ('+cm.tf_b+')';
+}
+function rvcCombosHtml(){
+  var head = '<div class="rvp-sec-head"><div class="rvp-sec-title rvp-ul-sage">Winning Setup Combinations</div></div>';
+  if(rvCommThin()) return '<section class="rvp-sec">'+head+rvcThinMsg()+'</section>';
+  var combos = (_rvCommunity.data.combos)||[];
+  if(!combos.length){
+    return '<section class="rvp-sec">'+head+
+      '<div class="rvc-thin">No multi-confluence combinations logged yet for this community.</div>'+
+    '</section>';
+  }
+  var rows = combos.map(function(cm, i){
+    var worst = combos.length>1 && i===combos.length-1;
+    var wr = Number(cm.win_rate)||0;
+    var wrColor = wr>65 ? '#5fb389' : (wr>=50 ? '#dbdad5' : '#c95f5f');
+    var rr = Number(cm.avg_rr)||0;
+    var rrColor = rr>0 ? '#5fb389' : '#c95f5f';
+    return '<div class="rvc-tr rvc-row'+(worst?' worst':'')+'">'+
+      '<div class="rvc-td combo">'+rvcComboName(cm)+'</div>'+
+      '<div class="rvc-td num trades"><span class="rvc-td-k">Trades</span>'+rvcNum(cm.trade_count)+'</div>'+
+      '<div class="rvc-td num wr" style="color:'+wrColor+'"><span class="rvc-td-k">Win Rate</span>'+wr+'%</div>'+
+      '<div class="rvc-td num rr" style="color:'+rrColor+'"><span class="rvc-td-k">Avg R:R</span>'+(rr>0?'+':'')+rr+'</div>'+
+    '</div>';
+  }).join('');
+  var note = '';
+  if(combos.length>1){
+    var best = combos[0], worst = combos[combos.length-1];
+    note = 'Same confluence types perform very differently across timeframes. '+
+      rvcComboPlain(best)+' wins '+best.win_rate+'%, but '+rvcComboPlain(worst)+
+      ' wins only '+worst.win_rate+'%.';
+  }
+  return '<section class="rvp-sec">'+head+
+    '<div class="rvc-table">'+
+      '<div class="rvc-tr rvc-thead">'+
+        '<div class="rvc-th">Confluence Combo</div>'+
+        '<div class="rvc-th num">Trades</div>'+
+        '<div class="rvc-th num">Win Rate</div>'+
+        '<div class="rvc-th num">Avg R:R</div>'+
+      '</div>'+rows+
+    '</div>'+
+    (note ? '<div class="rvc-note">'+rvEsc(note)+'</div>' : '')+
+  '</section>';
+}
+
+// ── 4 — best session + most-used confluence ─────────────────────────
+function rvcSplitHtml(){
+  return '<section class="rvp-sec"><div class="rvc-split">'+
+    rvcSessionCard()+rvcConfluenceCard()+
+  '</div></section>';
+}
+function rvcBarRows(items, valueOf, labelOf, confClass){
+  var maxV = Math.max.apply(null, items.map(valueOf).concat([1]));
+  return items.map(function(it, i){
+    var v = valueOf(it);
+    var w = maxV ? Math.round(v/maxV*100) : 0;
+    return '<div class="rvc-brow'+(confClass?' conf':'')+'">'+
+      '<div class="rvc-blabel">'+rvEsc(labelOf(it))+'</div>'+
+      '<div class="rvc-btrack"><div class="rvc-bfill'+(confClass&&i>0?' dim':'')+'" style="width:'+w+'%"></div></div>'+
+      '<div class="rvc-bval">'+v+'%</div>'+
+    '</div>';
+  }).join('');
+}
+function rvcSessionCard(){
+  var head = '<div class="rvc-card-head">Best Session</div>';
+  if(rvCommThin()) return '<div class="rvc-card">'+head+rvcThinMsg()+'</div>';
+  var sessions = (_rvCommunity.data.sessions)||[];
+  if(!sessions.length) return '<div class="rvc-card">'+head+rvcThinMsg()+'</div>';
+  var top = sessions[0];
+  var sub = (Number(top.win_rate)||0)+'% community win rate · '+
+    ((top.avg_rr>=0?'+':'')+(Number(top.avg_rr)||0))+' R:R avg';
+  var rows = rvcBarRows(sessions,
+    function(s){ return Number(s.win_rate)||0; },
+    function(s){ return s.session; }, false);
+  return '<div class="rvc-card">'+head+
+    '<div class="rvc-card-stat">'+rvEsc(top.session)+'</div>'+
+    '<div class="rvc-card-sub">'+rvEsc(sub)+'</div>'+
+    '<div class="rvc-blist">'+rows+'</div>'+
+  '</div>';
+}
+function rvcConfluenceCard(){
+  var head = '<div class="rvc-card-head">Most-Used Confluence</div>';
+  if(rvCommThin()) return '<div class="rvc-card">'+head+rvcThinMsg()+'</div>';
+  var confs = (_rvCommunity.data.confluence)||[];
+  if(!confs.length) return '<div class="rvc-card">'+head+rvcThinMsg()+'</div>';
+  var top = confs[0];
+  var rows = rvcBarRows(confs,
+    function(c){ return Number(c.percentage_of_trades)||0; },
+    function(c){ return c.confluence+' ('+c.tf+')'; }, true);
+  return '<div class="rvc-card">'+head+
+    '<div class="rvc-card-stat">'+rvEsc(top.confluence)+' <span class="tf">('+rvEsc(top.tf)+')</span></div>'+
+    '<div class="rvc-card-sub">in '+(Number(top.percentage_of_trades)||0)+'% of all logged trades this week</div>'+
+    '<div class="rvc-blist">'+rows+'</div>'+
+  '</div>';
+}
+
+// ── 5 — avg contracts ───────────────────────────────────────────────
+function rvcContractsHtml(){
+  var head = '<div class="rvc-contracts-head">Avg Contracts · Sizing Behavior</div>';
+  var c = _rvCommunity.data && _rvCommunity.data.contracts;
+  if(rvCommThin() || !c){
+    return '<section class="rvp-sec"><div class="rvc-contracts">'+head+rvcThinMsg()+'</div></section>';
+  }
+  var pct = Number(c.percent_size_up_on_losers)||0;
+  var pctTxt = (pct>0?'+':'')+pct+'%';
+  var stats = [
+    { v:c.avg_size,        l:'Avg Size',   color:'#f5f4f0' },
+    { v:c.avg_on_winners,  l:'On Winners', color:'#5fb389' },
+    { v:c.avg_on_losers,   l:'On Losers',  color:'#c95f5f' },
+    { v:pctTxt, l:'Size '+(pct>=0?'Up':'Down')+' on Losers', color:(pct>=0?'#c95f5f':'#5fb389') },
+  ];
+  var statsHtml = stats.map(function(s){
+    return '<div class="rvc-stat">'+
+      '<div class="rvc-stat-v" style="color:'+s.color+'">'+rvEsc(String(s.v))+'</div>'+
+      '<div class="rvc-stat-l">'+rvEsc(s.l)+'</div>'+
+    '</div>';
+  }).join('');
+  var insight = pct>=0
+    ? 'Community sizes up '+pctTxt+' on losing trades. Classic over-sizing during stress — '+
+      'the discipline most traders break first.'
+    : 'Community sizes down '+Math.abs(pct)+'% on losing trades — disciplined risk control under pressure.';
+  return '<section class="rvp-sec"><div class="rvc-contracts">'+head+
+    '<div class="rvc-stats">'+statsHtml+'</div>'+
+    '<div class="rvc-contracts-note">'+rvEsc(insight)+'</div>'+
+  '</div></section>';
+}
+
+function rvCommunityPaywallHtml(){
+  return '<div class="rv-paywall">'+
+    '<div class="rv-paywall-badge">★ PRO</div>'+
+    '<div class="rv-paywall-h">Community is a Pro feature</div>'+
+    '<div class="rv-paywall-sub">See how Rewind traders are actually performing — fully anonymized and aggregated.</div>'+
+    '<ul class="rv-paywall-list">'+
+      '<li>Winning setup combinations with timeframe context</li>'+
+      '<li>Best sessions and most-used confluences</li>'+
+      '<li>Community sizing behavior and coach notes</li>'+
     '</ul>'+
     '<button type="button" class="rv-paywall-cta" onclick="goTo(\'upgrade\')">Upgrade to Pro</button>'+
   '</div>';
