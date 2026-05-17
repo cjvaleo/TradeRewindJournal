@@ -355,6 +355,30 @@ function detectOff(a){
 }
 
 // ════════════════════════════════════════════════════════════════════
+// GRADE MISMATCH — reusable over-grading detector. A+ setups winning
+// below 50% mean the trader is over-rating their own reads. Returns one
+// rose card, or null when the A+ grade holds up (win rate ≥ 50%) or the
+// sample is too thin to make the call.
+// ════════════════════════════════════════════════════════════════════
+function detectGradeMismatch(a){
+  const ga = a.grade_audit && a.grade_audit['A+'];
+  if(!ga || ga.count < 4 || ga.win_rate == null || ga.win_rate >= 0.5) return null;
+  return card('Risk · Grade',
+    `Your "A+" graded setups win ${pct(ga.win_rate)} — you may be over-grading your reads.`,
+    pct(ga.win_rate), 'rose', ga.count);
+}
+
+// OFF_PRIMARY — the single strongest "What's Off" card for the Personal
+// tab's first slot. Grade Mismatch leads when it fires; otherwise it
+// falls back to the highest negative-impact pattern detectOff scores.
+function detectOffPrimary(a){
+  const gm = detectGradeMismatch(a);
+  if(gm) return { card: gm };
+  const off = detectOff(a);
+  return { card: (off.cards && off.cards[0]) || null };
+}
+
+// ════════════════════════════════════════════════════════════════════
 // HEADS UP — one contextual, day/time-aware nudge.
 // ════════════════════════════════════════════════════════════════════
 function detectHeadsUp(a){
@@ -501,8 +525,9 @@ export function renderInsight(type, analytics){
     case 'off':       return detectOff(analytics);
     case 'heads_up':  return detectHeadsUp(analytics);
     case 'coach':     return detectCoach(analytics);
+    case 'off_primary': return detectOffPrimary(analytics);
     default: throw new Error('unknown insight type: '+type);
   }
 }
 
-export const INSIGHT_TYPES = ['headline','working','off','heads_up','coach'];
+export const INSIGHT_TYPES = ['headline','working','off','heads_up','coach','off_primary'];

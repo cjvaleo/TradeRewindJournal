@@ -22296,10 +22296,12 @@ async function rvLoadPersonal(){
   if(!ovR.ok){ root.innerHTML = '<div class="rv-msg">Couldn’t load your personal review — try again in a moment.</div>'; return; }
   var bbR = await rvFetch('/api/personal/behavior-breakdown');
   var coachR = await rvFetch('/api/insights/generate', { method:'POST', body:{ type:'coach' } });
+  var offR = await rvFetch('/api/insights/generate', { method:'POST', body:{ type:'off_primary' } });
   _rvState.personal = {
     overview: ovR.data || {},
     behavior: bbR.ok ? bbR.data : null,
     coach: (coachR.ok && coachR.data && coachR.data.status==='ok') ? coachR.data.payload : null,
+    offPrimary: (offR.ok && offR.data && offR.data.status==='ok' && offR.data.payload) ? offR.data.payload.card : null,
   };
   _rvState.personalLoaded = true;
   rvRenderPersonalTab();
@@ -22431,7 +22433,7 @@ function rvWorkingOffHtml(){
       '</div>'+
       '<div class="rvp-wo-col">'+
         '<div class="rvp-wo-title"><span class="rvp-dot-rose"></span>What’s Off</div>'+
-        rvWoCard('rose','Risk · Sizing','After two losses your size jumps to <em>4.1</em> contracts, against your usual 2.3.','8 occurrences · 30 days')+
+        rvOffPrimaryCard()+
         rvWoCard('rose','Pattern · Time','London is your weakest window — a 38% win rate and <em>-$840</em> net.','11 trades · 30 days')+
         rvWoCard('rose','Pattern · Day','Thursdays run red — <em>-$210</em> average per trade across the window.','12 trades · 30 days')+
       '</div>'+
@@ -22444,6 +22446,24 @@ function rvWoCard(tone, tag, stmt, sample){
     '<p class="rvp-wo-stmt">'+stmt+'</p>'+
     '<div class="rvp-wo-sample">'+rvEsc(sample)+'</div>'+
   '</div>';
+}
+// First "What's Off" card — data-driven from the off_primary insight
+// (Grade Mismatch, or the worst-pattern fallback). The insight's big_stat
+// is wrapped in <em> so it reads as a rose Instrument Serif highlight.
+function rvOffPrimaryCard(){
+  var c = (_rvState.personal && _rvState.personal.offPrimary) || null;
+  if(!c){
+    return rvWoCard('rose','Risk · Grade',
+      'Grade your setups for a couple of weeks — this card will flag over-grading straight from your data.',
+      'Needs 10+ graded trades');
+  }
+  var stmt = rvEsc(c.statement || '');
+  if(c.big_stat){
+    var bs = rvEsc(String(c.big_stat));
+    stmt = stmt.replace(bs, '<em>'+bs+'</em>');
+  }
+  var tone = c.stat_color === 'sage' ? 'sage' : 'rose';
+  return rvWoCard(tone, c.category || 'Risk · Grade', stmt, c.sample_size || '30 days');
 }
 
 // ── Section 4 — Behavior Breakdown ──────────────────────────────────
