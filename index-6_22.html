@@ -4852,22 +4852,23 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 .cn-rose{color:#c95f5f;font-weight:600}
 /* ── Section 3 — What's Working / What's Off ── */
 .rvp-wo{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.rvp-wo-col{display:flex;flex-direction:column}
 .rvp-wo-title{position:relative;display:flex;align-items:center;gap:9px;font-family:var(--n-font-display);font-style:italic;font-size:20px;color:#f5f4f0;padding-bottom:10px;margin-bottom:14px}
 .rvp-wo-title::after{content:'';position:absolute;left:0;bottom:0;width:100px;height:1px}
 .rvp-wo-col:first-child .rvp-wo-title::after{background:linear-gradient(90deg,rgba(95,179,137,.5),rgba(245,244,240,0))}
 .rvp-wo-col:last-child .rvp-wo-title::after{background:linear-gradient(90deg,rgba(201,95,95,.5),rgba(245,244,240,0))}
-.rvp-wo-card{border-radius:12px;padding:16px 18px;margin-bottom:12px}
-.rvp-wo-card:last-child{margin-bottom:0}
+.rvp-wo-list{flex:1;display:grid;grid-template-rows:repeat(3,1fr);gap:12px}
+.rvp-wo-card{border-radius:12px;padding:16px 18px;display:flex;flex-direction:column}
 .rvp-wo-sage{background:rgba(95,179,137,.04);border:1px solid rgba(95,179,137,.14)}
 .rvp-wo-rose{background:rgba(201,95,95,.04);border:1px solid rgba(201,95,95,.14)}
 .rvp-wo-tag{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:9px}
 .rvp-wo-sage .rvp-wo-tag{color:#5fb389}
 .rvp-wo-rose .rvp-wo-tag{color:#c95f5f}
-.rvp-wo-stmt{font-size:14px;line-height:1.5;color:#e2e1db;margin:0 0 9px}
+.rvp-wo-stmt{font-size:14px;line-height:1.5;color:#e2e1db;margin:0 0 12px}
 .rvp-wo-stmt em{font-family:var(--n-font-display);font-style:italic;font-size:18px}
 .rvp-wo-sage .rvp-wo-stmt em{color:#5fb389}
 .rvp-wo-rose .rvp-wo-stmt em{color:#c95f5f}
-.rvp-wo-sample{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6a6a62}
+.rvp-wo-sample{margin-top:auto;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6a6a62}
 /* ── Section 4 — Behavior Breakdown ── */
 .rvp-bb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .rvp-bb-col{background:rgba(255,255,255,.018);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:22px}
@@ -22427,15 +22428,19 @@ function rvWorkingOffHtml(){
     '<div class="rvp-wo">'+
       '<div class="rvp-wo-col">'+
         '<div class="rvp-wo-title"><span class="rvp-dot-sage"></span>What’s Working</div>'+
-        rvWoCard('sage','Pattern · Time','Your NY AM session wins <em>71%</em> of the time, against 54% across the rest of your day.','23 trades · 30 days')+
-        rvWoCard('sage','Pattern · Setup','Trades tagged “FVG (15m) + Liq Sweep (1H)” carry an expectancy of <em>+2.1R</em> — your sharpest read.','14 trades · 30 days')+
-        rvWoCard('sage','Pattern · Day','Mondays pull their weight — <em>+$1,240</em> average per trade this month.','9 trades · 30 days')+
+        '<div class="rvp-wo-list">'+
+          rvWoCard('sage','Pattern · Time','Your NY AM session wins <em>71%</em> of the time, against 54% across the rest of your day.','23 trades · 30 days')+
+          rvWoCard('sage','Pattern · Setup','Trades tagged “FVG (15m) + Liq Sweep (1H)” carry an expectancy of <em>+2.1R</em> — your sharpest read.','14 trades · 30 days')+
+          rvWoCard('sage','Pattern · Day','Mondays pull their weight — <em>+$1,240</em> average per trade this month.','9 trades · 30 days')+
+        '</div>'+
       '</div>'+
       '<div class="rvp-wo-col">'+
         '<div class="rvp-wo-title"><span class="rvp-dot-rose"></span>What’s Off</div>'+
-        rvOffPrimaryCard()+
-        rvWoCard('rose','Pattern · Time','London is your weakest window — a 38% win rate and <em>-$840</em> net.','11 trades · 30 days')+
-        rvWoCard('rose','Pattern · Day','Thursdays run red — <em>-$210</em> average per trade across the window.','12 trades · 30 days')+
+        '<div class="rvp-wo-list">'+
+          rvOffPrimaryCard()+
+          rvWoCard('rose','Pattern · Time','London is your weakest window — a 38% win rate and <em>-$840</em> net.','11 trades · 30 days')+
+          rvWoCard('rose','Pattern · Day','Thursdays run red — <em>-$210</em> average per trade across the window.','12 trades · 30 days')+
+        '</div>'+
       '</div>'+
     '</div>'+
   '</section>';
