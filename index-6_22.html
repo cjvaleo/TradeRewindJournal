@@ -4955,6 +4955,110 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   .brief-watch-sentence{font-size:18px}
 }
 
+/* ════════ REVIEW PAGE — tabs + Rules tab (Session 2) ════════ */
+.rv{max-width:1300px;margin:0 auto;padding:30px 44px 64px;color:#f0efea;font-family:var(--n-font-sans)}
+.rv-panel{display:none}
+.rv-panel.on{display:block}
+.rv-panel .brief{max-width:none;margin:0;padding:0}
+/* tab bar */
+.rv-tabs{display:flex;gap:4px;background:var(--n-surface);border:1px solid var(--n-border);border-radius:9px;padding:4px;width:max-content;margin-bottom:26px}
+.rv-tab{font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#9a9a92;background:transparent;border:0;border-radius:6px;padding:9px 24px;cursor:pointer;position:relative;transition:.12s}
+.rv-tab:hover:not(.on){color:#e8e7e2}
+.rv-tab.on{background:rgba(95,179,137,0.08);color:#5fb389}
+.rv-tab.on::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;border-radius:2px;background:#5fb389}
+.rv-loading,.rv-empty{font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#7a7a72;padding:38px 0;text-align:center}
+.rv-msg{font-size:13px;color:#bdbcb6;padding:34px 24px;text-align:center;line-height:1.6}
+/* rules-tab section heads */
+.rv-sec{margin-bottom:30px}
+.rv-sec-tag{display:flex;align-items:center;gap:8px;font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#cfcec8;margin-bottom:14px}
+.rv-sec-tag .meta{color:#7a7a72;letter-spacing:0.1em}
+.rv-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+.rv-dot.gold{background:#f5d77c;box-shadow:0 0 8px rgba(245,215,124,0.5)}
+.rv-dot.sage{background:#5fb389}
+.rv-h2{font-family:var(--n-font-display);font-style:italic;font-weight:400;font-size:24px;color:#f5f4f0;margin:0 0 4px}
+.rv-sub{font-size:12px;color:#8a8a82;margin-bottom:14px}
+/* Today's Review — gold */
+.rv-today{background:linear-gradient(135deg,rgba(245,215,124,0.07),rgba(110,168,255,0.04));border:1px solid rgba(245,215,124,0.20);border-radius:14px;padding:22px 26px}
+.rv-today-tag{display:flex;align-items:center;gap:8px;font-family:var(--n-font-mono);font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:#f5d77c}
+.rv-today-tag .meta{color:#8a8a82;letter-spacing:0.1em}
+.rv-today-sub{font-size:12px;color:#9a9a92;margin:4px 0 14px}
+.rv-eval{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid rgba(255,255,255,0.06)}
+.rv-eval:first-of-type{border-top:0}
+.rv-eval-main{flex:1;min-width:0}
+.rv-eval-name{font-size:13.5px;color:#f0efea}
+.rv-eval-meta{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#7a7a72;margin-top:3px}
+.rv-eval-toggle{display:flex;gap:6px;flex-shrink:0}
+.rv-tg{font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.06em;text-transform:uppercase;padding:7px 13px;border-radius:6px;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.02);color:#9a9a92;cursor:pointer}
+.rv-tg.sel-followed{background:rgba(95,179,137,0.16);border-color:rgba(95,179,137,0.45);color:#5fb389}
+.rv-tg.sel-broken{background:rgba(201,95,95,0.16);border-color:rgba(201,95,95,0.45);color:#c95f5f}
+.rv-today-foot{display:flex;align-items:center;justify-content:flex-end;gap:14px;margin-top:18px}
+.rv-saved-note{font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:#5fb389}
+.rv-save{font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;background:#5fb389;color:#06140d;border:0;border-radius:7px;padding:11px 26px;cursor:pointer;font-weight:600}
+.rv-save:disabled{opacity:0.45;cursor:default}
+/* Weekly Scorecard — sage */
+.rv-scorecard{display:flex;align-items:center;gap:28px;background:rgba(95,179,137,0.05);border:1px solid rgba(95,179,137,0.20);border-radius:14px;padding:20px 26px}
+.rv-sc-pct{display:flex;flex-direction:column}
+.rv-sc-big{font-family:var(--n-font-display);font-style:italic;font-size:42px;line-height:1;color:#5fb389}
+.rv-sc-big.mid{color:#f5d77c}.rv-sc-big.bad{color:#c95f5f}
+.rv-sc-l{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.13em;text-transform:uppercase;color:#8a8a82;margin-top:5px}
+.rv-sc-meta{display:flex;gap:24px}
+.rv-sc-stat-v{font-family:var(--n-font-display);font-style:italic;font-size:20px;color:#f0efea}
+.rv-sc-stat-v.sage{color:#5fb389}.rv-sc-stat-v.rose{color:#c95f5f}
+/* Active Rules table */
+.rv-table{width:100%;border-collapse:collapse}
+.rv-table th{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.13em;text-transform:uppercase;color:#7a7a72;text-align:left;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.rv-table th.r,.rv-table td.r{text-align:right}
+.rv-table th.c,.rv-table td.c{text-align:center}
+.rv-table td{padding:13px 12px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;color:#f0efea;vertical-align:middle}
+.rv-rule-name{font-size:13px;color:#f0efea}
+.rv-rule-desc{font-size:11px;color:#7a7a72;margin-top:2px}
+.rv-type-badge{font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.09em;padding:3px 7px;border-radius:4px;white-space:nowrap}
+.rv-type-auto{background:rgba(110,168,255,0.12);color:#6ea8ff}
+.rv-type-subj{background:rgba(179,102,255,0.13);color:#b366ff}
+.rv-week{font-family:var(--n-font-mono);font-size:12px;color:#bdbcb6}
+.rv-impact{font-family:var(--n-font-display);font-style:italic;font-size:16px;color:#7a7a72}
+.rv-impact.rose{color:#c95f5f}
+.rv-switch{display:inline-block;width:36px;height:20px;border-radius:11px;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.12);cursor:pointer;position:relative;vertical-align:middle}
+.rv-switch.on{background:rgba(95,179,137,0.45);border-color:rgba(95,179,137,0.6)}
+.rv-switch::after{content:'';position:absolute;top:1px;left:1px;width:16px;height:16px;border-radius:50%;background:#e8e7e2;transition:.14s}
+.rv-switch.on::after{left:17px}
+.rv-del{background:none;border:0;color:#6e6e66;cursor:pointer;font-size:16px;padding:2px 6px;line-height:1}
+.rv-del:hover{color:#c95f5f}
+/* Rule Library grid */
+.rv-lib-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.rv-lib-card{text-align:left;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:11px;padding:15px 16px;cursor:pointer;font-family:inherit;color:inherit;display:flex;flex-direction:column;gap:6px}
+.rv-lib-card:hover:not(.added){border-color:rgba(95,179,137,0.4);background:rgba(95,179,137,0.04)}
+.rv-lib-card.added{opacity:0.5;cursor:default}
+.rv-lib-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rv-lib-cat{font-family:var(--n-font-mono);font-size:8px;letter-spacing:0.12em;color:#8a8a82}
+.rv-lib-add{font-family:var(--n-font-mono);font-size:15px;color:#5fb389;line-height:1}
+.rv-lib-name{font-size:12.5px;color:#f0efea;font-weight:500}
+.rv-lib-desc{font-size:11px;color:#8a8a82;line-height:1.45}
+/* sidebar Rules pill */
+.sb-rules-pill{display:flex;align-items:center;gap:7px;margin:0 0 8px;padding:8px 11px;border-radius:7px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);cursor:pointer;font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase}
+.sb-rules-pill:hover{border-color:rgba(255,255,255,0.16)}
+.sb-rules-pill-l{color:#9a9a92;flex:1}
+.sb-rules-pill-v{color:#e8e7e2;font-weight:600}
+.sb-rules-pill-icon{color:#9a9a92}
+.sb-rules-pill.good .sb-rules-pill-v,.sb-rules-pill.good .sb-rules-pill-icon{color:#5fb389}
+.sb-rules-pill.bad .sb-rules-pill-v,.sb-rules-pill.bad .sb-rules-pill-icon{color:#c95f5f}
+.sb-rules-pill.mid .sb-rules-pill-v,.sb-rules-pill.mid .sb-rules-pill-icon{color:#f5d77c}
+/* responsive */
+@media (max-width:900px){
+  .rv{padding:24px 22px 52px}
+  .rv-lib-grid{grid-template-columns:1fr 1fr}
+  .rv-scorecard{flex-wrap:wrap;gap:18px}
+}
+@media (max-width:600px){
+  .rv{padding:18px 14px 44px}
+  .rv-lib-grid{grid-template-columns:1fr}
+  .rv-eval{flex-wrap:wrap}
+  .rv-table thead{display:none}
+  .rv-table td{display:block;padding:5px 0;border:0}
+  .rv-table td.r,.rv-table td.c{text-align:left}
+  .rv-table tr{display:block;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.07)}
+}
+
 #pg-analytics .an-head{
   display:flex;align-items:flex-start;justify-content:space-between;
   margin-bottom:24px;flex-wrap:wrap;gap:14px;border:none;padding:0;
@@ -8793,7 +8897,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
     <div class="ni" data-page="history" onclick="goTo('history')"><svg viewBox="0 0 16 16"><line x1="3" y1="5" x2="13" y2="5"/><line x1="3" y1="8" x2="13" y2="8"/><line x1="3" y1="11" x2="9" y2="11"/></svg><span class="ni-label">History</span></div>
 
     <div class="sb-sec">Insights</div>
-    <div class="ni" data-page="analytics" onclick="goTo('analytics')"><svg viewBox="0 0 16 16"><rect x="2" y="8" width="3" height="5" rx=".5"/><rect x="6" y="5" width="3" height="8" rx=".5"/><rect x="10" y="2" width="3" height="11" rx=".5"/></svg><span class="ni-label">Analytics</span></div>
+    <div class="ni" data-page="analytics" onclick="goTo('analytics')"><svg viewBox="0 0 16 16"><rect x="3" y="2" width="10" height="12" rx="1.5"/><path d="M5.6 6.2l1.4 1.4 2.6-3"/><line x1="5.6" y1="10.4" x2="10.4" y2="10.4"/></svg><span class="ni-label">Review</span></div>
 
     <div class="sb-sec">Connect</div>
     <div class="ni" data-page="community" onclick="onCommunityNavClick()"><svg viewBox="0 0 16 16"><circle cx="6" cy="5" r="2.5"/><path d="M2 13c0-2.2 1.8-4 4-4s4 1.8 4 4"/><circle cx="12" cy="6" r="2"/><path d="M14 13c0-1.7-1.3-3-2-3"/></svg><span class="ni-label">Community</span><span class="ni-lock" title="Pro feature"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></div>
@@ -8804,6 +8908,11 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
   <!-- Bottom zone — Upgrade (free only) · divider · Settings · user chip -->
   <div class="sb-foot">
+    <div class="sb-rules-pill" id="sb-rules-pill" style="display:none" onclick="goTo('analytics')">
+      <span class="sb-rules-pill-l">Rules</span>
+      <span class="sb-rules-pill-v" id="sb-rules-pill-v">&mdash;</span>
+      <span class="sb-rules-pill-icon" id="sb-rules-pill-icon">&#10003;</span>
+    </div>
     <div class="ni ni-upgrade" data-page="upgrade" onclick="goTo('upgrade')"><svg viewBox="0 0 16 16" fill="currentColor" stroke="none"><polygon points="8,1.5 9.8,5.9 14.5,6.3 10.9,9.4 12,14 8,11.5 4,14 5.1,9.4 1.5,6.3 6.2,5.9"/></svg><span class="ni-label">Upgrade</span></div>
     <div class="sb-divider"></div>
     <div class="ni" data-page="account" onclick="goTo('account')"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.4"/><path d="M8 1.6v2.1M8 12.3v2.1M3.5 3.5l1.5 1.5M11 11l1.5 1.5M1.6 8h2.1M12.3 8h2.1M3.5 12.5l1.5-1.5M11 5l1.5-1.5"/></svg><span class="ni-label">Settings</span></div>
@@ -10030,7 +10139,15 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 </div>
 <!-- ANALYTICS -->
 <div id="pg-analytics" class="page">
- <!-- ════════ THE BRIEF — Phase 1 static layout (hardcoded sample data) ════════ -->
+ <!-- ════════ REVIEW PAGE — Analytics tab (The Brief) + Rules tab ════════ -->
+ <div class="rv">
+  <div class="rv-tabs">
+    <button type="button" class="rv-tab on" id="rv-tab-analytics" onclick="rvTab('analytics')">Analytics</button>
+    <button type="button" class="rv-tab"    id="rv-tab-rules"     onclick="rvTab('rules')">Rules</button>
+  </div>
+
+  <!-- ══ ANALYTICS TAB — The Brief (hardcoded Phase-1 sample data) ══ -->
+  <div class="rv-panel on" id="rv-panel-analytics">
  <div class="brief">
 
   <!-- ── HEADER ── -->
@@ -10169,70 +10286,6 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
     </div>
   </section>
 
-  <!-- ── WHEN YOU TRADE BEST ── -->
-  <section class="brief-block">
-    <h2 class="brief-h2">When You Trade Best</h2>
-    <div class="brief-sub">Day &times; Session &middot; hover to drill</div>
-    <div class="brief-heat-grid">
-
-      <div class="brief-heatmap">
-        <div class="brief-hm-row brief-hm-head">
-          <span class="brief-hm-corner"></span>
-          <span class="brief-hm-sess">Asia</span><span class="brief-hm-sess">London</span>
-          <span class="brief-hm-sess">NY AM</span><span class="brief-hm-sess">Lunch</span><span class="brief-hm-sess">NY PM</span>
-        </div>
-        <div class="brief-hm-row">
-          <span class="brief-hm-day">Mon</span>
-          <span class="brief-hm-cell hm-p1">+0.3R</span><span class="brief-hm-cell hm-n1">-0.2R</span>
-          <span class="brief-hm-cell hm-p2">+0.9R</span><span class="brief-hm-cell hm-p1">+0.1R</span><span class="brief-hm-cell hm-n1">-0.4R</span>
-        </div>
-        <div class="brief-hm-row">
-          <span class="brief-hm-day">Tue</span>
-          <span class="brief-hm-cell hm-n2">-0.6R</span><span class="brief-hm-cell hm-p1">+0.4R</span>
-          <span class="brief-hm-cell hm-p2">+1.2R</span><span class="brief-hm-cell hm-n1">-0.3R</span><span class="brief-hm-cell hm-p1">+0.2R</span>
-        </div>
-        <div class="brief-hm-row">
-          <span class="brief-hm-day">Wed</span>
-          <span class="brief-hm-cell hm-p2">+0.7R</span><span class="brief-hm-cell hm-p1">+0.5R</span>
-          <span class="brief-hm-cell hm-p3 hm-best">+2.4R</span><span class="brief-hm-cell hm-p2">+0.8R</span><span class="brief-hm-cell hm-p2">+0.6R</span>
-        </div>
-        <div class="brief-hm-row">
-          <span class="brief-hm-day">Thu</span>
-          <span class="brief-hm-cell hm-n1">-0.1R</span><span class="brief-hm-cell hm-n2">-0.8R</span>
-          <span class="brief-hm-cell hm-p1">+0.5R</span><span class="brief-hm-cell hm-p1">+0.3R</span><span class="brief-hm-cell hm-n2">-0.5R</span>
-        </div>
-        <div class="brief-hm-row">
-          <span class="brief-hm-day">Fri</span>
-          <span class="brief-hm-cell hm-p1">+0.5R</span><span class="brief-hm-cell hm-p1">+0.2R</span>
-          <span class="brief-hm-cell hm-p3">+1.6R</span><span class="brief-hm-cell hm-p1">+0.4R</span><span class="brief-hm-cell hm-p2">+1.1R</span>
-        </div>
-      </div>
-
-      <div class="brief-drill">
-        <div class="brief-drill-head">&#9656; Wed &middot; NY AM</div>
-        <div class="brief-drill-big">+2.4R</div>
-        <div class="brief-drill-sub">Avg expectancy &middot; 7 trades</div>
-        <div class="brief-drill-hr"></div>
-        <div class="brief-drill-list">
-          <div class="brief-drill-row">
-            <span class="brief-drill-thumb"></span>
-            <span class="brief-drill-info"><span class="brief-drill-sym">MNQ &#8599; +$1,800</span><span class="brief-drill-meta">May 15 &middot; FVG + Liq Sweep</span></span>
-          </div>
-          <div class="brief-drill-row">
-            <span class="brief-drill-thumb"></span>
-            <span class="brief-drill-info"><span class="brief-drill-sym">ES &#8599; +$640</span><span class="brief-drill-meta">May 13 &middot; OB retest</span></span>
-          </div>
-          <div class="brief-drill-row">
-            <span class="brief-drill-thumb"></span>
-            <span class="brief-drill-info"><span class="brief-drill-sym">NQ &#8600; +$920</span><span class="brief-drill-meta">May 8 &middot; Liq sweep</span></span>
-          </div>
-        </div>
-        <div class="brief-drill-more">+ 4 more</div>
-      </div>
-
-    </div>
-  </section>
-
   <!-- ── DIG DEEPER ── -->
   <section class="brief-block">
     <h2 class="brief-h2">Dig Deeper</h2>
@@ -10297,7 +10350,17 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
     </div>
   </section>
 
- </div>
+ </div><!-- /brief -->
+  </div><!-- /rv-panel-analytics -->
+
+  <!-- ══ RULES TAB — JS-rendered from the 8 /api/rules endpoints ══ -->
+  <div class="rv-panel" id="rv-panel-rules">
+    <div id="rv-rules-root">
+      <div class="rv-loading">Loading your rules&hellip;</div>
+    </div>
+  </div>
+
+ </div><!-- /rv -->
 </div>
 <!-- BROKER SYNC -->
 <div id="pg-sync" class="page">
@@ -22325,10 +22388,295 @@ function setAnPeriod(p,el){
   if(el) el.classList.add('on');
   refreshAnalytics();
 }
-/* The Brief (/analytics) is a static page in Phase 1 — nothing to render.
-   Phase 2 wires it to api/insights/generate. The old 5-tab refreshAnalytics
-   is retained as dead code (its #an-* targets no longer exist). */
-function renderAnalytics(){}
+/* ═══════════════════════════════════════════════════════════════════
+   REVIEW PAGE (Session 2) — /analytics, two tabs: Analytics + Rules.
+   Analytics tab = static Brief markup. Rules tab is rendered here from
+   the 8 /api/rules endpoints. The old 5-tab refreshAnalytics is dead.
+   ═══════════════════════════════════════════════════════════════════ */
+var _rvState = { tab:'analytics', rules:[], templates:[], today:null, scorecard:null, reviewChoices:{} };
+
+function rvEsc(s){
+  return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+  });
+}
+function rvMoney(n){
+  n = Number(n)||0;
+  if(n<0) return '-$'+Math.abs(Math.round(n)).toLocaleString('en-US');
+  if(n>0) return '+$'+Math.round(n).toLocaleString('en-US');
+  return '$0';
+}
+
+// Authed fetch — attaches the Supabase Bearer token (same pattern as the
+// rest of the SPA's API calls).
+async function rvFetch(path, opts){
+  opts = opts || {};
+  var headers = Object.assign({}, opts.headers||{});
+  if(opts.body && !headers['Content-Type']) headers['Content-Type']='application/json';
+  try{
+    if(window._sb && _sb.auth && _sb.auth.getSession){
+      var s = await _sb.auth.getSession();
+      var token = s && s.data && s.data.session && s.data.session.access_token;
+      if(token) headers['Authorization'] = 'Bearer '+token;
+    }
+  }catch(e){}
+  try{
+    var r = await fetch(path, {
+      method: opts.method||'GET',
+      headers: headers,
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+    var data = await r.json().catch(function(){ return null; });
+    return { ok:r.ok, status:r.status, data:data };
+  }catch(e){
+    return { ok:false, status:0, data:null };
+  }
+}
+
+function rvTab(name){
+  _rvState.tab = name;
+  var ta=document.getElementById('rv-tab-analytics'), tr=document.getElementById('rv-tab-rules');
+  var pa=document.getElementById('rv-panel-analytics'), pr=document.getElementById('rv-panel-rules');
+  if(ta) ta.classList.toggle('on', name==='analytics');
+  if(tr) tr.classList.toggle('on', name==='rules');
+  if(pa) pa.classList.toggle('on', name==='analytics');
+  if(pr) pr.classList.toggle('on', name==='rules');
+  if(name==='rules') rvLoadRules();
+}
+window.rvTab = rvTab;
+
+// renderAnalytics — called by goTo('analytics') + renderAll. Keeps the
+// sidebar pill fresh; reloads the Rules tab if it's the active one.
+function renderAnalytics(){
+  rvRefreshSidebarPill();
+  if(_rvState.tab === 'rules') rvLoadRules();
+}
+
+async function rvLoadRules(){
+  var root = document.getElementById('rv-rules-root');
+  if(!root) return;
+  root.innerHTML = '<div class="rv-loading">Loading your rules&hellip;</div>';
+  var res = await Promise.all([
+    rvFetch('/api/rules'),
+    rvFetch('/api/rules/today'),
+    rvFetch('/api/rules/weekly-scorecard'),
+  ]);
+  var rulesR = res[0], todayR = res[1], scR = res[2];
+  if(rulesR.status === 403){
+    root.innerHTML = '<div class="rv-msg">The Review system is a Pro feature.<br>Upgrade to build and track your trading rules.</div>';
+    return;
+  }
+  if(!rulesR.ok){
+    root.innerHTML = '<div class="rv-msg">Couldn’t load your rules — try again in a moment.</div>';
+    return;
+  }
+  _rvState.rules     = (rulesR.data && rulesR.data.rules) || [];
+  _rvState.templates = (rulesR.data && rulesR.data.templates) || [];
+  _rvState.today     = todayR.ok ? todayR.data : null;
+  _rvState.scorecard = scR.ok ? scR.data : null;
+  _rvState.reviewChoices = {};
+  rvRenderRulesTab();
+}
+
+function rvRenderRulesTab(){
+  var root = document.getElementById('rv-rules-root');
+  if(root) root.innerHTML = rvTodayHtml() + rvScorecardHtml() + rvActiveRulesHtml() + rvLibraryHtml();
+}
+
+// ── Today's Review ──────────────────────────────────────────────────
+function rvTodayHtml(){
+  var t = _rvState.today;
+  var evals = (t && t.evaluations) || [];
+  var day = (t && t.trading_day) || new Date().toISOString().slice(0,10);
+  var rows;
+  if(!evals.length){
+    rows = '<div class="rv-empty">No evaluations yet today — they appear once you log a trade.</div>';
+  } else {
+    rows = evals.map(function(e){
+      var rule = e.rules || {};
+      var subj = rule.rule_type === 'subjective';
+      var choice = _rvState.reviewChoices[e.id];
+      if(choice === undefined){
+        choice = (!subj && (e.auto_detected_status==='followed' || e.auto_detected_status==='broken'))
+          ? e.auto_detected_status
+          : (e.status==='followed' || e.status==='broken' ? e.status : null);
+        _rvState.reviewChoices[e.id] = choice;
+      }
+      var meta = subj ? 'Subjective · self-review'
+                      : 'Auto · ' + (e.auto_detected_status || 'unknown');
+      return '<div class="rv-eval" data-eid="'+e.id+'">'+
+        '<div class="rv-eval-main">'+
+          '<div class="rv-eval-name">'+rvEsc(rule.name||'Rule')+'</div>'+
+          '<div class="rv-eval-meta">'+meta+'</div>'+
+        '</div>'+
+        '<div class="rv-eval-toggle">'+
+          '<button type="button" class="rv-tg'+(choice==='followed'?' sel-followed':'')+'" '+
+            'onclick="rvSetReview(\''+e.id+'\',\'followed\')">'+(subj?'Yes':'Followed')+'</button>'+
+          '<button type="button" class="rv-tg'+(choice==='broken'?' sel-broken':'')+'" '+
+            'onclick="rvSetReview(\''+e.id+'\',\'broken\')">'+(subj?'No':'Broke it')+'</button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
+  return '<section class="rv-sec rv-today">'+
+    '<div class="rv-today-tag"><span class="rv-dot gold"></span>Today’s Review <span class="meta">'+rvEsc(day)+'</span></div>'+
+    '<div class="rv-today-sub">Confirm how today’s trades measured against your rules.</div>'+
+    rows +
+    (evals.length
+      ? '<div class="rv-today-foot"><span class="rv-saved-note" id="rv-saved-note" style="display:none">Saved ✓</span>'+
+        '<button type="button" class="rv-save" id="rv-save-btn" onclick="rvSaveReview()">Save Review</button></div>'
+      : '')+
+  '</section>';
+}
+function rvSetReview(eid, status){
+  _rvState.reviewChoices[eid] = status;
+  var row = document.querySelector('.rv-eval[data-eid="'+eid+'"]');
+  if(row){
+    var btns = row.querySelectorAll('.rv-tg');
+    btns[0].classList.toggle('sel-followed', status==='followed');
+    btns[1].classList.toggle('sel-broken', status==='broken');
+  }
+}
+window.rvSetReview = rvSetReview;
+
+async function rvSaveReview(){
+  var evals = (_rvState.today && _rvState.today.evaluations) || [];
+  var reviews = [];
+  evals.forEach(function(e){
+    var ch = _rvState.reviewChoices[e.id];
+    if(ch!=='followed' && ch!=='broken') return;
+    var subj = e.rules && e.rules.rule_type==='subjective';
+    reviews.push({ id:e.id, status:ch, user_overrode: subj ? false : (ch !== e.auto_detected_status) });
+  });
+  if(!reviews.length) return;
+  var btn = document.getElementById('rv-save-btn');
+  if(btn){ btn.disabled = true; btn.textContent = 'Saving…'; }
+  var r = await rvFetch('/api/rules/review', { method:'POST', body:{ reviews:reviews } });
+  if(btn){ btn.disabled = false; btn.textContent = 'Save Review'; }
+  if(r.ok){
+    var note = document.getElementById('rv-saved-note');
+    if(note) note.style.display = '';
+    rvRefreshSidebarPill();
+    setTimeout(rvLoadRules, 700);
+  } else if(typeof toast === 'function'){
+    toast('Couldn’t save review');
+  }
+}
+window.rvSaveReview = rvSaveReview;
+
+// ── Weekly Scorecard ────────────────────────────────────────────────
+function rvScorecardHtml(){
+  var o = (_rvState.scorecard && _rvState.scorecard.overall) || null;
+  var pct = o ? o.adherence_pct : null;
+  var cls = pct==null ? '' : (pct>=70 ? '' : (pct>=50 ? 'mid' : 'bad'));
+  var cost = o ? o.cost_impact : 0;
+  return '<section class="rv-sec">'+
+    '<div class="rv-sec-tag"><span class="rv-dot sage"></span>Weekly Scorecard</div>'+
+    '<div class="rv-scorecard">'+
+      '<div class="rv-sc-pct"><div class="rv-sc-big '+cls+'">'+(pct==null?'—':pct+'%')+'</div>'+
+        '<div class="rv-sc-l">Discipline · 7 days</div></div>'+
+      '<div class="rv-sc-meta">'+
+        '<div><div class="rv-sc-stat-v sage">'+((o&&o.followed)||0)+'</div><div class="rv-sc-l">Followed</div></div>'+
+        '<div><div class="rv-sc-stat-v rose">'+((o&&o.broken)||0)+'</div><div class="rv-sc-l">Broken</div></div>'+
+        '<div><div class="rv-sc-stat-v">'+((o&&o.pending_review)||0)+'</div><div class="rv-sc-l">Pending</div></div>'+
+        '<div><div class="rv-sc-stat-v'+(cost<0?' rose':'')+'">'+rvMoney(cost)+'</div><div class="rv-sc-l">Cost of breaks</div></div>'+
+      '</div>'+
+    '</div>'+
+  '</section>';
+}
+
+// ── Active Rules table ──────────────────────────────────────────────
+function rvActiveRulesHtml(){
+  var rules = _rvState.rules;
+  var scMap = {};
+  if(_rvState.scorecard && _rvState.scorecard.rules){
+    _rvState.scorecard.rules.forEach(function(r){ scMap[r.rule_id] = r; });
+  }
+  var body;
+  if(!rules.length){
+    body = '<div class="rv-empty">No rules yet — add one from the library below.</div>';
+  } else {
+    body = '<table class="rv-table"><thead><tr>'+
+      '<th>Rule</th><th>Type</th><th class="c">This Week</th><th class="r">Impact</th><th class="c">Active</th><th></th>'+
+      '</tr></thead><tbody>'+
+      rules.map(function(r){
+        var sc = scMap[r.id];
+        var week = sc ? (sc.followed+'/'+(sc.followed+sc.broken)) : '—';
+        var hasCost = sc && sc.cost_impact < 0;
+        var impact = hasCost ? rvMoney(sc.cost_impact) : '—';
+        var subj = r.rule_type === 'subjective';
+        return '<tr>'+
+          '<td><div class="rv-rule-name">'+rvEsc(r.name)+'</div>'+
+            (r.description ? '<div class="rv-rule-desc">'+rvEsc(r.description)+'</div>' : '')+'</td>'+
+          '<td><span class="rv-type-badge '+(subj?'rv-type-subj':'rv-type-auto')+'">'+(subj?'SUBJECT.':'AUTO')+'</span></td>'+
+          '<td class="c rv-week">'+week+'</td>'+
+          '<td class="r"><span class="rv-impact'+(hasCost?' rose':'')+'">'+impact+'</span></td>'+
+          '<td class="c"><span class="rv-switch'+(r.is_active?' on':'')+'" '+
+            'onclick="rvToggleRule(\''+r.id+'\','+(!r.is_active)+')"></span></td>'+
+          '<td class="r"><button type="button" class="rv-del" title="Delete rule" '+
+            'onclick="rvDeleteRule(\''+r.id+'\')">&times;</button></td>'+
+        '</tr>';
+      }).join('')+
+      '</tbody></table>';
+  }
+  return '<section class="rv-sec"><div class="rv-sec-tag">Active Rules <span class="meta">'+rules.length+'</span></div>'+body+'</section>';
+}
+async function rvToggleRule(id, makeActive){
+  await rvFetch('/api/rules/'+id, { method:'PATCH', body:{ is_active: !!makeActive } });
+  rvLoadRules();
+  rvRefreshSidebarPill();
+}
+window.rvToggleRule = rvToggleRule;
+async function rvDeleteRule(id){
+  if(!confirm('Delete this rule? Its evaluation history is removed too.')) return;
+  await rvFetch('/api/rules/'+id, { method:'DELETE' });
+  rvLoadRules();
+  rvRefreshSidebarPill();
+}
+window.rvDeleteRule = rvDeleteRule;
+
+// ── Rule Library ────────────────────────────────────────────────────
+function rvLibraryHtml(){
+  var tpls = _rvState.templates || [];
+  var have = {};
+  _rvState.rules.forEach(function(r){ have[r.name] = true; });
+  var cards = tpls.map(function(t){
+    var added = !!have[t.name];
+    return '<button type="button" class="rv-lib-card'+(added?' added':'')+'"'+
+      (added ? '' : ' onclick="rvAddTemplate(\''+t.key+'\')"')+'>'+
+      '<div class="rv-lib-top"><span class="rv-lib-cat">'+rvEsc(t.category)+'</span>'+
+        '<span class="rv-lib-add">'+(added?'✓':'+')+'</span></div>'+
+      '<div class="rv-lib-name">'+rvEsc(t.name)+'</div>'+
+      '<div class="rv-lib-desc">'+rvEsc(t.description||'')+'</div>'+
+    '</button>';
+  }).join('');
+  return '<section class="rv-sec"><div class="rv-sec-tag">Rule Library <span class="meta">click to add</span></div>'+
+    '<div class="rv-lib-grid">'+cards+'</div></section>';
+}
+async function rvAddTemplate(key){
+  var r = await rvFetch('/api/rules', { method:'POST', body:{ template_key:key } });
+  if(r.ok) rvLoadRules();
+  else if(typeof toast === 'function') toast('Couldn’t add rule');
+}
+window.rvAddTemplate = rvAddTemplate;
+
+// ── Sidebar discipline pill ─────────────────────────────────────────
+async function rvRefreshSidebarPill(){
+  var pill = document.getElementById('sb-rules-pill');
+  if(!pill) return;
+  var r = await rvFetch('/api/rules/weekly-scorecard');
+  var o = r.ok && r.data && r.data.overall;
+  var resolved = o ? (o.followed + o.broken) : 0;
+  if(!o || resolved === 0){ pill.style.display = 'none'; return; }
+  pill.style.display = '';
+  var v = document.getElementById('sb-rules-pill-v');
+  if(v) v.textContent = o.followed + '/' + resolved;
+  var pct = o.adherence_pct;
+  pill.classList.remove('good','mid','bad');
+  pill.classList.add(pct>70 ? 'good' : (pct<50 ? 'bad' : 'mid'));
+}
+// Warm the pill once after auth settles.
+setTimeout(function(){ try{ rvRefreshSidebarPill(); }catch(e){} }, 2600);
 
 function showAnalyticsPanel(name, btn){
   document.querySelectorAll('#pg-analytics .panel').forEach(function(p){p.classList.remove('on');});
