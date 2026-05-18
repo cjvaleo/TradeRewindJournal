@@ -3934,6 +3934,9 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   background:var(--n-surface);
   border:1px solid var(--n-border);border-radius:8px;
   overflow:hidden;
+  /* Sit above the free-tier lock-veils (z-index:5) so an open picker is
+     fully clickable — otherwise the veil intercepts clicks on lower rows. */
+  position:relative;z-index:60;
 }
 :where(#pg-log, .cem-card) .cf-dropdown-section{
   padding:12px 14px 10px;
