@@ -1,19 +1,19 @@
 // GET /api/rules/today
 // The caller's rules to review now — split by cadence. intra_day rules
-// are always returned; weekly rules surface only on Saturday (the weekly
+// are always returned; weekly rules surface only on Friday (the weekly
 // review day). Each rule carries its saved status for the current cycle
-// (today for intra_day, this week's Saturday anchor for weekly) so the
+// (today for intra_day, this week's Friday anchor for weekly) so the
 // frontend can pre-select the YES/NO toggles. Pro-gated.
 
 import { sbService } from '../_lib/supabase.js';
 import { requirePro } from '../_lib/auth.js';
 
 function utcToday() { return new Date().toISOString().slice(0, 10); }
-// Saturday (YYYY-MM-DD) of the current Mon–Sun week.
+// Friday (YYYY-MM-DD) of the current Mon–Sun week.
 function weekAnchor() {
   const d = new Date();
   const day = d.getUTCDay();              // 0 Sun … 6 Sat
-  const delta = day === 0 ? -1 : 6 - day;
+  const delta = day === 0 ? -2 : (day === 6 ? -1 : 5 - day);
   return new Date(d.getTime() + delta * 864e5).toISOString().slice(0, 10);
 }
 
@@ -38,9 +38,9 @@ export default async function handler(req, res) {
   }
 
   const today = utcToday();
-  const isSat = new Date().getUTCDay() === 6;
-  const satAnchor = weekAnchor();
-  const days = isSat ? [today, satAnchor] : [today];
+  const isFri = new Date().getUTCDay() === 5;
+  const friAnchor = weekAnchor();
+  const days = isFri ? [today, friAnchor] : [today];
 
   const { data: evals, error: eErr } = await sb
     .from('rule_evaluations')
@@ -59,8 +59,8 @@ export default async function handler(req, res) {
   const intra_day = [], weekly = [];
   (rules || []).forEach(function (r) {
     if (r.cadence === 'weekly') {
-      if (!isSat) return;                   // weekly section surfaces only on Saturday
-      const e = statusFor[r.id + '|' + satAnchor];
+      if (!isFri) return;                   // weekly section surfaces only on Friday
+      const e = statusFor[r.id + '|' + friAnchor];
       weekly.push({ id: r.id, name: r.name, status: e ? e.status : null });
     } else {
       const e = statusFor[r.id + '|' + today];
@@ -71,8 +71,8 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   res.status(200).json({
     trading_day: today,
-    is_saturday: isSat,
-    week_anchor: satAnchor,
+    is_friday: isFri,
+    week_anchor: friAnchor,
     intra_day: intra_day,
     weekly: weekly,
   });

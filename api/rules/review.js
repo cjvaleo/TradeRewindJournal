@@ -1,7 +1,7 @@
 // POST /api/rules/review  { reviews: [{ rule_id, status }] }
 // Saves a subjective YES/NO review. intra_day rules anchor to today;
-// weekly rules anchor to this week's Saturday — and weekly submissions
-// are rejected unless today actually is Saturday. Re-saving replaces the
+// weekly rules anchor to this week's Friday — and weekly submissions
+// are rejected unless today actually is Friday. Re-saving replaces the
 // prior evaluation for that rule + cycle. Pro-gated.
 
 import { sbService } from '../_lib/supabase.js';
@@ -12,7 +12,7 @@ function utcToday() { return new Date().toISOString().slice(0, 10); }
 function weekAnchor() {
   const d = new Date();
   const day = d.getUTCDay();
-  const delta = day === 0 ? -1 : 6 - day;
+  const delta = day === 0 ? -2 : (day === 6 ? -1 : 5 - day);
   return new Date(d.getTime() + delta * 864e5).toISOString().slice(0, 10);
 }
 
@@ -51,23 +51,23 @@ export default async function handler(req, res) {
   const ruleMap = {};
   (ruleRows || []).forEach(function (r) { ruleMap[r.id] = r; });
 
-  const isSat = new Date().getUTCDay() === 6;
+  const isFri = new Date().getUTCDay() === 5;
   for (const rv of reviews) {
     const rule = ruleMap[String(rv.rule_id)];
     if (!rule) { res.status(400).json({ error: 'unknown rule', rule_id: rv.rule_id }); return; }
-    if (rule.cadence === 'weekly' && !isSat) {
-      res.status(400).json({ error: 'weekly_not_saturday', message: 'Weekly review available on Saturday' });
+    if (rule.cadence === 'weekly' && !isFri) {
+      res.status(400).json({ error: 'weekly_not_friday', message: 'Weekly review available on Friday.' });
       return;
     }
   }
 
   const today = utcToday();
-  const satAnchor = weekAnchor();
+  const friAnchor = weekAnchor();
   const now = new Date().toISOString();
   const saved = [];
   for (const rv of reviews) {
     const cad = ruleMap[String(rv.rule_id)].cadence;
-    const td = cad === 'weekly' ? satAnchor : today;
+    const td = cad === 'weekly' ? friAnchor : today;
     // Replace any prior evaluation for this rule on this cycle.
     await sb.from('rule_evaluations').delete()
       .eq('user_id', user.id).eq('rule_id', rv.rule_id).eq('trading_day', td);

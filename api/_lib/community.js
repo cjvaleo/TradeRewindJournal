@@ -2,13 +2,24 @@
 // Communities + memberships live in the `communities` table (owner_id +
 // a `members` uuid[] array — no junction table). Every endpoint resolves
 // a community to its real member set and aggregates that set's trades
-// over the last 7 days. Deterministic, no AI.
+// over a selectable range (7d / 30d / all). Deterministic, no AI.
 
 import { sbService } from './supabase.js';
 import { requirePro } from './auth.js';
 
-const WINDOW_DAYS = 7;
 const SESSIONS = ['Asia', 'London', 'NY AM', 'Lunch', 'NY PM'];
+const CONF_LABEL = { 5: 'Locked In', 4: 'Strong Read', 3: 'Conviction', 2: 'Hesitant', 1: 'Coin Flip' };
+const EMO_LABEL  = { 5: 'Low Cortisol', 4: 'Relaxed', 3: 'Neutral', 2: 'Elevated', 1: 'High Cortisol' };
+
+// ── range ───────────────────────────────────────────────────────────
+export function parseRange(v) {
+  return (v === '30d' || v === 'all') ? v : '7d';
+}
+function rangeDays(range) {
+  if (range === '30d') return 30;
+  if (range === 'all') return null;   // no cutoff
+  return 7;
+}
 
 // ── normalization helpers ───────────────────────────────────────────
 function num(v) { const n = Number(v); return Number.isFinite(n) ? n : null; }
@@ -30,7 +41,6 @@ function signedR(t) {
   if (rr == null || rr === 0 || p == null) return null;
   return Math.abs(rr) * (p >= 0 ? 1 : -1);
 }
-function totalQty(t) { return (num(t.qty) || 1) * (num(t.accounts) || 1); }
 function mean(a) { return a.length ? a.reduce(function (s, x) { return s + x; }, 0) / a.length : null; }
 function round(n, d) { if (n == null || !Number.isFinite(n)) return null; const f = Math.pow(10, d || 0); return Math.round(n * f) / f; }
 function sessionOf(t) {
@@ -56,10 +66,19 @@ function confsOf(t) {
   }
   return out;
 }
+function comboPairs(t) {
+  const cs = confsOf(t), pairs = [];
+  for (let i = 0; i < cs.length; i++) {
+    for (let j = i + 1; j < cs.length; j++) {
+      let a = cs[i], b = cs[j];
+      if ((a.name + a.tf) > (b.name + b.tf)) { const tmp = a; a = b; b = tmp; }
+      pairs.push({ key: a.name + '(' + a.tf + ')+' + b.name + '(' + b.tf + ')', a: a, b: b });
+    }
+  }
+  return pairs;
+}
 
 // ── membership ──────────────────────────────────────────────────────
-// A community's full member set — the members[] array plus the owner
-// (the union; the owner is not always present in members[]).
 export function communityMemberIds(row) {
   const ids = {};
   if (row && Array.isArray(row.members)) {
@@ -69,7 +88,6 @@ export function communityMemberIds(row) {
   return Object.keys(ids);
 }
 
-// One community row by id, or null.
 export async function loadCommunity(id) {
   const { data, error } = await sbService()
     .from('communities').select('id, name, owner_id, members, created_at')
@@ -78,18 +96,23 @@ export async function loadCommunity(id) {
   return data || null;
 }
 
-// Last-7-day trades for a set of member user_ids.
-export async function loadMemberTrades(memberIds) {
+// Trades for a set of member user_ids over the chosen range.
+export async function loadMemberTrades(memberIds, range) {
   if (!memberIds || !memberIds.length) return [];
   const { data, error } = await sbService()
     .from('trades').select('trade_data, account_type, created_at, user_id')
     .in('user_id', memberIds);
   if (error) throw new Error('trades read failed: ' + error.message);
-  const cutoff = Date.now() - WINDOW_DAYS * 864e5;
-  return (data || []).map(normTrade).filter(function (t) {
-    const d = effDate(t); const ms = d ? Date.parse(d + 'T12:00:00Z') : 0;
-    return ms >= cutoff;
-  });
+  let rows = (data || []).map(normTrade);
+  const days = rangeDays(range);
+  if (days != null) {
+    const cutoff = Date.now() - days * 864e5;
+    rows = rows.filter(function (t) {
+      const d = effDate(t); const ms = d ? Date.parse(d + 'T12:00:00Z') : 0;
+      return ms >= cutoff;
+    });
+  }
+  return rows;
 }
 
 // ── aggregations ────────────────────────────────────────────────────
@@ -163,20 +186,14 @@ export function aggConfluence(trades) {
 export function aggCombos(trades) {
   const combo = {};
   trades.forEach(function (t) {
-    const cs = confsOf(t);
-    for (let i = 0; i < cs.length; i++) {
-      for (let j = i + 1; j < cs.length; j++) {
-        let a = cs[i], b = cs[j];
-        if ((a.name + a.tf) > (b.name + b.tf)) { const tmp = a; a = b; b = tmp; }
-        const key = a.name + '(' + a.tf + ')+' + b.name + '(' + b.tf + ')';
-        const e = combo[key] || (combo[key] = {
-          confluence_a: a.name, tf_a: a.tf, confluence_b: b.name, tf_b: b.tf, n: 0, wins: 0, rs: [],
-        });
-        e.n++;
-        if (isWin(t)) e.wins++;
-        const r = signedR(t); if (r != null) e.rs.push(r);
-      }
-    }
+    comboPairs(t).forEach(function (p) {
+      const e = combo[p.key] || (combo[p.key] = {
+        confluence_a: p.a.name, tf_a: p.a.tf, confluence_b: p.b.name, tf_b: p.b.tf, n: 0, wins: 0, rs: [],
+      });
+      e.n++;
+      if (isWin(t)) e.wins++;
+      const r = signedR(t); if (r != null) e.rs.push(r);
+    });
   });
   return Object.keys(combo).map(function (k) { return combo[k]; })
     .filter(function (e) { return e.n >= 3; })
@@ -193,48 +210,157 @@ export function aggCombos(trades) {
     .slice(0, 6);
 }
 
-export function aggContracts(trades) {
-  const avgAll = mean(trades.map(totalQty));
-  const avgW = mean(trades.filter(isWin).map(totalQty));
-  const avgL = mean(trades.filter(isLoss).map(totalQty));
-  let pct = 0;
-  if (avgW && avgL) pct = Math.round((avgL - avgW) / avgW * 100);
-  return {
-    avg_size: round(avgAll, 1) || 0,
-    avg_on_winners: round(avgW, 1) || 0,
-    avg_on_losers: round(avgL, 1) || 0,
-    percent_size_up_on_losers: pct,
-  };
-}
+// ── top performers ──────────────────────────────────────────────────
+// Ranks community members by net P&L over the range, takes the top 25%,
+// and profiles that cohort's trading behavior.
+export function topPerformers(trades, ctx) {
+  const memberIds = (ctx && ctx.memberIds) || [];
+  const total_count = memberIds.length;
+  if (total_count < 4) {
+    return { insufficient: true, total_count: total_count, top_count: 0 };
+  }
 
-export function aggCoach(trades) {
-  const sessions = aggSessions(trades);
-  const combos = aggCombos(trades);
-  const confs = aggConfluence(trades);
-  const best = sessions[0];
-  const observation = combos.length
-    ? 'The strongest combo across the community is ' + combos[0].confluence_a + ' (' + combos[0].tf_a +
-      ') + ' + combos[0].confluence_b + ' (' + combos[0].tf_b + ') — a ' + combos[0].win_rate +
-      '% win rate over ' + combos[0].trade_count + ' trades.'
-    : 'Members are still building this week — not enough tagged setups yet to surface a standout combo.';
-  const trend = (best && best.trade_count)
-    ? best.session + ' is carrying the community right now: ' + best.win_rate + '% win rate at ' +
-      (best.avg_rr >= 0 ? '+' : '') + best.avg_rr + ' average R:R.'
-    : 'Session data is still thin across the community this week.';
-  const worth_trying = confs.length
-    ? confs[0].confluence + ' (' + confs[0].tf + ') shows up on ' + confs[0].percentage_of_trades +
-      '% of logged trades — worth checking how it performs in your own log.'
-    : 'Tag confluences with timeframes on your trades to compare your edge against the community.';
+  const netBy = {}, tradesBy = {};
+  memberIds.forEach(function (id) { netBy[id] = 0; });
+  trades.forEach(function (t) {
+    if (!(t.user_id in netBy)) return;
+    netBy[t.user_id] += (num(t.pnl) || 0);
+    (tradesBy[t.user_id] || (tradesBy[t.user_id] = [])).push(t);
+  });
+  const ranked = memberIds.slice().sort(function (a, b) { return netBy[b] - netBy[a]; });
+  const top_count = Math.ceil(total_count * 0.25);
+  const topIds = ranked.slice(0, top_count);
+  const topSet = {}; topIds.forEach(function (id) { topSet[id] = 1; });
+  const topTrades = trades.filter(function (t) { return topSet[t.user_id]; });
+
+  if (!topTrades.length) {
+    return { insufficient: true, total_count: total_count, top_count: top_count };
+  }
+
+  // headline
+  const wins = topTrades.filter(isWin).length;
+  const rs = topTrades.map(signedR).filter(function (r) { return r != null; });
+  const topNet = topIds.reduce(function (s, id) { return s + (netBy[id] || 0); }, 0);
+  const headline_stats = {
+    win_rate: Math.round(wins / topTrades.length * 100),
+    avg_rr: rs.length ? round(mean(rs), 1) : 0,
+    avg_net_per_member: Math.round(topNet / top_count),
+    total_trades: topTrades.length,
+  };
+
+  // trades_per_day — per member: trades ÷ distinct active days
+  function memberTpd(id) {
+    const ts = tradesBy[id] || [];
+    if (!ts.length) return null;
+    const days = {};
+    ts.forEach(function (t) { const d = effDate(t); if (d) days[d] = 1; });
+    return ts.length / (Object.keys(days).length || 1);
+  }
+  const topTpd = topIds.map(memberTpd).filter(function (v) { return v != null; }).sort(function (a, b) { return a - b; });
+  let medianTpd = 0;
+  if (topTpd.length) {
+    const mid = Math.floor(topTpd.length / 2);
+    medianTpd = topTpd.length % 2 ? topTpd[mid] : (topTpd[mid - 1] + topTpd[mid]) / 2;
+  }
+  const m = Math.max(1, Math.round(medianTpd));
+  const allTpd = memberIds.map(memberTpd).filter(function (v) { return v != null; });
+  const trades_per_day = {
+    value: Math.max(0, m - 1) + '-' + (m + 1),
+    community_avg: allTpd.length ? Math.round(mean(allTpd)) : 0,
+  };
+
+  // top_setup — most common confluence pair
+  const comboCount = {};
+  topTrades.forEach(function (t) {
+    const seen = {};
+    comboPairs(t).forEach(function (p) {
+      if (seen[p.key]) return;
+      seen[p.key] = 1;
+      comboCount[p.key] = comboCount[p.key] ||
+        { confluence_a: p.a.name, tf_a: p.a.tf, confluence_b: p.b.name, tf_b: p.b.tf, n: 0 };
+      comboCount[p.key].n++;
+    });
+  });
+  let topCombo = null;
+  Object.keys(comboCount).forEach(function (k) { if (!topCombo || comboCount[k].n > topCombo.n) topCombo = comboCount[k]; });
+  const top_setup = topCombo ? {
+    confluence_a: topCombo.confluence_a, tf_a: topCombo.tf_a,
+    confluence_b: topCombo.confluence_b, tf_b: topCombo.tf_b,
+    percent_of_trades: Math.round(topCombo.n / topTrades.length * 100),
+  } : null;
+
+  // best_session
+  const sessCount = {};
+  topTrades.forEach(function (t) { const s = sessionOf(t); if (s) sessCount[s] = (sessCount[s] || 0) + 1; });
+  let bestSess = null, bestN = -1;
+  Object.keys(sessCount).forEach(function (s) { if (sessCount[s] > bestN) { bestN = sessCount[s]; bestSess = s; } });
+  const best_session = bestSess
+    ? { name: bestSess, percent_of_volume: Math.round(bestN / topTrades.length * 100) }
+    : null;
+
+  // grade_adherence
+  const gradeCount = {}; let graded = 0;
+  topTrades.forEach(function (t) {
+    const g = typeof t.grade === 'string' ? t.grade.trim().toUpperCase() : '';
+    if (!g) return;
+    graded++; gradeCount[g] = (gradeCount[g] || 0) + 1;
+  });
+  let grade_adherence;
+  if (graded) {
+    const aPct = Math.round(((gradeCount['A'] || 0) + (gradeCount['A+'] || 0)) / topTrades.length * 100);
+    if (aPct >= 80) {
+      grade_adherence = { value: 'A or A+', percent_of_entries: aPct };
+    } else {
+      let topG = null, topGN = -1;
+      Object.keys(gradeCount).forEach(function (g) { if (gradeCount[g] > topGN) { topGN = gradeCount[g]; topG = g; } });
+      grade_adherence = { value: topG || '—', percent_of_entries: Math.round(topGN / topTrades.length * 100) };
+    }
+  } else {
+    grade_adherence = { value: '—', percent_of_entries: 0 };
+  }
+
+  // pre_trade_state — confidence + emotion combo
+  const stateCount = {};
+  topTrades.forEach(function (t) {
+    const c = num(t.confidence), e = num(t.emotion);
+    if (c == null || e == null || !CONF_LABEL[c] || !EMO_LABEL[e]) return;
+    const key = c + '|' + e;
+    stateCount[key] = stateCount[key] || { label: CONF_LABEL[c] + ' + ' + EMO_LABEL[e], n: 0 };
+    stateCount[key].n++;
+  });
+  let topState = null;
+  Object.keys(stateCount).forEach(function (k) { if (!topState || stateCount[k].n > topState.n) topState = stateCount[k]; });
+  const pre_trade_state = topState
+    ? { value: topState.label, percent_of_entries: Math.round(topState.n / topTrades.length * 100) }
+    : { value: '—', percent_of_entries: 0 };
+
+  // takeaway — templated from the actual numbers
+  const parts = ['Top performers in your community take fewer trades'];
+  parts.push((top_setup && top_setup.percent_of_trades >= 40) ? 'on one specific setup' : 'across a few favored setups');
+  if (grade_adherence.value === 'A or A+' && grade_adherence.percent_of_entries >= 85) {
+    parts.push('only when it’s A or A+');
+  }
+  parts.push('in one specific session, with their head right');
+  const takeaway = parts.join(', ') + '. Less is more.';
+
   return {
-    observation: { title: 'Observation', body: observation },
-    trend: { title: 'Trend', body: trend },
-    worth_trying: { title: 'Worth Trying', body: worth_trying },
+    top_count: top_count,
+    total_count: total_count,
+    headline_stats: headline_stats,
+    behaviors: {
+      trades_per_day: trades_per_day,
+      top_setup: top_setup,
+      best_session: best_session,
+      grade_adherence: grade_adherence,
+      pre_trade_state: pre_trade_state,
+    },
+    takeaway: takeaway,
   };
 }
 
 // ── endpoint wrapper ────────────────────────────────────────────────
 // Auth + Pro, resolve community_id → member set, authorize the caller is
-// a member, then aggregate that set's last-7-day trades via realFn.
+// a member, then aggregate that set's trades over `range` via realFn.
 export function communityEndpoint(realFn) {
   return async function (req, res) {
     if (req.method !== 'GET') {
@@ -245,6 +371,7 @@ export function communityEndpoint(realFn) {
     if (!user) return;
     const cid = (req.query && req.query.community_id) ? String(req.query.community_id) : null;
     if (!cid) { res.status(400).json({ error: 'community_id required' }); return; }
+    const range = parseRange(req.query && req.query.range);
 
     let row;
     try {
@@ -264,8 +391,8 @@ export function communityEndpoint(realFn) {
 
     let payload;
     try {
-      const trades = await loadMemberTrades(memberIds);
-      payload = realFn(trades, { memberCount: memberIds.length });
+      const trades = await loadMemberTrades(memberIds, range);
+      payload = realFn(trades, { memberCount: memberIds.length, memberIds: memberIds, range: range });
     } catch (e) {
       console.error('[community] aggregation failed:', e && e.message);
       res.status(500).json({ error: 'aggregation failed' });
