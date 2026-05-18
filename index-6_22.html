@@ -5086,14 +5086,6 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 .rv-lib-name{font-size:12.5px;color:#f0efea;font-weight:500}
 .rv-lib-desc{font-size:11px;color:#8a8a82;line-height:1.45}
 /* sidebar Rules pill */
-.sb-rules-pill{display:flex;align-items:center;gap:7px;margin:0 0 8px;padding:8px 11px;border-radius:7px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);cursor:pointer;font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase}
-.sb-rules-pill:hover{border-color:rgba(255,255,255,0.16)}
-.sb-rules-pill-l{color:#9a9a92;flex:1}
-.sb-rules-pill-v{color:#e8e7e2;font-weight:600}
-.sb-rules-pill-icon{color:#9a9a92}
-.sb-rules-pill.good .sb-rules-pill-v,.sb-rules-pill.good .sb-rules-pill-icon{color:#5fb389}
-.sb-rules-pill.bad .sb-rules-pill-v,.sb-rules-pill.bad .sb-rules-pill-icon{color:#c95f5f}
-.sb-rules-pill.mid .sb-rules-pill-v,.sb-rules-pill.mid .sb-rules-pill-icon{color:#f5d77c}
 /* responsive */
 @media (max-width:900px){
   .rv{padding:24px 22px 52px}
@@ -9044,11 +9036,6 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
   <!-- Bottom zone — Upgrade (free only) · divider · Settings · user chip -->
   <div class="sb-foot">
-    <div class="sb-rules-pill" id="sb-rules-pill" style="display:none" onclick="goTo('analytics')">
-      <span class="sb-rules-pill-l">Rules</span>
-      <span class="sb-rules-pill-v" id="sb-rules-pill-v">&mdash;</span>
-      <span class="sb-rules-pill-icon" id="sb-rules-pill-icon">&#10003;</span>
-    </div>
     <div class="ni ni-upgrade" data-page="upgrade" onclick="goTo('upgrade')"><svg viewBox="0 0 16 16" fill="currentColor" stroke="none"><polygon points="8,1.5 9.8,5.9 14.5,6.3 10.9,9.4 12,14 8,11.5 4,14 5.1,9.4 1.5,6.3 6.2,5.9"/></svg><span class="ni-label">Upgrade</span></div>
     <div class="sb-divider"></div>
     <div class="ni" data-page="account" onclick="goTo('account')"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.4"/><path d="M8 1.6v2.1M8 12.3v2.1M3.5 3.5l1.5 1.5M11 11l1.5 1.5M1.6 8h2.1M12.3 8h2.1M3.5 12.5l1.5-1.5M11 5l1.5-1.5"/></svg><span class="ni-label">Settings</span></div>
@@ -22397,10 +22384,9 @@ function rvTab(name){
 }
 window.rvTab = rvTab;
 
-// renderAnalytics — called by goTo('analytics') + renderAll. Keeps the
-// sidebar pill fresh; loads whichever Review tab is active.
+// renderAnalytics — called by goTo('analytics') + renderAll. Loads
+// whichever Review tab is active.
 function renderAnalytics(){
-  rvRefreshSidebarPill();
   if(_rvState.tab === 'rules') rvLoadRules();
   else if(_rvState.tab === 'community') rvLoadCommunity();
   else rvLoadPersonal();
@@ -22708,7 +22694,7 @@ function rvPersonalPaywallHtml(){
    COMMUNITY TAB (Session 5) — 5 sections rendered from /api/community/*
    ═══════════════════════════════════════════════════════════════════ */
 var _rvCommunity = { loaded:false, id:null, range:'7d', list:[], data:null };
-var RVC_THRESHOLD = { '7d':50, '30d':150, 'all':500 };
+var RVC_THRESHOLD = { '7d':50, '30d':150, 'all':100 };
 var RVC_RANGE_LABEL = { '7d':'last 7 days', '30d':'last 30 days', 'all':'all time' };
 
 function rvcNum(n){ n = Number(n); return Number.isFinite(n) ? n.toLocaleString('en-US') : '—'; }
@@ -23069,18 +23055,17 @@ function rvRenderRulesTab(){
 
 // ── Discipline Circle ───────────────────────────────────────────────
 function rvDisciplineHtml(){
-  var o = (_rvState.scorecard && _rvState.scorecard.overall) || null;
+  var sc = _rvState.scorecard || {};
+  var o = sc.overall || null;
   var pct = o ? o.adherence_pct : null;
   var pctNum = pct==null ? 0 : pct;
   var C = 2 * Math.PI * 86;
   var dash = (pctNum/100) * C;
-  var scRules = (_rvState.scorecard && _rvState.scorecard.rules) || [];
-  var brokenSet = {};
-  scRules.forEach(function(r){ if(r.broken > 0) brokenSet[r.rule_id] = true; });
-  var active = _rvState.rules.filter(function(r){ return r.is_active; });
-  var clean = active.filter(function(r){ return !brokenSet[r.id]; }).length;
-  var cost = o ? o.cost_impact : 0;
-  var costLine = (cost < 0) ? ' &middot; <span class="rv-disc-cost">'+rvMoney(cost)+' from breaks</span>' : '';
+  var n = Number(sc.rules_followed_this_week)||0;
+  var m = Number(sc.rules_total_this_week)||0;
+  var db = Number(sc.days_broken_this_week)||0;
+  var sub = n+' of '+m+' rules followed this week'+
+    (db>0 ? ' &middot; '+db+' day'+(db===1?'':'s')+' broken' : '');
   return '<section class="rv-disc">'+
     '<div class="rv-donut">'+
       '<svg viewBox="0 0 200 200">'+
@@ -23091,7 +23076,7 @@ function rvDisciplineHtml(){
       '<div class="rv-donut-c"><div class="rv-donut-pct">'+(pct==null?'—':pctNum+'%')+'</div>'+
         '<div class="rv-donut-l">Followed</div></div>'+
     '</div>'+
-    '<div class="rv-disc-sub">'+clean+' of '+active.length+' rules followed this week'+costLine+'</div>'+
+    '<div class="rv-disc-sub">'+sub+'</div>'+
   '</section>';
 }
 
@@ -23172,7 +23157,6 @@ async function rvSaveReview(){
   if(btn){ btn.textContent = 'Save Review'; }
   if(r.ok){
     var n = document.getElementById('rv-saved-note'); if(n) n.style.display = '';
-    rvRefreshSidebarPill();
     setTimeout(rvLoadRules, 700);
   } else {
     if(btn) btn.disabled = false;
@@ -23222,13 +23206,13 @@ function rvActiveRulesHtml(){
 }
 async function rvToggleRule(id, makeActive){
   await rvFetch('/api/rules/'+id, { method:'PATCH', body:{ is_active: !!makeActive } });
-  rvLoadRules(); rvRefreshSidebarPill();
+  rvLoadRules();
 }
 window.rvToggleRule = rvToggleRule;
 async function rvDeleteRule(id){
   if(!confirm('Delete this rule? Its evaluation history is removed too.')) return;
   await rvFetch('/api/rules/'+id, { method:'DELETE' });
-  rvLoadRules(); rvRefreshSidebarPill();
+  rvLoadRules();
 }
 window.rvDeleteRule = rvDeleteRule;
 
@@ -23267,7 +23251,7 @@ async function rvAddOwnRule(){
     name:name, description:desc||null, cadence:_rvAddCadence,
     condition:{ type:'subjective_check' }
   }});
-  if(r.ok){ _rvAddCadence='intra_day'; rvLoadRules(); rvRefreshSidebarPill(); }
+  if(r.ok){ _rvAddCadence='intra_day'; rvLoadRules(); }
   else if(typeof toast==='function') toast('Couldn’t add rule');
 }
 window.rvAddOwnRule = rvAddOwnRule;
@@ -23288,21 +23272,6 @@ function rvPaywallHtml(){
 }
 
 // ── Sidebar discipline pill ─────────────────────────────────────────
-async function rvRefreshSidebarPill(){
-  var pill = document.getElementById('sb-rules-pill');
-  if(!pill) return;
-  var r = await rvFetch('/api/rules/weekly-scorecard');
-  var o = r.ok && r.data && r.data.overall;
-  var resolved = o ? (o.followed + o.broken) : 0;
-  if(!o || resolved === 0){ pill.style.display = 'none'; return; }
-  pill.style.display = '';
-  var v = document.getElementById('sb-rules-pill-v');
-  if(v) v.textContent = o.followed + '/' + resolved;
-  var pct = o.adherence_pct;
-  pill.classList.remove('good','mid','bad');
-  pill.classList.add(pct>70 ? 'good' : (pct<50 ? 'bad' : 'mid'));
-}
-
 // ── Review prompt — daily (M-Th, after 4 PM ET) + weekly (Friday) ───
 var _rv4pmDismissKey = null;
 async function rvCheck4pmPopup(){
@@ -23372,8 +23341,7 @@ function rvGo4pmReview(){
 }
 window.rvGo4pmReview = rvGo4pmReview;
 
-// Warm the sidebar pill + run the 4 PM check once auth has settled.
-setTimeout(function(){ try{ rvRefreshSidebarPill(); }catch(e){} }, 2600);
+// Run the review-prompt check once auth has settled.
 setTimeout(function(){ try{ rvCheck4pmPopup(); }catch(e){} }, 4200);
 
 function showAnalyticsPanel(name, btn){

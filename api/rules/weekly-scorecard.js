@@ -33,8 +33,10 @@ export default async function handler(req, res) {
   const evals = data || [];
   const byRule = {};
   let oFollowed = 0, oBroken = 0, oPending = 0, oCost = 0;
+  const brokenDays = {};   // distinct trading_days with a broken eval
 
   for (const e of evals) {
+    if (e.status === 'broken' && e.trading_day) brokenDays[e.trading_day] = 1;
     const r = byRule[e.rule_id] || (byRule[e.rule_id] = {
       rule_id: e.rule_id,
       name: (e.rules && e.rules.name) || 'Rule',
@@ -70,6 +72,9 @@ export default async function handler(req, res) {
       adherence_pct: oResolved ? Math.round((oFollowed / oResolved) * 100) : null,
       cost_impact: Math.round(oCost * 100) / 100,
     },
+    rules_followed_this_week: oFollowed,
+    rules_total_this_week: oResolved,
+    days_broken_this_week: Object.keys(brokenDays).length,
     rules,
   });
 }
