@@ -380,6 +380,60 @@ export function topPerformers(trades, ctx) {
   };
 }
 
+// ── trader of the day ───────────────────────────────────────────────
+// The member with the highest net P&L across their trades dated today
+// (server UTC date). Tie-break: most recent trade (latest created_at).
+// Returns null when no member has a trade dated today. The winner's
+// trades are returned chronologically, numbered 1..N. Username and the
+// privacy hash are resolved by the endpoint, not here.
+export function traderOfTheDay(trades) {
+  const today = new Date().toISOString().slice(0, 10);
+  const todays = trades.filter(function (t) { return effDate(t) === today; });
+  if (!todays.length) return null;
+
+  const byUser = {};
+  todays.forEach(function (t) {
+    const uid = t.user_id;
+    if (!uid) return;
+    const e = byUser[uid] || (byUser[uid] = { user_id: uid, net: 0, trades: [] });
+    e.net += (num(t.pnl) || 0);
+    e.trades.push(t);
+  });
+  const users = Object.keys(byUser).map(function (k) { return byUser[k]; });
+  if (!users.length) return null;
+
+  function lastTs(u) {
+    return u.trades.reduce(function (m, t) {
+      const ms = Date.parse(t.created_at || '') || 0;
+      return ms > m ? ms : m;
+    }, 0);
+  }
+  users.sort(function (a, b) {
+    if (b.net !== a.net) return b.net - a.net;        // highest net P&L
+    return lastTs(b) - lastTs(a);                     // tie-break: most recent
+  });
+  const win = users[0];
+
+  const ordered = win.trades.slice().sort(function (a, b) {
+    return (Date.parse(a.created_at || '') || 0) - (Date.parse(b.created_at || '') || 0);
+  });
+  const trades_today = ordered.map(function (t, i) {
+    const accts = num(t.accounts);
+    return {
+      trade_number: i + 1,
+      symbol: (typeof t.sym === 'string' && t.sym.trim()) ? t.sym.trim() : '—',
+      contracts: num(t.qty),
+      accounts: (accts != null && accts > 1) ? accts : null,
+      points: num(t.points),
+    };
+  });
+  return {
+    user_id: win.user_id,
+    net_pnl_today: round(win.net, 2),
+    trades_today: trades_today,
+  };
+}
+
 // ── endpoint wrapper ────────────────────────────────────────────────
 // Auth + Pro, resolve community_id → member set, authorize the caller is
 // a member, then aggregate that set's trades over `range` via realFn.
