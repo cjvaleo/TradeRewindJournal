@@ -9779,6 +9779,9 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
              its own row (Session auto-calc'd per row, Account/Confluences/
              Screenshots set per-row in the inline enrich zone). -->
 
+        <!-- Session 15 — Import All blocking error banner -->
+        <div id="ci-import-error" class="ci-import-err" style="display:none"></div>
+
         <!-- Day-grouped trade list -->
         <div id="ci-days-container" class="ci-days-container"></div>
 
@@ -20284,6 +20287,22 @@ document.addEventListener('DOMContentLoaded', function(){
     cem.addEventListener('change', cemLive);
     cem.addEventListener('click',  cemLive);
   }
+  // Session 15 — CSV import enrich zone: refresh the expanded row's status
+  // + live-clear its field errors on any input/change/click.
+  var ai = document.getElementById('mode-ai');
+  if(ai){
+    var aiLive = function(){
+      setTimeout(function(){
+        if(typeof ciExpandedRowIdx !== 'undefined' && ciExpandedRowIdx >= 0
+           && typeof ciUpdateRowStatus === 'function'){
+          ciUpdateRowStatus(ciExpandedRowIdx);
+        }
+      }, 0);
+    };
+    ai.addEventListener('input',  aiLive);
+    ai.addEventListener('change', aiLive);
+    ai.addEventListener('click',  aiLive);
+  }
 });
 
 /* ── LOG CONFIRM / RESET ── */
@@ -21362,7 +21381,7 @@ function importCsvTrades(){
 
     var newTrade = {
       id: tradeId,
-      sym: rwStripSym(t.sym),
+      sym: rwStripSym(((e.sym && String(e.sym).trim()) || t.sym) || ''),
       type: t.direction || t.type || 'long',
       entry: t.entry, exit: t.exit, stop: eStop, qty: t.qty,
       accounts: accounts > 1 ? accounts : undefined,
@@ -21469,6 +21488,9 @@ function discardAiScan(){
   if (err) err.style.display = 'none';
   var fi = document.getElementById('ai-file-input');
   if (fi) fi.value = '';
+  // Session 15 — reset the Import All blocking state + banner.
+  _ciImportAttempted = false;
+  if (typeof ciHideImportError === 'function') ciHideImportError();
   if (typeof ciSwapToEmpty === 'function') ciSwapToEmpty();
 }
 
@@ -21668,7 +21690,13 @@ function ciRenderRow(t, idx){
   var sideLabel = sideRaw === 'long' ? 'Long' : sideRaw === 'short' ? 'Short' : '';
   var sideTier = sideRaw === 'long' ? 'sage' : sideRaw === 'short' ? 'rose' : '';
   var enriched = ciIsRowEnriched(idx);
-  var statusIcon = enriched ? '&#10003;' : '&#9675;';
+  // Session 15 — 3-state required-field status (✓ complete / ◐ partial / ⚠ incomplete).
+  var rowState = ciRowState(idx);
+  var rowMiss = ciValidateRow(idx).missing;
+  var statusCls = rowState === 'complete' ? 'enriched' : rowState === 'partial' ? 'partial' : 'incomplete';
+  var statusIcon = rowState === 'complete' ? '&#10003;' : rowState === 'partial' ? '&#9680;' : '&#9888;';
+  var statusTitle = rowState === 'complete' ? 'All required fields complete'
+    : 'Incomplete — missing: ' + rowMiss.map(function(m){ return m.label; }).join(', ');
   var time = ciFmtTime(t);
 
   // Mini confluence pills if row has any (per-row only; no bulk fallback
@@ -21696,7 +21724,7 @@ function ciRenderRow(t, idx){
 
   return '<div class="ci-row" data-idx="'+idx+'">' +
     '<div class="ci-row-head" onclick="ciToggleRowEnrich('+idx+')">' +
-      '<span class="ci-row-status '+(enriched?'enriched':'pending')+'">'+statusIcon+'</span>' +
+      '<span class="ci-row-status '+statusCls+'" title="'+ciEsc(statusTitle)+'">'+statusIcon+'</span>' +
       (time ? '<span class="ci-row-time">'+ciEsc(time)+'</span>' : '') +
       '<span class="ci-row-sym">'+ciEsc(t.sym||'—')+'</span>' +
       (sideLabel ? '<span class="ci-row-side '+sideTier+'">'+sideArrow+' '+sideLabel+'</span>' : '') +
@@ -21754,6 +21782,9 @@ function ciToggleRowEnrich(idx){
     }
     cfRenderPills(csvRowConfluencesState);
     cfRenderTFChips(csvRowConfluencesState);
+    // Session 15 — if Import All was already attempted, paint this row's
+    // missing-field errors as soon as it expands.
+    if(_ciImportAttempted) ciPaintRowErrors(idx);
   }
 }
 window.ciToggleRowEnrich = ciToggleRowEnrich;
@@ -21838,12 +21869,19 @@ function ciRenderEnrichZone(idx){
   var pnlCls   = pnlN > 0 ? 'win' : pnlN < 0 ? 'loss' : '';
   var pxTxt    = (entryN != null && exitN != null)
     ? (entryN.toFixed(2) + ' → ' + exitN.toFixed(2)) : '—';
+  // Session 15 — Symbol is editable; e.sym holds the user override (if any),
+  // otherwise the parsed CSV symbol. The rest of the broker row stays read-only.
+  var symVal = (e.sym != null && e.sym !== '') ? e.sym : (rwStripSym(t.sym) || '');
   var brokerHeader =
     '<div class="ci-bh">' +
       '<div class="ci-bh-row">' +
         '<span class="ci-bh-date">' + ciEsc(ciBrokerDateTime(t)) + '</span>' +
         '<span class="ci-bh-symdir ' + sideCls + '">' +
-          '<span class="ci-bh-sym">' + ciEsc(rwStripSym(t.sym) || '—') + '</span>' +
+          '<input class="ci-bh-sym ci-bh-sym-input" type="text" maxlength="14" '+
+            'value="' + ciEsc(symVal) + '" data-idx="' + idx + '" '+
+            'title="Symbol — editable" '+
+            'onclick="event.stopPropagation()" '+
+            'oninput="ciOnEnrichSym(' + idx + ', this.value)"/>' +
           '<span class="ci-bh-dir">' + sideTxt + '</span>' +
         '</span>' +
       '</div>' +
@@ -21884,22 +21922,37 @@ function ciRenderEnrichZone(idx){
     '<div class="ci-cols">' +
     /* ── LEFT — Account Type + Session ── */
     '<div class="ci-col">' +
-    /* ── Account Type ── */
-    '<div class="rw-field">' +
-      '<div class="rw-field-l">Account Type <span class="rw-mod-opt">optional</span></div>' +
+    /* ── Account Type (Session 15 — now required) ── */
+    '<div class="rw-field" id="csv-f-acct">' +
+      '<div class="rw-field-l">Account Type</div>' +
       buildAccountTypeChips('csv', e.account_type) +
     '</div>' +
-    /* ── Session ── */
-    '<div class="rw-field">' +
-      '<div class="rw-field-l">Session <span class="rw-mod-opt">'+(e.session?'auto-detected':'optional')+'</span></div>' +
+    /* ── Session (Session 15 — now required) ── */
+    '<div class="rw-field" id="csv-f-session">' +
+      '<div class="rw-field-l">Session</div>' +
       buildSessionPicker('csv', e.session) +
+    '</div>' +
+    /* ── Stop Loss + # of Accounts (Session 15 — optional, parity) ── */
+    '<div class="rw-grid rw-grid-exec-pair">' +
+      '<div class="rw-field">' +
+        '<div class="rw-field-l">Stop Loss <span class="rw-mod-opt">optional</span></div>' +
+        '<input class="rw-input rw-numeric ci-enrich-stop" type="number" step="any" placeholder="points" '+
+          'value="' + (e.stop != null ? ciEsc(String(e.stop)) : '') + '" '+
+          'onclick="event.stopPropagation()" oninput="ciOnEnrichStop(' + idx + ', this.value)"/>' +
+      '</div>' +
+      '<div class="rw-field">' +
+        '<div class="rw-field-l"># of Accounts <span class="rw-mod-opt">optional</span></div>' +
+        '<input class="rw-input rw-numeric ci-enrich-accounts" type="number" min="1" step="1" placeholder="1" '+
+          'value="' + (e.accounts != null ? ciEsc(String(e.accounts)) : '') + '" '+
+          'onclick="event.stopPropagation()" oninput="ciOnEnrichAccounts(' + idx + ', this.value)"/>' +
+      '</div>' +
     '</div>' +
     '</div>' + /* /ci-col (left) */
     /* ── RIGHT — Evidence + Analysis ── */
     '<div class="ci-col">' +
     /* ── EVIDENCE — chart proof ── */
     buildSectionHeader('Evidence') +
-    '<div class="rw-field">' +
+    '<div class="rw-field" id="csv-f-evidence">' +
       '<div class="rw-field-l">Chart evidence</div>' +
       '<div class="rw-dropzone ci-enrich-dropzone" '+
            'onclick="event.stopPropagation();document.getElementById(\'csv-row-img-input\').click()" '+
@@ -21928,7 +21981,7 @@ function ciRenderEnrichZone(idx){
     buildSectionHeader('Analysis') +
     '<div class="rw-field" id="csv-row-cf-section">' +
         '<div class="rw-field-l rw-field-l-flex">' +
-          '<span>Confluences <span class="rw-mod-opt">optional</span></span>' +
+          '<span>Confluences</span>' +
           '<span class="cf-count" id="csv-row-cf-count">0 added</span>' +
         '</div>' +
         '<div class="cf-pills" id="csv-row-cf-pills" onclick="event.stopPropagation();cfTogglePicker(undefined, csvRowConfluencesState)">' +
@@ -21939,7 +21992,7 @@ function ciRenderEnrichZone(idx){
       '</div>' +
     /* Notes — part of the Analysis column. Inline oninput retained, but
        the primary binding is via addEventListener below. */
-    '<div class="rw-field">' +
+    '<div class="rw-field" id="csv-f-notes">' +
       '<div class="rw-field-l">Notes</div>' +
       '<textarea class="rw-input rw-textarea ci-enrich-notes" data-idx="'+idx+'" '+
                 'placeholder="What happened? Setup, decision, lessons…" '+
@@ -21947,10 +22000,10 @@ function ciRenderEnrichZone(idx){
     '</div>' +
     '</div>' + /* /ci-col (right) */
     '</div>' + /* /ci-cols */
-    /* ── REFLECTION — post-trade journaling (Session 14, full width) ── */
+    /* ── REFLECTION — post-trade journaling (Session 14/15, full width) ── */
     buildSectionHeader('Reflection') +
-    '<div class="rw-field">' +
-      '<div class="rw-field-l">Reflection <span class="rw-mod-opt">optional</span></div>' +
+    '<div class="rw-field" id="csv-f-reflection">' +
+      '<div class="rw-field-l">Reflection</div>' +
       '<textarea class="rw-input rw-textarea ci-enrich-reflection" data-idx="'+idx+'" '+
                 'placeholder="What did you learn from this trade? How did you feel?" '+
                 'oninput="ciOnEnrichReflection('+idx+', this.value)">'+ciEsc(e.reflection||'')+'</textarea>' +
@@ -22107,6 +22160,7 @@ function ciReflSession(name){
       pills[i].classList.toggle('active', on);
     }
   }
+  ciUpdateRowStatus(idx);
   ciUpdateCounters();
 }
 function ciReflAccount(key){
@@ -22371,6 +22425,35 @@ function ciOnEnrichReflection(idx, value){
 }
 window.ciOnEnrichReflection = ciOnEnrichReflection;
 
+// Session 15 — editable Symbol in the CSV broker header.
+function ciOnEnrichSym(idx, value){
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  e.sym = value || '';
+  // Mirror into the collapsed row header so it stays in sync.
+  var row = document.querySelector('#mode-ai .ci-row[data-idx="'+idx+'"]');
+  if(row){
+    var sh = row.querySelector('.ci-row-sym');
+    if(sh) sh.textContent = (typeof rwStripSym==='function' ? rwStripSym(e.sym) : e.sym) || '—';
+  }
+  ciUpdateRowStatus(idx);
+  ciUpdateCounters();
+}
+window.ciOnEnrichSym = ciOnEnrichSym;
+
+// Session 15 — optional Stop Loss / # of Accounts enrich fields.
+function ciOnEnrichStop(idx, value){
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  var n = parseFloat(value);
+  e.stop = isNaN(n) ? null : n;
+}
+window.ciOnEnrichStop = ciOnEnrichStop;
+function ciOnEnrichAccounts(idx, value){
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  var n = parseInt(value, 10);
+  e.accounts = isNaN(n) ? null : n;
+}
+window.ciOnEnrichAccounts = ciOnEnrichAccounts;
+
 /* Chunk 5 v3 bug fix — capture any DOM-side textarea/input values from the
    currently-expanded row's enrich zone into csvEnrichment[idx], in case
    `oninput` didn't get a chance to fire for the very last keystroke before
@@ -22396,9 +22479,120 @@ function ciSnapshotExpandedRowInputs(){
     if(reflEl) e.reflection = reflEl.value || '';
     var tvEl = zone.querySelector('.rw-tv-input');
     if(tvEl) e.tradingview_link = (tvEl.value || '').trim();
+    // Session 15 — editable Symbol + optional Stop Loss / # of Accounts.
+    var symEl = row.querySelector('.ci-bh-sym-input');
+    if(symEl) e.sym = symEl.value || '';
+    var stopEl = zone.querySelector('.ci-enrich-stop');
+    if(stopEl){ var sn = parseFloat(stopEl.value); e.stop = isNaN(sn) ? null : sn; }
+    var acctEl = zone.querySelector('.ci-enrich-accounts');
+    if(acctEl){ var an = parseInt(acctEl.value, 10); e.accounts = isNaN(an) ? null : an; }
   });
 }
 window.ciSnapshotExpandedRowInputs = ciSnapshotExpandedRowInputs;
+
+/* ═══════════════════════════════════════════════════════════════════
+   SESSION 15 — CSV import required-field validation
+   The CSV enrich zone now enforces the same 9 required fields as the
+   Log Trade form. Per-trade ⚠/◐/✓ indicator; Import All blocks until
+   every trade is complete.
+   ═══════════════════════════════════════════════════════════════════ */
+
+// True once the user has clicked Import All with incomplete trades —
+// makes newly-expanded rows paint their field errors.
+var _ciImportAttempted = false;
+
+// Per-field error copy for the CSV enrich zone (mirrors Log Trade).
+var CSV_FIELD_MSG = {
+  'csv-f-sym':       'Symbol required',
+  'csv-f-session':   'Select a session',
+  'csv-f-acct':      'Select account type',
+  'csv-f-reflection':'Write a reflection on this trade',
+  'csv-f-evidence':  'Upload a screenshot or paste a TradingView link',
+  'csv-row-cf-section':'Add at least 1 confluence and a note'
+};
+
+// Validate one parsed/enriched CSV trade against the 9 required fields.
+// Returns { missing:[{label,field}] }. Entry/Exit/Contracts come from the
+// CSV and are essentially always present; Symbol defaults to the CSV value.
+function ciValidateRow(idx){
+  var e = csvEnrichment[idx] || {};
+  var t = csvParsedTrades[idx] || {};
+  var miss = [];
+  var symV = (e.sym != null && e.sym !== '') ? e.sym : t.sym;
+  if(!symV || !String(symV).trim()) miss.push({label:'Symbol', field:'csv-f-sym'});
+  if(!String(e.session||'').trim()) miss.push({label:'Session', field:'csv-f-session'});
+  if(['paper','eval','funded','live'].indexOf(String(e.account_type||'').toLowerCase()) < 0)
+    miss.push({label:'Account Type', field:'csv-f-acct'});
+  if(isNaN(parseFloat(t.entry))) miss.push({label:'Entry', field:'csv-f-entry'});
+  if(isNaN(parseFloat(t.exit)))  miss.push({label:'Exit', field:'csv-f-exit'});
+  var q = parseFloat(t.qty); if(isNaN(q) || q <= 0) miss.push({label:'# of Contracts', field:'csv-f-qty'});
+  if(!String(e.reflection||'').trim()) miss.push({label:'Reflection', field:'csv-f-reflection'});
+  var hasShot = Array.isArray(e.images) && e.images.length >= 1;
+  var hasTV = e.tradingview_link && typeof _TV_LINK_RE !== 'undefined'
+    && _TV_LINK_RE.test(e.tradingview_link);
+  if(!hasShot && !hasTV) miss.push({label:'Evidence', field:'csv-f-evidence'});
+  var hasCf = Array.isArray(e.confluences) && e.confluences.length >= 1;
+  var hasNotes = !!String(e.notes||'').trim();
+  if(!hasCf || !hasNotes) miss.push({label:'Analysis', field:'csv-row-cf-section'});
+  return { missing: miss };
+}
+window.ciValidateRow = ciValidateRow;
+
+// 3-state row status: 'complete' | 'partial' | 'empty'.
+function ciRowState(idx){
+  if(!ciValidateRow(idx).missing.length) return 'complete';
+  var e = csvEnrichment[idx] || {};
+  var started = !!(String(e.session||'').trim() || e.account_type
+    || String(e.reflection||'').trim()
+    || (Array.isArray(e.images) && e.images.length)
+    || (e.tradingview_link && String(e.tradingview_link).trim())
+    || (Array.isArray(e.confluences) && e.confluences.length)
+    || String(e.notes||'').trim());
+  return started ? 'partial' : 'empty';
+}
+
+// Paint red inline errors on the (expanded) row's missing fields.
+function ciPaintRowErrors(idx){
+  if(idx !== ciExpandedRowIdx) return;
+  var miss = {};
+  ciValidateRow(idx).missing.forEach(function(m){ miss[m.field] = 1; });
+  ['csv-f-session','csv-f-acct','csv-f-reflection','csv-f-evidence','csv-row-cf-section','csv-f-notes']
+    .forEach(function(fid){
+      var el = document.getElementById(fid);
+      if(!el) return;
+      // Notes shares the Analysis rule — flag it red (no separate message).
+      var key = (fid === 'csv-f-notes') ? 'csv-row-cf-section' : fid;
+      if(miss[key]) _rwMarkErr(el, (fid === 'csv-f-notes') ? '' : CSV_FIELD_MSG[fid]);
+      else _rwClearErr(el);
+    });
+  // Symbol lives in the broker header (an <input>, not a .rw-field).
+  var symEl = document.querySelector('#mode-ai .ci-row[data-idx="'+idx+'"] .ci-bh-sym-input');
+  if(symEl) symEl.classList.toggle('csv-sym-invalid', !!miss['csv-f-sym']);
+}
+
+// Clear-only pass — drops errors from fields that have become valid.
+function ciLiveClearRowErrors(idx){
+  if(idx !== ciExpandedRowIdx) return;
+  var zone = document.querySelector('#mode-ai .ci-row[data-idx="'+idx+'"] .ci-enrich');
+  if(!zone || !zone.querySelector('.rw-invalid, .csv-sym-invalid')) return;
+  var miss = {};
+  ciValidateRow(idx).missing.forEach(function(m){ miss[m.field] = 1; });
+  ['csv-f-session','csv-f-acct','csv-f-reflection','csv-f-evidence','csv-row-cf-section','csv-f-notes']
+    .forEach(function(fid){
+      var key = (fid === 'csv-f-notes') ? 'csv-row-cf-section' : fid;
+      if(!miss[key]) _rwClearErr(document.getElementById(fid));
+    });
+  var symEl = zone.querySelector('.ci-bh-sym-input');
+  if(symEl && !miss['csv-f-sym']) symEl.classList.remove('csv-sym-invalid');
+}
+
+// Clear ALL errors from the expanded row (used on collapse / re-render).
+function ciClearRowErrors(idx){
+  ['csv-f-session','csv-f-acct','csv-f-reflection','csv-f-evidence','csv-row-cf-section','csv-f-notes']
+    .forEach(function(fid){ _rwClearErr(document.getElementById(fid)); });
+  var symEl = document.querySelector('#mode-ai .ci-row[data-idx="'+idx+'"] .ci-bh-sym-input');
+  if(symEl) symEl.classList.remove('csv-sym-invalid');
+}
 
 function ciUpdateRowStatus(idx){
   // Cheaply re-flip just the row's status icon without re-rendering the
@@ -22407,11 +22601,54 @@ function ciUpdateRowStatus(idx){
   if(!row) return;
   var icon = row.querySelector('.ci-row-status');
   if(!icon) return;
-  var enriched = ciIsRowEnriched(idx);
-  icon.classList.toggle('enriched', enriched);
-  icon.classList.toggle('pending', !enriched);
-  icon.innerHTML = enriched ? '&#10003;' : '&#9675;';
+  var v = ciValidateRow(idx);
+  var state = ciRowState(idx);
+  icon.classList.remove('enriched','pending','partial','incomplete');
+  if(state === 'complete'){
+    icon.classList.add('enriched');
+    icon.innerHTML = '&#10003;';
+    icon.title = 'All required fields complete';
+  } else {
+    icon.classList.add(state === 'partial' ? 'partial' : 'incomplete');
+    icon.innerHTML = state === 'partial' ? '&#9680;' : '&#9888;';
+    icon.title = 'Incomplete — missing: ' + v.missing.map(function(m){ return m.label; }).join(', ');
+  }
+  // After a blocked Import All, keep every incomplete row's red highlight
+  // in sync and refresh the banner's live count.
+  if(_ciImportAttempted){
+    row.classList.toggle('ci-row-flagged', v.missing.length > 0);
+  }
+  // Live-clear field errors on the expanded row as fields become valid.
+  if(idx === ciExpandedRowIdx) ciLiveClearRowErrors(idx);
+  if(_ciImportAttempted) ciRefreshImportBanner();
 }
+
+// Import All blocking banner — recomputes the incomplete count live.
+function ciRefreshImportBanner(){
+  var banner = document.getElementById('ci-import-error');
+  var n = 0, total = csvParsedTrades.length;
+  for(var i = 0; i < total; i++){
+    if(ciValidateRow(i).missing.length) n++;
+  }
+  if(n === 0){
+    // All trades complete — retire the banner AND every row highlight.
+    _ciImportAttempted = false;
+    ciHideImportError();
+    return;
+  }
+  if(banner){
+    banner.textContent = n + ' of ' + total + ' trade' + (total > 1 ? 's' : '')
+      + ' have missing required data. Complete all trades before importing.';
+    banner.style.display = '';
+  }
+}
+function ciHideImportError(){
+  var b = document.getElementById('ci-import-error');
+  if(b) b.style.display = 'none';
+  document.querySelectorAll('#mode-ai .ci-row-flagged')
+    .forEach(function(r){ r.classList.remove('ci-row-flagged'); });
+}
+window.ciHideImportError = ciHideImportError;
 
 /* ── Bottom CTA: Discard / Import ───────────────────────────────────── */
 
@@ -22424,8 +22661,36 @@ window.ciDiscardAll = ciDiscardAll;
 
 function ciImportAll(){
   if(!csvParsedTrades.length) return;
-  // Hand off to the (updated) importCsvTrades which already loops + persists
-  // + auto-shares + journals. Returns to Phase A via discardAiScan inside it.
+  // Session 15 — flush any pending keystrokes from the expanded row, then
+  // validate EVERY trade. The button stays clickable (same UX as Log
+  // Trade's Save); a click with incomplete trades shows the error banner
+  // and jumps to the first offender instead of importing.
+  if(typeof ciSnapshotExpandedRowInputs === 'function') ciSnapshotExpandedRowInputs();
+  var incomplete = [];
+  for(var i = 0; i < csvParsedTrades.length; i++){
+    if(ciValidateRow(i).missing.length) incomplete.push(i);
+  }
+  if(incomplete.length){
+    _ciImportAttempted = true;
+    // Refresh every row's 3-state indicator + red highlight, and show the
+    // banner with the live incomplete count.
+    for(var j = 0; j < csvParsedTrades.length; j++) ciUpdateRowStatus(j);
+    // Jump to the first incomplete trade: un-collapse its day, expand it,
+    // paint its field errors, and scroll it into view.
+    var firstIdx = incomplete[0];
+    var row = document.querySelector('#mode-ai .ci-row[data-idx="'+firstIdx+'"]');
+    if(row){
+      var day = row.closest('.ci-day');
+      if(day) day.classList.remove('ci-day-collapsed');
+      if(!row.classList.contains('expanded')) ciToggleRowEnrich(firstIdx);
+      ciPaintRowErrors(firstIdx);
+      setTimeout(function(){ row.scrollIntoView({behavior:'smooth', block:'center'}); }, 60);
+    }
+    return;
+  }
+  // All trades complete — proceed with the normal import.
+  _ciImportAttempted = false;
+  ciHideImportError();
   importCsvTrades();
 }
 window.ciImportAll = ciImportAll;
@@ -31166,6 +31431,48 @@ function cookieDecline(){
 }
 #pg-log .ci-row-status.enriched{color:var(--n-profit)}
 #pg-log .ci-row-status.pending{color:var(--n-text-4)}
+/* Session 15 — 3-state per-trade validation indicator */
+#pg-log .ci-row-status.partial{color:var(--n-gold,#f5d77c)}
+#pg-log .ci-row-status.incomplete{color:#c95f5f}
+/* Flagged (incomplete) row highlight after a blocked Import All */
+#pg-log .ci-row.ci-row-flagged{
+  border:1px solid #c95f5f;
+  border-radius:8px;
+  background:rgba(201,95,95,.05);
+}
+/* Import All blocking error banner */
+#pg-log .ci-import-err{
+  margin:0 0 14px;
+  padding:11px 14px;
+  border:1px solid #c95f5f;
+  background:rgba(201,95,95,.08);
+  border-radius:8px;
+  color:#d98484;
+  font-size:12.5px;
+  line-height:1.45;
+}
+/* Editable Symbol in the CSV broker header */
+#pg-log .ci-bh-sym-input{
+  font:inherit;
+  color:inherit;
+  letter-spacing:inherit;
+  background:transparent;
+  border:1px solid transparent;
+  border-radius:5px;
+  padding:1px 5px;
+  width:7.5em;
+  outline:none;
+  transition:border-color .12s,background .12s;
+}
+#pg-log .ci-bh-sym-input:hover,
+#pg-log .ci-bh-sym-input:focus{
+  border-color:var(--n-border-2);
+  background:var(--n-surface-3);
+}
+#pg-log .ci-bh-sym-input.csv-sym-invalid{
+  border-color:#c95f5f !important;
+  background:rgba(201,95,95,.04) !important;
+}
 #pg-log .ci-row-time{
   font-family:var(--n-font-mono);
   font-size:10px;
