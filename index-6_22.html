@@ -9519,19 +9519,23 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
               <div class="rw-field-l">Notes</div>
               <textarea id="lg-notes" class="rw-input rw-textarea" placeholder="Setup, what worked, what didn&rsquo;t, lessons&hellip;"></textarea>
             </div>
-
-            <!-- Reflection (Session 14) — post-trade journaling, required -->
-            <div class="rw-field" id="lt-f-reflection">
-              <div class="rw-field-l">Reflection</div>
-              <textarea id="lg-reflection" class="rw-input rw-textarea" placeholder="What did you learn from this trade? How did you feel?"></textarea>
-            </div>
         </div>
         </div><!-- /lt-col (right) -->
       </div><!-- /lt-cols -->
 
-        <!-- ============ REFLECTION — grading (Free-tier veiled) ============ -->
-        <div class="rw-section" id="lt-sec-reflection">
+        <!-- ============ REFLECTION — post-trade journaling (Session 14) ============
+             Own section, full width, not Pro-veiled — it's a required field. -->
+        <div class="rw-section" id="lt-sec-reflection-text">
           <div data-rwbuild="header:Reflection"></div>
+          <div class="rw-field" id="lt-f-reflection">
+            <div class="rw-field-l">Reflection</div>
+            <textarea id="lg-reflection" class="rw-input rw-textarea" placeholder="What did you learn from this trade? How did you feel?"></textarea>
+          </div>
+        </div>
+
+        <!-- ============ MINDSET — grading (Free-tier veiled) ============ -->
+        <div class="rw-section" id="lt-sec-reflection">
+          <div data-rwbuild="header:Mindset"></div>
 
           <div data-rwbuild="refl:grade:rw:4"></div>
           <div data-rwbuild="refl:emotion:rw:3"></div>
@@ -10018,19 +10022,22 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             <div class="rw-field-l">Notes</div>
             <textarea id="cem-notes" class="rw-input rw-textarea" placeholder="Setup, what worked, what didn&rsquo;t, lessons&hellip;"></textarea>
           </div>
-
-          <!-- Reflection (Session 14) — post-trade journaling, required -->
-          <div class="rw-field" id="cem-f-reflection">
-            <div class="rw-field-l">Reflection</div>
-            <textarea id="cem-reflection" class="rw-input rw-textarea" placeholder="What did you learn from this trade? How did you feel?"></textarea>
-          </div>
       </div>
         </div><!-- /cem-col (right) -->
       </div><!-- /cem-cols -->
 
-      <!-- ============ REFLECTION ============ -->
+      <!-- ============ REFLECTION — post-trade journaling (Session 14) ============ -->
       <div class="rw-section cem-section">
         <div data-rwbuild="header:Reflection"></div>
+        <div class="rw-field" id="cem-f-reflection">
+          <div class="rw-field-l">Reflection</div>
+          <textarea id="cem-reflection" class="rw-input rw-textarea" placeholder="What did you learn from this trade? How did you feel?"></textarea>
+        </div>
+      </div>
+
+      <!-- ============ MINDSET — grading ============ -->
+      <div class="rw-section cem-section">
+        <div data-rwbuild="header:Mindset"></div>
         <div data-rwbuild="refl:grade:cem:4"></div>
         <div data-rwbuild="refl:emotion:cem:3"></div>
         <div data-rwbuild="refl:confidence:cem:3"></div>
@@ -20161,6 +20168,14 @@ function _rwClearAll(rules){
   });
 }
 
+// A TradingView link counts as Evidence when it's a valid TV URL.
+function _rwValidTVLink(inputId){
+  try {
+    var v = ((document.getElementById(inputId)||{}).value||'').trim();
+    return !!(v && typeof _TV_LINK_RE !== 'undefined' && _TV_LINK_RE.test(v));
+  } catch(e){ return false; }
+}
+
 // ── Log Trade rule set ────────────────────────────────────────────────
 function _ltScreenshotCount(){
   try { return Array.isArray(noteImages) ? noteImages.length : 0; } catch(e){ return 0; }
@@ -20187,8 +20202,8 @@ var LT_RULES = [
     ok:function(){ var q=parseFloat(document.getElementById('lg-qty').value); return !isNaN(q) && q>0; } },
   { fields:['lt-f-reflection'], msg:'Write a reflection on this trade',
     ok:function(){ return !!(document.getElementById('lg-reflection').value||'').trim(); } },
-  { fields:['lt-f-evidence'], msg:'Upload at least 1 chart screenshot',
-    ok:function(){ return _ltScreenshotCount() >= 1; } },
+  { fields:['lt-f-evidence'], msg:'Upload a screenshot or paste a TradingView link',
+    ok:function(){ return _ltScreenshotCount() >= 1 || _rwValidTVLink('lg-tv-link'); } },
   { fields:['lt-sec-confluences','lt-f-notes'], msg:'Add at least 1 confluence and a note',
     ok:function(){ return _ltConfluenceCount() >= 1 && !!(document.getElementById('lg-notes').value||'').trim(); } }
 ];
@@ -20222,8 +20237,8 @@ var CEM_RULES = [
     ok:function(){ var q=parseFloat(document.getElementById('cem-qty').value); return !isNaN(q) && q>0; } },
   { fields:['cem-f-reflection'], msg:'Write a reflection on this trade',
     ok:function(){ return !!(document.getElementById('cem-reflection').value||'').trim(); } },
-  { fields:['cem-f-evidence'], msg:'Upload at least 1 chart screenshot',
-    ok:function(){ return _cemScreenshotCount() >= 1; } },
+  { fields:['cem-f-evidence'], msg:'Upload a screenshot or paste a TradingView link',
+    ok:function(){ return _cemScreenshotCount() >= 1 || _rwValidTVLink('cem-tv-link'); } },
   { fields:['cem-cf-section','cem-f-notes'], msg:'Add at least 1 confluence and a note',
     ok:function(){ return _cemConfluenceCount() >= 1 && !!(document.getElementById('cem-notes').value||'').trim(); } }
 ];
@@ -20242,7 +20257,11 @@ function tradeIsIncomplete(t){
   if(t.exit == null || isNaN(parseFloat(t.exit))) return true;
   var q = parseFloat(t.qty); if(isNaN(q) || q <= 0) return true;
   if(!t.reflection || !String(t.reflection).trim()) return true;
-  if(!t.images || !t.images.length) return true;
+  // Evidence — a screenshot OR a valid TradingView link satisfies it.
+  var hasShot = !!(t.images && t.images.length);
+  var hasTV = !!(t.tradingview_link && typeof _TV_LINK_RE !== 'undefined'
+    && _TV_LINK_RE.test(String(t.tradingview_link)));
+  if(!hasShot && !hasTV) return true;
   if(!t.notes || !String(t.notes).trim()) return true;
   if(!t.confluences || !t.confluences.length) return true;
   return false;
@@ -21329,7 +21348,7 @@ function importCsvTrades(){
     var domNotes = '';
     var _rowEl = document.querySelector('#mode-ai .ci-row[data-idx="'+i+'"]');
     if(_rowEl){
-      var _nt = _rowEl.querySelector('textarea.ci-enrich-notes, textarea.rw-textarea');
+      var _nt = _rowEl.querySelector('textarea.ci-enrich-notes');
       if(_nt){
         domNotes = (_nt.value || '').trim();
       }
@@ -21349,9 +21368,11 @@ function importCsvTrades(){
       accounts: accounts > 1 ? accounts : undefined,
       date: t.date, market: t.market,
       notes: finalNotes,
-      // Session 14 — Reflection is not collected during CSV import; it
-      // stays empty and the trade gets a ⚠ "incomplete" flag below.
-      reflection: '',
+      // Session 14 — Reflection enrich field. ciSnapshotExpandedRowInputs()
+      // (called at the top of importCsvTrades) flushes the expanded row's
+      // textarea into e.reflection, so this reads the latest value. Usually
+      // empty for bulk historical imports → drives the ⚠ flag below.
+      reflection: (e.reflection || '').trim(),
       session: rowSession,
       grade: e.grade || 'B',
       emotion: e.emotion || 3,
@@ -21768,8 +21789,10 @@ function ciClearEnrichZone(idx){
   // Snapshot input values FIRST — these only get flushed via oninput, but a
   // pending keystroke or paste might not have fired before we tear down.
   var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
-  var notesEl = zone.querySelector('textarea.ci-enrich-notes, textarea.rw-textarea');
+  var notesEl = zone.querySelector('textarea.ci-enrich-notes');
   if(notesEl) e.notes = notesEl.value || '';
+  var reflEl = zone.querySelector('textarea.ci-enrich-reflection');
+  if(reflEl) e.reflection = reflEl.value || '';
   var tvEl = zone.querySelector('.rw-tv-input');
   if(tvEl) e.tradingview_link = (tvEl.value || '').trim();
   // THEN wipe DOM.
@@ -21789,6 +21812,7 @@ function ciRenderEnrichZone(idx){
   if(e.emotion == null) e.emotion = 3;
   if(e.confidence == null) e.confidence = 3;
   if(!e.notes) e.notes = '';
+  if(!e.reflection) e.reflection = '';   // Session 14 — post-trade journaling
   if(!e.tradingview_link) e.tradingview_link = '';
   if(!e.session) e.session = '';
   if(!e.account_type) e.account_type = '';   // Chunk 5 v4 — snake_case
@@ -21923,8 +21947,16 @@ function ciRenderEnrichZone(idx){
     '</div>' +
     '</div>' + /* /ci-col (right) */
     '</div>' + /* /ci-cols */
-    /* ── REFLECTION — grading (full width) ── */
+    /* ── REFLECTION — post-trade journaling (Session 14, full width) ── */
     buildSectionHeader('Reflection') +
+    '<div class="rw-field">' +
+      '<div class="rw-field-l">Reflection <span class="rw-mod-opt">optional</span></div>' +
+      '<textarea class="rw-input rw-textarea ci-enrich-reflection" data-idx="'+idx+'" '+
+                'placeholder="What did you learn from this trade? How did you feel?" '+
+                'oninput="ciOnEnrichReflection('+idx+', this.value)">'+ciEsc(e.reflection||'')+'</textarea>' +
+    '</div>' +
+    /* ── MINDSET — grading (full width) ── */
+    buildSectionHeader('Mindset') +
     buildReflectionRow('grade',      'csv', gradeIdx) +
     buildReflectionRow('emotion',    'csv', e.emotion) +
     buildReflectionRow('confidence', 'csv', e.confidence);
@@ -21935,7 +21967,7 @@ function ciRenderEnrichZone(idx){
   // keystroke; change fires on commit/blur; blur catches a clicked-away
   // value). The inline oninput acts as a backup. Plus an explicit class
   // (.ci-enrich-notes) makes the textarea easy to find via querySelector.
-  var notesEl = zone.querySelector('textarea.ci-enrich-notes, textarea.rw-textarea');
+  var notesEl = zone.querySelector('textarea.ci-enrich-notes');
   if(notesEl){
     var notesHandler = function(){
       var e2 = csvEnrichment[idx] = csvEnrichment[idx] || {};
@@ -21947,6 +21979,20 @@ function ciRenderEnrichZone(idx){
     notesEl.addEventListener('change', notesHandler);
     notesEl.addEventListener('blur',   notesHandler);
     notesEl.addEventListener('keyup',  notesHandler);
+  }
+  // Session 14 — Reflection textarea, same multi-event binding as Notes.
+  var reflEl = zone.querySelector('textarea.ci-enrich-reflection');
+  if(reflEl){
+    var reflHandler = function(){
+      var e2 = csvEnrichment[idx] = csvEnrichment[idx] || {};
+      e2.reflection = reflEl.value || '';
+      ciUpdateRowStatus(idx);
+      ciUpdateCounters();
+    };
+    reflEl.addEventListener('input',  reflHandler);
+    reflEl.addEventListener('change', reflHandler);
+    reflEl.addEventListener('blur',   reflHandler);
+    reflEl.addEventListener('keyup',  reflHandler);
   }
   var tvInputEl = zone.querySelector('.rw-tv-input');
   if(tvInputEl){
@@ -22316,6 +22362,15 @@ function ciOnEnrichNotes(idx, value){
 }
 window.ciOnEnrichNotes = ciOnEnrichNotes;
 
+// Session 14 — Reflection enrich field (inline-oninput backup handler).
+function ciOnEnrichReflection(idx, value){
+  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
+  e.reflection = value || '';
+  ciUpdateRowStatus(idx);
+  ciUpdateCounters();
+}
+window.ciOnEnrichReflection = ciOnEnrichReflection;
+
 /* Chunk 5 v3 bug fix — capture any DOM-side textarea/input values from the
    currently-expanded row's enrich zone into csvEnrichment[idx], in case
    `oninput` didn't get a chance to fire for the very last keystroke before
@@ -22335,8 +22390,10 @@ function ciSnapshotExpandedRowInputs(){
     var zone = row.querySelector('.ci-enrich');
     if(!zone || !zone.innerHTML.trim()) return;  // skip collapsed rows
     var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
-    var notesEl = zone.querySelector('textarea.ci-enrich-notes, textarea.rw-textarea');
+    var notesEl = zone.querySelector('textarea.ci-enrich-notes');
     if(notesEl) e.notes = notesEl.value || '';
+    var reflEl = zone.querySelector('textarea.ci-enrich-reflection');
+    if(reflEl) e.reflection = reflEl.value || '';
     var tvEl = zone.querySelector('.rw-tv-input');
     if(tvEl) e.tradingview_link = (tvEl.value || '').trim();
   });
@@ -22650,7 +22707,7 @@ async function renderHistory(){
     return '<tr>'
       + '<td class="cell-date">'+_fmtDate(t.date)+'</td>'
       + '<td class="cell-sym">'
-        + (t.incomplete ? '<span class="t-incomplete" title="Incomplete data — open this trade to fill the required fields">&#9888;</span>' : '')
+        + (t.incomplete ? '<span class="t-incomplete" title="Incomplete data — fill in to use for analysis">&#9888;</span>' : '')
         + _esc(t.sym||'—')+'</td>'
       + '<td class="cell-market">'+_esc(t.market||'—')+'</td>'
       + '<td><span class="cell-dir '+dir+'">'+dirLabel+'</span></td>'
