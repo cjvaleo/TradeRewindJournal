@@ -4960,6 +4960,12 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 .rvc-stat-v{font-family:var(--n-font-display);font-style:italic;font-weight:400;font-size:36px;line-height:1}
 .rvc-stat-l{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#7a7a72;margin-top:9px}
 .rvc-contracts-note{border-top:1px solid rgba(255,255,255,.06);margin-top:20px;padding-top:16px;font-size:12px;font-style:italic;color:#9a9a92;line-height:1.55}
+/* no-memberships empty state */
+.rvc-empty{max-width:440px;margin:64px auto;text-align:center;background:rgba(255,255,255,.018);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:44px 32px}
+.rvc-empty-h{font-family:var(--n-font-display);font-style:italic;font-size:24px;color:#f5f4f0}
+.rvc-empty-sub{font-size:13px;color:#9a9a92;line-height:1.55;margin:12px 0 24px}
+.rvc-empty-cta{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#5fb389;background:rgba(95,179,137,.08);border:1px solid rgba(95,179,137,.35);border-radius:8px;padding:11px 20px;cursor:pointer;transition:.12s}
+.rvc-empty-cta:hover{background:rgba(95,179,137,.14);border-color:rgba(95,179,137,.5)}
 /* thin / privacy */
 .rvc-thin{font-size:12px;color:#7a7a72;text-align:center;line-height:1.5;padding:22px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.06);border-radius:12px}
 .rvc-privacy{text-align:center;font-size:11px;font-style:italic;color:#56554f;margin-top:38px}
@@ -22671,8 +22677,8 @@ var _rvCommunity = { loaded:false, id:null, list:[], data:null };
 
 function rvcNum(n){ n = Number(n); return Number.isFinite(n) ? n.toLocaleString('en-US') : '—'; }
 function rvCommunityIdFromHash(){
-  var m = /community=([a-z0-9_]+)/i.exec(location.hash||'');
-  return m ? m[1] : 'all_rewind_users';
+  var m = /community=([a-z0-9_-]+)/i.exec(location.hash||'');
+  return m ? m[1] : null;
 }
 function rvCommName(){
   var c = (_rvCommunity.list||[]).filter(function(x){ return x.id===_rvCommunity.id; })[0];
@@ -22696,9 +22702,18 @@ async function rvLoadCommunity(){
   if(!listR.ok){ root.innerHTML = '<div class="rv-msg">Couldn’t load communities — try again in a moment.</div>'; return; }
   _rvCommunity.list = listR.data || [];
   _rvCommunity.loaded = true;
+  if(!_rvCommunity.list.length){ root.innerHTML = rvCommunityEmptyHtml(); return; }
+  // Default to the user's most recently created community; honor a valid hash.
   var id = rvCommunityIdFromHash();
-  if(!_rvCommunity.list.some(function(c){ return c.id===id; })) id = 'all_rewind_users';
+  if(!_rvCommunity.list.some(function(c){ return c.id===id; })) id = _rvCommunity.list[0].id;
   await rvCommunityFetch(id);
+}
+function rvCommunityEmptyHtml(){
+  return '<div class="rvc-empty">'+
+    '<div class="rvc-empty-h">You’re not in any communities yet.</div>'+
+    '<div class="rvc-empty-sub">Join a community on the Community page to see aggregated analytics here.</div>'+
+    '<button type="button" class="rvc-empty-cta" onclick="goTo(\'community\')">Browse Communities &rarr;</button>'+
+  '</div>';
 }
 
 async function rvCommunityFetch(id){
@@ -22758,7 +22773,7 @@ function rvcSelectorHtml(){
         '<div class="rvc-sel-label">Viewing Community</div>'+
         '<div class="rvc-sel-sub">'+rvEsc(sub)+'</div>'+
       '</div>'+
-      '<button type="button" class="rvc-join" title="Coming soon">+ Join Community</button>'+
+      '<button type="button" class="rvc-join" onclick="goTo(\'community\')">+ Join Community</button>'+
     '</div>'+
     '<div class="rvc-pills">'+pills+'</div>'+
   '</section>';

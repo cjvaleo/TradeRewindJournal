@@ -1,9 +1,9 @@
-// GET /api/community/list — communities the user belongs to + trader counts.
-// v1: everyone is auto-joined to all 5; only all_rewind_users has a real
-// trader count (distinct user_id in the trades table).
+// GET /api/community/list — the communities the current user belongs to.
+// Membership is the `communities` table: owner_id, or present in the
+// members uuid[] array. Sorted most-recently-created first.
 import { sbService } from '../_lib/supabase.js';
 import { requirePro } from '../_lib/auth.js';
-import { COMMUNITIES } from '../_lib/community.js';
+import { communityMemberIds } from '../_lib/community.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -13,24 +13,23 @@ export default async function handler(req, res) {
   const user = await requirePro(req, res);
   if (!user) return;
 
-  let realCount = 0;
+  let rows = [];
   try {
-    const { data, error } = await sbService().from('trades').select('user_id');
+    const { data, error } = await sbService()
+      .from('communities')
+      .select('id, name, owner_id, members, created_at')
+      .or('owner_id.eq.' + user.id + ',members.cs.{' + user.id + '}')
+      .order('created_at', { ascending: false });
     if (error) throw new Error(error.message);
-    const seen = {};
-    (data || []).forEach(function (r) { if (r.user_id) seen[r.user_id] = 1; });
-    realCount = Object.keys(seen).length;
+    rows = data || [];
   } catch (e) {
-    console.error('[community/list] trader count failed:', e && e.message);
+    console.error('[community/list] read failed:', e && e.message);
+    res.status(500).json({ error: 'communities read failed' });
+    return;
   }
 
-  const list = COMMUNITIES.map(function (c) {
-    return {
-      id: c.id,
-      name: c.name,
-      trader_count: c.id === 'all_rewind_users' ? realCount : c.trader_count,
-      joined: true,
-    };
+  const list = rows.map(function (r) {
+    return { id: r.id, name: r.name, trader_count: communityMemberIds(r).length, joined: true };
   });
   res.setHeader('Cache-Control', 'no-store');
   res.status(200).json(list);
