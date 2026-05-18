@@ -18718,6 +18718,13 @@ function cfRenderPicker(state){
     '</div>' +
     '<div class="cf-pk-tabs" id="' + state.prefix + '-tabs"></div>' +
     '<div class="cf-chips" id="' + state.prefix + '-chips"></div>';
+  // Shield every click/mousedown inside the picker from the document-level
+  // outside-click-close handler. A single guard on the dropdown wrapper
+  // covers tabs, chips, TF buttons, the "+ New" chip + its inline input —
+  // no per-element stopPropagation needed. Outside clicks still reach the
+  // document handler and close the picker normally.
+  dd.onmousedown = function(e){ e.stopPropagation(); };
+  dd.onclick = function(e){ e.stopPropagation(); };
   cfRenderTabs(state);
   cfRenderChips(state);
   cfRenderTFChips(state);
