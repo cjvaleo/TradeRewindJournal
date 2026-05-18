@@ -9358,8 +9358,8 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
                 </button>
               </div>
             </div>
-            <div class="rw-field">
-              <div class="rw-field-l">Account Type <span class="rw-mod-opt">optional</span></div>
+            <div class="rw-field" id="lt-f-acct">
+              <div class="rw-field-l">Account Type</div>
               <div data-rwbuild="acct:rw"></div>
               <input type="hidden" id="lg-account-type" value=""/>
             </div>
@@ -9367,7 +9367,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
           <!-- Row 2 (what): Symbol + Market -->
           <div class="rw-grid rw-grid-sym-mkt">
-            <div class="rw-field" style="position:relative">
+            <div class="rw-field" id="lt-f-sym" style="position:relative">
               <div class="rw-field-l">Symbol</div>
               <input type="text" id="lg-sym" class="rw-input rw-input-symbol" placeholder="Type to search&hellip;" autocomplete="off"
                 oninput="filterSymbols();calcLivePnl()" onfocus="filterSymbols()" onkeydown="symKeyNav(event)"/>
@@ -9390,7 +9390,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
               <div class="rw-field-l">Date</div>
               <input type="date" id="lg-date" class="rw-input" oninput="updateLogPreview()"/>
             </div>
-            <div class="rw-field">
+            <div class="rw-field" id="lt-f-session">
               <div class="rw-field-l">Session</div>
               <div data-rwbuild="session:rw"></div>
               <input type="hidden" id="lg-session" value=""/>
@@ -9404,11 +9404,11 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
           <!-- Entry / Exit -->
           <div class="rw-grid rw-grid-exec-pair">
-            <div class="rw-field">
+            <div class="rw-field" id="lt-f-entry">
               <div class="rw-field-l">Entry</div>
               <input class="rw-input rw-numeric" id="lg-entry" type="number" step="any" placeholder="0.00" oninput="calcLivePnl()"/>
             </div>
-            <div class="rw-field">
+            <div class="rw-field" id="lt-f-exit">
               <div class="rw-field-l">Exit</div>
               <input class="rw-input rw-numeric" id="lg-exit" type="number" step="any" placeholder="0.00" oninput="calcLivePnl()"/>
             </div>
@@ -9416,7 +9416,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
           <!-- Contracts / Points (auto) / P&L (auto) -->
           <div class="rw-grid rw-grid-triple">
-            <div class="rw-field">
+            <div class="rw-field" id="lt-f-qty">
               <div class="rw-field-l">Contracts</div>
               <input class="rw-input rw-numeric" id="lg-qty" type="number" step="any" min="1" value="1" oninput="calcLivePnl()"/>
             </div>
@@ -9458,7 +9458,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
           <div data-rwbuild="header:Evidence"></div>
 
             <!-- Chart evidence (screenshot + TV link) — full-width section -->
-            <div class="rw-field">
+            <div class="rw-field" id="lt-f-evidence">
               <div class="rw-field-l">Chart evidence</div>
 
               <div id="img-drop-zone" class="rw-dropzone"
@@ -9514,10 +9514,16 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
               <div class="rw-helper">Tag your read on the chart &mdash; filterable in History &amp; Analytics.</div>
             </div>
 
-            <!-- Notes (prose) — moved here from Reflection -->
-            <div class="rw-field">
+            <!-- Notes (prose) — chart observations paired with confluences -->
+            <div class="rw-field" id="lt-f-notes">
               <div class="rw-field-l">Notes</div>
               <textarea id="lg-notes" class="rw-input rw-textarea" placeholder="Setup, what worked, what didn&rsquo;t, lessons&hellip;"></textarea>
+            </div>
+
+            <!-- Reflection (Session 14) — post-trade journaling, required -->
+            <div class="rw-field" id="lt-f-reflection">
+              <div class="rw-field-l">Reflection</div>
+              <textarea id="lg-reflection" class="rw-input rw-textarea" placeholder="What did you learn from this trade? How did you feel?"></textarea>
             </div>
         </div>
         </div><!-- /lt-col (right) -->
@@ -9860,8 +9866,8 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
               </button>
             </div>
           </div>
-          <div class="rw-field">
-            <div class="rw-field-l">Account Type <span class="rw-mod-opt">optional</span></div>
+          <div class="rw-field" id="cem-f-acct">
+            <div class="rw-field-l">Account Type</div>
             <div data-rwbuild="acct:cem"></div>
             <input type="hidden" id="cem-account-type" value=""/>
           </div>
@@ -9869,7 +9875,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
         <!-- Row 2 — Symbol + Market -->
         <div class="rw-grid rw-grid-sym-mkt">
-          <div class="rw-field" style="position:relative">
+          <div class="rw-field" id="cem-f-sym" style="position:relative">
             <div class="rw-field-l">Symbol</div>
             <input type="text" id="cem-sym" class="rw-input rw-input-symbol" placeholder="Type to search&hellip;" autocomplete="off"
               oninput="cemFilterSym();cemCalcLive()" onfocus="cemFilterSym()" onkeydown="cemSymNav(event)"/>
@@ -9895,7 +9901,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             <div class="rw-field-l">Date</div>
             <input type="date" id="cem-date" class="rw-input"/>
           </div>
-          <div class="rw-field">
+          <div class="rw-field" id="cem-f-session">
             <div class="rw-field-l">Session</div>
             <div data-rwbuild="session:cem"></div>
             <input type="hidden" id="cem-session" value=""/>
@@ -9909,11 +9915,11 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
         <!-- Entry / Exit -->
         <div class="rw-grid rw-grid-exec-pair">
-          <div class="rw-field">
+          <div class="rw-field" id="cem-f-entry">
             <div class="rw-field-l">Entry</div>
             <input class="rw-input rw-numeric" id="cem-entry" type="number" step="any" placeholder="0.00" oninput="cemCalcLive()"/>
           </div>
-          <div class="rw-field">
+          <div class="rw-field" id="cem-f-exit">
             <div class="rw-field-l">Exit</div>
             <input class="rw-input rw-numeric" id="cem-exit" type="number" step="any" placeholder="0.00" oninput="cemCalcLive()"/>
           </div>
@@ -9921,7 +9927,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
         <!-- Contracts / Points (auto) / P&L (auto) -->
         <div class="rw-grid rw-grid-triple">
-          <div class="rw-field">
+          <div class="rw-field" id="cem-f-qty">
             <div class="rw-field-l">Contracts</div>
             <input class="rw-input rw-numeric" id="cem-qty" type="number" step="any" min="1" value="1" oninput="cemCalcLive()"/>
           </div>
@@ -9955,7 +9961,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         <div data-rwbuild="header:Evidence"></div>
 
           <!-- Chart evidence (screenshot + TV link + preview) -->
-          <div class="rw-field">
+          <div class="rw-field" id="cem-f-evidence">
             <div class="rw-field-l">Chart evidence</div>
 
             <!-- Screenshot dropzone — preserves cem-img-input + cem-img-preview IDs
@@ -10008,9 +10014,15 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
           </div>
 
           <!-- Notes -->
-          <div class="rw-field">
+          <div class="rw-field" id="cem-f-notes">
             <div class="rw-field-l">Notes</div>
             <textarea id="cem-notes" class="rw-input rw-textarea" placeholder="Setup, what worked, what didn&rsquo;t, lessons&hellip;"></textarea>
+          </div>
+
+          <!-- Reflection (Session 14) — post-trade journaling, required -->
+          <div class="rw-field" id="cem-f-reflection">
+            <div class="rw-field-l">Reflection</div>
+            <textarea id="cem-reflection" class="rw-input rw-textarea" placeholder="What did you learn from this trade? How did you feel?"></textarea>
           </div>
       </div>
         </div><!-- /cem-col (right) -->
@@ -17402,6 +17414,8 @@ function cemRenderImgPreview(){
          +  '</div>';
   }
   el.innerHTML = html;
+  // Session 14 — live-clear the Evidence error as screenshots change.
+  try { if(typeof _rwLiveClear==='function') _rwLiveClear(CEM_RULES); } catch(e){}
 }
 
 /* ── Delete trade flow (Chunk 3) ──
@@ -17483,6 +17497,10 @@ function openCalEdit(id){
   document.getElementById('cem-stop').value=t.stop||'';
   document.getElementById('cem-qty').value=t.qty||1;
   document.getElementById('cem-notes').value=t.notes||'';
+  // Session 14 — Reflection field + clear any stale validation errors.
+  var cemReflEl=document.getElementById('cem-reflection');
+  if(cemReflEl) cemReflEl.value=t.reflection||'';
+  if(typeof cemClearErrors==='function') cemClearErrors();
   // Chunk 3 — accounts field. Previously not in the modal at all, which
   // silently zeroed it back to 1 on every edit for multi-account trades.
   var accountsEl = document.getElementById('cem-accounts');
@@ -17648,6 +17666,11 @@ function saveCalEdit(){
   var tradeId = _cemId;
   if (tradeId == null) return; // modal opened with no target
 
+  // Session 14 — required-field gate. Must run BEFORE closeCalEdit()
+  // (which clears DOM values); on failure the modal stays open with
+  // the user's edits intact and red inline errors painted.
+  if(!validateCalEdit()) return;
+
   // Read all field values FIRST. Chunk 3 expanded closeCalEdit to clear
   // some DOM field values (TV link, preview src) to prevent stale flashes
   // on the next open — so we MUST snapshot every field before closing,
@@ -17663,6 +17686,8 @@ function saveCalEdit(){
   var mktVal = document.getElementById('cem-mkt').value;
   var dateVal = document.getElementById('cem-date').value;
   var notesVal = document.getElementById('cem-notes').value || '';
+  // Session 14 — Reflection (post-trade journaling free text).
+  var reflectionVal = (document.getElementById('cem-reflection').value || '').trim();
   var pnlOverride = parseFloat((document.getElementById('cem-pnl')||{}).value);
   var gi = parseInt(document.getElementById('cem-grade').value) || 3;
   var emotionVal = parseInt(document.getElementById('cem-emotion').value) || 3;
@@ -17727,6 +17752,10 @@ function saveCalEdit(){
   // Use snapshots captured before closeCalEdit (which resets _cemSession and
   // clears some DOM values). Reading DOM here would silently zero them out.
   t.notes=notesVal;
+  t.reflection=reflectionVal;
+  // Session 14 — a modal save passes the full 9-field gate, so the trade
+  // is now complete; drop any ⚠ "incomplete" flag set at CSV-import time.
+  delete t.incomplete;
   t.session=sessionVal;
   t.grade=(typeof GRADES!=='undefined'&&GRADES[gi]&&GRADES[gi].label)||'B';
   t.emotion=emotionVal;
@@ -18691,6 +18720,13 @@ function cfRenderPills(state){
   wrap.classList.toggle('has-pills', list.length > 0);
   if (count) count.textContent = list.length + ' added';
   hint.textContent = list.length > 0 ? '+ add more' : '+ click to add confluences';
+  // Session 14 — confluence changes are click-driven inside the picker
+  // dropdown, whose wrapper stops click propagation; hook live error
+  // clearing here so the Analysis error fades as confluences are added.
+  try {
+    if (state === confluencesState && typeof _rwLiveClear === 'function') _rwLiveClear(LT_RULES);
+    else if (state === cemConfluencesState && typeof _rwLiveClear === 'function') _rwLiveClear(CEM_RULES);
+  } catch(e){}
 }
 
 // Session 13 — picker is a 3-tab layout. The dropdown body is JS-rendered
@@ -19950,6 +19986,8 @@ function fullLog(){
   const accounts=parseFloat(document.getElementById('lg-accounts')?.value)||1;
   const totalQty=qty*accounts;
   const date=document.getElementById('lg-date').value,notes=document.getElementById('lg-notes').value.trim();
+  // Session 14 — Reflection: post-trade journaling free text (required).
+  const reflection=(document.getElementById('lg-reflection')?.value||'').trim();
   const session=document.getElementById('lg-session')?.value||'';
   const stop=parseFloat(document.getElementById('lg-stop').value)||null;
   const gradeIdx=parseInt(document.getElementById('lg-grade')?.value??3);
@@ -19987,7 +20025,7 @@ function fullLog(){
   // populated. Not a top-level column.
   const points = (lgType==='long' ? exit-entry : entry-exit);
 
-  var newTrade = {id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,pnl,rr,points,grade,emotion,confidence,images:[...noteImages],created_at:new Date().toISOString(),account_type:accountType,tradingview_link:tradingviewLink||undefined};
+  var newTrade = {id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,reflection,pnl,rr,points,grade,emotion,confidence,images:[...noteImages],created_at:new Date().toISOString(),account_type:accountType,tradingview_link:tradingviewLink||undefined};
   trades.unshift(newTrade);
   save();renderAll();
 
@@ -20015,7 +20053,7 @@ function fullLog(){
   }
 
   // Reset form for the next trade
-  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-pnl','lg-rr','lg-tv-link'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-reflection','lg-pnl','lg-rr','lg-tv-link'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('lg-qty').value='1';
   if(document.getElementById('lg-accounts'))document.getElementById('lg-accounts').value='1';
   document.getElementById('lg-date').value=_localDate(new Date());
@@ -20047,12 +20085,194 @@ function fullLog(){
   var _tvPrev=document.getElementById('lg-tv-preview'); if(_tvPrev) _tvPrev.removeAttribute('src');
   var _tvWrap=document.getElementById('lg-tv-preview-wrap'); if(_tvWrap) _tvWrap.style.display='none';
   if(typeof updateLogPreview==='function') updateLogPreview();
+  if(typeof ltClearErrors==='function') ltClearErrors();
   toast('Trade logged', 'success');setTimeout(drawMiniChart,100);
 }
 
 
+/* ═══════════════════════════════════════════════════════════════════
+   SESSION 14 — REQUIRED-FIELD VALIDATION
+   Gates the Log Trade form (#pg-log) and the Calendar edit modal
+   (#cal-edit-modal). 9 required fields; the Save button stays
+   clickable but a click with missing fields paints red inline errors
+   and scrolls to the first offender. Live re-validation (input/click/
+   change) only ever CLEARS errors as fields become valid.
+   ═══════════════════════════════════════════════════════════════════ */
+
+// Mark a .rw-field container's error state (red border + message).
+function _rwMarkErr(fieldEl, msg){
+  if(!fieldEl) return;
+  fieldEl.classList.add('rw-invalid');
+  if(msg){
+    var m = fieldEl.querySelector(':scope > .rw-err-msg');
+    if(!m){
+      m = document.createElement('div');
+      m.className = 'rw-err-msg';
+      fieldEl.appendChild(m);
+    }
+    m.textContent = msg;
+  }
+}
+function _rwClearErr(fieldEl){
+  if(!fieldEl) return;
+  fieldEl.classList.remove('rw-invalid');
+  var m = fieldEl.querySelector(':scope > .rw-err-msg');
+  if(m) m.remove();
+}
+
+// Run a rule set. Each rule: { fields:[ids], msg, ok:fn }. The message
+// renders under the FIRST field id. Paints every field's error state
+// and returns the first failing rule (or null when all pass).
+function _rwRunRules(rules){
+  var firstBad = null;
+  rules.forEach(function(rule){
+    var ok = false;
+    try { ok = !!rule.ok(); } catch(e){ ok = false; }
+    rule.fields.forEach(function(fid, i){
+      var el = document.getElementById(fid);
+      if(!el) return;
+      if(ok) _rwClearErr(el);
+      else   _rwMarkErr(el, i === 0 ? rule.msg : '');
+    });
+    if(!ok && !firstBad) firstBad = rule;
+  });
+  if(firstBad){
+    var anchor = document.getElementById(firstBad.fields[0]);
+    if(anchor){
+      try { anchor.scrollIntoView({behavior:'smooth', block:'center'}); } catch(e){}
+      var inp = anchor.querySelector('input:not([type=hidden]),textarea,select');
+      if(inp){ try { inp.focus({preventScroll:true}); } catch(e){ try{ inp.focus(); }catch(e2){} } }
+    }
+  }
+  return firstBad;
+}
+// Live pass — clears errors on now-valid fields, never adds new ones.
+function _rwLiveClear(rules){
+  rules.forEach(function(rule){
+    var ok = false;
+    try { ok = !!rule.ok(); } catch(e){ ok = false; }
+    if(!ok) return;
+    rule.fields.forEach(function(fid){ _rwClearErr(document.getElementById(fid)); });
+  });
+}
+function _rwClearAll(rules){
+  rules.forEach(function(rule){
+    rule.fields.forEach(function(fid){ _rwClearErr(document.getElementById(fid)); });
+  });
+}
+
+// ── Log Trade rule set ────────────────────────────────────────────────
+function _ltScreenshotCount(){
+  try { return Array.isArray(noteImages) ? noteImages.length : 0; } catch(e){ return 0; }
+}
+function _ltConfluenceCount(){
+  try {
+    return (typeof confluencesState !== 'undefined' && Array.isArray(confluencesState.selected))
+      ? confluencesState.selected.length : 0;
+  } catch(e){ return 0; }
+}
+var LT_RULES = [
+  { fields:['lt-f-sym'], msg:'Symbol required',
+    ok:function(){ return !!(document.getElementById('lg-sym').value||'').trim(); } },
+  { fields:['lt-f-session'], msg:'Select a session',
+    ok:function(){ return !!((document.getElementById('lg-session')||{}).value||'').trim(); } },
+  { fields:['lt-f-acct'], msg:'Select account type',
+    ok:function(){ var v=((document.getElementById('lg-account-type')||{}).value||'').toLowerCase();
+      return ['paper','eval','funded','live'].indexOf(v) >= 0; } },
+  { fields:['lt-f-entry'], msg:'Entry price required',
+    ok:function(){ return !isNaN(parseFloat(document.getElementById('lg-entry').value)); } },
+  { fields:['lt-f-exit'], msg:'Exit price required',
+    ok:function(){ return !isNaN(parseFloat(document.getElementById('lg-exit').value)); } },
+  { fields:['lt-f-qty'], msg:'Number of contracts required',
+    ok:function(){ var q=parseFloat(document.getElementById('lg-qty').value); return !isNaN(q) && q>0; } },
+  { fields:['lt-f-reflection'], msg:'Write a reflection on this trade',
+    ok:function(){ return !!(document.getElementById('lg-reflection').value||'').trim(); } },
+  { fields:['lt-f-evidence'], msg:'Upload at least 1 chart screenshot',
+    ok:function(){ return _ltScreenshotCount() >= 1; } },
+  { fields:['lt-sec-confluences','lt-f-notes'], msg:'Add at least 1 confluence and a note',
+    ok:function(){ return _ltConfluenceCount() >= 1 && !!(document.getElementById('lg-notes').value||'').trim(); } }
+];
+function validateLogTrade(){ return !_rwRunRules(LT_RULES); }
+function ltClearErrors(){ _rwClearAll(LT_RULES); }
+
+// ── Calendar edit modal rule set ──────────────────────────────────────
+function _cemScreenshotCount(){
+  try { return Array.isArray(_cemImages) ? _cemImages.length : 0; } catch(e){ return 0; }
+}
+function _cemConfluenceCount(){
+  try {
+    return (typeof cemConfluencesState !== 'undefined' && Array.isArray(cemConfluencesState.selected))
+      ? cemConfluencesState.selected.length : 0;
+  } catch(e){ return 0; }
+}
+var CEM_RULES = [
+  { fields:['cem-f-sym'], msg:'Symbol required',
+    ok:function(){ return !!(document.getElementById('cem-sym').value||'').trim(); } },
+  { fields:['cem-f-session'], msg:'Select a session',
+    ok:function(){ return !!(((document.getElementById('cem-session')||{}).value||'') ||
+      (typeof _cemSession!=='undefined'?_cemSession:'')||'').trim(); } },
+  { fields:['cem-f-acct'], msg:'Select account type',
+    ok:function(){ var v=((document.getElementById('cem-account-type')||{}).value||'').toLowerCase();
+      return ['paper','eval','funded','live'].indexOf(v) >= 0; } },
+  { fields:['cem-f-entry'], msg:'Entry price required',
+    ok:function(){ return !isNaN(parseFloat(document.getElementById('cem-entry').value)); } },
+  { fields:['cem-f-exit'], msg:'Exit price required',
+    ok:function(){ return !isNaN(parseFloat(document.getElementById('cem-exit').value)); } },
+  { fields:['cem-f-qty'], msg:'Number of contracts required',
+    ok:function(){ var q=parseFloat(document.getElementById('cem-qty').value); return !isNaN(q) && q>0; } },
+  { fields:['cem-f-reflection'], msg:'Write a reflection on this trade',
+    ok:function(){ return !!(document.getElementById('cem-reflection').value||'').trim(); } },
+  { fields:['cem-f-evidence'], msg:'Upload at least 1 chart screenshot',
+    ok:function(){ return _cemScreenshotCount() >= 1; } },
+  { fields:['cem-cf-section','cem-f-notes'], msg:'Add at least 1 confluence and a note',
+    ok:function(){ return _cemConfluenceCount() >= 1 && !!(document.getElementById('cem-notes').value||'').trim(); } }
+];
+function validateCalEdit(){ return !_rwRunRules(CEM_RULES); }
+function cemClearErrors(){ _rwClearAll(CEM_RULES); }
+
+// Is a trade missing any of the 9 required fields? Used to flag
+// CSV-imported rows with a ⚠ marker — legacy rows are never flagged
+// (only trades explicitly tagged t.incomplete at import time are).
+function tradeIsIncomplete(t){
+  if(!t) return false;
+  if(!t.sym || !String(t.sym).trim()) return true;
+  if(!t.session || !String(t.session).trim()) return true;
+  if(['paper','eval','funded','live'].indexOf(String(t.account_type||'').toLowerCase()) < 0) return true;
+  if(t.entry == null || isNaN(parseFloat(t.entry))) return true;
+  if(t.exit == null || isNaN(parseFloat(t.exit))) return true;
+  var q = parseFloat(t.qty); if(isNaN(q) || q <= 0) return true;
+  if(!t.reflection || !String(t.reflection).trim()) return true;
+  if(!t.images || !t.images.length) return true;
+  if(!t.notes || !String(t.notes).trim()) return true;
+  if(!t.confluences || !t.confluences.length) return true;
+  return false;
+}
+
+// Live re-validation wiring — input/click/change on either form only
+// clears errors as fields become valid (errors are added on Save).
+document.addEventListener('DOMContentLoaded', function(){
+  var lt = document.getElementById('mode-manual');
+  if(lt){
+    var ltLive = function(){ setTimeout(function(){ _rwLiveClear(LT_RULES); }, 0); };
+    lt.addEventListener('input',  ltLive);
+    lt.addEventListener('change', ltLive);
+    lt.addEventListener('click',  ltLive);
+  }
+  var cem = document.getElementById('cal-edit-modal');
+  if(cem){
+    var cemLive = function(){ setTimeout(function(){ _rwLiveClear(CEM_RULES); }, 0); };
+    cem.addEventListener('input',  cemLive);
+    cem.addEventListener('change', cemLive);
+    cem.addEventListener('click',  cemLive);
+  }
+});
+
 /* ── LOG CONFIRM / RESET ── */
 function confirmLog(){
+  // Session 14 — required-field gate. Blocks the confirm overlay (and
+  // therefore the save) until all 9 required fields pass; paints red
+  // inline errors and scrolls to the first offender.
+  if(!validateLogTrade()) return;
   const sym=rwStripSym(document.getElementById('lg-sym').value.trim().toUpperCase());
   const entry=parseFloat(document.getElementById('lg-entry').value);
   const exit=parseFloat(document.getElementById('lg-exit').value);
@@ -20101,7 +20321,7 @@ function confirmLogFinal(){
 }
 
 function resetLogForm(){
-  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-pnl','lg-rr','lg-tv-link'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-reflection','lg-pnl','lg-rr','lg-tv-link'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('lg-qty').value='1';
   if(document.getElementById('lg-accounts'))document.getElementById('lg-accounts').value='1';
   document.getElementById('lg-date').value=_localDate(new Date());
@@ -20142,6 +20362,7 @@ function resetLogForm(){
     if (typeof cfTogglePicker === 'function') cfTogglePicker(false);
   }
   if(typeof updateLogPreview==='function') updateLogPreview();
+  if(typeof ltClearErrors==='function') ltClearErrors();
   toast('Form cleared');
 }
 
@@ -21128,6 +21349,9 @@ function importCsvTrades(){
       accounts: accounts > 1 ? accounts : undefined,
       date: t.date, market: t.market,
       notes: finalNotes,
+      // Session 14 — Reflection is not collected during CSV import; it
+      // stays empty and the trade gets a ⚠ "incomplete" flag below.
+      reflection: '',
       session: rowSession,
       grade: e.grade || 'B',
       emotion: e.emotion || 3,
@@ -21153,6 +21377,12 @@ function importCsvTrades(){
     // metadata snapshot for cross-user rendering.
     var rowConfluences = Array.isArray(e.confluences) ? e.confluences.slice() : [];
     newTrade.confluences = rowConfluences;
+    // Session 14 — flag CSV-imported trades that are missing any of the
+    // 9 required fields so History shows a ⚠ marker. Computed AFTER
+    // confluences are attached. Legacy/manual trades carry no flag.
+    if(typeof tradeIsIncomplete === 'function' && tradeIsIncomplete(newTrade)){
+      newTrade.incomplete = true;
+    }
     if(rowConfluences.length && typeof _cfPersistForTrade === 'function'){
       _cfPersistForTrade(newTrade, rowConfluences);
     }
@@ -22419,7 +22649,9 @@ async function renderHistory(){
     // these aligned if either is touched.
     return '<tr>'
       + '<td class="cell-date">'+_fmtDate(t.date)+'</td>'
-      + '<td class="cell-sym">'+_esc(t.sym||'—')+'</td>'
+      + '<td class="cell-sym">'
+        + (t.incomplete ? '<span class="t-incomplete" title="Incomplete data — open this trade to fill the required fields">&#9888;</span>' : '')
+        + _esc(t.sym||'—')+'</td>'
       + '<td class="cell-market">'+_esc(t.market||'—')+'</td>'
       + '<td><span class="cell-dir '+dir+'">'+dirLabel+'</span></td>'
       + _fmtAcct(t.account_type)
@@ -24893,6 +25125,9 @@ function renderNoteImages(){
     var safeSrc = safeURL(src);
     return `<div style="position:relative;display:inline-block"><img src="${safeSrc}" style="width:80px;height:60px;object-fit:cover;border-radius:5px;border:1px solid rgba(0,180,255,.3)"/><button onmousedown="removeNoteImg(${i})" style="position:absolute;top:-5px;right:-5px;background:var(--red);border:none;color:#fff;width:16px;height:16px;border-radius:50%;font-size:14px;cursor:pointer;line-height:16px;text-align:center">&#10005;</button></div>`;
   }).join('');
+  // Session 14 — drag-dropped screenshots don't fire a form input/change
+  // event, so live-clear the Evidence error from here on every change.
+  try { if(typeof _rwLiveClear==='function') _rwLiveClear(LT_RULES); } catch(e){}
 }
 
 function removeNoteImg(i){noteImages.splice(i,1);renderNoteImages();}
@@ -27928,6 +28163,12 @@ async function saveTradeToSupa(trade) {
     var _at = (trade && typeof trade.account_type === 'string') ? trade.account_type.toLowerCase() : null;
     var accountTypeCol = (_at && ['paper','eval','funded','live'].indexOf(_at) >= 0) ? _at : null;
 
+    // Session 14 — reflection lands on its own column for SQL queryability
+    // (migration: required-fields-migration.sql). It's also carried inside
+    // trade_data, mirroring how account_type works. Empty string → NULL.
+    var _refl = (trade && typeof trade.reflection === 'string') ? trade.reflection.trim() : '';
+    var reflectionCol = _refl ? _refl : null;
+
     // Chunk 3 bug fix — DO NOT pre-stringify trade_data.
     //
     // Old pattern:  trade_data: JSON.stringify(trade)
@@ -27953,6 +28194,7 @@ async function saveTradeToSupa(trade) {
       user_id: authUser.id,            // REQUIRED by RLS policy
       trade_data: trade,               // OBJECT, not string — see comment above
       account_type: accountTypeCol,    // top-level column (Chunk 2 migration)
+      reflection: reflectionCol,       // top-level column (Session 14 migration)
       journal: activeJournal,
       updated_at: new Date().toISOString()
     }, { onConflict: 'id' });
@@ -28808,6 +29050,36 @@ function cookieDecline(){
   margin-top:8px;
   padding:0 2px;
   line-height:1.4;
+}
+
+/* ── Session 14 — required-field validation error UI ──────────────────
+   Shared by the Log Trade form (#pg-log) and the Calendar edit modal
+   (#cal-edit-modal). A .rw-field tagged .rw-invalid paints its control
+   red; the .rw-err-msg under it carries the message. */
+.rw-invalid .rw-input,
+.rw-invalid .rw-textarea,
+.rw-invalid .rw-chip-row,
+.rw-invalid .cf-pills,
+.rw-invalid .rw-dropzone,
+.rw-invalid #img-drop-zone,
+.rw-invalid #cem-img-drop-zone{
+  border:1px solid #c95f5f !important;
+  background:rgba(201,95,95,.04) !important;
+}
+.rw-err-msg{
+  font-size:11px;
+  font-style:italic;
+  color:#c95f5f;
+  margin-top:5px;
+  padding:0 2px;
+  line-height:1.35;
+}
+/* ⚠ incomplete-data marker on History rows (CSV imports) */
+.t-incomplete{
+  color:#d49a6a;
+  font-size:11px;
+  margin-right:4px;
+  cursor:help;
 }
 
 /* Reflection display values (top-right of label) ----------------------------*/
