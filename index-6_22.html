@@ -7123,7 +7123,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   background:rgba(255,255,255,.02);
   border:1px solid rgba(255,255,255,.06);
   border-radius:14px;
-  padding:24px 28px;
+  padding:20px 22px;
   overflow:hidden;
   margin-bottom:14px;
 }
@@ -7136,10 +7136,17 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 /* Header */
 :is(#pg-community,#lt-preview-card) .fp3-head{
   display:flex;align-items:center;justify-content:space-between;
-  padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.04);
+  padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.04);
 }
 :is(#pg-community,#lt-preview-card) .fp3-head-l{display:flex;align-items:center;gap:9px;min-width:0}
-:is(#pg-community,#lt-preview-card) .fp3-av{
+/* Author avatar — wraps renderUserAvatar's .av element (profile image
+   when set, finish-gradient + initials otherwise). */
+:is(#pg-community,#lt-preview-card) .fp3-av{display:flex;align-items:center;flex-shrink:0}
+:is(#pg-community,#lt-preview-card) .fp3-av .av{
+  width:26px!important;height:26px!important;font-size:11px!important;
+}
+/* Fallback circle when renderUserAvatar is unavailable. */
+:is(#pg-community,#lt-preview-card) .fp3-av-fallback{
   width:26px;height:26px;border-radius:50%;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
   background:linear-gradient(135deg,#5fb389,#6ea8ff);
@@ -7154,16 +7161,16 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 }
 /* Main grid */
 :is(#pg-community,#lt-preview-card) .fp3-grid{
-  display:grid;grid-template-columns:1fr 320px;gap:24px;margin-top:18px;
+  display:grid;grid-template-columns:1fr 320px;gap:24px;margin-top:14px;
 }
-:is(#pg-community,#lt-preview-card) .fp3-left{min-width:0}
+:is(#pg-community,#lt-preview-card) .fp3-left{min-width:0;overflow:hidden}
 :is(#pg-community,#lt-preview-card) .fp3-right{min-width:0;display:flex;flex-direction:column;gap:10px}
 /* Symbol + side + date */
 :is(#pg-community,#lt-preview-card) .fp3-symrow{
   display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px;
 }
 :is(#pg-community,#lt-preview-card) .fp3-sym{
-  font-family:var(--n-font-display);font-style:italic;font-size:28px;color:#f5f4f0;line-height:1;
+  font-family:var(--n-font-display);font-style:italic;font-size:22px;color:#f5f4f0;line-height:1;
 }
 :is(#pg-community,#lt-preview-card) .fp3-side{
   font-family:var(--n-font-mono);font-size:9px;font-weight:600;letter-spacing:.1em;
@@ -7180,7 +7187,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   color:var(--n-text-3);white-space:nowrap;
 }
 /* Account + session chips */
-:is(#pg-community,#lt-preview-card) .fp3-chips-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+:is(#pg-community,#lt-preview-card) .fp3-chips-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 :is(#pg-community,#lt-preview-card) .fp3-acct,
 :is(#pg-community,#lt-preview-card) .fp3-sess{
   font-family:var(--n-font-mono);font-size:9px;letter-spacing:.08em;
@@ -7190,9 +7197,9 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   color:var(--n-text-2);background:transparent;border:1px solid rgba(255,255,255,.14);
 }
 /* Stats row */
-:is(#pg-community,#lt-preview-card) .fp3-stats{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:14px}
+:is(#pg-community,#lt-preview-card) .fp3-stats{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px}
 :is(#pg-community,#lt-preview-card) .fp3-stat-v{
-  font-family:var(--n-font-display);font-style:italic;font-size:18px;color:#f5f4f0;line-height:1;
+  font-family:var(--n-font-display);font-style:italic;font-size:15px;color:#f5f4f0;line-height:1;
 }
 :is(#pg-community,#lt-preview-card) .fp3-stat-v.pos{color:#5fb389}
 :is(#pg-community,#lt-preview-card) .fp3-stat-l{
@@ -7200,7 +7207,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   color:var(--n-text-3);margin-top:4px;
 }
 /* Section header (Mindset / Confluences / Notes) */
-:is(#pg-community,#lt-preview-card) .fp3-sec{margin-bottom:14px}
+:is(#pg-community,#lt-preview-card) .fp3-sec{margin-bottom:10px}
 :is(#pg-community,#lt-preview-card) .fp3-sec-h{
   font-family:var(--n-font-mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;
   color:var(--n-text-3);margin-bottom:7px;
@@ -7221,7 +7228,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 /* Right column — outcome */
 :is(#pg-community,#lt-preview-card) .fp3-out{text-align:right;margin-bottom:10px}
 :is(#pg-community,#lt-preview-card) .fp3-pnl{
-  font-family:var(--n-font-display);font-style:italic;font-size:42px;line-height:1;
+  font-family:var(--n-font-display);font-style:italic;font-size:36px;line-height:1;
   letter-spacing:-.02em;
 }
 :is(#pg-community,#lt-preview-card) .fp3-pnl.win{color:#5fb389}
@@ -7255,7 +7262,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 }
 /* Notes (full width, bottom) */
 :is(#pg-community,#lt-preview-card) .fp3-notes-sec{
-  margin-top:4px;padding-top:16px;border-top:1px solid rgba(255,255,255,.04);
+  margin-top:4px;padding-top:12px;border-top:1px solid rgba(255,255,255,.04);
 }
 :is(#pg-community,#lt-preview-card) .fp3-notes{
   font-family:var(--n-font-sans);font-size:13px;font-style:italic;
@@ -7263,10 +7270,19 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 }
 /* Mobile — stack the grid, right column drops below left */
 @media (max-width:800px){
-  :is(#pg-community,#lt-preview-card) .fp3{padding:18px 18px}
-  :is(#pg-community,#lt-preview-card) .fp3-grid{grid-template-columns:1fr;gap:16px}
+  :is(#pg-community,#lt-preview-card) .fp3{padding:16px 16px}
+  :is(#pg-community,#lt-preview-card) .fp3-grid{grid-template-columns:1fr;gap:14px}
   :is(#pg-community,#lt-preview-card) .fp3-out{text-align:left}
-  :is(#pg-community,#lt-preview-card) .fp3-pnl{font-size:34px}
+  :is(#pg-community,#lt-preview-card) .fp3-pnl{font-size:30px}
+}
+/* Container query — stack to one column when the feed column itself is
+   too narrow for 1fr + 320px (tracks the real card width, not the
+   viewport). Without this the 1fr left column can collapse to 0 and
+   clip its content. */
+@container (max-width:620px){
+  :is(#pg-community,#lt-preview-card) .fp3-grid{grid-template-columns:1fr;gap:14px}
+  :is(#pg-community,#lt-preview-card) .fp3-out{text-align:left}
+  :is(#pg-community,#lt-preview-card) .fp3-pnl{font-size:30px}
 }
 
 /* Ultra-wide — cap the community page width + align internal feed
@@ -12842,24 +12858,32 @@ function renderFeedPostCard(p){
   var postId = p.isMe ? (t.id || '') : (p.row ? p.row.id : '');
   var safePid = safeText(postId);
 
-  // ── Author ────────────────────────────────────────────────────────
+  // ── Author — real profile avatar + display name (Session 17 follow-up).
+  // renderUserAvatar handles the lookup: profile image when set, finish-
+  // gradient circle with initials otherwise. dispName prefers the user's
+  // profile display name; @handle is the fallback.
   var handle   = safeText(_memberHandle(p) || p.username || 'member');
-  var avLetter = safeText((handle || 'M').charAt(0).toUpperCase());
+  var metaDn   = meta && meta.display_name;
+  var dispName = safeText(p.display_name || metaDn || p.username || handle || 'Member');
+  var nameLine = (p.display_name || metaDn) ? dispName : ('@' + handle);
+  var avHtml   = (typeof renderUserAvatar === 'function')
+    ? renderUserAvatar({
+        avatar_finish:   p.avatar_finish || p.color || p.avatar_color,
+        avatar_initials: p.avatar_initials || p.initials,
+        avatar_image_url: p.avatar_image_url,
+        username: p.username, name: dispName
+      }, 'sm')
+    : '<div class="fp3-av-fallback">'+safeText((handle||'M').charAt(0).toUpperCase())+'</div>';
   var commName = (typeof _comm !== 'undefined' && _comm && _comm.name) ? safeText(_comm.name) : '';
 
-  // ── Date + time — "MAY 16 · 9:35 AM" ──────────────────────────────
+  // ── Date — "MAY 16" (no time, Session 17 follow-up) ───────────────
   var rawDate  = meta.date || t.date || p.date || '';
   var tsSource = (p.row && p.row.created_at) || t.created_at
               || (t.id && Number(t.id) > 1e12 ? Number(t.id) : null) || '';
-  var tsHasTime = (typeof tsSource === 'number')
-               || (typeof tsSource === 'string' && /[T ]\d{2}:\d{2}/.test(tsSource));
-  var tsObj = tsSource ? new Date(tsSource) : null;
   var dateLabel = '';
-  if(tsObj && !isNaN(tsObj.getTime()) && tsHasTime){
-    dateLabel = tsObj.toLocaleDateString('en-US',{month:'short',day:'numeric'}).toUpperCase()
-      + ' · ' + tsObj.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-  } else if(rawDate){
-    var dStr = String(rawDate);
+  var dSrc = rawDate || tsSource;
+  if(dSrc){
+    var dStr = String(dSrc);
     var dObj = new Date(/^\d{4}-\d{2}-\d{2}$/.test(dStr) ? dStr + 'T12:00:00' : dStr);
     if(!isNaN(dObj)) dateLabel = dObj.toLocaleDateString('en-US',{month:'short',day:'numeric'}).toUpperCase();
   }
@@ -12995,8 +13019,8 @@ function renderFeedPostCard(p){
   // ── Assemble ──────────────────────────────────────────────────────
   return '<div class="post fp3 '+pnlClass+'" data-pid="'+safePid+'">'
     + '<div class="fp3-head"><div class="fp3-head-l">'
-    +   '<div class="fp3-av">'+avLetter+'</div>'
-    +   '<div class="fp3-id"><div class="fp3-handle">@'+handle+'</div>'
+    +   '<div class="fp3-av">'+avHtml+'</div>'
+    +   '<div class="fp3-id"><div class="fp3-handle">'+nameLine+'</div>'
     +     (subLine ? '<div class="fp3-sub">'+subLine+'</div>' : '')
     +   '</div>'
     + '</div></div>'
