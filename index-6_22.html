@@ -4007,6 +4007,31 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 .cf-cat-h{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--n-text-3);padding:11px 14px 4px}
 .cf-cat-h:first-child{padding-top:4px}
 .cf-lib-row .cf-lib-desc{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.03em;color:var(--n-text-3);margin-left:6px}
+/* Session 13 — tabbed picker */
+.cf-pk-tflabel{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--n-text-3);padding-bottom:7px}
+.cf-pk-tfmicro{text-transform:none;letter-spacing:0.01em;color:var(--n-text-3);opacity:.65;margin-left:6px}
+.cf-tf-chip.cf-tf-locked{opacity:.3;pointer-events:none}
+.cf-pk-tabs{display:flex;gap:4px;padding:11px 14px 0}
+.cf-pk-tab{flex:1;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.05em;text-transform:uppercase;color:var(--n-text-3);background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:7px;padding:8px 4px;cursor:pointer;white-space:nowrap;transition:.12s}
+.cf-pk-tab:hover{color:var(--n-text-2)}
+.cf-pk-tab.on{color:#5fb389;background:rgba(95,179,137,0.10);border-color:rgba(95,179,137,0.42)}
+.cf-pk-tab-n{opacity:.6}
+.cf-chips{display:flex;flex-wrap:wrap;gap:6px;padding:12px 14px 14px;max-height:208px;overflow-y:auto}
+.cf-chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--n-font-sans);font-size:13px;color:var(--n-text);background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:7px;padding:7px 12px;cursor:pointer;transition:.12s}
+.cf-chip:hover{border-color:rgba(255,255,255,0.26)}
+.cf-chip-name{line-height:1}
+.cf-chip-added{background:rgba(95,179,137,0.10);border-color:rgba(95,179,137,0.42)}
+.cf-chip-added .cf-chip-name{color:#5fb389}
+.cf-chip-added-l{font-family:var(--n-font-mono);font-size:7.5px;letter-spacing:0.1em;color:#5fb389;border:1px solid rgba(95,179,137,0.4);border-radius:3px;padding:1px 4px}
+.cf-chip-x{font-size:15px;line-height:1;color:var(--n-text-3);margin-left:1px}
+.cf-chip-x:hover{color:#c95f5f}
+.cf-chip-create{color:#5fb389;border-color:rgba(95,179,137,0.4);border-style:dashed}
+.cf-chip-create:hover{border-color:rgba(95,179,137,0.6)}
+.cf-chips-empty{width:100%;padding:18px 4px;text-align:center;font-family:var(--n-font-sans);font-size:12.5px;color:var(--n-text-3)}
+@media (max-width:600px){
+  .cf-pk-tab{font-size:8px;padding:8px 2px;letter-spacing:0.02em}
+  .cf-chips{max-height:180px}
+}
 
 /* Inline add-input (shown when user clicks "Add new") */
 :where(#pg-log, .cem-card) .cf-add-input-row{
@@ -9478,44 +9503,8 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
                 <span class="cf-hint" id="cf-hint">+ click to add confluences</span>
               </div>
 
-              <div class="cf-dropdown" id="cf-dropdown" style="display:none">
-                <div class="cf-dropdown-section">
-                  <div class="rw-field-l">Timeframe</div>
-                  <div class="cf-tf-chips" id="cf-tf-chips">
-                    <span class="cf-tf-chip" data-tf="1m"  onclick="cfSetTF('1m',this,event)">1m</span>
-                    <span class="cf-tf-chip" data-tf="5m"  onclick="cfSetTF('5m',this,event)">5m</span>
-                    <span class="cf-tf-chip" data-tf="15m" onclick="cfSetTF('15m',this,event)">15m</span>
-                    <span class="cf-tf-chip" data-tf="30m" onclick="cfSetTF('30m',this,event)">30m</span>
-                    <span class="cf-tf-chip active htf" data-tf="1hr" onclick="cfSetTF('1hr',this,event)">1hr</span>
-                    <span class="cf-tf-chip" data-tf="4h"  onclick="cfSetTF('4h',this,event)">4h</span>
-                    <span class="cf-tf-chip" data-tf="D"   onclick="cfSetTF('D',this,event)">D</span>
-                    <span class="cf-tf-chip" data-tf="W"   onclick="cfSetTF('W',this,event)">W</span>
-                    <span class="cf-tf-chip no-tf" data-tf="" onclick="cfSetTF(null,this,event)">No TF</span>
-                  </div>
-                </div>
-
-                <div class="cf-search">
-                  <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
-                  <input type="text" id="cf-search-input" placeholder="Type to filter or create new" oninput="cfOnSearchInput(this.value)"/>
-                </div>
-
-                <div class="cf-lib-header">
-                  <div class="rw-field-l">Your library</div>
-                </div>
-                <div class="cf-lib-list" id="cf-lib-list"></div>
-
-                <div class="cf-add-input-row" id="cf-add-input-row" style="display:none">
-                  <input type="text" id="cf-add-input" placeholder="New confluence name" maxlength="48"
-                    onkeydown="if(event.key==='Enter')cfConfirmAddLibrary();if(event.key==='Escape')cfCancelAddLibrary()"/>
-                  <button class="cf-add-confirm" onclick="cfConfirmAddLibrary()" aria-label="Add">&#10003;</button>
-                  <button class="cf-add-cancel" onclick="cfCancelAddLibrary()" aria-label="Cancel">&times;</button>
-                </div>
-
-                <div class="cf-dropdown-footer" id="cf-add-footer" onclick="cfShowAddInput()">
-                  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  <span id="cf-add-footer-text">Add new confluence</span>
-                </div>
-              </div>
+              <!-- Session 13 — picker body is JS-rendered by cfRenderPicker -->
+              <div class="cf-dropdown" id="cf-dropdown" style="display:none"></div>
               <div class="rw-helper">Tag your read on the chart &mdash; filterable in History &amp; Analytics.</div>
             </div>
 
@@ -10007,44 +9996,8 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
               <span class="cf-hint" id="cem-cf-hint">+ click to add confluences</span>
             </div>
 
-            <div class="cf-dropdown" id="cem-cf-dropdown" style="display:none">
-              <div class="cf-dropdown-section">
-                <div class="rw-field-l">Timeframe</div>
-                <div class="cf-tf-chips" id="cem-cf-tf-chips">
-                  <span class="cf-tf-chip" data-tf="1m"  onclick="cfSetTF('1m',this,event,cemConfluencesState)">1m</span>
-                  <span class="cf-tf-chip" data-tf="5m"  onclick="cfSetTF('5m',this,event,cemConfluencesState)">5m</span>
-                  <span class="cf-tf-chip" data-tf="15m" onclick="cfSetTF('15m',this,event,cemConfluencesState)">15m</span>
-                  <span class="cf-tf-chip" data-tf="30m" onclick="cfSetTF('30m',this,event,cemConfluencesState)">30m</span>
-                  <span class="cf-tf-chip active htf" data-tf="1hr" onclick="cfSetTF('1hr',this,event,cemConfluencesState)">1hr</span>
-                  <span class="cf-tf-chip" data-tf="4h"  onclick="cfSetTF('4h',this,event,cemConfluencesState)">4h</span>
-                  <span class="cf-tf-chip" data-tf="D"   onclick="cfSetTF('D',this,event,cemConfluencesState)">D</span>
-                  <span class="cf-tf-chip" data-tf="W"   onclick="cfSetTF('W',this,event,cemConfluencesState)">W</span>
-                  <span class="cf-tf-chip no-tf" data-tf="" onclick="cfSetTF(null,this,event,cemConfluencesState)">No TF</span>
-                </div>
-              </div>
-
-              <div class="cf-search">
-                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
-                <input type="text" id="cem-cf-search-input" placeholder="Type to filter or create new" oninput="cfOnSearchInput(this.value, cemConfluencesState)"/>
-              </div>
-
-              <div class="cf-lib-header">
-                <div class="rw-field-l">Your library</div>
-              </div>
-              <div class="cf-lib-list" id="cem-cf-lib-list"></div>
-
-              <div class="cf-add-input-row" id="cem-cf-add-input-row" style="display:none">
-                <input type="text" id="cem-cf-add-input" placeholder="New confluence name" maxlength="48"
-                  onkeydown="if(event.key==='Enter')cfConfirmAddLibrary(cemConfluencesState);if(event.key==='Escape')cfCancelAddLibrary(cemConfluencesState)"/>
-                <button class="cf-add-confirm" onclick="cfConfirmAddLibrary(cemConfluencesState)" aria-label="Add">&#10003;</button>
-                <button class="cf-add-cancel" onclick="cfCancelAddLibrary(cemConfluencesState)" aria-label="Cancel">&times;</button>
-              </div>
-
-              <div class="cf-dropdown-footer" id="cem-cf-add-footer" onclick="cfShowAddInput(cemConfluencesState)">
-                <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                <span id="cem-cf-add-footer-text">Add new confluence</span>
-              </div>
-            </div>
+            <!-- Session 13 — picker body is JS-rendered by cfRenderPicker -->
+            <div class="cf-dropdown" id="cem-cf-dropdown" style="display:none"></div>
             <div class="rw-helper">Tag your read on the chart &mdash; filterable in History &amp; Analytics.</div>
           </div>
 
@@ -18356,24 +18309,34 @@ function cfTierFor(tf){ return tf ? (CF_TF_TIER[tf] || 'none') : 'none'; }
 // Selecting a preset get-or-creates a real `confluences` library row
 // (via addToLibrary) so trade_confluences always has a valid id.
 const CF_PRESETS = {
-  ict: [
+  default: [
     { name:'FVG',         desc:'Fair Value Gap' },
     { name:'Liq Sweep',   desc:'Liquidity Sweep' },
     { name:'CISD',        desc:'Change in State of Delivery' },
     { name:'Order Block', desc:'OB' },
     { name:'Breaker',     desc:'' },
     { name:'IFVG',        desc:'Inverse Fair Value Gap' },
+    { name:'RB',          desc:'Rejection Block' },
+    { name:'CISD RB',     desc:'CISD Rejection Block' },
+    { name:'LQS RB',      desc:'Liquidity Sweep Rejection Block' },
+    { name:'Pivots',      desc:'' },
   ],
   key_opens: [
     { name:'00:00', desc:'Asia open' },
-    { name:'10:00', desc:'post-NY open' },
-    { name:'18:00', desc:'Asia open' },
+    { name:'10:00', desc:'NY post-open' },
+    { name:'18:00', desc:'Asia evening' },
   ],
 };
 const CF_PRESET_NAMES = {};
-['ict','key_opens'].forEach(function(cat){
+['default','key_opens'].forEach(function(cat){
   CF_PRESETS[cat].forEach(function(p){ CF_PRESET_NAMES[p.name.toLowerCase()] = true; });
 });
+// Picker tab metadata — order + display label.
+const CF_TABS = [
+  { key:'default',   label:'Default' },
+  { key:'key_opens', label:'Key Opens' },
+  { key:'custom',    label:'Your Custom' },
+];
 
 // Chunk 4 / Issue 1 — picker is now multi-instance.
 // confluencesState is the Log Trade instance (prefix 'cf-').
@@ -18724,66 +18687,159 @@ function cfRenderPills(state){
   hint.textContent = list.length > 0 ? '+ add more' : '+ click to add confluences';
 }
 
-function cfRenderLibrary(state){
+// Session 13 — picker is a 3-tab layout. The dropdown body is JS-rendered
+// (cfRenderPicker on open); cfRenderLibrary refreshes only the dynamic
+// tabs + chips so the search input keeps focus.
+function _cfStateRef(state){
+  return (state === cemConfluencesState) ? 'cemConfluencesState'
+       : (state === csvRowConfluencesState) ? 'csvRowConfluencesState'
+       : 'confluencesState';
+}
+const CF_TF_LIST = ['1m','5m','15m','30m','1hr','4h','D','W'];
+
+// Build the full dropdown body once, on open.
+function cfRenderPicker(state){
   state = state || confluencesState;
-  const list = document.getElementById(state.prefix + '-lib-list');
-  if (!list) return;
+  const dd = document.getElementById(state.prefix + '-dropdown');
+  if (!dd) return;
+  const ref = _cfStateRef(state);
+  const tfChips = CF_TF_LIST.map(function(tf){
+    return '<span class="cf-tf-chip" data-tf="' + tf + '" ' +
+      'onclick="cfSetTF(\'' + tf + '\',this,event,' + ref + ')">' + tf + '</span>';
+  }).join('') +
+    '<span class="cf-tf-chip no-tf" data-tf="" onclick="cfSetTF(null,this,event,' + ref + ')">No TF</span>';
+  dd.innerHTML =
+    '<div class="cf-dropdown-section">' +
+      '<div class="cf-pk-tflabel">Timeframe' +
+        '<span class="cf-pk-tfmicro">for next confluence added</span></div>' +
+      '<div class="cf-tf-chips" id="' + state.prefix + '-tf-chips">' + tfChips + '</div>' +
+    '</div>' +
+    '<div class="cf-search">' +
+      '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>' +
+      '<input type="text" id="' + state.prefix + '-search-input" ' +
+        'placeholder="Search or type to create new..." ' +
+        'oninput="cfOnSearchInput(this.value,' + ref + ')"/>' +
+    '</div>' +
+    '<div class="cf-pk-tabs" id="' + state.prefix + '-tabs"></div>' +
+    '<div class="cf-chips" id="' + state.prefix + '-chips"></div>';
+  cfRenderTabs(state);
+  cfRenderChips(state);
+  cfRenderTFChips(state);
+}
+
+function cfRenderTabs(state){
+  state = state || confluencesState;
+  const wrap = document.getElementById(state.prefix + '-tabs');
+  if (!wrap) return;
+  const ref = _cfStateRef(state);
+  const active = state.activeTab || 'default';
   const lib = state.library || [];
+  const counts = {
+    default: CF_PRESETS.default.length,
+    key_opens: CF_PRESETS.key_opens.length,
+    custom: lib.filter(function(c){ return !CF_PRESET_NAMES[c.name.toLowerCase()]; }).length,
+  };
+  wrap.innerHTML = CF_TABS.map(function(t){
+    return '<button type="button" class="cf-pk-tab' + (t.key === active ? ' on' : '') + '" ' +
+      'onclick="cfSetTab(\'' + t.key + '\',' + ref + ')">' +
+      _cfEsc(t.label) + ' <span class="cf-pk-tab-n">' + counts[t.key] + '</span></button>';
+  }).join('');
+}
+
+// Re-render only the chip grid for the active tab. Keeps the search input.
+function cfRenderChips(state){
+  state = state || confluencesState;
+  const grid = document.getElementById(state.prefix + '-chips');
+  if (!grid) return;
   const q = (state.searchQuery || '').trim().toLowerCase();
-  const tf = state.activeTF;
-  const previewPrefix = tf ? (tf + ' · ') : '';
-  const match = function(name){ return !q || name.toLowerCase().indexOf(q) >= 0; };
+  const tab = state.activeTab || 'default';
+  const lib = state.library || [];
+  const added = {};
+  (state.selected || []).forEach(function(p){ if (p.name) added[p.name.toLowerCase()] = true; });
 
-  // Preset row — non-deletable; selecting it get-or-creates a library row.
-  function presetRow(p){
-    if (!match(p.name)) return '';
-    return '<div class="cf-lib-row cf-lib-preset" data-name="' + _cfEsc(p.name) + '">' +
-      '<span class="cf-lib-name">' + _cfEsc(p.name) +
-        (p.desc ? ' <span class="cf-lib-desc">' + _cfEsc(p.desc) + '</span>' : '') + '</span>' +
-      '<span class="cf-lib-preview">+ add as ' + _cfEsc(previewPrefix + p.name) + '</span>' +
-    '</div>';
+  let items;
+  if (tab === 'default') {
+    items = CF_PRESETS.default.map(function(p){ return { name:p.name, desc:p.desc, preset:true }; });
+  } else if (tab === 'key_opens') {
+    items = CF_PRESETS.key_opens.map(function(p){ return { name:p.name, desc:p.desc, preset:true }; });
+  } else {
+    items = lib.filter(function(c){ return !CF_PRESET_NAMES[c.name.toLowerCase()]; })
+               .map(function(c){ return { name:c.name, id:c.id, preset:false }; });
   }
-  // Custom row — a real library entry; keeps the soft-archive × button.
-  function customRow(c){
-    if (!match(c.name)) return '';
-    return '<div class="cf-lib-row" data-id="' + c.id + '" data-name="' + _cfEsc(c.name) + '">' +
-      '<span class="cf-lib-name">' + _cfEsc(c.name) + '</span>' +
-      '<span class="cf-lib-preview">+ add as ' + _cfEsc(previewPrefix + c.name) + '</span>' +
-      '<button type="button" class="cf-lib-x" title="Remove from library" aria-label="Remove ' + _cfEsc(c.name) + ' from library" ' +
-              'onclick="event.stopPropagation();cfOnLibDeleteClick(this.parentNode.dataset.id, this.parentNode.dataset.name)">' +
-        '&times;' +
-      '</button>' +
-    '</div>';
-  }
+  const filtered = q ? items.filter(function(it){ return it.name.toLowerCase().indexOf(q) >= 0; }) : items;
 
-  const ictRows = CF_PRESETS.ict.map(presetRow).join('');
-  const koRows  = CF_PRESETS.key_opens.map(presetRow).join('');
-  // Custom = the user's library minus anything matching a preset name.
-  const customLib = lib.filter(c => !CF_PRESET_NAMES[c.name.toLowerCase()]);
-  const customRows = customLib.map(customRow).join('');
+  let html = filtered.map(function(it){
+    const isAdded = added[it.name.toLowerCase()];
+    return '<button type="button" class="cf-chip' + (isAdded ? ' cf-chip-added' : '') + '" ' +
+      'data-name="' + _cfEsc(it.name) + '"' + (it.id ? (' data-id="' + _cfEsc(it.id) + '"') : '') +
+      (it.preset ? '' : ' data-custom="1"') +
+      (it.desc ? (' title="' + _cfEsc(it.desc) + '"') : '') + '>' +
+      '<span class="cf-chip-name">' + _cfEsc(it.name) + '</span>' +
+      (isAdded ? '<span class="cf-chip-added-l">Added</span>' : '') +
+      (it.preset ? '' : '<span class="cf-chip-x" title="Remove from library">&times;</span>') +
+    '</button>';
+  }).join('');
 
-  let html = '';
-  if (ictRows) html += '<div class="cf-cat-h">ICT</div>' + ictRows;
-  if (koRows)  html += '<div class="cf-cat-h">Key Opens</div>' + koRows;
-  if (customRows) {
-    html += '<div class="cf-cat-h">Custom</div>' + customRows;
-  } else if (!q) {
-    html += '<div class="cf-cat-h">Custom</div>' +
-      '<div class="cf-lib-empty">No custom confluences yet — tap ' +
-      '<span class="cf-emph">+ Add new confluence</span> below.</div>';
-  }
-  if (!html) html = '<div class="cf-lib-empty">No matches.</div>';
-  list.innerHTML = html;
-
-  // Wire row clicks — presets get-or-create a library row, customs add by id.
-  list.querySelectorAll('.cf-lib-row').forEach(row => {
-    if (row.classList.contains('cf-lib-preset')) {
-      row.addEventListener('click', () => cfOnPresetRowClick(row.dataset.name, state));
-    } else {
-      row.addEventListener('click', () => cfOnLibRowClick(row.dataset.id, state));
+  // "+ Create" affordance — search has no match.
+  if (q.length >= 2) {
+    const anyMatch =
+      CF_PRESETS.default.some(function(p){ return p.name.toLowerCase().indexOf(q) >= 0; }) ||
+      CF_PRESETS.key_opens.some(function(p){ return p.name.toLowerCase().indexOf(q) >= 0; }) ||
+      lib.some(function(c){ return c.name.toLowerCase().indexOf(q) >= 0; });
+    const showCreate = (tab === 'custom') ? (filtered.length === 0) : (!anyMatch);
+    if (showCreate) {
+      html += '<button type="button" class="cf-chip cf-chip-create" data-create="1">' +
+        '+ Create &ldquo;' + _cfEsc((state.searchQuery || '').trim()) + '&rdquo;</button>';
     }
+  }
+  if (!html) {
+    html = '<div class="cf-chips-empty">' + (tab === 'custom'
+      ? 'No custom confluences yet — type a name above to create one.'
+      : 'No matches.') + '</div>';
+  }
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('.cf-chip').forEach(function(chip){
+    if (chip.dataset.create) {
+      chip.addEventListener('click', function(){ cfCreateFromSearch(state); });
+      return;
+    }
+    chip.addEventListener('click', function(ev){
+      if (ev.target.closest('.cf-chip-x')) {
+        ev.stopPropagation();
+        cfOnLibDeleteClick(chip.dataset.id, chip.dataset.name);
+        return;
+      }
+      if (chip.dataset.custom) cfOnLibRowClick(chip.dataset.id, state);
+      else cfOnPresetRowClick(chip.dataset.name, state);
+    });
   });
 }
+
+// Refresh the dynamic parts (tabs + chips). Safe no-op if picker is closed.
+function cfRenderLibrary(state){
+  state = state || confluencesState;
+  cfRenderTabs(state);
+  cfRenderChips(state);
+}
+
+function cfSetTab(tab, state){
+  state = state || confluencesState;
+  const cur = state.activeTab || 'default';
+  if (cur === tab) return;
+  // Key Opens locks TF to none; leaving it restores the prior selection.
+  if (tab === 'key_opens') {
+    if (cur !== 'key_opens') state.savedTF = state.activeTF;
+    state.setTF(null);
+  } else if (cur === 'key_opens') {
+    state.setTF(state.savedTF != null ? state.savedTF : '15m');
+  }
+  state.activeTab = tab;
+  cfRenderTabs(state);
+  cfRenderTFChips(state);
+  cfRenderChips(state);
+}
+window.cfSetTab = cfSetTab;
 
 // Preset selected — ensure a real `confluences` row exists (addToLibrary
 // is idempotent + restores soft-archived rows), then add the pill.
@@ -18797,16 +18853,38 @@ async function cfOnPresetRowClick(name, state){
 }
 window.cfOnPresetRowClick = cfOnPresetRowClick;
 
+// Search bar "+ Create" — creates a custom confluence + adds it.
+async function cfCreateFromSearch(state){
+  state = state || confluencesState;
+  const q = (state.searchQuery || '').trim();
+  if (!q) return;
+  const c = await state.addToLibrary(q);
+  if (!c) return;
+  const added = state.addPill(c);
+  state.searchQuery = '';
+  state.activeTab = 'custom';
+  const si = document.getElementById(state.prefix + '-search-input');
+  if (si) si.value = '';
+  if (added) cfRenderPills(state);
+  cfRenderTabs(state);
+  cfRenderTFChips(state);
+  cfRenderChips(state);
+}
+window.cfCreateFromSearch = cfCreateFromSearch;
+
 function cfRenderTFChips(state){
   state = state || confluencesState;
+  // Key Opens tab locks the TF to "No TF" — the rest go disabled.
+  const locked = (state.activeTab === 'key_opens');
   document.querySelectorAll('#' + state.prefix + '-tf-chips .cf-tf-chip').forEach(chip => {
     const tf = chip.dataset.tf || null;
-    const isActive = (state.activeTF === (tf || null));
-    chip.classList.remove('active','htf','mid','ltf');
+    chip.classList.remove('active','htf','mid','ltf','cf-tf-locked');
+    const isActive = locked ? (tf === null) : (state.activeTF === (tf || null));
     if (isActive) {
       chip.classList.add('active');
       chip.classList.add(cfTierFor(tf));
     }
+    if (locked && tf !== null) chip.classList.add('cf-tf-locked');
   });
 }
 
@@ -18828,6 +18906,13 @@ function cfTogglePicker(forceOpen, state){
   if (!dd) return;
   const willOpen = (typeof forceOpen === 'boolean') ? forceOpen : (dd.style.display === 'none');
   if (willOpen) {
+    // Tab + search reset on every open (Session 13). Restore TF if the
+    // last session left it locked on Key Opens.
+    if (state.activeTab === 'key_opens') {
+      state.setTF(state.savedTF != null ? state.savedTF : '15m');
+    }
+    state.activeTab = 'default';
+    state.searchQuery = '';
     // Lazy-load library on first open (any picker triggers the load).
     if (state.library === null) {
       state.loadLibrary().then(function(){ cfRenderLibrary(state); });
@@ -18835,13 +18920,11 @@ function cfTogglePicker(forceOpen, state){
     dd.style.display = '';
     if (pills) pills.classList.add('open');
     state.pickerOpen = true;
-    cfRenderLibrary(state);
-    cfRenderTFChips(state);
+    cfRenderPicker(state);
   } else {
     dd.style.display = 'none';
     if (pills) pills.classList.remove('open');
     state.pickerOpen = false;
-    cfCancelAddLibrary(state);
   }
 }
 window.cfTogglePicker = cfTogglePicker;
@@ -18849,28 +18932,18 @@ window.cfTogglePicker = cfTogglePicker;
 function cfSetTF(tf, el, event, state){
   state = state || confluencesState;
   if (event) event.stopPropagation();
+  if (state.activeTab === 'key_opens') return;   // TF locked on Key Opens
   // Click active chip again → unset (back to "No TF" state).
   if (state.activeTF === tf) state.setTF(null);
   else state.setTF(tf);
   cfRenderTFChips(state);
-  cfRenderLibrary(state);   // preview text updates
 }
 window.cfSetTF = cfSetTF;
 
 function cfOnSearchInput(value, state){
   state = state || confluencesState;
   state.searchQuery = value || '';
-  cfRenderLibrary(state);
-  // Pre-fill the "+ Add new" footer text when search has no matches.
-  const lib = state.library || [];
-  const q = state.searchQuery.trim();
-  const footerText = document.getElementById(state.prefix + '-add-footer-text');
-  if (!footerText) return;
-  if (q.length >= 2 && !lib.some(c => c.name.toLowerCase().includes(q.toLowerCase()))) {
-    footerText.textContent = 'Add "' + q + '" to library';
-  } else {
-    footerText.textContent = 'Add new confluence to library';
-  }
+  cfRenderChips(state);
 }
 window.cfOnSearchInput = cfOnSearchInput;
 
@@ -18880,63 +18953,9 @@ function cfOnLibRowClick(confluenceId, state){
   if (!c) return;
   const added = state.addPill(c);
   if (added) cfRenderPills(state);
+  cfRenderChips(state);   // refresh the "Added" indicator
 }
 window.cfOnLibRowClick = cfOnLibRowClick;
-
-function cfShowAddInput(state){
-  state = state || confluencesState;
-  state.addInputOpen = true;
-  const row = document.getElementById(state.prefix + '-add-input-row');
-  const footer = document.getElementById(state.prefix + '-add-footer');
-  const input = document.getElementById(state.prefix + '-add-input');
-  if (row) row.style.display = '';
-  if (footer) footer.style.display = 'none';
-  if (input) {
-    // Prefill with the current search query if it has no matches in lib.
-    const q = (state.searchQuery || '').trim();
-    const lib = state.library || [];
-    const noMatch = q.length >= 2 && !lib.some(c => c.name.toLowerCase().includes(q.toLowerCase()));
-    input.value = noMatch ? q : '';
-    setTimeout(() => { input.focus(); input.select(); }, 30);
-  }
-}
-window.cfShowAddInput = cfShowAddInput;
-
-function cfCancelAddLibrary(state){
-  state = state || confluencesState;
-  state.addInputOpen = false;
-  const row = document.getElementById(state.prefix + '-add-input-row');
-  const footer = document.getElementById(state.prefix + '-add-footer');
-  const input = document.getElementById(state.prefix + '-add-input');
-  if (row) row.style.display = 'none';
-  if (footer) footer.style.display = '';
-  if (input) input.value = '';
-}
-window.cfCancelAddLibrary = cfCancelAddLibrary;
-
-async function cfConfirmAddLibrary(state){
-  state = state || confluencesState;
-  const input = document.getElementById(state.prefix + '-add-input');
-  if (!input) return;
-  const name = (input.value || '').trim();
-  if (!name) { input.focus(); return; }
-  const c = await state.addToLibrary(name);
-  if (!c) return;  // toast already raised on failure
-  // Auto-add a pill with the current TF (in THIS picker's instance).
-  const added = state.addPill(c);
-  cfCancelAddLibrary(state);
-  // Clear search so the newly-added row is visible in the unfiltered list.
-  state.searchQuery = '';
-  const searchInput = document.getElementById(state.prefix + '-search-input');
-  if (searchInput) searchInput.value = '';
-  // Re-render the active picker's library + pills. Since addToLibrary
-  // operates on the shared confluencesState.library (true-restore /
-  // insert), the OTHER picker's next render will see the new entry too —
-  // no need to re-render it now (its library list won't be visible).
-  cfRenderLibrary(state);
-  if (added) cfRenderPills(state);
-}
-window.cfConfirmAddLibrary = cfConfirmAddLibrary;
 
 /* ─── Chunk 2.6 — Library entry delete (soft-archive) ─────── */
 
@@ -21629,38 +21648,8 @@ function ciRenderEnrichZone(idx){
         '<div class="cf-pills" id="csv-row-cf-pills" onclick="event.stopPropagation();cfTogglePicker(undefined, csvRowConfluencesState)">' +
           '<span class="cf-hint" id="csv-row-cf-hint">+ click to add confluences</span>' +
         '</div>' +
-        '<div class="cf-dropdown" id="csv-row-cf-dropdown" style="display:none">' +
-          '<div class="cf-dropdown-section">' +
-            '<div class="rw-field-l">Timeframe</div>' +
-            '<div class="cf-tf-chips" id="csv-row-cf-tf-chips">' +
-              '<span class="cf-tf-chip" data-tf="1m"  onclick="cfSetTF(\'1m\',this,event,csvRowConfluencesState)">1m</span>' +
-              '<span class="cf-tf-chip" data-tf="5m"  onclick="cfSetTF(\'5m\',this,event,csvRowConfluencesState)">5m</span>' +
-              '<span class="cf-tf-chip" data-tf="15m" onclick="cfSetTF(\'15m\',this,event,csvRowConfluencesState)">15m</span>' +
-              '<span class="cf-tf-chip" data-tf="30m" onclick="cfSetTF(\'30m\',this,event,csvRowConfluencesState)">30m</span>' +
-              '<span class="cf-tf-chip active htf" data-tf="1hr" onclick="cfSetTF(\'1hr\',this,event,csvRowConfluencesState)">1hr</span>' +
-              '<span class="cf-tf-chip" data-tf="4h"  onclick="cfSetTF(\'4h\',this,event,csvRowConfluencesState)">4h</span>' +
-              '<span class="cf-tf-chip" data-tf="D"   onclick="cfSetTF(\'D\',this,event,csvRowConfluencesState)">D</span>' +
-              '<span class="cf-tf-chip" data-tf="W"   onclick="cfSetTF(\'W\',this,event,csvRowConfluencesState)">W</span>' +
-              '<span class="cf-tf-chip no-tf" data-tf="" onclick="cfSetTF(null,this,event,csvRowConfluencesState)">No TF</span>' +
-            '</div>' +
-          '</div>' +
-          '<div class="cf-search">' +
-            '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>' +
-            '<input type="text" id="csv-row-cf-search-input" placeholder="Type to filter or create new" oninput="cfOnSearchInput(this.value, csvRowConfluencesState)"/>' +
-          '</div>' +
-          '<div class="cf-lib-header"><div class="rw-field-l">Your library</div></div>' +
-          '<div class="cf-lib-list" id="csv-row-cf-lib-list"></div>' +
-          '<div class="cf-add-input-row" id="csv-row-cf-add-input-row" style="display:none">' +
-            '<input type="text" id="csv-row-cf-add-input" placeholder="New confluence name" maxlength="48" '+
-                   'onkeydown="if(event.key===\'Enter\')cfConfirmAddLibrary(csvRowConfluencesState);if(event.key===\'Escape\')cfCancelAddLibrary(csvRowConfluencesState)"/>' +
-            '<button class="cf-add-confirm" onclick="cfConfirmAddLibrary(csvRowConfluencesState)">&#10003;</button>' +
-            '<button class="cf-add-cancel" onclick="cfCancelAddLibrary(csvRowConfluencesState)">&times;</button>' +
-          '</div>' +
-          '<div class="cf-dropdown-footer" id="csv-row-cf-add-footer" onclick="cfShowAddInput(csvRowConfluencesState)">' +
-            '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-            '<span id="csv-row-cf-add-footer-text">Add new confluence</span>' +
-          '</div>' +
-        '</div>' +
+        /* Session 13 — picker body is JS-rendered by cfRenderPicker */
+        '<div class="cf-dropdown" id="csv-row-cf-dropdown" style="display:none"></div>' +
       '</div>' +
     /* Notes — part of the Analysis column. Inline oninput retained, but
        the primary binding is via addEventListener below. */
