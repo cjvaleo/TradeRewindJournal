@@ -4025,8 +4025,10 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 .cf-chip-added-l{font-family:var(--n-font-mono);font-size:7.5px;letter-spacing:0.1em;color:#5fb389;border:1px solid rgba(95,179,137,0.4);border-radius:3px;padding:1px 4px}
 .cf-chip-x{font-size:15px;line-height:1;color:var(--n-text-3);margin-left:1px}
 .cf-chip-x:hover{color:#c95f5f}
-.cf-chip-create{color:#5fb389;border-color:rgba(95,179,137,0.4);border-style:dashed}
-.cf-chip-create:hover{border-color:rgba(95,179,137,0.6)}
+.cf-chip-new{font-size:12px;color:var(--n-text-3);border:1px dashed rgba(255,255,255,0.15);background:transparent}
+.cf-chip-new:hover{border-color:rgba(255,255,255,0.32);color:var(--n-text-2)}
+.cf-chip-newinput{font-family:var(--n-font-sans);font-size:13px;color:var(--n-text);background:transparent;border:1px dashed rgba(95,179,137,0.55);border-radius:7px;padding:7px 12px;width:124px;outline:none}
+.cf-chip-newinput::placeholder{color:var(--n-text-3)}
 .cf-chips-empty{width:100%;padding:18px 4px;text-align:center;font-family:var(--n-font-sans);font-size:12.5px;color:var(--n-text-3)}
 @media (max-width:600px){
   .cf-pk-tab{font-size:8px;padding:8px 2px;letter-spacing:0.02em}
@@ -18714,12 +18716,6 @@ function cfRenderPicker(state){
         '<span class="cf-pk-tfmicro">for next confluence added</span></div>' +
       '<div class="cf-tf-chips" id="' + state.prefix + '-tf-chips">' + tfChips + '</div>' +
     '</div>' +
-    '<div class="cf-search">' +
-      '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>' +
-      '<input type="text" id="' + state.prefix + '-search-input" ' +
-        'placeholder="Search or type to create new..." ' +
-        'oninput="cfOnSearchInput(this.value,' + ref + ')"/>' +
-    '</div>' +
     '<div class="cf-pk-tabs" id="' + state.prefix + '-tabs"></div>' +
     '<div class="cf-chips" id="' + state.prefix + '-chips"></div>';
   cfRenderTabs(state);
@@ -18746,12 +18742,12 @@ function cfRenderTabs(state){
   }).join('');
 }
 
-// Re-render only the chip grid for the active tab. Keeps the search input.
+// Re-render the chip grid for the active tab.
 function cfRenderChips(state){
   state = state || confluencesState;
   const grid = document.getElementById(state.prefix + '-chips');
   if (!grid) return;
-  const q = (state.searchQuery || '').trim().toLowerCase();
+  const ref = _cfStateRef(state);
   const tab = state.activeTab || 'default';
   const lib = state.library || [];
   const added = {};
@@ -18766,9 +18762,8 @@ function cfRenderChips(state){
     items = lib.filter(function(c){ return !CF_PRESET_NAMES[c.name.toLowerCase()]; })
                .map(function(c){ return { name:c.name, id:c.id, preset:false }; });
   }
-  const filtered = q ? items.filter(function(it){ return it.name.toLowerCase().indexOf(q) >= 0; }) : items;
 
-  let html = filtered.map(function(it){
+  let html = items.map(function(it){
     const isAdded = added[it.name.toLowerCase()];
     return '<button type="button" class="cf-chip' + (isAdded ? ' cf-chip-added' : '') + '" ' +
       'data-name="' + _cfEsc(it.name) + '"' + (it.id ? (' data-id="' + _cfEsc(it.id) + '"') : '') +
@@ -18780,30 +18775,25 @@ function cfRenderChips(state){
     '</button>';
   }).join('');
 
-  // "+ Create" affordance — search has no match.
-  if (q.length >= 2) {
-    const anyMatch =
-      CF_PRESETS.default.some(function(p){ return p.name.toLowerCase().indexOf(q) >= 0; }) ||
-      CF_PRESETS.key_opens.some(function(p){ return p.name.toLowerCase().indexOf(q) >= 0; }) ||
-      lib.some(function(c){ return c.name.toLowerCase().indexOf(q) >= 0; });
-    const showCreate = (tab === 'custom') ? (filtered.length === 0) : (!anyMatch);
-    if (showCreate) {
-      html += '<button type="button" class="cf-chip cf-chip-create" data-create="1">' +
-        '+ Create &ldquo;' + _cfEsc((state.searchQuery || '').trim()) + '&rdquo;</button>';
-    }
+  // YOUR CUSTOM tab — trailing "+ New" chip / inline name input.
+  if (tab === 'custom') {
+    html += state.newChipEditing
+      ? '<input type="text" class="cf-chip cf-chip-newinput" id="' + state.prefix + '-newchip-input" ' +
+          'maxlength="48" placeholder="Name…" ' +
+          'onkeydown="cfNewChipKey(event,' + ref + ')" onblur="cfNewChipBlur(' + ref + ')"/>'
+      : '<button type="button" class="cf-chip cf-chip-new" data-new="1">+ New</button>';
   }
   if (!html) {
-    html = '<div class="cf-chips-empty">' + (tab === 'custom'
-      ? 'No custom confluences yet — type a name above to create one.'
-      : 'No matches.') + '</div>';
+    html = '<div class="cf-chips-empty">No matches.</div>';
   }
   grid.innerHTML = html;
 
   grid.querySelectorAll('.cf-chip').forEach(function(chip){
-    if (chip.dataset.create) {
-      chip.addEventListener('click', function(){ cfCreateFromSearch(state); });
+    if (chip.dataset.new) {
+      chip.addEventListener('click', function(){ cfNewChipStart(state); });
       return;
     }
+    if (chip.classList.contains('cf-chip-newinput')) return;   // input, not a button
     chip.addEventListener('click', function(ev){
       if (ev.target.closest('.cf-chip-x')) {
         ev.stopPropagation();
@@ -18814,6 +18804,11 @@ function cfRenderChips(state){
       else cfOnPresetRowClick(chip.dataset.name, state);
     });
   });
+
+  if (state.newChipEditing) {
+    const inp = document.getElementById(state.prefix + '-newchip-input');
+    if (inp) setTimeout(function(){ inp.focus(); }, 0);
+  }
 }
 
 // Refresh the dynamic parts (tabs + chips). Safe no-op if picker is closed.
@@ -18835,6 +18830,7 @@ function cfSetTab(tab, state){
     state.setTF(state.savedTF != null ? state.savedTF : '15m');
   }
   state.activeTab = tab;
+  state.newChipEditing = false;   // leaving custom cancels any in-progress new chip
   cfRenderTabs(state);
   cfRenderTFChips(state);
   cfRenderChips(state);
@@ -18853,24 +18849,52 @@ async function cfOnPresetRowClick(name, state){
 }
 window.cfOnPresetRowClick = cfOnPresetRowClick;
 
-// Search bar "+ Create" — creates a custom confluence + adds it.
-async function cfCreateFromSearch(state){
+// "+ New" chip (Your Custom tab) — inline-edit flow to create a custom.
+function cfNewChipStart(state){
   state = state || confluencesState;
-  const q = (state.searchQuery || '').trim();
-  if (!q) return;
-  const c = await state.addToLibrary(q);
-  if (!c) return;
-  const added = state.addPill(c);
-  state.searchQuery = '';
-  state.activeTab = 'custom';
-  const si = document.getElementById(state.prefix + '-search-input');
-  if (si) si.value = '';
-  if (added) cfRenderPills(state);
-  cfRenderTabs(state);
-  cfRenderTFChips(state);
+  state.newChipEditing = true;
   cfRenderChips(state);
 }
-window.cfCreateFromSearch = cfCreateFromSearch;
+window.cfNewChipStart = cfNewChipStart;
+
+function cfNewChipKey(event, state){
+  state = state || confluencesState;
+  if (event.key === 'Enter')  { event.preventDefault(); cfNewChipCommit(state); }
+  else if (event.key === 'Escape') { event.preventDefault(); cfNewChipCancel(state); }
+}
+window.cfNewChipKey = cfNewChipKey;
+
+function cfNewChipBlur(state){
+  state = state || confluencesState;
+  if (!state.newChipEditing) return;   // already committed / cancelled
+  const input = document.getElementById(state.prefix + '-newchip-input');
+  const name = input ? (input.value || '').trim() : '';
+  if (name) cfNewChipCommit(state);
+  else cfNewChipCancel(state);
+}
+window.cfNewChipBlur = cfNewChipBlur;
+
+function cfNewChipCancel(state){
+  state = state || confluencesState;
+  state.newChipEditing = false;
+  cfRenderChips(state);
+}
+
+async function cfNewChipCommit(state){
+  state = state || confluencesState;
+  if (!state.newChipEditing) return;
+  const input = document.getElementById(state.prefix + '-newchip-input');
+  const name = input ? (input.value || '').trim() : '';
+  state.newChipEditing = false;            // set first so the blur handler no-ops
+  if (!name) { cfRenderChips(state); return; }
+  const c = await state.addToLibrary(name);
+  if (!c) { cfRenderChips(state); return; }
+  const added = state.addPill(c);          // auto-select with the current TF
+  if (added) cfRenderPills(state);
+  cfRenderTabs(state);                     // custom count changed
+  cfRenderChips(state);                    // new chip + a fresh "+ New"
+}
+window.cfNewChipCommit = cfNewChipCommit;
 
 function cfRenderTFChips(state){
   state = state || confluencesState;
@@ -18939,13 +18963,6 @@ function cfSetTF(tf, el, event, state){
   cfRenderTFChips(state);
 }
 window.cfSetTF = cfSetTF;
-
-function cfOnSearchInput(value, state){
-  state = state || confluencesState;
-  state.searchQuery = value || '';
-  cfRenderChips(state);
-}
-window.cfOnSearchInput = cfOnSearchInput;
 
 function cfOnLibRowClick(confluenceId, state){
   state = state || confluencesState;
