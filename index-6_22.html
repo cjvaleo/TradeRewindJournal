@@ -18789,8 +18789,8 @@ function cfRenderChips(state){
   // YOUR CUSTOM tab — empty-state helper + trailing "+ New" chip / input.
   if (tab === 'custom') {
     if (items.length === 0) {
-      html += '<div class="cf-chips-hint">Add your own confluences. ' +
-        'Click + New to add one.</div>';
+      html += '<div class="cf-chips-hint">Click + New, type a name, ' +
+        'then press Enter to save.</div>';
     }
     html += state.newChipEditing
       ? '<input type="text" class="cf-chip cf-chip-newinput" id="' + state.prefix + '-newchip-input" ' +
