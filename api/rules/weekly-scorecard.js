@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
   const { data, error } = await sbService()
     .from('rule_evaluations')
-    .select('rule_id, status, cost_impact, trading_day, rules(name, rule_type)')
+    .select('rule_id, status, cost_impact, trading_day, rules(name, cadence)')
     .eq('user_id', user.id)
     .gte('trading_day', from)
     .lte('trading_day', to);
@@ -38,7 +38,7 @@ export default async function handler(req, res) {
     const r = byRule[e.rule_id] || (byRule[e.rule_id] = {
       rule_id: e.rule_id,
       name: (e.rules && e.rules.name) || 'Rule',
-      rule_type: (e.rules && e.rules.rule_type) || null,
+      cadence: (e.rules && e.rules.cadence) || null,
       followed: 0, broken: 0, pending_review: 0, total: 0, cost_impact: 0,
     });
     r.total++;

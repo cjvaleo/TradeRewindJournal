@@ -1,13 +1,12 @@
 // /api/rules
-//   GET  — list the caller's rules (active + inactive) + the template catalogue
-//   POST — create a rule: either a custom rule or one instantiated from a
-//          template_key. Pro-gated; Bearer auth.
+//   GET  — list the caller's rules, each with a current_streak
+//   POST — create a custom subjective rule (requires a cadence)
+// Pro-gated; Bearer auth.
 
 import { sbService } from '../_lib/supabase.js';
 import { requirePro } from '../_lib/auth.js';
-import { RULE_TEMPLATES, getTemplate } from '../_lib/rule-templates.js';
 
-const RULE_TYPES = ['data', 'subjective'];
+const CADENCES = ['intra_day', 'weekly'];
 
 export default async function handler(req, res) {
   if (req.method !== 'GET' && req.method !== 'POST') {
@@ -18,11 +17,11 @@ export default async function handler(req, res) {
   if (!user) return;
   const sb = sbService();
 
-  // ── GET — list rules ────────────────────────────────────────────
+  // ── GET — list rules with streaks ───────────────────────────────
   if (req.method === 'GET') {
-    const { data, error } = await sb
+    const { data: rules, error } = await sb
       .from('rules')
-      .select('id, name, description, rule_type, condition, is_active, is_template, created_at, updated_at')
+      .select('id, name, description, cadence, condition, is_active, is_template, created_at, updated_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: true });
     if (error) {
@@ -30,54 +29,71 @@ export default async function handler(req, res) {
       res.status(500).json({ error: 'rules read failed' });
       return;
     }
+
+    // current_streak — consecutive followed cycles from the latest one
+    // backwards (one cycle = a trading_day; weekly evals anchor on Saturday).
+    const { data: evalRows, error: eErr } = await sb
+      .from('rule_evaluations')
+      .select('rule_id, trading_day, status, evaluated_at')
+      .eq('user_id', user.id);
+    if (eErr) console.error('[rules:GET] eval read failed:', eErr.message);
+    const byRule = {};
+    (evalRows || []).forEach(function (e) {
+      (byRule[e.rule_id] || (byRule[e.rule_id] = [])).push(e);
+    });
+    function streakOf(rid) {
+      const evs = byRule[rid] || [];
+      // collapse to one status per trading_day (latest evaluated_at wins)
+      const perDay = {};
+      evs.forEach(function (e) {
+        const cur = perDay[e.trading_day];
+        if (!cur || String(e.evaluated_at || '') > String(cur.evaluated_at || '')) perDay[e.trading_day] = e;
+      });
+      const days = Object.keys(perDay).sort(function (a, b) { return b.localeCompare(a); });
+      let s = 0;
+      for (let i = 0; i < days.length; i++) {
+        if (perDay[days[i]].status === 'followed') s++; else break;
+      }
+      return s;
+    }
+
+    const out = (rules || []).map(function (r) {
+      return {
+        id: r.id, name: r.name, description: r.description,
+        cadence: r.cadence, condition: r.condition,
+        is_active: r.is_active, is_template: r.is_template,
+        created_at: r.created_at, updated_at: r.updated_at,
+        current_streak: streakOf(r.id),
+      };
+    });
     res.setHeader('Cache-Control', 'no-store');
-    res.status(200).json({ rules: data || [], templates: RULE_TEMPLATES });
+    res.status(200).json({ rules: out });
     return;
   }
 
-  // ── POST — create a rule ────────────────────────────────────────
+  // ── POST — create a custom rule ─────────────────────────────────
   const body = req.body || {};
-  let row;
-
-  if (body.template_key) {
-    const tpl = getTemplate(body.template_key);
-    if (!tpl) {
-      res.status(400).json({ error: 'unknown template_key', value: body.template_key });
-      return;
-    }
-    row = {
-      user_id: user.id,
-      name: tpl.name,
-      description: tpl.description,
-      rule_type: tpl.rule_type,
-      condition: tpl.condition,
-      is_template: true,
-      is_active: body.is_active === false ? false : true,
-    };
-  } else {
-    const name = typeof body.name === 'string' ? body.name.trim() : '';
-    const rule_type = body.rule_type;
-    const condition = body.condition;
-    if (!name) { res.status(400).json({ error: 'name required' }); return; }
-    if (RULE_TYPES.indexOf(rule_type) < 0) {
-      res.status(400).json({ error: 'rule_type must be data | subjective' });
-      return;
-    }
-    if (!condition || typeof condition !== 'object' || !condition.type) {
-      res.status(400).json({ error: 'condition object with a type is required' });
-      return;
-    }
-    row = {
-      user_id: user.id,
-      name,
-      description: typeof body.description === 'string' ? body.description : null,
-      rule_type,
-      condition,
-      is_template: false,
-      is_active: body.is_active === false ? false : true,
-    };
+  const name = typeof body.name === 'string' ? body.name.trim() : '';
+  const cadence = body.cadence;
+  if (!name) { res.status(400).json({ error: 'name required' }); return; }
+  if (CADENCES.indexOf(cadence) < 0) {
+    res.status(400).json({ error: 'cadence must be intra_day | weekly' });
+    return;
   }
-
+  // Everything is subjective now — default the condition.
+  let condition = body.condition;
+  if (!condition || typeof condition !== 'object' || !condition.type) {
+    condition = { type: 'subjective_check' };
+  }
+  const row = {
+    user_id: user.id,
+    name: name,
+    description: typeof body.description === 'string' ? body.description : null,
+    cadence: cadence,
+    condition: condition,
+    is_template: false,
+    is_active: body.is_active === false ? false : true,
+  };
   const { data, error } = await sb.from('rules').insert(row).select().single();
   if (error) {
     console.error('[rules:POST] insert failed:', error.message);

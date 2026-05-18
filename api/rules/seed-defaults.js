@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     user_id: user.id,
     name: d.name,
     description: d.description,
-    rule_type: d.rule_type,
+    cadence: d.cadence,
     condition: d.condition,
     is_active: true,
     is_template: false,
