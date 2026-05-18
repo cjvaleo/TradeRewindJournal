@@ -4954,9 +4954,25 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 .rvc-bfill{height:100%;border-radius:3px;background:#5fb389}
 .rvc-bfill.dim{background:rgba(95,179,137,.4)}
 .rvc-bval{font-family:var(--n-font-mono);font-size:10px;color:#9a9a92;text-align:right}
-/* top performers hero */
-.rvc-tp{position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(95,179,137,.06),rgba(110,168,255,.03));border:1px solid rgba(95,179,137,.2);border-radius:16px;padding:30px 34px}
+/* combined Group Stats + Top Performers hero card */
+.rvc-tp{position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(95,179,137,.06),rgba(110,168,255,.03));border:1px solid rgba(95,179,137,.2);border-radius:16px}
 .rvc-tp-stripe{position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#5fb389,#6ea8ff)}
+/* section 1 — group stats strip */
+.rvc-gs{padding:24px 34px;border-bottom:1px solid rgba(255,255,255,.05)}
+.rvc-gs-head{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.13em;text-transform:uppercase;color:#9a9a92;margin-bottom:16px}
+.rvc-gs-row{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.rvc-gs-stat{min-width:80px}
+.rvc-gs-v{font-family:var(--n-font-display);font-style:italic;font-weight:400;font-size:32px;line-height:1;color:#f0efea}
+.rvc-gs-v .sage{color:#5fb389}
+.rvc-gs-v .rose{color:#c95f5f}
+.rvc-gs-pct{font-size:.58em;color:#7a7a72}
+.rvc-gs-pct.neg{color:#c95f5f}
+.rvc-gs-l{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#7a7a72;margin-top:3px}
+.rvc-gs-insuff{font-size:12px;font-style:italic;color:#7a7a72}
+/* section 2 — top performers */
+.rvc-tp-body{padding:24px 34px 30px}
+.rvc-tp-body-empty{text-align:center;padding:34px}
+.rvc-tp-body-empty .rvc-tp-micro{display:block;margin-bottom:10px}
 .rvc-tp-head{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:20px}
 .rvc-tp-micro{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.13em;text-transform:uppercase;color:#5fb389}
 .rvc-tp-headline{font-family:var(--n-font-display);font-style:italic;font-weight:400;font-size:30px;line-height:1.15;color:#f0efea;margin-top:9px}
@@ -4977,10 +4993,13 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 .rvc-tp-tk-h{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.13em;text-transform:uppercase;color:#6ea8ff;margin-bottom:7px}
 .rvc-tp-tk-b{font-size:13px;font-style:italic;color:#9a9a92;line-height:1.55}
 .rvc-tp-em{color:#f5f4f0;font-style:normal;font-weight:600}
-.rvc-tp-empty{text-align:center;background:linear-gradient(135deg,rgba(95,179,137,.06),rgba(110,168,255,.03));border:1px solid rgba(95,179,137,.2);border-radius:16px;padding:42px 32px}
-.rvc-tp-empty .rvc-tp-micro{display:block;margin-bottom:12px}
 .rvc-tp-ebody{font-size:13px;color:#bdbcb6;line-height:1.55;max-width:380px;margin:0 auto}
-.rvc-tp-esub{font-size:12px;color:#7a7a72;margin-top:8px}
+/* loading skeleton */
+.rvc-skel-bar{height:13px;border-radius:4px;background:rgba(255,255,255,.06);animation:rvcPulse 1.4s ease-in-out infinite}
+@keyframes rvcPulse{0%,100%{opacity:.4}50%{opacity:.85}}
+.rvc-skel-stat{display:flex;flex-direction:column;gap:8px}
+.rvc-skel-row{display:flex;gap:16px;align-items:center;padding:14px 0;border-top:1px solid rgba(255,255,255,.05)}
+.rvc-skel-row:first-child{border-top:0}
 /* no-memberships empty state */
 .rvc-empty{max-width:440px;margin:64px auto;text-align:center;background:rgba(255,255,255,.018);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:44px 32px}
 .rvc-empty-h{font-family:var(--n-font-display);font-style:italic;font-size:24px;color:#f5f4f0}
@@ -4992,7 +5011,11 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 .rvc-privacy{text-align:center;font-size:11px;font-style:italic;color:#56554f;margin-top:38px}
 @media (max-width:900px){
   .rvc-split{grid-template-columns:1fr}
-  .rvc-tp{padding:24px 22px}
+  .rvc-gs{padding:22px}
+  .rvc-tp-body{padding:22px 22px 26px}
+  .rvc-gs-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px 10px}
+  .rvc-gs-stat{min-width:0}
+  .rvc-gs-v{font-size:22px}
   .rvc-tp-row{grid-template-columns:1fr;gap:5px}
   .rvc-tp-rs{text-align:left}
   .rvc-tp-head-r{gap:22px}
@@ -22693,7 +22716,7 @@ function rvPersonalPaywallHtml(){
 /* ═══════════════════════════════════════════════════════════════════
    COMMUNITY TAB (Session 5) — 5 sections rendered from /api/community/*
    ═══════════════════════════════════════════════════════════════════ */
-var _rvCommunity = { loaded:false, id:null, range:'7d', list:[], data:null };
+var _rvCommunity = { loaded:false, loading:false, id:null, range:'7d', list:[], data:null };
 var RVC_THRESHOLD = { '7d':50, '30d':150, 'all':100 };
 var RVC_RANGE_LABEL = { '7d':'last 7 days', '30d':'last 30 days', 'all':'all time' };
 
@@ -22755,17 +22778,22 @@ async function rvCommunityFetch(id){
   _rvCommunity.id = id;
   var range = _rvCommunity.range || '7d';
   var root = document.getElementById('rv-community-root');
+  _rvCommunity.loading = true;
   if(root && !_rvCommunity.data) root.innerHTML = '<div class="rv-loading">Loading community&hellip;</div>';
+  else rvRenderCommunity();                  // switch — show the card skeleton
   var q = '?community_id=' + encodeURIComponent(id) + '&range=' + encodeURIComponent(range);
-  var eps = ['pulse','top-performers','setup-combinations','best-session','most-used-confluence'];
+  var eps = ['pulse','group-stats','top-performers','setup-combinations','best-session','most-used-confluence'];
   var r = await Promise.all(eps.map(function(e){ return rvFetch('/api/community/'+e+q); }));
+  if(_rvCommunity.id !== id || _rvCommunity.range !== range) return;  // a newer switch won
   _rvCommunity.data = {
     pulse:      r[0].ok ? r[0].data : null,
-    topPerf:    r[1].ok ? r[1].data : null,
-    combos:     r[2].ok ? r[2].data : null,
-    sessions:   r[3].ok ? r[3].data : null,
-    confluence: r[4].ok ? r[4].data : null,
+    groupStats: r[1].ok ? r[1].data : null,
+    topPerf:    r[2].ok ? r[2].data : null,
+    combos:     r[3].ok ? r[3].data : null,
+    sessions:   r[4].ok ? r[4].data : null,
+    confluence: r[5].ok ? r[5].data : null,
   };
+  _rvCommunity.loading = false;
   rvRenderCommunity();
 }
 
@@ -22790,7 +22818,7 @@ function rvRenderCommunity(){
   if(!root) return;
   root.innerHTML =
     rvcSelectorHtml() +
-    rvcTopPerformersHtml() +
+    rvcCombinedCardHtml() +
     rvcCombosHtml() +
     rvcSplitHtml() +
     '<div class="rvc-privacy">All community data is fully anonymized and aggregated. '+
@@ -22826,7 +22854,11 @@ function rvcSelectorHtml(){
   '</section>';
 }
 
-// ── 2 — Top Performers Profile (hero) ───────────────────────────────
+// ── 2 — Group Stats + Top Performers (combined hero card) ───────────
+function rvcCurrentName(){
+  var c = (_rvCommunity.list||[]).filter(function(x){ return x.id===_rvCommunity.id; })[0];
+  return c ? c.name : 'Community';
+}
 function rvcTopPerfRow(label, content, stat){
   return '<div class="rvc-tp-row">'+
     '<div class="rvc-tp-rl">'+rvEsc(label)+'</div>'+
@@ -22836,18 +22868,46 @@ function rvcTopPerfRow(label, content, stat){
 }
 function rvcTakeaway(s){
   return rvEsc(s||'')
-    .replace('fewer trades', '<b class="rvc-tp-em">fewer trades</b>')
-    .replace('Less is more.', '<b class="rvc-tp-em">Less is more.</b>');
+    .replace('produce most of the profit', '<b class="rvc-tp-em">produce most of the profit</b>')
+    .replace('with their head right', '<b class="rvc-tp-em">with their head right</b>');
 }
-function rvcTopPerformersHtml(){
+function rvcGsStat(value, label){
+  return '<div class="rvc-gs-stat"><div class="rvc-gs-v">'+value+'</div>'+
+    '<div class="rvc-gs-l">'+label+'</div></div>';
+}
+// Section 1 — community-wide group stats strip.
+function rvcGroupStatsHtml(){
+  var head = '<div class="rvc-gs-head">&#9671; Group Stats &middot; '+rvEsc(rvcCurrentName())+'</div>';
+  var gs = _rvCommunity.data && _rvCommunity.data.groupStats;
+  if(rvCommThin() || !gs){
+    var th = RVC_THRESHOLD[_rvCommunity.range] || 50;
+    return '<div class="rvc-gs">'+head+
+      '<div class="rvc-gs-insuff">Insufficient data for this range — needs at least '+th+' trades.</div>'+
+    '</div>';
+  }
+  var wr  = Number(gs.win_rate)||0;
+  var rr  = Number(gs.avg_rr)||0;
+  var ppw = Number(gs.avg_points_per_win)||0;
+  var ppl = Number(gs.avg_points_per_loss)||0;
+  var net = Number(gs.net_pnl)||0;
+  var stats =
+    rvcGsStat(rvcNum(gs.total_trades), 'Total Trades')+
+    rvcGsStat(rvcNum(gs.trader_count), 'Traders')+
+    rvcGsStat(wr+'<span class="rvc-gs-pct'+(wr<50?' neg':'')+'">%</span>', 'Win Rate')+
+    rvcGsStat((rr>=0?'+':'')+rr, 'Avg R:R')+
+    rvcGsStat('<span class="sage">'+(ppw>=0?'+':'')+ppw+'</span>', 'Pts / Win')+
+    rvcGsStat('<span class="rose">'+ppl+'</span>', 'Pts / Loss')+
+    rvcGsStat('<span class="'+(net>=0?'sage':'rose')+'">'+rvcMoneyShort(net)+'</span>', 'Net P&amp;L');
+  return '<div class="rvc-gs">'+head+'<div class="rvc-gs-row">'+stats+'</div></div>';
+}
+// Section 2 — top-performer behavior profile.
+function rvcTopPerfSectionHtml(){
   var tp = _rvCommunity.data && _rvCommunity.data.topPerf;
-  if(!tp || tp.insufficient || rvCommThin()){
-    return '<section class="rvp-sec"><div class="rvc-tp-empty">'+
-      '<div class="rvc-tp-micro">&#9670; Top Performers Profile</div>'+
-      '<div class="rvc-tp-ebody">Need at least 4 members and 50+ trades in this range '+
-        'to surface top performer patterns.</div>'+
-      '<div class="rvc-tp-esub">Invite more traders to your community.</div>'+
-    '</div></section>';
+  if(!tp || tp.insufficient){
+    return '<div class="rvc-tp-body rvc-tp-body-empty">'+
+      '<div class="rvc-tp-micro">&#9670; Top Performers</div>'+
+      '<div class="rvc-tp-ebody">Need at least 4 members to surface top performers.</div>'+
+    '</div>';
   }
   var h = tp.headline_stats || {};
   var b = tp.behaviors || {};
@@ -22869,14 +22929,13 @@ function rvcTopPerformersHtml(){
   if(bs) rows += rvcTopPerfRow('Best Session', rvEsc(bs.name),
     (Number(bs.percent_of_volume)||0)+'% of volume');
   var ga = b.grade_adherence;
-  if(ga) rows += rvcTopPerfRow('Grade', 'Grades '+rvEsc(ga.value),
+  if(ga) rows += rvcTopPerfRow('Setup Grade', 'Grades '+rvEsc(ga.value),
     (Number(ga.percent_of_entries)||0)+'% of entries');
   var ps = b.pre_trade_state;
   if(ps) rows += rvcTopPerfRow('Pre-Trade State', rvEsc(ps.value),
     (Number(ps.percent_of_entries)||0)+'% of entries');
 
-  return '<section class="rvp-sec"><div class="rvc-tp">'+
-    '<div class="rvc-tp-stripe"></div>'+
+  return '<div class="rvc-tp-body">'+
     '<div class="rvc-tp-head">'+
       '<div class="rvc-tp-head-l">'+
         '<div class="rvc-tp-micro">&#9670; Top 25% &middot; '+(tp.top_count||0)+' of '+(tp.total_count||0)+' traders</div>'+
@@ -22887,7 +22946,7 @@ function rvcTopPerformersHtml(){
         '<div class="rvc-tp-substat"><div class="rvc-tp-subv">'+rvcMoneyShort(h.avg_net_per_member)+'</div>'+
           '<div class="rvc-tp-subl">Avg Net / '+rangeLabel+'</div></div>'+
         '<div class="rvc-tp-substat"><div class="rvc-tp-subv">'+rvcNum(h.total_trades)+'</div>'+
-          '<div class="rvc-tp-subl">Total Trades</div></div>'+
+          '<div class="rvc-tp-subl">Their Trades</div></div>'+
       '</div>'+
     '</div>'+
     '<div class="rvc-tp-panel">'+rows+'</div>'+
@@ -22895,6 +22954,27 @@ function rvcTopPerformersHtml(){
       '<div class="rvc-tp-tk-h">&#9671; The Pattern</div>'+
       '<div class="rvc-tp-tk-b">'+rvcTakeaway(tp.takeaway)+'</div>'+
     '</div>'+
+  '</div>';
+}
+function rvcCardSkeletonHtml(){
+  function bar(w){ return '<div class="rvc-skel-bar" style="width:'+w+'"></div>'; }
+  var gs = '';
+  for(var i=0;i<7;i++) gs += '<div class="rvc-skel-stat">'+bar('44px')+bar('58px')+'</div>';
+  var rows = '';
+  for(var j=0;j<5;j++) rows += '<div class="rvc-skel-row">'+bar('100px')+bar('42%')+bar('64px')+'</div>';
+  return '<section class="rvp-sec"><div class="rvc-tp">'+
+    '<div class="rvc-tp-stripe"></div>'+
+    '<div class="rvc-gs">'+bar('170px')+'<div class="rvc-gs-row" style="margin-top:16px">'+gs+'</div></div>'+
+    '<div class="rvc-tp-body">'+bar('210px')+'<div style="margin-top:14px">'+rows+'</div></div>'+
+  '</div></section>';
+}
+function rvcCombinedCardHtml(){
+  if(_rvCommunity.loading) return rvcCardSkeletonHtml();
+  var section2 = rvCommThin() ? '' : rvcTopPerfSectionHtml();
+  return '<section class="rvp-sec"><div class="rvc-tp">'+
+    '<div class="rvc-tp-stripe"></div>'+
+    rvcGroupStatsHtml()+
+    section2+
   '</div></section>';
 }
 

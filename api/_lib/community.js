@@ -210,6 +210,28 @@ export function aggCombos(trades) {
     .slice(0, 6);
 }
 
+// ── group stats ─────────────────────────────────────────────────────
+// Community-wide aggregate for the range. `points` lives in trade_data
+// (signed: positive on wins, negative on losses); trades without a
+// numeric points value are skipped from the points averages only.
+export function aggGroupStats(trades, ctx) {
+  const wins = trades.filter(isWin);
+  const losses = trades.filter(isLoss);
+  const rs = trades.map(signedR).filter(function (r) { return r != null; });
+  const winPts = wins.map(function (t) { return num(t.points); }).filter(function (p) { return p != null; });
+  const lossPts = losses.map(function (t) { return num(t.points); }).filter(function (p) { return p != null; });
+  const net = trades.reduce(function (s, t) { return s + (num(t.pnl) || 0); }, 0);
+  return {
+    total_trades: trades.length,
+    trader_count: (ctx && ctx.memberCount) || 0,
+    win_rate: trades.length ? Math.round(wins.length / trades.length * 100) : 0,
+    avg_rr: rs.length ? round(mean(rs), 1) : 0,
+    avg_points_per_win: winPts.length ? round(mean(winPts), 1) : 0,
+    avg_points_per_loss: lossPts.length ? round(mean(lossPts), 1) : 0,
+    net_pnl: round(net, 2),
+  };
+}
+
 // ── top performers ──────────────────────────────────────────────────
 // Ranks community members by net P&L over the range, takes the top 25%,
 // and profiles that cohort's trading behavior.
@@ -334,14 +356,14 @@ export function topPerformers(trades, ctx) {
     ? { value: topState.label, percent_of_entries: Math.round(topState.n / topTrades.length * 100) }
     : { value: '—', percent_of_entries: 0 };
 
-  // takeaway — templated from the actual numbers
-  const parts = ['Top performers in your community take fewer trades'];
-  parts.push((top_setup && top_setup.percent_of_trades >= 40) ? 'on one specific setup' : 'across a few favored setups');
-  if (grade_adherence.value === 'A or A+' && grade_adherence.percent_of_entries >= 85) {
-    parts.push('only when it’s A or A+');
-  }
-  parts.push('in one specific session, with their head right');
-  const takeaway = parts.join(', ') + '. Less is more.';
+  // takeaway — templated, framed against the community-wide volume
+  const topPct = trades.length ? Math.round(topTrades.length / trades.length * 100) : 0;
+  const sessionsClause = (best_session && best_session.percent_of_volume >= 40)
+    ? best_session.name
+    : 'specific sessions';
+  const takeaway = 'Top performers concentrate ' + topPct + '% of community volume into ' +
+    topTrades.length + ' trades — and produce most of the profit. They take ' +
+    trades_per_day.value + ' trades a day, in ' + sessionsClause + ', with their head right.';
 
   return {
     top_count: top_count,
