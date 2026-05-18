@@ -4033,6 +4033,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 .cf-chip-newinput{font-family:var(--n-font-sans);font-size:13px;color:var(--n-text);background:transparent;border:1px dashed rgba(95,179,137,0.55);border-radius:7px;padding:7px 12px;width:124px;outline:none}
 .cf-chip-newinput::placeholder{color:var(--n-text-3)}
 .cf-chips-empty{width:100%;padding:18px 4px;text-align:center;font-family:var(--n-font-sans);font-size:12.5px;color:var(--n-text-3)}
+.cf-chips-hint{width:100%;font-size:11px;font-style:italic;color:#56554f}
 @media (max-width:600px){
   .cf-pk-tab{font-size:8px;padding:8px 2px;letter-spacing:0.02em}
   .cf-chips{max-height:180px}
@@ -18785,8 +18786,12 @@ function cfRenderChips(state){
     '</button>';
   }).join('');
 
-  // YOUR CUSTOM tab — trailing "+ New" chip / inline name input.
+  // YOUR CUSTOM tab — empty-state helper + trailing "+ New" chip / input.
   if (tab === 'custom') {
+    if (items.length === 0) {
+      html += '<div class="cf-chips-hint">Add your own confluences. ' +
+        'Click + New to add one.</div>';
+    }
     html += state.newChipEditing
       ? '<input type="text" class="cf-chip cf-chip-newinput" id="' + state.prefix + '-newchip-input" ' +
           'maxlength="48" placeholder="Name…" ' +
