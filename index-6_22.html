@@ -9494,7 +9494,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             <!-- Confluences (tagged analysis) -->
             <div class="rw-field" id="lt-sec-confluences">
               <div class="rw-field-l rw-field-l-flex">
-                <span>Tagged analysis</span>
+                <span>Confluences</span>
                 <span class="cf-count" id="cf-count">0 added</span>
               </div>
 
@@ -9988,7 +9988,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
                in inline onclick passes cemConfluencesState as the final arg. -->
           <div class="rw-field" id="cem-cf-section">
             <div class="rw-field-l rw-field-l-flex">
-              <span>Tagged analysis</span>
+              <span>Confluences</span>
               <span class="cf-count" id="cem-cf-count">0 added</span>
             </div>
 
@@ -18741,7 +18741,7 @@ function cfRenderTabs(state){
   };
   wrap.innerHTML = CF_TABS.map(function(t){
     return '<button type="button" class="cf-pk-tab' + (t.key === active ? ' on' : '') + '" ' +
-      'onclick="cfSetTab(\'' + t.key + '\',' + ref + ')">' +
+      'onclick="event.stopPropagation();cfSetTab(\'' + t.key + '\',' + ref + ')">' +
       _cfEsc(t.label) + ' <span class="cf-pk-tab-n">' + counts[t.key] + '</span></button>';
   }).join('');
 }
