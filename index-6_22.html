@@ -11769,7 +11769,7 @@ const NEWS=[
   {src:'MarketWatch',headline:'78% of S&P 500 companies beat Q1 estimates this earnings season',time:'7h ago',tag:'bull'},
   {src:'Reuters',headline:'Gold holds near record highs amid global geopolitical tensions',time:'8h ago',tag:'neutral'},
 ];
-function fmtPnl(v){v=v||0;var a=Math.abs(v);return a>=1000?'$'+(a/1000).toFixed(1)+'k':'$'+a.toFixed(2);}
+function fmtPnl(v){v=v||0;var a=Math.abs(v);return '$'+a.toLocaleString('en-US',{maximumFractionDigits:0});}
 function init(){
   const d=document.getElementById('lg-date');if(d)d.value=_localDate(new Date());
   const aid=document.getElementById('ai-date');if(aid)aid.value=_localDate(new Date());
@@ -15684,7 +15684,8 @@ async function renderTOTD(g){
   var reqId = g.id;
   var resp;
   try {
-    resp = await rvFetch('/api/community/trader-of-the-day?community_id=' + encodeURIComponent(g.id));
+    resp = await rvFetch('/api/community/trader-of-the-day?community_id=' + encodeURIComponent(g.id)
+      + '&tz_offset=' + new Date().getTimezoneOffset());
   } catch(e){ resp = { ok:false }; }
   // A community switch landed mid-flight — drop this stale result.
   if(typeof _comm !== 'undefined' && _comm && _comm.id !== reqId) return;
@@ -15786,8 +15787,9 @@ function _fmtMoney(n){
 function _fmtShortMoney(n){
   var sign = n>0?'+':n<0?'−':'';
   var a = Math.abs(n);
-  if(a >= 1000) return sign+'$'+(a/1000).toFixed(1)+'k';
-  return sign+'$'+Math.round(a);
+  // Session 18 Part B Fix #3 — full thousands-separator format; the old
+  // "$X.Xk" branch lost up to ~$49 of precision (49,549 → "$50.0k").
+  return sign+'$'+a.toLocaleString('en-US',{maximumFractionDigits:0});
 }
 
 /* Single source of truth for community stats: community_posts.
@@ -16965,13 +16967,25 @@ function renderDashboard(){
     circle.setAttribute('stroke-dasharray',(p*circ).toFixed(1)+' '+circ.toFixed(1));
   }
 
-  // BEST / WORST
-  if(ft.length){
-    const best=ft.reduce((a,b)=>b.pnl>a.pnl?b:a),worst=ft.reduce((a,b)=>b.pnl<a.pnl?b:a);
-    document.getElementById('best-val').textContent='+$'+Math.round(best.pnl);
+  // BEST / WORST \u2014 Session 18 Part B Fix #1: guard against non-numeric
+  // (null/undefined) pnl. An unguarded reduce seeded by a null-pnl trade
+  // returns that trade as "best" \u2192 Math.round(undefined) \u2192 "+$NaN".
+  const ftValid = ft.filter(t => typeof t.pnl === 'number' && !isNaN(t.pnl));
+  const best  = ftValid.length ? ftValid.reduce((a,b)=>b.pnl>a.pnl?b:a) : null;
+  const worst = ftValid.length ? ftValid.reduce((a,b)=>b.pnl<a.pnl?b:a) : null;
+  if(best){
+    document.getElementById('best-val').textContent='+$'+Math.round(best.pnl).toLocaleString();
     document.getElementById('best-sub').textContent=best.sym+' \u00b7 '+(best.date||'\u2014');
-    document.getElementById('worst-val').textContent='-$'+Math.abs(Math.round(worst.pnl));
+  } else {
+    document.getElementById('best-val').textContent='\u2014';
+    document.getElementById('best-sub').textContent='\u2014';
+  }
+  if(worst){
+    document.getElementById('worst-val').textContent='-$'+Math.abs(Math.round(worst.pnl)).toLocaleString();
     document.getElementById('worst-sub').textContent=worst.sym+' \u00b7 '+(worst.date||'\u2014');
+  } else {
+    document.getElementById('worst-val').textContent='\u2014';
+    document.getElementById('worst-sub').textContent='\u2014';
   }
   renderDashCal();renderRecentList();
   // v2 cards
@@ -25228,7 +25242,7 @@ function showWeeklyReport() {
       if (bestDay===null||dp>bestDay.pnl) bestDay={date:d,pnl:dp};
       if (worstDay===null||dp<worstDay.pnl) worstDay={date:d,pnl:dp};
     });
-    var syms = {}; arr.forEach(function(t){if(t.symbol)syms[t.symbol]=(syms[t.symbol]||0)+1;});
+    var syms = {}; arr.forEach(function(t){if(t.sym)syms[t.sym]=(syms[t.sym]||0)+1;});
     var topSym = Object.keys(syms).sort(function(a,b){return syms[b]-syms[a];})[0]||'—';
     var avgWin = wins>0 ? arr.filter(function(t){return (t.pnl||0)>0;}).reduce(function(s,t){return s+(t.pnl||0);},0)/wins : 0;
     var avgLoss= losses>0 ? arr.filter(function(t){return (t.pnl||0)<0;}).reduce(function(s,t){return s+(t.pnl||0);},0)/losses : 0;

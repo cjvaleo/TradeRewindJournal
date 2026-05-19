@@ -381,13 +381,14 @@ export function topPerformers(trades, ctx) {
 }
 
 // ── trader of the day ───────────────────────────────────────────────
-// The member with the highest net P&L across their trades dated today
-// (server UTC date). Tie-break: most recent trade (latest created_at).
-// Returns null when no member has a trade dated today. The winner's
-// trades are returned chronologically, numbered 1..N. Username and the
-// privacy hash are resolved by the endpoint, not here.
-export function traderOfTheDay(trades) {
-  const today = new Date().toISOString().slice(0, 10);
+// The member with the highest net P&L across their trades dated today.
+// `today` is the YYYY-MM-DD the caller considers "today" (the endpoint
+// derives it from the viewer's tz_offset so late-evening trades land on
+// the right day); falls back to the server UTC date. Tie-break: most
+// recent trade (latest created_at). Returns null when no member has a
+// trade dated today. Username + privacy hash are resolved by the endpoint.
+export function traderOfTheDay(trades, today) {
+  if (!today) today = new Date().toISOString().slice(0, 10);
   const todays = trades.filter(function (t) { return effDate(t) === today; });
   if (!todays.length) return null;
 

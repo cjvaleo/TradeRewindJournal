@@ -40,11 +40,18 @@ export default async function handler(req, res) {
     return;
   }
 
+  // "Today" in the VIEWER's timezone. tz_offset is minutes from UTC as
+  // returned by JS Date.getTimezoneOffset() — positive west of UTC
+  // (EDT = +240). Local time = UTC − offset minutes.
+  const tzRaw = (req.query && req.query.tz_offset != null) ? parseInt(req.query.tz_offset, 10) : 0;
+  const tzOffset = Number.isFinite(tzRaw) ? tzRaw : 0;
+  const localToday = new Date(Date.now() - tzOffset * 60000).toISOString().slice(0, 10);
+
   let totd;
   try {
     // A 7-day window is the cheapest fetch that always contains today.
     const trades = await loadMemberTrades(memberIds, '7d');
-    totd = traderOfTheDay(trades);
+    totd = traderOfTheDay(trades, localToday);
   } catch (e) {
     console.error('[trader-of-the-day] aggregation failed:', e && e.message);
     res.status(500).json({ error: 'aggregation failed' });
