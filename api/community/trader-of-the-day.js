@@ -65,12 +65,15 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Resolve the winner's username; never expose the raw user_id.
-  let username = 'Trader';
+  // Resolve the winner's profile (display name + avatar). The raw
+  // user_id is never exposed — only a short privacy hash.
+  let profile = {};
   try {
     const prof = await sbService()
-      .from('profiles').select('username').eq('id', totd.user_id).maybeSingle();
-    if (prof && prof.data && prof.data.username) username = prof.data.username;
+      .from('profiles')
+      .select('username, display_name, avatar_image_url, avatar_finish, color, avatar_initials, initials')
+      .eq('id', totd.user_id).maybeSingle();
+    if (prof && prof.data) profile = prof.data;
   } catch (e) {
     console.error('[trader-of-the-day] profile read failed:', e && e.message);
   }
@@ -78,7 +81,11 @@ export default async function handler(req, res) {
     .update(String(totd.user_id)).digest('hex').slice(0, 12);
 
   res.status(200).json({
-    username: username,
+    username: profile.username || 'Trader',
+    display_name: profile.display_name || null,
+    avatar_image_url: profile.avatar_image_url || null,
+    avatar_finish: profile.avatar_finish || profile.color || null,
+    avatar_initials: profile.avatar_initials || profile.initials || null,
     user_id_hash: user_id_hash,
     net_pnl_today: totd.net_pnl_today,
     trades_today: totd.trades_today,

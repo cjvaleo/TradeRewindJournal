@@ -7785,14 +7785,23 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
   padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.06);
 }
-#pg-community .totd2-id{display:flex;align-items:center;gap:10px;min-width:0}
-#pg-community .totd2-av{
+#pg-community .totd2-id{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 auto}
+/* Avatar — wraps renderUserAvatar's .av (profile image or finish circle). */
+#pg-community .totd2-av{display:flex;align-items:center;flex-shrink:0}
+#pg-community .totd2-av .av{width:32px!important;height:32px!important;font-size:13px!important}
+#pg-community .totd2-av-fallback{
   width:32px;height:32px;border-radius:50%;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
   background:linear-gradient(135deg,#5fb389,#6ea8ff);
   color:#0a0a0a;font-family:var(--n-font-sans);font-size:13px;font-weight:600;
 }
-#pg-community .totd2-handle{font-family:var(--n-font-sans);font-size:14px;color:#f5f4f0;font-weight:600;line-height:1.2}
+/* Name/sub text column — must be able to shrink so a long display name
+   can ellipsis instead of shoving the P&L off the card (Session 19). */
+#pg-community .totd2-idtext{min-width:0;overflow:hidden}
+#pg-community .totd2-handle{
+  font-family:var(--n-font-sans);font-size:14px;color:#f5f4f0;font-weight:600;line-height:1.2;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;
+}
 #pg-community .totd2-sub{font-family:var(--n-font-mono);font-size:9px;letter-spacing:.1em;color:var(--n-text-3);margin-top:3px}
 #pg-community .totd2-pnl-wrap{text-align:right;flex-shrink:0}
 #pg-community .totd2-pnl{
@@ -15703,7 +15712,17 @@ async function renderTOTD(g){
   var net    = Number(d.net_pnl_today) || 0;
   var negCls = net < 0 ? ' neg' : '';
   var handle = String(d.username || 'trader').replace(/^@/, '');
-  var avLetter = (handle.charAt(0) || 'T').toUpperCase();
+  // Session 19 — profile display name + avatar, same pattern as Feed Posts.
+  var dispName = d.display_name || d.username || handle;
+  var nameLine = d.display_name ? dispName : ('@' + handle);
+  var avHtml = (typeof renderUserAvatar === 'function')
+    ? renderUserAvatar({
+        avatar_finish:    d.avatar_finish,
+        avatar_initials:  d.avatar_initials,
+        avatar_image_url: d.avatar_image_url,
+        username: d.username, name: dispName
+      }, 'md')
+    : '<div class="totd2-av-fallback">' + _eodSafe((handle.charAt(0)||'T').toUpperCase()) + '</div>';
   var list = Array.isArray(d.trades_today) ? d.trades_today : [];
 
   var rows = list.map(function(tr){
@@ -15730,8 +15749,8 @@ async function renderTOTD(g){
     +   '<div class="totd2-label">🏆 Trader of the Day</div>'
     +   '<div class="totd2-id-row">'
     +     '<div class="totd2-id">'
-    +       '<div class="totd2-av">' + _eodSafe(avLetter) + '</div>'
-    +       '<div><div class="totd2-handle">@' + _eodSafe(handle) + '</div>'
+    +       '<div class="totd2-av">' + avHtml + '</div>'
+    +       '<div class="totd2-idtext"><div class="totd2-handle">' + _eodSafe(nameLine) + '</div>'
     +         '<div class="totd2-sub">today</div></div>'
     +     '</div>'
     +     '<div class="totd2-pnl-wrap">'
