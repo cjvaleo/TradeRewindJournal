@@ -831,6 +831,8 @@
 }
 .hero-meta .m-item{display:flex;align-items:baseline;gap:6px}
 .hero-meta .m-num{color:var(--n-text);font-weight:500}
+.hero-meta .m-num.pos{color:var(--n-profit)}
+.hero-meta .m-num.neg{color:var(--n-loss)}
 .hero-meta .m-lbl{font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3)}
 
 .stats-row{
@@ -4861,9 +4863,11 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 .rvp-eq-net-v.sage{color:#5fb389}
 .rvp-eq-net-v.rose{color:#c95f5f}
 .rvp-eq-net-l{font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#8a8a82;margin-top:11px}
-.rvp-eq-stats{display:flex;gap:32px}
+.rvp-eq-stats{display:flex;gap:32px;flex-wrap:wrap;justify-content:flex-end}
 .rvp-eq-stat{text-align:right}
 .rvp-eq-stat-v{font-family:var(--n-font-display);font-style:italic;font-weight:400;font-size:24px;line-height:1;color:#f0efea}
+.rvp-eq-stat-v.sage{color:#5fb389}
+.rvp-eq-stat-v.rose{color:#c95f5f}
 .rvp-eq-stat-l{font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.13em;text-transform:uppercase;color:#7a7a72;margin-top:8px}
 .rvp-eq-chart{position:relative;width:100%;height:220px;margin-top:4px}
 .rvp-eq-svg{display:block;width:100%;height:220px}
@@ -9465,6 +9469,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
       <div class="m-item"><span id="hero-winrate" class="m-num">&mdash;</span><span class="m-lbl">Win Rate</span></div>
       <div class="m-item"><span id="hero-streak" class="m-num">&mdash;</span><span class="m-lbl">Streak</span></div>
       <div class="m-item"><span id="hero-avg" class="m-num">&mdash;</span><span class="m-lbl">Avg Trade</span></div>
+      <div class="m-item"><span id="hero-points" class="m-num">&mdash;</span><span class="m-lbl">Total Points</span></div>
     </div>
   </div>
 
@@ -12436,7 +12441,7 @@ function renderTOTW(g) {
   }
 
   if (!_totw) {
-    el.innerHTML = '<div style="text-align:center;padding:16px 0"><div style="font-size:26px;margin-bottom:8px">🏆</div><div style="font-family:\'Orbitron\',monospace;font-size:15px;color:rgba(255,255,255,.78)">' + ((function(){try{var a=getAllMemberTrades(),w=new Date();w.setDate(w.getDate()-w.getDay());w.setHours(0,0,0,0);a=a.filter(function(t){return t.date&&new Date(t.date)>=w});a.sort(function(x,y){return(y.pnl||0)-(x.pnl||0)});var b=a[0];if(b)return'<span style="color:var(--cyan)">'+safeText(b.sym||'')+'</span> <span style="color:'+(b.pnl>0?'var(--grn)':'var(--red)')+'">'+(b.pnl>=0?'+':'-')+'$'+Math.abs(b.pnl||0).toFixed(0)+'</span><br><span style="font-size:11px;color:rgba(255,255,255,.5)">'+safeText(b.date||'')+' · Best trade this week</span>';return'No trades this week'}catch(e){return'No trades this week'}})()) + '</div></div>';
+    el.innerHTML = '<div style="text-align:center;padding:16px 0"><div style="font-size:26px;margin-bottom:8px">🏆</div><div style="font-family:\'Orbitron\',monospace;font-size:15px;color:rgba(255,255,255,.78)">' + ((function(){try{var a=getAllMemberTrades(),w=new Date();w.setDate(w.getDate()-w.getDay());w.setHours(0,0,0,0);a=a.filter(function(t){return t.date&&new Date(t.date)>=w});a.sort(function(x,y){return perAccountPnl(y)-perAccountPnl(x)});var b=a[0];if(b){var bp=perAccountPnl(b);return'<span style="color:var(--cyan)">'+safeText(b.sym||'')+'</span> <span style="color:'+(bp>0?'var(--grn)':'var(--red)')+'">'+(bp>=0?'+':'-')+'$'+Math.abs(bp).toFixed(0)+'</span><br><span style="font-size:11px;color:rgba(255,255,255,.5)">'+safeText(b.date||'')+' · Best trade this week</span>';}return'No trades this week'}catch(e){return'No trades this week'}})()) + '</div></div>';
     return;
   }
 
@@ -15834,7 +15839,7 @@ async function computeGroupStats(commId, period){
   }
 
   var r = await _sb.from('community_posts')
-    .select('user_id, username, pnl_today, created_at, id')
+    .select('user_id, username, pnl_today, created_at, id, metadata')
     .eq('community_id', commId)
     .like('id', 'trade_%')          // skip check-ins + any other non-trade posts
     .gte('created_at', sinceISO);
@@ -15847,12 +15852,21 @@ async function computeGroupStats(commId, period){
     return {total:0, count:0, winRate:0, avg:0, best:0, topTrader:null};
   }
 
-  var total = posts.reduce(function(s,p){return s + (Number(p.pnl_today)||0);}, 0);
+  // Session 20a Part 1 — per-account P&L for the Best/Avg-trade hero
+  // stats. community_posts.metadata carries the `accounts` count baked
+  // at share time; pnl_today is the N× gross. Total stays gross.
+  function _postPerAcct(p){
+    var m = p.metadata;
+    if(typeof m === 'string'){ try{ m = JSON.parse(m); }catch(e){ m = null; } }
+    var accts = Math.max(1, Number(m && m.accounts) || 1);
+    return (Number(p.pnl_today)||0) / accts;
+  }
+  var total = posts.reduce(function(s,p){return s + (Number(p.pnl_today)||0);}, 0);  // gross
   var count = posts.length;
   var wins  = posts.filter(function(p){return (Number(p.pnl_today)||0) > 0;}).length;
   var winRate = Math.round((wins/count)*100);
-  var avg   = total/count;
-  var best  = posts.reduce(function(m,p){return Math.max(m, Number(p.pnl_today)||0);}, -Infinity);
+  var avg   = posts.reduce(function(s,p){return s + _postPerAcct(p);}, 0) / count;   // per-account
+  var best  = posts.reduce(function(m,p){return Math.max(m, _postPerAcct(p));}, -Infinity);
   if(!isFinite(best)) best = 0;
 
   var byUser = {};
@@ -16625,6 +16639,16 @@ function filterByPeriod(arr,period){
   });
 }
 
+/* Session 20a — per-account P&L. A trade copied across N prop accounts
+   stores N× the gross pnl; Best / Worst / Avg-trade rankings should
+   judge the single-trade edge, so divide by the account count. Sum
+   totals (Total P&L) stay gross — that's the real realized number. */
+function perAccountPnl(trade){
+  var gross = Number(trade && trade.pnl) || 0;
+  var accts = Math.max(1, Number(trade && trade.accounts) || 1);
+  return gross / accts;
+}
+
 /* ── FUTURES SESSION ENGINE ── */
 function isDST(d){const jan=new Date(d.getFullYear(),0,1).getTimezoneOffset(),jul=new Date(d.getFullYear(),6,1).getTimezoneOffset();return Math.min(jan,jul)===d.getTimezoneOffset();}
 
@@ -16878,8 +16902,9 @@ function renderDashboard(){
   const wins=ft.filter(t=>t.pnl>0).length;
   const bes=ft.filter(t=>Math.abs(t.pnl)<0.01).length;
   const losses=n-wins-bes;
-  const tot=ft.reduce((a,t)=>a+t.pnl,0);
-  const avg=n?tot/n:0;
+  const tot=ft.reduce((a,t)=>a+t.pnl,0);                              // gross — Total P&L
+  const avg=n?ft.reduce((a,t)=>a+perAccountPnl(t),0)/n:0;             // per-account — Avg Trade
+  const totalPoints=ft.reduce((a,t)=>a+(Number(t.points)||0),0);     // gross — points reflect setup quality, not size
   const wrPct=n?(wins/n*100).toFixed(1):null;
   const wrStr=wrPct?wrPct+'%':'\u2014';
   const periodLbl=dashPeriod==='today'?'Today':dashPeriod==='week'?'This Week':'This Month';
@@ -16919,6 +16944,12 @@ function renderDashboard(){
   setHero('hero-winrate', wrStr);
   setHero('hero-streak', curStreak>0?curStreak+streakType:'\u2014');
   setHero('hero-avg', n?(avg>=0?'+':'-')+'$'+Math.abs(avg).toFixed(0):'\u2014');
+  // Session 20a Part 2 \u2014 Total Points stat (gross). Sage if positive.
+  const heroPtsEl=document.getElementById('hero-points');
+  if(heroPtsEl){
+    heroPtsEl.textContent = n?((totalPoints>0?'+':'')+(Math.round(totalPoints*10)/10)+' pts'):'\u2014';
+    heroPtsEl.className='m-num'+(n&&totalPoints>0?' pos':n&&totalPoints<0?' neg':'');
+  }
 
   // STATS ROW
   const todayStr=_localDate(new Date());
@@ -16989,18 +17020,21 @@ function renderDashboard(){
   // BEST / WORST \u2014 Session 18 Part B Fix #1: guard against non-numeric
   // (null/undefined) pnl. An unguarded reduce seeded by a null-pnl trade
   // returns that trade as "best" \u2192 Math.round(undefined) \u2192 "+$NaN".
+  // Session 20a Part 1 \u2014 rank Best/Worst by PER-ACCOUNT P&L (a trade
+  // copied across N prop accounts is judged on its single-trade edge,
+  // not the N\u00d7 gross). Total P&L stays gross.
   const ftValid = ft.filter(t => typeof t.pnl === 'number' && !isNaN(t.pnl));
-  const best  = ftValid.length ? ftValid.reduce((a,b)=>b.pnl>a.pnl?b:a) : null;
-  const worst = ftValid.length ? ftValid.reduce((a,b)=>b.pnl<a.pnl?b:a) : null;
+  const best  = ftValid.length ? ftValid.reduce((a,b)=>perAccountPnl(b)>perAccountPnl(a)?b:a) : null;
+  const worst = ftValid.length ? ftValid.reduce((a,b)=>perAccountPnl(b)<perAccountPnl(a)?b:a) : null;
   if(best){
-    document.getElementById('best-val').textContent='+$'+Math.round(best.pnl).toLocaleString();
+    document.getElementById('best-val').textContent='+$'+Math.round(perAccountPnl(best)).toLocaleString();
     document.getElementById('best-sub').textContent=best.sym+' \u00b7 '+(best.date||'\u2014');
   } else {
     document.getElementById('best-val').textContent='\u2014';
     document.getElementById('best-sub').textContent='\u2014';
   }
   if(worst){
-    document.getElementById('worst-val').textContent='-$'+Math.abs(Math.round(worst.pnl)).toLocaleString();
+    document.getElementById('worst-val').textContent='-$'+Math.abs(Math.round(perAccountPnl(worst))).toLocaleString();
     document.getElementById('worst-sub').textContent=worst.sym+' \u00b7 '+(worst.date||'\u2014');
   } else {
     document.getElementById('worst-val').textContent='\u2014';
@@ -23318,6 +23352,10 @@ function rvEquityCurveHtml(){
   var winRate = s.win_rate==null ? '—' : s.win_rate+'%';
   var avgRr = s.avg_rr==null ? '—' : Number(s.avg_rr).toFixed(2);
   var tradeCount = s.trade_count==null ? '—' : s.trade_count;
+  // Session 20a Part 4 — Total Points stat (sage/rose).
+  var tpRaw = (s.total_points==null) ? null : Number(s.total_points);
+  var totalPts = tpRaw==null ? '—' : ((tpRaw>0?'+':'')+tpRaw+' pts');
+  var tpCls = tpRaw==null ? '' : (tpRaw>0?'sage':tpRaw<0?'rose':'');
   return '<section class="rvp-sec">'+
     '<div class="rvp-sec-head">'+
       '<div class="rvp-sec-title rvp-ul-sage">Equity Curve</div>'+
@@ -23333,6 +23371,7 @@ function rvEquityCurveHtml(){
           rvEqStat(winRate,'Win Rate')+
           rvEqStat(avgRr,'Avg R:R')+
           rvEqStat(tradeCount,'Trades')+
+          rvEqStat(totalPts,'Total Points',tpCls)+
         '</div>'+
       '</div>'+
       rvEquitySvg(ov.curve || [])+
@@ -23340,8 +23379,8 @@ function rvEquityCurveHtml(){
     '</div>'+
   '</section>';
 }
-function rvEqStat(v,l){
-  return '<div class="rvp-eq-stat"><div class="rvp-eq-stat-v">'+rvEsc(v)+'</div>'+
+function rvEqStat(v,l,cls){
+  return '<div class="rvp-eq-stat"><div class="rvp-eq-stat-v'+(cls?' '+cls:'')+'">'+rvEsc(v)+'</div>'+
     '<div class="rvp-eq-stat-l">'+rvEsc(l)+'</div></div>';
 }
 function rvEquitySvg(curve){
@@ -23725,6 +23764,7 @@ function rvcGroupStatsHtml(){
   var rr  = Number(gs.avg_rr)||0;
   var ppw = Number(gs.avg_points_per_win)||0;
   var ppl = Number(gs.avg_points_per_loss)||0;
+  var tpts = Number(gs.total_points)||0;
   var net = Number(gs.net_pnl)||0;
   var stats =
     rvcGsStat(rvcNum(gs.total_trades), 'Total Trades')+
@@ -23733,6 +23773,7 @@ function rvcGroupStatsHtml(){
     rvcGsStat((rr>=0?'+':'')+rr, 'Avg R:R')+
     rvcGsStat('<span class="sage">'+(ppw>=0?'+':'')+ppw+'</span>', 'Pts / Win')+
     rvcGsStat('<span class="rose">'+ppl+'</span>', 'Pts / Loss')+
+    rvcGsStat('<span class="'+(tpts>=0?'sage':'rose')+'">'+(tpts>0?'+':'')+tpts+'</span>', 'Total Points')+
     rvcGsStat('<span class="'+(net>=0?'sage':'rose')+'">'+rvcMoneyShort(net)+'</span>', 'Net P&amp;L');
   return '<div class="rvc-gs">'+head+'<div class="rvc-gs-row">'+stats+'</div></div>';
 }
@@ -26608,9 +26649,11 @@ function showWeekSummary(y,m,dayStart){
   var bes=wTrades.filter(function(t){return Math.abs(t.pnl||0)<0.01;}).length;
   var wr=wTrades.length?Math.round(wins/wTrades.length*100):0;
   var pnlColor=pnl>=0?'var(--grn)':'var(--red)';
-  var avgPnl=pnl/wTrades.length;
-  var best=wTrades.reduce(function(m,t){return t.pnl>m?t.pnl:m;},-Infinity);
-  var worst=wTrades.reduce(function(m,t){return t.pnl<m?t.pnl:m;},Infinity);
+  // Session 20a Part 1 — Best/Worst/Avg per trade use per-account P&L;
+  // Week P&L (pnl) stays gross.
+  var avgPnl=wTrades.length?wTrades.reduce(function(s,t){return s+perAccountPnl(t);},0)/wTrades.length:0;
+  var best=wTrades.reduce(function(m,t){return perAccountPnl(t)>m?perAccountPnl(t):m;},-Infinity);
+  var worst=wTrades.reduce(function(m,t){return perAccountPnl(t)<m?perAccountPnl(t):m;},Infinity);
 
   // Group by day
   var dayMap={};

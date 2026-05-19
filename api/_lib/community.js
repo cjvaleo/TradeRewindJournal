@@ -221,6 +221,9 @@ export function aggGroupStats(trades, ctx) {
   const winPts = wins.map(function (t) { return num(t.points); }).filter(function (p) { return p != null; });
   const lossPts = losses.map(function (t) { return num(t.points); }).filter(function (p) { return p != null; });
   const net = trades.reduce(function (s, t) { return s + (num(t.pnl) || 0); }, 0);
+  // Session 20a — total points across the range (signed; setup quality,
+  // not size — so gross, never per-account).
+  const totalPoints = trades.reduce(function (s, t) { return s + (num(t.points) || 0); }, 0);
   return {
     total_trades: trades.length,
     trader_count: (ctx && ctx.memberCount) || 0,
@@ -228,6 +231,7 @@ export function aggGroupStats(trades, ctx) {
     avg_rr: rs.length ? round(mean(rs), 1) : 0,
     avg_points_per_win: winPts.length ? round(mean(winPts), 1) : 0,
     avg_points_per_loss: lossPts.length ? round(mean(lossPts), 1) : 0,
+    total_points: round(totalPoints, 1),
     net_pnl: round(net, 2),
   };
 }

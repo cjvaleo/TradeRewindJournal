@@ -54,11 +54,14 @@ export default async function handler(req, res){
   const wins = trades.filter(function(t){ return (num(t.pnl)||0) > 0; }).length;
   const rrs  = trades.map(function(t){ return num(t.rr); }).filter(function(r){ return r!=null && r!==0; });
   const netPnl = pnls.reduce(function(s,x){ return s+x; }, 0);
+  // Session 20a — total points over the window (signed; setup quality).
+  const totalPoints = trades.reduce(function(s,t){ return s + (num(t.points)||0); }, 0);
   const summary = {
     net_pnl: Math.round(netPnl*100)/100,
     win_rate: trades.length ? Math.round(wins/trades.length*100) : null,
     avg_rr: rrs.length ? Math.round(rrs.reduce(function(s,x){ return s+Math.abs(x); },0)/rrs.length*100)/100 : null,
     trade_count: trades.length,
+    total_points: Math.round(totalPoints*10)/10,
   };
 
   // ── Daily cumulative curve ───────────────────────────────────────
