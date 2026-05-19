@@ -6950,10 +6950,12 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 }
 #pg-community .hero-stat-value.profit{color:var(--n-profit)}
 #pg-community .hero-stat-value.loss{color:var(--n-loss)}
-/* Session 20a follow-up — Top Trade points sub-stat (empty span when none) */
+/* Top Trade points sub-stat — parenthesized italic line under the $ value. */
 #pg-community .hero-stat-sub{
-  font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-3);
+  font-family:var(--n-font-mono);font-size:11px;font-style:italic;color:#9a9a92;
 }
+#pg-community .hero-stat-sub.pos{color:var(--n-profit)}
+#pg-community .hero-stat-sub.neg{color:var(--n-loss)}
 #pg-community .hero-stat-sub:empty{display:none}
 
 /* ── COLLAPSIBLE COMMUNITIES SUB-SIDEBAR ──
@@ -9472,9 +9474,9 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
     <div class="hero-meta">
       <div class="m-item"><span id="hero-trades" class="m-num">&mdash;</span><span class="m-lbl">Trades</span></div>
       <div class="m-item"><span id="hero-winrate" class="m-num">&mdash;</span><span class="m-lbl">Win Rate</span></div>
+      <div class="m-item"><span id="hero-points" class="m-num">&mdash;</span><span class="m-lbl">Total Points</span></div>
       <div class="m-item"><span id="hero-streak" class="m-num">&mdash;</span><span class="m-lbl">Streak</span></div>
       <div class="m-item"><span id="hero-avg" class="m-num">&mdash;</span><span class="m-lbl">Avg Trade</span></div>
-      <div class="m-item"><span id="hero-points" class="m-num">&mdash;</span><span class="m-lbl">Total Points</span></div>
     </div>
   </div>
 
@@ -15918,12 +15920,18 @@ async function renderHeroPnl(g, period){
   var bestEl = document.getElementById('comm-hero-best');
   bestEl.textContent = _fmtShortMoney(stats.best);
   bestEl.className = 'hero-stat-value' + (stats.best > 0 ? ' profit' : '');
-  // Session 20a follow-up — Top Trade points sub-stat under the $ value.
+  // Top Trade points sub-stat — parenthesized "(+18 pts)" under the $ value.
   var bestPtsEl = document.getElementById('comm-hero-best-pts');
   if(bestPtsEl){
     var bpts = stats.bestPoints;
-    bestPtsEl.textContent = (bpts==null || isNaN(Number(bpts)))
-      ? '' : ((Number(bpts)>0?'+':'')+(Math.round(Number(bpts)*10)/10)+' pts');
+    if(bpts==null || isNaN(Number(bpts))){
+      bestPtsEl.textContent = '';
+      bestPtsEl.className = 'hero-stat-sub';
+    } else {
+      var bpn = Number(bpts);
+      bestPtsEl.textContent = '('+(bpn>0?'+':'')+(Math.round(bpn*10)/10)+' pts)';
+      bestPtsEl.className = 'hero-stat-sub'+(bpn>0?' pos':bpn<0?' neg':'');
+    }
   }
   var topName = stats.topTrader && stats.topTrader.username;
   document.getElementById('comm-hero-top').textContent = topName ? '@'+String(topName).replace(/^@/,'') : '—';
