@@ -7761,10 +7761,17 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
    ═══════════════════════════════════════════════════════════════════ */
 #pg-community .totd2{
   position:relative;overflow:hidden;
+  /* Session 18 Part C — explicit column flow so the label / identity
+     header / trades sub-list always stack vertically and can never
+     collapse onto each other regardless of inherited display rules. */
+  display:flex;flex-direction:column;
   background:linear-gradient(135deg,rgba(245,215,124,.06),rgba(95,179,137,.04));
   border:1px solid rgba(245,215,124,.22);
   border-radius:14px;padding:22px 24px;
 }
+/* Children must not flex-shrink — a flex column would otherwise let a
+   tall trades list squeeze the header. */
+#pg-community .totd2 > *{flex:0 0 auto;min-width:0}
 #pg-community .totd2::before{
   content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
   background:linear-gradient(180deg,#f5d77c,#5fb389);
@@ -7789,7 +7796,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 #pg-community .totd2-sub{font-family:var(--n-font-mono);font-size:9px;letter-spacing:.1em;color:var(--n-text-3);margin-top:3px}
 #pg-community .totd2-pnl-wrap{text-align:right;flex-shrink:0}
 #pg-community .totd2-pnl{
-  font-family:var(--n-font-display);font-style:italic;font-size:34px;line-height:1;color:#5fb389;
+  font-family:var(--n-font-display);font-style:italic;font-size:34px;line-height:1.1;color:#5fb389;
 }
 #pg-community .totd2-pnl.neg{color:#c95f5f}
 #pg-community .totd2-pnl-l{
@@ -7797,7 +7804,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 }
 #pg-community .totd2-trades-h{
   font-family:var(--n-font-mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--n-text-3);margin:14px 0 8px;
+  color:var(--n-text-3);margin:16px 0 10px;
 }
 #pg-community .totd2-trades{display:flex;flex-direction:column;gap:6px}
 #pg-community .totd2-row{
