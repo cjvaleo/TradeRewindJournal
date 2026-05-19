@@ -9761,16 +9761,6 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         </div><!-- /lt-col (right) -->
       </div><!-- /lt-cols -->
 
-        <!-- ============ REFLECTION — post-trade journaling (Session 14) ============
-             Own section, full width, not Pro-veiled — it's a required field. -->
-        <div class="rw-section" id="lt-sec-reflection-text">
-          <div data-rwbuild="header:Reflection"></div>
-          <div class="rw-field" id="lt-f-reflection">
-            <div class="rw-field-l">Reflection</div>
-            <textarea id="lg-reflection" class="rw-input rw-textarea" placeholder="What did you learn from this trade? How did you feel?"></textarea>
-          </div>
-        </div>
-
         <!-- ============ MINDSET — grading (Free-tier veiled) ============ -->
         <div class="rw-section" id="lt-sec-reflection">
           <div data-rwbuild="header:Mindset"></div>
@@ -10266,15 +10256,6 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
       </div>
         </div><!-- /cem-col (right) -->
       </div><!-- /cem-cols -->
-
-      <!-- ============ REFLECTION — post-trade journaling (Session 14) ============ -->
-      <div class="rw-section cem-section">
-        <div data-rwbuild="header:Reflection"></div>
-        <div class="rw-field" id="cem-f-reflection">
-          <div class="rw-field-l">Reflection</div>
-          <textarea id="cem-reflection" class="rw-input rw-textarea" placeholder="What did you learn from this trade? How did you feel?"></textarea>
-        </div>
-      </div>
 
       <!-- ============ MINDSET — grading ============ -->
       <div class="rw-section cem-section">
@@ -17723,9 +17704,7 @@ function openCalEdit(id){
   document.getElementById('cem-stop').value=t.stop||'';
   document.getElementById('cem-qty').value=t.qty||1;
   document.getElementById('cem-notes').value=t.notes||'';
-  // Session 14 — Reflection field + clear any stale validation errors.
-  var cemReflEl=document.getElementById('cem-reflection');
-  if(cemReflEl) cemReflEl.value=t.reflection||'';
+  // Clear any stale validation errors from a prior open.
   if(typeof cemClearErrors==='function') cemClearErrors();
   // Chunk 3 — accounts field. Previously not in the modal at all, which
   // silently zeroed it back to 1 on every edit for multi-account trades.
@@ -17912,8 +17891,6 @@ function saveCalEdit(){
   var mktVal = document.getElementById('cem-mkt').value;
   var dateVal = document.getElementById('cem-date').value;
   var notesVal = document.getElementById('cem-notes').value || '';
-  // Session 14 — Reflection (post-trade journaling free text).
-  var reflectionVal = (document.getElementById('cem-reflection').value || '').trim();
   var pnlOverride = parseFloat((document.getElementById('cem-pnl')||{}).value);
   var gi = parseInt(document.getElementById('cem-grade').value) || 3;
   var emotionVal = parseInt(document.getElementById('cem-emotion').value) || 3;
@@ -17978,9 +17955,8 @@ function saveCalEdit(){
   // Use snapshots captured before closeCalEdit (which resets _cemSession and
   // clears some DOM values). Reading DOM here would silently zero them out.
   t.notes=notesVal;
-  t.reflection=reflectionVal;
-  // Session 14 — a modal save passes the full 9-field gate, so the trade
-  // is now complete; drop any ⚠ "incomplete" flag set at CSV-import time.
+  // A modal save passes the full required-field gate, so the trade is
+  // now complete; drop any ⚠ "incomplete" flag set at CSV-import time.
   delete t.incomplete;
   t.session=sessionVal;
   t.grade=(typeof GRADES!=='undefined'&&GRADES[gi]&&GRADES[gi].label)||'B';
@@ -20213,8 +20189,6 @@ function fullLog(){
   const accounts=parseFloat(document.getElementById('lg-accounts')?.value)||1;
   const totalQty=qty*accounts;
   const date=document.getElementById('lg-date').value,notes=document.getElementById('lg-notes').value.trim();
-  // Session 14 — Reflection: post-trade journaling free text (required).
-  const reflection=(document.getElementById('lg-reflection')?.value||'').trim();
   const session=document.getElementById('lg-session')?.value||'';
   const stop=parseFloat(document.getElementById('lg-stop').value)||null;
   const gradeIdx=parseInt(document.getElementById('lg-grade')?.value??3);
@@ -20252,7 +20226,7 @@ function fullLog(){
   // populated. Not a top-level column.
   const points = (lgType==='long' ? exit-entry : entry-exit);
 
-  var newTrade = {id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,reflection,pnl,rr,points,grade,emotion,confidence,images:[...noteImages],created_at:new Date().toISOString(),account_type:accountType,tradingview_link:tradingviewLink||undefined};
+  var newTrade = {id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,pnl,rr,points,grade,emotion,confidence,images:[...noteImages],created_at:new Date().toISOString(),account_type:accountType,tradingview_link:tradingviewLink||undefined};
   trades.unshift(newTrade);
   save();renderAll();
 
@@ -20280,7 +20254,7 @@ function fullLog(){
   }
 
   // Reset form for the next trade
-  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-reflection','lg-pnl','lg-rr','lg-tv-link'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-pnl','lg-rr','lg-tv-link'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('lg-qty').value='1';
   if(document.getElementById('lg-accounts'))document.getElementById('lg-accounts').value='1';
   document.getElementById('lg-date').value=_localDate(new Date());
@@ -20420,8 +20394,6 @@ var LT_RULES = [
     ok:function(){ return !isNaN(parseFloat(document.getElementById('lg-exit').value)); } },
   { fields:['lt-f-qty'], msg:'Number of contracts required',
     ok:function(){ var q=parseFloat(document.getElementById('lg-qty').value); return !isNaN(q) && q>0; } },
-  { fields:['lt-f-reflection'], msg:'Write a reflection on this trade',
-    ok:function(){ return !!(document.getElementById('lg-reflection').value||'').trim(); } },
   { fields:['lt-f-evidence'], msg:'Upload a screenshot or paste a TradingView link',
     ok:function(){ return _ltScreenshotCount() >= 1 || _rwValidTVLink('lg-tv-link'); } },
   { fields:['lt-sec-confluences','lt-f-notes'], msg:'Add at least 1 confluence and a note',
@@ -20455,8 +20427,6 @@ var CEM_RULES = [
     ok:function(){ return !isNaN(parseFloat(document.getElementById('cem-exit').value)); } },
   { fields:['cem-f-qty'], msg:'Number of contracts required',
     ok:function(){ var q=parseFloat(document.getElementById('cem-qty').value); return !isNaN(q) && q>0; } },
-  { fields:['cem-f-reflection'], msg:'Write a reflection on this trade',
-    ok:function(){ return !!(document.getElementById('cem-reflection').value||'').trim(); } },
   { fields:['cem-f-evidence'], msg:'Upload a screenshot or paste a TradingView link',
     ok:function(){ return _cemScreenshotCount() >= 1 || _rwValidTVLink('cem-tv-link'); } },
   { fields:['cem-cf-section','cem-f-notes'], msg:'Add at least 1 confluence and a note',
@@ -20476,7 +20446,6 @@ function tradeIsIncomplete(t){
   if(t.entry == null || isNaN(parseFloat(t.entry))) return true;
   if(t.exit == null || isNaN(parseFloat(t.exit))) return true;
   var q = parseFloat(t.qty); if(isNaN(q) || q <= 0) return true;
-  if(!t.reflection || !String(t.reflection).trim()) return true;
   // Evidence — a screenshot OR a valid TradingView link satisfies it.
   var hasShot = !!(t.images && t.images.length);
   var hasTV = !!(t.tradingview_link && typeof _TV_LINK_RE !== 'undefined'
@@ -20576,7 +20545,7 @@ function confirmLogFinal(){
 }
 
 function resetLogForm(){
-  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-reflection','lg-pnl','lg-rr','lg-tv-link'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-pnl','lg-rr','lg-tv-link'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('lg-qty').value='1';
   if(document.getElementById('lg-accounts'))document.getElementById('lg-accounts').value='1';
   document.getElementById('lg-date').value=_localDate(new Date());
@@ -21604,11 +21573,6 @@ function importCsvTrades(){
       accounts: accounts > 1 ? accounts : undefined,
       date: t.date, market: t.market,
       notes: finalNotes,
-      // Session 14 — Reflection enrich field. ciSnapshotExpandedRowInputs()
-      // (called at the top of importCsvTrades) flushes the expanded row's
-      // textarea into e.reflection, so this reads the latest value. Usually
-      // empty for bulk historical imports → drives the ⚠ flag below.
-      reflection: (e.reflection || '').trim(),
       session: rowSession,
       grade: e.grade || 'B',
       emotion: e.emotion || 3,
@@ -22039,8 +22003,6 @@ function ciClearEnrichZone(idx){
   var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
   var notesEl = zone.querySelector('textarea.ci-enrich-notes');
   if(notesEl) e.notes = notesEl.value || '';
-  var reflEl = zone.querySelector('textarea.ci-enrich-reflection');
-  if(reflEl) e.reflection = reflEl.value || '';
   var tvEl = zone.querySelector('.rw-tv-input');
   if(tvEl) e.tradingview_link = (tvEl.value || '').trim();
   // THEN wipe DOM.
@@ -22060,7 +22022,6 @@ function ciRenderEnrichZone(idx){
   if(e.emotion == null) e.emotion = 3;
   if(e.confidence == null) e.confidence = 3;
   if(!e.notes) e.notes = '';
-  if(!e.reflection) e.reflection = '';   // Session 14 — post-trade journaling
   if(!e.tradingview_link) e.tradingview_link = '';
   if(!e.session) e.session = '';
   if(!e.account_type) e.account_type = '';   // Chunk 5 v4 — snake_case
@@ -22217,14 +22178,6 @@ function ciRenderEnrichZone(idx){
     '</div>' +
     '</div>' + /* /ci-col (right) */
     '</div>' + /* /ci-cols */
-    /* ── REFLECTION — post-trade journaling (Session 14/15, full width) ── */
-    buildSectionHeader('Reflection') +
-    '<div class="rw-field" id="csv-f-reflection">' +
-      '<div class="rw-field-l">Reflection</div>' +
-      '<textarea class="rw-input rw-textarea ci-enrich-reflection" data-idx="'+idx+'" '+
-                'placeholder="What did you learn from this trade? How did you feel?" '+
-                'oninput="ciOnEnrichReflection('+idx+', this.value)">'+ciEsc(e.reflection||'')+'</textarea>' +
-    '</div>' +
     /* ── MINDSET — grading (full width) ── */
     buildSectionHeader('Mindset') +
     buildReflectionRow('grade',      'csv', gradeIdx) +
@@ -22249,20 +22202,6 @@ function ciRenderEnrichZone(idx){
     notesEl.addEventListener('change', notesHandler);
     notesEl.addEventListener('blur',   notesHandler);
     notesEl.addEventListener('keyup',  notesHandler);
-  }
-  // Session 14 — Reflection textarea, same multi-event binding as Notes.
-  var reflEl = zone.querySelector('textarea.ci-enrich-reflection');
-  if(reflEl){
-    var reflHandler = function(){
-      var e2 = csvEnrichment[idx] = csvEnrichment[idx] || {};
-      e2.reflection = reflEl.value || '';
-      ciUpdateRowStatus(idx);
-      ciUpdateCounters();
-    };
-    reflEl.addEventListener('input',  reflHandler);
-    reflEl.addEventListener('change', reflHandler);
-    reflEl.addEventListener('blur',   reflHandler);
-    reflEl.addEventListener('keyup',  reflHandler);
   }
   var tvInputEl = zone.querySelector('.rw-tv-input');
   if(tvInputEl){
@@ -22633,15 +22572,6 @@ function ciOnEnrichNotes(idx, value){
 }
 window.ciOnEnrichNotes = ciOnEnrichNotes;
 
-// Session 14 — Reflection enrich field (inline-oninput backup handler).
-function ciOnEnrichReflection(idx, value){
-  var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
-  e.reflection = value || '';
-  ciUpdateRowStatus(idx);
-  ciUpdateCounters();
-}
-window.ciOnEnrichReflection = ciOnEnrichReflection;
-
 // Session 15 — editable Symbol in the CSV broker header.
 function ciOnEnrichSym(idx, value){
   var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
@@ -22692,8 +22622,6 @@ function ciSnapshotExpandedRowInputs(){
     var e = csvEnrichment[idx] = csvEnrichment[idx] || {};
     var notesEl = zone.querySelector('textarea.ci-enrich-notes');
     if(notesEl) e.notes = notesEl.value || '';
-    var reflEl = zone.querySelector('textarea.ci-enrich-reflection');
-    if(reflEl) e.reflection = reflEl.value || '';
     var tvEl = zone.querySelector('.rw-tv-input');
     if(tvEl) e.tradingview_link = (tvEl.value || '').trim();
     // Session 15 — editable Symbol + optional Stop Loss / # of Accounts.
@@ -22709,7 +22637,7 @@ window.ciSnapshotExpandedRowInputs = ciSnapshotExpandedRowInputs;
 
 /* ═══════════════════════════════════════════════════════════════════
    SESSION 15 — CSV import required-field validation
-   The CSV enrich zone now enforces the same 9 required fields as the
+   The CSV enrich zone enforces the same 8 required fields as the
    Log Trade form. Per-trade ⚠/◐/✓ indicator; Import All blocks until
    every trade is complete.
    ═══════════════════════════════════════════════════════════════════ */
@@ -22723,12 +22651,11 @@ var CSV_FIELD_MSG = {
   'csv-f-sym':       'Symbol required',
   'csv-f-session':   'Select a session',
   'csv-f-acct':      'Select account type',
-  'csv-f-reflection':'Write a reflection on this trade',
   'csv-f-evidence':  'Upload a screenshot or paste a TradingView link',
   'csv-row-cf-section':'Add at least 1 confluence and a note'
 };
 
-// Validate one parsed/enriched CSV trade against the 9 required fields.
+// Validate one parsed/enriched CSV trade against the 8 required fields.
 // Returns { missing:[{label,field}] }. Entry/Exit/Contracts come from the
 // CSV and are essentially always present; Symbol defaults to the CSV value.
 function ciValidateRow(idx){
@@ -22743,7 +22670,6 @@ function ciValidateRow(idx){
   if(isNaN(parseFloat(t.entry))) miss.push({label:'Entry', field:'csv-f-entry'});
   if(isNaN(parseFloat(t.exit)))  miss.push({label:'Exit', field:'csv-f-exit'});
   var q = parseFloat(t.qty); if(isNaN(q) || q <= 0) miss.push({label:'# of Contracts', field:'csv-f-qty'});
-  if(!String(e.reflection||'').trim()) miss.push({label:'Reflection', field:'csv-f-reflection'});
   var hasShot = Array.isArray(e.images) && e.images.length >= 1;
   var hasTV = e.tradingview_link && typeof _TV_LINK_RE !== 'undefined'
     && _TV_LINK_RE.test(e.tradingview_link);
@@ -22760,7 +22686,6 @@ function ciRowState(idx){
   if(!ciValidateRow(idx).missing.length) return 'complete';
   var e = csvEnrichment[idx] || {};
   var started = !!(String(e.session||'').trim() || e.account_type
-    || String(e.reflection||'').trim()
     || (Array.isArray(e.images) && e.images.length)
     || (e.tradingview_link && String(e.tradingview_link).trim())
     || (Array.isArray(e.confluences) && e.confluences.length)
@@ -22773,7 +22698,7 @@ function ciPaintRowErrors(idx){
   if(idx !== ciExpandedRowIdx) return;
   var miss = {};
   ciValidateRow(idx).missing.forEach(function(m){ miss[m.field] = 1; });
-  ['csv-f-session','csv-f-acct','csv-f-reflection','csv-f-evidence','csv-row-cf-section','csv-f-notes']
+  ['csv-f-session','csv-f-acct','csv-f-evidence','csv-row-cf-section','csv-f-notes']
     .forEach(function(fid){
       var el = document.getElementById(fid);
       if(!el) return;
@@ -22794,7 +22719,7 @@ function ciLiveClearRowErrors(idx){
   if(!zone || !zone.querySelector('.rw-invalid, .csv-sym-invalid')) return;
   var miss = {};
   ciValidateRow(idx).missing.forEach(function(m){ miss[m.field] = 1; });
-  ['csv-f-session','csv-f-acct','csv-f-reflection','csv-f-evidence','csv-row-cf-section','csv-f-notes']
+  ['csv-f-session','csv-f-acct','csv-f-evidence','csv-row-cf-section','csv-f-notes']
     .forEach(function(fid){
       var key = (fid === 'csv-f-notes') ? 'csv-row-cf-section' : fid;
       if(!miss[key]) _rwClearErr(document.getElementById(fid));
@@ -22805,7 +22730,7 @@ function ciLiveClearRowErrors(idx){
 
 // Clear ALL errors from the expanded row (used on collapse / re-render).
 function ciClearRowErrors(idx){
-  ['csv-f-session','csv-f-acct','csv-f-reflection','csv-f-evidence','csv-row-cf-section','csv-f-notes']
+  ['csv-f-session','csv-f-acct','csv-f-evidence','csv-row-cf-section','csv-f-notes']
     .forEach(function(fid){ _rwClearErr(document.getElementById(fid)); });
   var symEl = document.querySelector('#mode-ai .ci-row[data-idx="'+idx+'"] .ci-bh-sym-input');
   if(symEl) symEl.classList.remove('csv-sym-invalid');
@@ -28702,12 +28627,6 @@ async function saveTradeToSupa(trade) {
     var _at = (trade && typeof trade.account_type === 'string') ? trade.account_type.toLowerCase() : null;
     var accountTypeCol = (_at && ['paper','eval','funded','live'].indexOf(_at) >= 0) ? _at : null;
 
-    // Session 14 — reflection lands on its own column for SQL queryability
-    // (migration: required-fields-migration.sql). It's also carried inside
-    // trade_data, mirroring how account_type works. Empty string → NULL.
-    var _refl = (trade && typeof trade.reflection === 'string') ? trade.reflection.trim() : '';
-    var reflectionCol = _refl ? _refl : null;
-
     // Chunk 3 bug fix — DO NOT pre-stringify trade_data.
     //
     // Old pattern:  trade_data: JSON.stringify(trade)
@@ -28733,7 +28652,6 @@ async function saveTradeToSupa(trade) {
       user_id: authUser.id,            // REQUIRED by RLS policy
       trade_data: trade,               // OBJECT, not string — see comment above
       account_type: accountTypeCol,    // top-level column (Chunk 2 migration)
-      reflection: reflectionCol,       // top-level column (Session 14 migration)
       journal: activeJournal,
       updated_at: new Date().toISOString()
     }, { onConflict: 'id' });
