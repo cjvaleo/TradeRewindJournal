@@ -429,7 +429,8 @@ export function traderOfTheDay(trades, today) {
       symbol: (typeof t.sym === 'string' && t.sym.trim()) ? t.sym.trim() : '—',
       contracts: num(t.qty),
       accounts: (accts != null && accts > 1) ? accts : null,
-      points: num(t.points),
+      pnl: num(t.pnl),       // Session 20a follow-up — TOTD rows show $ P&L
+      points: num(t.points), // kept in the response, no longer rendered
     };
   });
   return {

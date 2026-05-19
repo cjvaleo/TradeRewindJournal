@@ -6950,6 +6950,11 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 }
 #pg-community .hero-stat-value.profit{color:var(--n-profit)}
 #pg-community .hero-stat-value.loss{color:var(--n-loss)}
+/* Session 20a follow-up — Top Trade points sub-stat (empty span when none) */
+#pg-community .hero-stat-sub{
+  font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-3);
+}
+#pg-community .hero-stat-sub:empty{display:none}
 
 /* ── COLLAPSIBLE COMMUNITIES SUB-SIDEBAR ──
    IMPORTANT: keep position:sticky (set on the base .csb rule at line
@@ -10779,7 +10784,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             <div class="hero-stat"><span class="hero-stat-label">Trades</span><span class="hero-stat-value" id="comm-hero-trades">0</span></div>
             <div class="hero-stat"><span class="hero-stat-label">Win Rate</span><span class="hero-stat-value" id="comm-hero-winrate">0%</span></div>
             <div class="hero-stat"><span class="hero-stat-label">Avg Trade</span><span class="hero-stat-value" id="comm-hero-avg">+$0</span></div>
-            <div class="hero-stat"><span class="hero-stat-label">Best Trade</span><span class="hero-stat-value" id="comm-hero-best">+$0</span></div>
+            <div class="hero-stat"><span class="hero-stat-label">Top Trade</span><span class="hero-stat-value" id="comm-hero-best">+$0</span><span class="hero-stat-sub" id="comm-hero-best-pts"></span></div>
             <div class="hero-stat"><span class="hero-stat-label">Top Trader</span><span class="hero-stat-value" id="comm-hero-top">&mdash;</span></div>
           </div>
         </div>
@@ -15731,9 +15736,11 @@ async function renderTOTD(g){
   var list = Array.isArray(d.trades_today) ? d.trades_today : [];
 
   var rows = list.map(function(tr){
-    var pts = (tr.points == null || isNaN(Number(tr.points))) ? null : Number(tr.points);
-    var ptsCls = pts == null ? '' : (pts < 0 ? ' neg' : '');
-    var ptsTxt = pts == null ? '—' : (pts > 0 ? '+' : '') + (Math.round(pts * 10) / 10);
+    // Session 20a follow-up — rows show $ P&L (not points). `points`
+    // still rides along in the response, just no longer rendered.
+    var pnl = (tr.pnl == null || isNaN(Number(tr.pnl))) ? null : Number(tr.pnl);
+    var pnlCls = pnl == null ? '' : (pnl < 0 ? ' neg' : '');
+    var pnlTxt = pnl == null ? '—' : _fmtShortMoney(pnl);
     var ct = (tr.contracts != null && !isNaN(Number(tr.contracts))) ? Number(tr.contracts) : null;
     return '<div class="totd2-row">'
       + '<span class="totd2-row-l">'
@@ -15743,8 +15750,7 @@ async function renderTOTD(g){
       +   (tr.accounts ? '<span class="totd2-accts">' + _eodSafe(String(tr.accounts)) + ' accts</span>' : '')
       + '</span>'
       + '<span class="totd2-row-r">'
-      +   '<span class="totd2-pts' + ptsCls + '">' + ptsTxt + '</span>'
-      +   '<span class="totd2-pts-u">pts</span>'
+      +   '<span class="totd2-pts' + pnlCls + '">' + pnlTxt + '</span>'
       + '</span>'
       + '</div>';
   }).join('');
@@ -15855,10 +15861,13 @@ async function computeGroupStats(commId, period){
   // Session 20a Part 1 — per-account P&L for the Best/Avg-trade hero
   // stats. community_posts.metadata carries the `accounts` count baked
   // at share time; pnl_today is the N× gross. Total stays gross.
-  function _postPerAcct(p){
+  function _postMeta(p){
     var m = p.metadata;
     if(typeof m === 'string'){ try{ m = JSON.parse(m); }catch(e){ m = null; } }
-    var accts = Math.max(1, Number(m && m.accounts) || 1);
+    return m || {};
+  }
+  function _postPerAcct(p){
+    var accts = Math.max(1, Number(_postMeta(p).accounts) || 1);
     return (Number(p.pnl_today)||0) / accts;
   }
   var total = posts.reduce(function(s,p){return s + (Number(p.pnl_today)||0);}, 0);  // gross
@@ -15866,8 +15875,16 @@ async function computeGroupStats(commId, period){
   var wins  = posts.filter(function(p){return (Number(p.pnl_today)||0) > 0;}).length;
   var winRate = Math.round((wins/count)*100);
   var avg   = posts.reduce(function(s,p){return s + _postPerAcct(p);}, 0) / count;   // per-account
-  var best  = posts.reduce(function(m,p){return Math.max(m, _postPerAcct(p));}, -Infinity);
+  // Session 20a follow-up — track the Top Trade post so we can surface
+  // both its per-account $ value and its points sub-stat.
+  var bestPost = null, best = -Infinity;
+  posts.forEach(function(p){ var v=_postPerAcct(p); if(v>best){ best=v; bestPost=p; } });
   if(!isFinite(best)) best = 0;
+  var bestPoints = null;
+  if(bestPost){
+    var bp = Number(_postMeta(bestPost).points);
+    if(!isNaN(bp)) bestPoints = bp;
+  }
 
   var byUser = {};
   posts.forEach(function(p){
@@ -15877,7 +15894,7 @@ async function computeGroupStats(commId, period){
   });
   var topTrader = Object.values(byUser).sort(function(a,b){return b.pnl - a.pnl;})[0] || null;
 
-  return {total:total, count:count, winRate:winRate, avg:avg, best:best, topTrader:topTrader};
+  return {total:total, count:count, winRate:winRate, avg:avg, best:best, bestPoints:bestPoints, topTrader:topTrader};
 }
 
 async function renderHeroPnl(g, period){
@@ -15901,6 +15918,13 @@ async function renderHeroPnl(g, period){
   var bestEl = document.getElementById('comm-hero-best');
   bestEl.textContent = _fmtShortMoney(stats.best);
   bestEl.className = 'hero-stat-value' + (stats.best > 0 ? ' profit' : '');
+  // Session 20a follow-up — Top Trade points sub-stat under the $ value.
+  var bestPtsEl = document.getElementById('comm-hero-best-pts');
+  if(bestPtsEl){
+    var bpts = stats.bestPoints;
+    bestPtsEl.textContent = (bpts==null || isNaN(Number(bpts)))
+      ? '' : ((Number(bpts)>0?'+':'')+(Math.round(Number(bpts)*10)/10)+' pts');
+  }
   var topName = stats.topTrader && stats.topTrader.username;
   document.getElementById('comm-hero-top').textContent = topName ? '@'+String(topName).replace(/^@/,'') : '—';
 }
