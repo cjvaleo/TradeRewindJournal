@@ -6935,54 +6935,87 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   filter:drop-shadow(0 4px 16px rgba(201,95,95,0.18));
 }
 #pg-community .hero-pnl-value .cents{font-size:0.42em;opacity:0.65}
+/* Session 20a follow-up #5 — Row 1 = 4-col grid with the spec's exact
+   label metrics; Total Points is cool-blue (derived). */
 #pg-community .hero-pnl-stats{
-  display:flex;justify-content:center;gap:42px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:24px;
   margin-top:24px;padding-top:22px;border-top:1px solid var(--n-border);
-  flex-wrap:wrap;
 }
-#pg-community .hero-stat{display:flex;flex-direction:column;align-items:center;gap:4px}
+#pg-community .hero-stat{display:flex;flex-direction:column;align-items:center;gap:6px}
 #pg-community .hero-stat-label{
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
   text-transform:uppercase;color:var(--n-text-4);
 }
 #pg-community .hero-stat-value{
-  /* Session 20a follow-up #4 — back to a calmer 22px italic; the 32px
-     from #3 was too dominant. */
   font-family:var(--n-font-display);font-style:italic;font-weight:400;
   font-size:22px;line-height:1;color:#f0efea;
 }
 #pg-community .hero-stat-value.profit{color:var(--n-profit)}
 #pg-community .hero-stat-value.loss{color:var(--n-loss)}
 #pg-community .hero-stat-value.neutral{color:var(--n-text-3)}
-/* Row 2 — Top Trade + Top Trader, grouped tighter together (#4). */
+#pg-community .hero-stat-value.cool{color:#6ea8ff}
+/* Row 2 — Top Performers grid, each in its own sage-tinted card. */
 #pg-community .hero-pnl-top-row{
-  display:flex;justify-content:center;gap:48px;flex-wrap:wrap;
-  margin-top:18px;padding-top:18px;
+  display:grid;grid-template-columns:1fr 1fr;gap:18px;
+  margin-top:22px;padding-top:22px;
   border-top:1px solid rgba(255,255,255,.06);
 }
 #pg-community .hero-top-stat{
-  display:flex;flex-direction:column;align-items:center;gap:6px;
-  min-width:0;
+  position:relative;display:flex;flex-direction:column;gap:10px;
+  padding:14px 18px;border-radius:12px;min-width:0;
+  background:rgba(95,179,137,0.03);
+  border:1px solid rgba(95,179,137,0.1);
 }
-#pg-community .hero-top-main{
-  display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;justify-content:center;min-width:0;
+#pg-community .hero-top-stat::before{
+  content:'';position:absolute;left:0;top:16px;width:2px;height:36px;
+  background:var(--n-profit);border-radius:0 2px 2px 0;
 }
-#pg-community .hero-top-main .hero-stat-value{font-size:24px}
-#pg-community .hero-top-by{
-  font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-3);
+#pg-community .hero-top-header{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;
+}
+#pg-community .hero-pill{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.12em;
+  font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:3px;
   white-space:nowrap;
 }
-#pg-community .hero-top-by:empty{display:none}
-#pg-community .hero-top-trader{
-  font-family:var(--n-font-sans);font-size:15px;font-weight:600;color:#f5f4f0;
+#pg-community .hero-pill.live{
+  background:rgba(95,179,137,0.12);color:var(--n-profit);
+  border:1px solid rgba(95,179,137,0.25);
+}
+#pg-community .hero-pill.eval{
+  background:rgba(255,255,255,0.04);color:var(--n-text-3);
+  border:1px solid rgba(255,255,255,0.08);
+}
+#pg-community .hero-pill:empty{display:none}
+#pg-community .hero-microcopy{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.04em;
+  color:var(--n-text-3);white-space:nowrap;
+}
+#pg-community .hero-top-main{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;
+}
+#pg-community .hero-top-main .hero-stat-value{font-size:30px}
+#pg-community .hero-top-by-text{
+  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-3);
+}
+#pg-community .hero-top-avatar{display:inline-flex;align-items:center;flex-shrink:0}
+#pg-community .hero-top-avatar .av{
+  width:22px!important;height:22px!important;font-size:9px!important;
+}
+#pg-community .hero-top-handle{
+  font-family:var(--n-font-sans);font-size:14px;font-weight:500;color:#f5f4f0;
   max-width:14ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-/* Top Trade / Top Trader sub-detail lines (11px mono gray, no italic). */
+/* Sub-detail line — 11px mono, low-opacity white. */
 #pg-community .hero-top-sub{
-  font-family:var(--n-font-mono);font-size:11px;color:#9a9a92;
-  text-align:center;margin-top:2px;
+  font-family:var(--n-font-mono);font-size:11px;color:rgba(255,255,255,0.4);
+  margin-top:2px;
 }
 #pg-community .hero-top-sub:empty{display:none}
+@media (max-width:720px){
+  #pg-community .hero-pnl-top-row{grid-template-columns:1fr}
+  #pg-community .hero-pnl-stats{grid-template-columns:repeat(2,1fr);gap:16px}
+}
 /* Top Trade points sub-stat — parenthesized italic line under the $ value. */
 #pg-community .hero-stat-sub{
   font-family:var(--n-font-mono);font-size:11px;font-style:italic;color:#9a9a92;
@@ -10825,18 +10858,28 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
           <!-- Row 2 — Top Trade + Top Trader, with the user who achieved each -->
           <div class="hero-pnl-top-row">
             <div class="hero-top-stat">
-              <div class="hero-stat-label">Top Trade</div>
+              <div class="hero-top-header">
+                <span class="hero-stat-label">Top Trade</span>
+                <span class="hero-pill" id="comm-hero-best-pill"></span>
+              </div>
               <div class="hero-top-main">
                 <span class="hero-stat-value" id="comm-hero-best">+$0</span>
-                <span class="hero-top-by" id="comm-hero-best-by"></span>
+                <span class="hero-top-by-text">by</span>
+                <span class="hero-top-avatar" id="comm-hero-best-avatar"></span>
+                <span class="hero-top-handle" id="comm-hero-best-handle">&mdash;</span>
               </div>
               <div class="hero-top-sub" id="comm-hero-best-detail"></div>
             </div>
             <div class="hero-top-stat">
-              <div class="hero-stat-label">Top Trader</div>
+              <div class="hero-top-header">
+                <span class="hero-stat-label">Top Trader</span>
+                <span class="hero-microcopy">ranked per-acct</span>
+              </div>
               <div class="hero-top-main">
-                <span class="hero-top-trader" id="comm-hero-top">&mdash;</span>
                 <span class="hero-stat-value" id="comm-hero-top-pnl">+$0</span>
+                <span class="hero-top-by-text">by</span>
+                <span class="hero-top-avatar" id="comm-hero-top-avatar"></span>
+                <span class="hero-top-handle" id="comm-hero-top">&mdash;</span>
               </div>
               <div class="hero-top-sub" id="comm-hero-top-detail"></div>
             </div>
@@ -15876,125 +15919,31 @@ function _fmtShortMoney(n){
   return sign+'$'+a.toLocaleString('en-US',{maximumFractionDigits:0});
 }
 
-/* Single source of truth for community stats: community_posts.
-   The previous version summed local `trades[]` AND `_remotePosts`
-   (which IS community_posts after the share-on-log shift), so my own
-   shared trade got counted twice. Now we read posts only — same data,
-   no double-count. Trades-table stats live on Dashboard / History. */
+/* Session 20a follow-up #5 — Community-page hero is now backed by the
+   /api/community/group-stats endpoint (same source as Review → Community
+   tab). Kills the community_posts.pnl_today drift (the cache that gave
+   "784 vs 2,400" between surfaces). Period: today / week / month / all
+   with viewer's tz_offset for "today". */
 async function computeGroupStats(commId, period){
-  if(!_sb || !commId){
-    return {total:0, count:0, winRate:0, avg:0, totalPoints:0, topTrade:null, topTrader:null};
-  }
-  // Period boundaries — local "today" / rolling week / rolling month / all.
-  var sinceISO;
-  if(period === 'today'){
-    var d = new Date(); d.setHours(0,0,0,0);
-    sinceISO = d.toISOString();
-  } else if(period === 'month'){
-    sinceISO = new Date(Date.now() - 30*24*60*60*1000).toISOString();
-  } else if(period === 'all'){
-    sinceISO = new Date(0).toISOString();
-  } else { // 'week' (default)
-    sinceISO = new Date(Date.now() - 7*24*60*60*1000).toISOString();
-  }
-
-  var r = await _sb.from('community_posts')
-    .select('user_id, username, pnl_today, created_at, id, metadata, content')
-    .eq('community_id', commId)
-    .like('id', 'trade_%')          // skip check-ins + any other non-trade posts
-    .gte('created_at', sinceISO);
-  if(r && r.error){
-    console.error('[hero stats] fetch failed:', r.error);
-    return {total:0, count:0, winRate:0, avg:0, totalPoints:0, topTrade:null, topTrader:null};
-  }
-  var posts = (r && r.data) || [];
-  if(!posts.length){
-    return {total:0, count:0, winRate:0, avg:0, totalPoints:0, topTrade:null, topTrader:null};
-  }
-
-  // Session 20a Part 1 — per-account P&L for the Best/Avg-trade hero
-  // stats. community_posts.metadata carries the `accounts` count baked
-  // at share time; pnl_today is the N× gross. Total stays gross.
-  function _postMeta(p){
-    var m = p.metadata;
-    if(typeof m === 'string'){ try{ m = JSON.parse(m); }catch(e){ m = null; } }
-    return m || {};
-  }
-  function _postPerAcct(p){
-    var accts = Math.max(1, Number(_postMeta(p).accounts) || 1);
-    return (Number(p.pnl_today)||0) / accts;
-  }
-  // Symbol lives in the post's text "SYM · ↗ Side · +$pnl\nnotes"
-  // (not in metadata) — parse it for the Top Trade / Top Trader sub-lines.
-  function _postSym(p){
-    try { return (String(p.content||'').split('\n')[0].split(' · ')[0]||'').trim(); }
-    catch(e){ return ''; }
-  }
-
-  var total = posts.reduce(function(s,p){return s + (Number(p.pnl_today)||0);}, 0);  // gross
-  var count = posts.length;
-  var wins  = posts.filter(function(p){return (Number(p.pnl_today)||0) > 0;}).length;
-  var winRate = Math.round((wins/count)*100);
-  var avg   = posts.reduce(function(s,p){return s + _postPerAcct(p);}, 0) / count;   // per-account
-  var totalPoints = posts.reduce(function(s,p){
-    var v = Number(_postMeta(p).points); return s + (isNaN(v) ? 0 : v);
-  }, 0);
-  // Track the Top Trade post — its per-account $, who took it, and the
-  // sub-line trio (symbol · contracts · points).
-  var bestPost = null, best = -Infinity;
-  posts.forEach(function(p){ var v=_postPerAcct(p); if(v>best){ best=v; bestPost=p; } });
-  if(!isFinite(best)) best = 0;
-
-  // Per-user aggregates for Top Trader + its sub-line.
-  var byUser = {};
-  posts.forEach(function(p){
-    var k = p.user_id || 'unknown';
-    if(!byUser[k]) byUser[k] = {
-      user_id:k, username:p.username||'trader', pnl:0,
-      trade_count:0, wins:0, losses:0, best_trade:null
-    };
-    var pn = Number(p.pnl_today)||0;
-    byUser[k].pnl += pn;
-    byUser[k].trade_count++;
-    if(pn > 0) byUser[k].wins++;
-    else if(pn < 0) byUser[k].losses++;
-    var pa = _postPerAcct(p);
-    if(byUser[k].best_trade === null || pa > byUser[k].best_trade.pnl){
-      byUser[k].best_trade = { pnl: pa, symbol: _postSym(p) || '—' };
-    }
-  });
-  var topTrader = Object.values(byUser).sort(function(a,b){return b.pnl - a.pnl;})[0] || null;
-
-  // One batched profiles read for the Top Trade + Top Trader user_ids.
-  var lookupIds = [];
-  if(bestPost && bestPost.user_id) lookupIds.push(bestPost.user_id);
-  if(topTrader && topTrader.user_id && lookupIds.indexOf(topTrader.user_id) < 0) lookupIds.push(topTrader.user_id);
-  var profMap = {};
-  if(lookupIds.length){
-    try {
-      var pf = await _sb.from('profiles').select('id,display_name,username').in('id', lookupIds);
-      (pf && pf.data || []).forEach(function(p){ profMap[p.id] = p; });
-    } catch(e){ /* fallback uses denormalized username */ }
-  }
-  var topTrade = bestPost ? {
-    pnl: best,
-    symbol: _postSym(bestPost) || '—',
-    contracts: (function(){ var q=Number(_postMeta(bestPost).qty); return isNaN(q)?null:q; })(),
-    points: (function(){ var v=Number(_postMeta(bestPost).points); return isNaN(v)?null:v; })(),
-    username: (profMap[bestPost.user_id] && profMap[bestPost.user_id].username) || bestPost.username || 'trader',
-    display_name: (profMap[bestPost.user_id] && profMap[bestPost.user_id].display_name) || null
-  } : null;
-  if(topTrader){
-    var tp = profMap[topTrader.user_id];
-    if(tp){
-      topTrader.username = tp.username || topTrader.username;
-      topTrader.display_name = tp.display_name || null;
-    }
-  }
-
-  return {total:total, count:count, winRate:winRate, avg:avg,
-          totalPoints:totalPoints,
-          topTrade:topTrade, topTrader:topTrader};
+  var fallback = {total:0, count:0, winRate:0, avg:0, totalPoints:0, topTrade:null, topTrader:null};
+  if(!commId) return fallback;
+  var tzOffset = new Date().getTimezoneOffset();
+  var url = '/api/community/group-stats?community_id=' + encodeURIComponent(commId)
+          + '&period=' + encodeURIComponent(period || 'week')
+          + '&tz_offset=' + tzOffset;
+  var resp;
+  try { resp = await rvFetch(url); } catch(e){ resp = { ok:false }; }
+  if(!resp || !resp.ok || !resp.data) return fallback;
+  var d = resp.data;
+  return {
+    total:       Number(d.net_pnl)      || 0,
+    count:       Number(d.total_trades) || 0,
+    winRate:     Number(d.win_rate)     || 0,
+    avg:         Number(d.avg_trade)    || 0,
+    totalPoints: Number(d.total_points) || 0,
+    topTrade:    d.top_trade  || null,
+    topTrader:   d.top_trader || null,
+  };
 }
 
 async function renderHeroPnl(g, period){
@@ -16004,39 +15953,79 @@ async function renderHeroPnl(g, period){
   var stats = await computeGroupStats(g.id, period);
   console.log('[hero stats]', stats);
 
+  // ── Row 1 — headline P&L + 4-stat strip ──────────────────────────
   var totalPnl = stats.total;
   var valEl = document.getElementById('comm-hero-pnl');
   valEl.innerHTML = _fmtMoney(totalPnl);
   valEl.className = 'hero-pnl-value' + (totalPnl < 0 ? ' loss' : '');
+
   document.getElementById('comm-hero-trades').textContent = stats.count;
+
   var wrEl = document.getElementById('comm-hero-winrate');
   wrEl.textContent = stats.winRate + '%';
   wrEl.className = 'hero-stat-value' + (stats.winRate >= 50 ? ' profit' : (stats.count ? ' loss' : ''));
+
   var avgEl = document.getElementById('comm-hero-avg');
   avgEl.textContent = _fmtShortMoney(stats.avg);
   avgEl.className = 'hero-stat-value' + (stats.avg > 0 ? ' profit' : stats.avg < 0 ? ' loss' : '');
-  // Row 1 — Total Points (Session 20a follow-up #4 — Avg R:R removed).
+
+  // Total Points is a *derived* metric — paint it cool blue regardless
+  // of sign so it visually separates from the P&L-tinted columns.
   var pointsEl = document.getElementById('comm-hero-points');
   if(pointsEl){
     var tp = Number(stats.totalPoints) || 0;
     pointsEl.textContent = stats.count ? ((tp>0?'+':'')+(Math.round(tp*10)/10)+' pts') : '—';
-    pointsEl.className = 'hero-stat-value' + (stats.count && tp>0 ? ' profit' : stats.count && tp<0 ? ' loss' : '');
+    pointsEl.className = 'hero-stat-value cool';
   }
-  // Row 2 — Top Trade ($ + by-user + sym/ct/pts) + Top Trader (user + $ + summary).
-  function _identityLabel(u, prefix){
-    if(!u) return prefix ? prefix+'—' : '—';
-    if(u.display_name && String(u.display_name).trim()) return (prefix||'') + u.display_name;
-    var h = String(u.username||'trader').replace(/^@/,'');
-    return (prefix||'') + '@' + h;
+
+  // ── Row 2 — Top Trade + Top Trader cards ─────────────────────────
+  function _handleText(u){
+    if(!u) return '—';
+    if(u.display_name && String(u.display_name).trim()) return u.display_name;
+    return '@' + String(u.username||'trader').replace(/^@/,'');
   }
+  function _avatarHtml(u){
+    if(!u || typeof renderUserAvatar !== 'function') return '';
+    return renderUserAvatar({
+      avatar_finish:   u.avatar_finish,
+      avatar_initials: u.avatar_initials,
+      avatar_image_url: u.avatar_url,
+      username:        u.username,
+      name:            u.display_name || u.username,
+    }, 'sm');
+  }
+
+  // Top Trade — best per-account P&L of the period.
   var tt = stats.topTrade;
-  var bestEl = document.getElementById('comm-hero-best');
-  bestEl.textContent = tt ? _fmtShortMoney(tt.pnl) : '—';
-  bestEl.className = 'hero-stat-value' + (tt && tt.pnl > 0 ? ' profit' : tt && tt.pnl < 0 ? ' loss' : '');
-  var bestByEl = document.getElementById('comm-hero-best-by');
-  if(bestByEl) bestByEl.textContent = tt ? _identityLabel(tt, 'by ') : '';
-  // Top Trade sub-line: "NQ · 2ct · +18 pts"  (hide pieces that aren't present)
+  var bestEl       = document.getElementById('comm-hero-best');
+  var bestPillEl   = document.getElementById('comm-hero-best-pill');
+  var bestAvEl     = document.getElementById('comm-hero-best-avatar');
+  var bestHandleEl = document.getElementById('comm-hero-best-handle');
   var bestDetailEl = document.getElementById('comm-hero-best-detail');
+
+  if(bestEl){
+    bestEl.textContent = tt ? _fmtShortMoney(Number(tt.pnl)||0) : '—';
+    bestEl.className   = 'hero-stat-value' + (tt && Number(tt.pnl)>0 ? ' profit' : tt && Number(tt.pnl)<0 ? ' loss' : '');
+  }
+  if(bestPillEl){
+    // account_type enum: paper | eval | funded | live | NULL
+    //   live + funded → LIVE pill   (real money)
+    //   eval          → EVAL pill
+    //   paper / null  → no pill
+    var atype = tt && tt.account_type ? String(tt.account_type).toLowerCase() : '';
+    if(atype === 'live' || atype === 'funded'){
+      bestPillEl.textContent = 'LIVE';
+      bestPillEl.className   = 'hero-pill live';
+    } else if(atype === 'eval'){
+      bestPillEl.textContent = 'EVAL';
+      bestPillEl.className   = 'hero-pill eval';
+    } else {
+      bestPillEl.textContent = '';
+      bestPillEl.className   = 'hero-pill';
+    }
+  }
+  if(bestAvEl)     bestAvEl.innerHTML     = _avatarHtml(tt);
+  if(bestHandleEl) bestHandleEl.textContent = _handleText(tt);
   if(bestDetailEl){
     var bits = [];
     if(tt){
@@ -16049,30 +16038,43 @@ async function renderHeroPnl(g, period){
     }
     bestDetailEl.textContent = bits.join(' · ');
   }
-  var topUser = stats.topTrader;
-  var topEl = document.getElementById('comm-hero-top');
-  topEl.textContent = _identityLabel(topUser, '');
-  var topPnlEl = document.getElementById('comm-hero-top-pnl');
-  if(topPnlEl){
-    var tpnl = topUser ? Number(topUser.pnl)||0 : 0;
-    topPnlEl.textContent = topUser ? _fmtShortMoney(tpnl) : '+$0';
-    topPnlEl.className = 'hero-stat-value' + (topUser && tpnl>0 ? ' profit' : topUser && tpnl<0 ? ' loss' : '');
-  }
-  // Top Trader sub-line: "{N} trades · {N}W {N}L · best {sym} +${X}"
+
+  // Top Trader — ranked by per-account total (so 1-acct vs 8-acct
+  // traders compete on edge, not on multiplier).
+  var topUser     = stats.topTrader;
+  var topPnlEl    = document.getElementById('comm-hero-top-pnl');
+  var topAvEl     = document.getElementById('comm-hero-top-avatar');
+  var topHandleEl = document.getElementById('comm-hero-top');
   var topDetailEl = document.getElementById('comm-hero-top-detail');
+
+  if(topPnlEl){
+    // Lead the card with the trader's GROSS P&L — feels like the
+    // user "won" that money — and tuck the per-acct number into the
+    // sub-line so the ranking logic is still visible/auditable.
+    var gross = topUser ? Number(topUser.gross_total)||0 : 0;
+    topPnlEl.textContent = topUser ? _fmtShortMoney(gross) : '+$0';
+    topPnlEl.className   = 'hero-stat-value' + (topUser && gross>0 ? ' profit' : topUser && gross<0 ? ' loss' : '');
+  }
+  if(topAvEl)     topAvEl.innerHTML     = _avatarHtml(topUser);
+  if(topHandleEl) topHandleEl.textContent = _handleText(topUser);
   if(topDetailEl){
-    var s = topUser, parts = [];
-    if(s){
-      if(s.trade_count != null){
-        var tc = Number(s.trade_count)||0;
-        parts.push(tc + ' trade' + (tc===1?'':'s'));
-      }
-      if(s.wins != null || s.losses != null){
-        parts.push((Number(s.wins)||0)+'W ' + (Number(s.losses)||0)+'L');
-      }
-      if(s.best_trade && s.best_trade.symbol){
-        parts.push('best ' + s.best_trade.symbol + ' ' + _fmtShortMoney(Number(s.best_trade.pnl)||0));
-      }
+    var parts = [];
+    if(topUser){
+      var tc = Number(topUser.trade_count)||0;
+      parts.push(tc + ' trade' + (tc===1?'':'s'));
+      parts.push((Number(topUser.wins)||0)+'W ' + (Number(topUser.losses)||0)+'L');
+      // accts_display: collapse to "N accts" when min===max so the
+      // common single-account case doesn't render "8–8 accts".
+      var aMin = Number(topUser.accts_min)||1;
+      var aMax = Number(topUser.accts_max)||1;
+      var acctsDisplay = (aMin === aMax) ? (aMin + ' acct' + (aMin===1?'':'s'))
+                                         : (aMin + '–' + aMax + ' accts');
+      parts.push(acctsDisplay);
+      // _fmtShortMoney already prepends "+" / "−" for non-zero values,
+      // so don't double-sign it (the earlier "(+'+')+_fmtShortMoney" ran
+      // out as "++$1,050/acct" in QA).
+      var perAcct = Number(topUser.per_account_total)||0;
+      parts.push(_fmtShortMoney(perAcct)+'/acct');
     }
     topDetailEl.textContent = parts.join(' · ');
   }

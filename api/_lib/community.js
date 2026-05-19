@@ -36,6 +36,14 @@ function normTrade(row) {
 }
 function isWin(t) { const p = num(t.pnl); return p != null && p > 0; }
 function isLoss(t) { const p = num(t.pnl); return p != null && p < 0; }
+// Session 20a follow-up #5 — per-account P&L. A trade copied across
+// N prop accounts stores N× gross; Best / Avg-trade rankings should
+// judge the single-trade edge, so divide by the account count.
+function perAccountPnl(t) {
+  const gross = num(t.pnl) || 0;
+  const accts = Math.max(1, Number(t.accounts) || 1);
+  return gross / accts;
+}
 function signedR(t) {
   const rr = num(t.rr), p = num(t.pnl);
   if (rr == null || rr === 0 || p == null) return null;
@@ -221,18 +229,71 @@ export function aggGroupStats(trades, ctx) {
   const winPts = wins.map(function (t) { return num(t.points); }).filter(function (p) { return p != null; });
   const lossPts = losses.map(function (t) { return num(t.points); }).filter(function (p) { return p != null; });
   const net = trades.reduce(function (s, t) { return s + (num(t.pnl) || 0); }, 0);
-  // Session 20a — total points across the range (signed; setup quality,
-  // not size — so gross, never per-account).
   const totalPoints = trades.reduce(function (s, t) { return s + (num(t.points) || 0); }, 0);
+
+  // Session 20a follow-up #5 — Community page hero needs per-account
+  // avg_trade, the single top per-account trade, and per-user totals
+  // ranked by per-account sum. Profile fields (username/avatar) are
+  // resolved by the endpoint via a profiles join; we only return user_id.
+  const avgTrade = trades.length
+    ? trades.reduce(function (s, t) { return s + perAccountPnl(t); }, 0) / trades.length
+    : 0;
+
+  let topTradeT = null, topTradeV = -Infinity;
+  trades.forEach(function (t) {
+    const v = perAccountPnl(t);
+    if (v > topTradeV) { topTradeV = v; topTradeT = t; }
+  });
+  const top_trade = topTradeT ? {
+    pnl: round(topTradeV, 2),
+    symbol: (typeof topTradeT.sym === 'string' && topTradeT.sym.trim()) ? topTradeT.sym.trim() : null,
+    contracts: num(topTradeT.qty),
+    points: num(topTradeT.points),
+    account_type: topTradeT.account_type || null,
+    user_id: topTradeT.user_id || null,
+  } : null;
+
+  const byUser = {};
+  trades.forEach(function (t) {
+    if (!t.user_id) return;
+    if (!byUser[t.user_id]) byUser[t.user_id] = {
+      user_id: t.user_id, gross_total: 0, per_account_total: 0,
+      trade_count: 0, wins: 0, losses: 0, accts: []
+    };
+    const u = byUser[t.user_id];
+    u.gross_total      += num(t.pnl) || 0;
+    u.per_account_total += perAccountPnl(t);
+    u.trade_count++;
+    const pn = num(t.pnl);
+    if (pn != null && pn > 0) u.wins++;
+    else if (pn != null && pn < 0) u.losses++;
+    u.accts.push(Math.max(1, Number(t.accounts) || 1));
+  });
+  const ranked = Object.values(byUser).sort(function (a, b) { return b.per_account_total - a.per_account_total; });
+  const winner = ranked[0] || null;
+  const top_trader = winner ? {
+    user_id: winner.user_id,
+    gross_total: round(winner.gross_total, 2),
+    per_account_total: round(winner.per_account_total, 2),
+    trade_count: winner.trade_count,
+    wins: winner.wins,
+    losses: winner.losses,
+    accts_min: Math.min.apply(null, winner.accts),
+    accts_max: Math.max.apply(null, winner.accts),
+  } : null;
+
   return {
     total_trades: trades.length,
     trader_count: (ctx && ctx.memberCount) || 0,
     win_rate: trades.length ? Math.round(wins.length / trades.length * 100) : 0,
     avg_rr: rs.length ? round(mean(rs), 1) : 0,
+    avg_trade: round(avgTrade, 2),
     avg_points_per_win: winPts.length ? round(mean(winPts), 1) : 0,
     avg_points_per_loss: lossPts.length ? round(mean(lossPts), 1) : 0,
     total_points: round(totalPoints, 1),
     net_pnl: round(net, 2),
+    top_trade: top_trade,
+    top_trader: top_trader,
   };
 }
 
