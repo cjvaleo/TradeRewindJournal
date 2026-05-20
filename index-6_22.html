@@ -7020,6 +7020,93 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   margin-top:2px;text-align:center;
 }
 #pg-community .hero-top-sub:empty{display:none}
+
+/* Session 20a follow-up #9 — Top Trade card loading + empty states.
+   Skeleton uses a subtle sage-tinted shimmer so it reads as "data
+   coming" without flashing a misleading "+$0 by —" placeholder.
+   Pulse is gentle (1.5s, ease-in-out) so it doesn't pull focus. */
+#pg-community .hero-top-skel{
+  display:none;flex-direction:column;gap:8px;
+  align-items:center;justify-content:center;
+}
+#pg-community .hero-top-skel-row{
+  display:flex;align-items:center;gap:10px;
+}
+#pg-community .skel-bar{
+  display:inline-block;height:14px;border-radius:4px;
+  background:linear-gradient(90deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(95,179,137,0.10) 50%,
+    rgba(255,255,255,0.04) 100%);
+  background-size:200% 100%;
+  animation:skel-shimmer 1.5s ease-in-out infinite;
+}
+#pg-community .skel-bar-pnl   { width:110px;height:28px;border-radius:5px }
+#pg-community .skel-bar-by    { width:18px;height:12px }
+#pg-community .skel-bar-handle{ width:90px;height:14px }
+#pg-community .skel-bar-sub   { width:160px;height:10px;margin-top:2px }
+@keyframes skel-shimmer{
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+#pg-community .hero-top-empty{
+  display:none;
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.06em;
+  color:rgba(255,255,255,0.4);text-align:center;padding:6px 0;
+}
+/* State toggles — only one of skel / main+sub / empty is visible. */
+#pg-community .hero-top-stat.is-loading .hero-top-skel{display:flex}
+#pg-community .hero-top-stat.is-loading .hero-top-main,
+#pg-community .hero-top-stat.is-loading .hero-top-sub,
+#pg-community .hero-top-stat.is-loading .hero-top-empty{display:none}
+#pg-community .hero-top-stat.is-empty .hero-top-empty{display:block}
+#pg-community .hero-top-stat.is-empty .hero-top-main,
+#pg-community .hero-top-stat.is-empty .hero-top-sub,
+#pg-community .hero-top-stat.is-empty .hero-top-skel{display:none}
+#pg-community .hero-top-stat.is-empty::before{
+  /* Drop the sage left stripe in the empty state — looks weird
+     hovering over a single line of microcopy. */
+  display:none;
+}
+
+/* Leaderboard skeleton — 5 ghost rows shown initially.  Same shimmer
+   palette as the hero skeleton so the page feels consistent. */
+#pg-community .lb-skel-row{
+  display:flex;align-items:center;gap:10px;padding:9px 0;
+  border-bottom:1px solid var(--n-border);
+}
+#pg-community .lb-skel-row:last-child{border-bottom:none}
+#pg-community .lb-skel-rank{
+  width:14px;height:12px;border-radius:3px;
+  background:rgba(255,255,255,0.04);
+}
+#pg-community .lb-skel-av{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(90deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(95,179,137,0.10) 50%,
+    rgba(255,255,255,0.04) 100%);
+  background-size:200% 100%;
+  animation:skel-shimmer 1.5s ease-in-out infinite;flex-shrink:0;
+}
+#pg-community .lb-skel-name{
+  flex:1;height:12px;border-radius:3px;max-width:120px;
+  background:linear-gradient(90deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(95,179,137,0.10) 50%,
+    rgba(255,255,255,0.04) 100%);
+  background-size:200% 100%;
+  animation:skel-shimmer 1.5s ease-in-out infinite;
+}
+#pg-community .lb-skel-pl{
+  width:50px;height:14px;border-radius:3px;
+  background:linear-gradient(90deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(95,179,137,0.10) 50%,
+    rgba(255,255,255,0.04) 100%);
+  background-size:200% 100%;
+  animation:skel-shimmer 1.5s ease-in-out infinite;flex-shrink:0;
+}
 @media (max-width:720px){
   /* hero-pnl-top-row is now a flex container with a single child;
      it centers naturally at any width. Stats strip stays a grid. */
@@ -10886,18 +10973,33 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
                surface now, fed by the same /api/community/group-stats
                source as the hero numbers). -->
           <div class="hero-pnl-top-row">
-            <div class="hero-top-stat">
+            <div class="hero-top-stat is-loading">
               <div class="hero-top-header">
                 <span class="hero-stat-label">Top Trade</span>
                 <span class="hero-pill" id="comm-hero-best-pill"></span>
               </div>
+              <!-- Loading skeleton — shown before renderHeroPnl resolves
+                   (Session 20a follow-up #9). Three shimmer bars in the
+                   slots where headline / "by" / handle will land, plus a
+                   sub-line bar. -->
+              <div class="hero-top-skel" aria-hidden="true">
+                <div class="hero-top-skel-row">
+                  <span class="skel-bar skel-bar-pnl"></span>
+                  <span class="skel-bar skel-bar-by"></span>
+                  <span class="skel-bar skel-bar-handle"></span>
+                </div>
+                <span class="skel-bar skel-bar-sub"></span>
+              </div>
               <div class="hero-top-main">
-                <span class="hero-stat-value" id="comm-hero-best">+$0</span>
+                <span class="hero-stat-value" id="comm-hero-best">&mdash;</span>
                 <span class="hero-top-by-text">by</span>
                 <span class="hero-top-avatar" id="comm-hero-best-avatar"></span>
                 <span class="hero-top-handle" id="comm-hero-best-handle">&mdash;</span>
               </div>
               <div class="hero-top-sub" id="comm-hero-best-detail"></div>
+              <!-- Empty state — API returned null top_trade (period has
+                   no trades).  Toggled by `.is-empty` on the parent. -->
+              <div class="hero-top-empty">No trades yet</div>
             </div>
           </div>
         </div>
@@ -15403,13 +15505,26 @@ async function renderFeedLeaderboard(g){
   var titleEl = el.parentElement && el.parentElement.querySelector('.card-title');
   if(titleEl) titleEl.textContent = 'Top · ' + (periodLabels[period] || 'This Week');
 
+  // Session 20a follow-up #9 — show a 5-row skeleton while the API
+  // round-trips so the rail doesn't briefly collapse or flash an
+  // empty card before data arrives.  Replaced with real rows (or
+  // the "No trades this period" microcopy) once stats resolves.
+  el.innerHTML = Array.from({length:5}).map(function(){
+    return '<div class="lb-skel-row">'
+      + '<span class="lb-skel-rank"></span>'
+      + '<span class="lb-skel-av"></span>'
+      + '<span class="lb-skel-name"></span>'
+      + '<span class="lb-skel-pl"></span>'
+      + '</div>';
+  }).join('');
+
   var myUid = (typeof currentUser==='object' && currentUser && currentUser.id) || null;
   var stats = await computeGroupStats(g.id, period);
   var lb = (stats && Array.isArray(stats.leaderboard)) ? stats.leaderboard : [];
 
-  // Empty state — render a tiny placeholder so the card doesn't
-  // collapse to zero height while data is loading or when there are
-  // genuinely no trades this period.
+  // Empty state — API returned an empty leaderboard (period has zero
+  // trades).  Replaces the skeleton so the card never lingers in the
+  // shimmer state on a quiet community.
   if(!lb.length){
     el.innerHTML = '<div class="lb-empty" style="font-family:var(--n-font-mono);font-size:11px;color:rgba(255,255,255,.4);padding:14px 4px;text-align:center">No trades this period</div>';
     return;
@@ -15877,8 +15992,22 @@ async function renderHeroPnl(g, period){
   if(!document.getElementById('comm-hero-pnl') || !g) return;
   period = period || _commPeriod || 'week';
 
+  // Session 20a follow-up #9 — Top Trade card starts in the loading
+  // skeleton state (CSS class on the card root), then swaps to data
+  // or empty-state after the API resolves.  The Row 1 headline +
+  // stats strip don't get a skeleton because they update inline and
+  // the values are visible from the static placeholder + render.
+  var bestCard = document.querySelector('#pg-community .hero-pnl-top-row .hero-top-stat');
+  if(bestCard){ bestCard.classList.add('is-loading'); bestCard.classList.remove('is-empty'); }
+
   var stats = await computeGroupStats(g.id, period);
   console.log('[hero stats]', stats);
+
+  if(bestCard){
+    bestCard.classList.remove('is-loading');
+    if(!stats.topTrade) bestCard.classList.add('is-empty');
+    else                bestCard.classList.remove('is-empty');
+  }
 
   // ── Row 1 — headline P&L + 4-stat strip ──────────────────────────
   var totalPnl = stats.total;
