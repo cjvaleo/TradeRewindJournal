@@ -77,14 +77,16 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Resolve usernames + avatars for the top_trade taker and the
-  // top_trader, in a single batched profiles read.
-  const ids = [];
-  if (payload.top_trade && payload.top_trade.user_id) ids.push(payload.top_trade.user_id);
-  if (payload.top_trader && payload.top_trader.user_id
-      && ids.indexOf(payload.top_trader.user_id) < 0) {
-    ids.push(payload.top_trader.user_id);
-  }
+  // Resolve usernames + avatars for the top_trade taker and every
+  // leaderboard entry in a single batched profiles read.  Session 20a
+  // follow-up #7 — the leaderboard rail now consumes this endpoint too,
+  // so the ids list includes the ranked top-N members.
+  const idSet = {};
+  if (payload.top_trade && payload.top_trade.user_id) idSet[payload.top_trade.user_id] = 1;
+  (payload.leaderboard || []).forEach(function (row) {
+    if (row && row.user_id) idSet[row.user_id] = 1;
+  });
+  const ids = Object.keys(idSet);
   const profMap = {};
   if (ids.length) {
     try {
@@ -106,8 +108,8 @@ export default async function handler(req, res) {
     obj.avatar_finish   = p.avatar_finish || p.color || null;
     obj.avatar_initials = p.avatar_initials || p.initials || null;
   }
-  if (payload.top_trade)  _attach(payload.top_trade);
-  if (payload.top_trader) _attach(payload.top_trader);
+  if (payload.top_trade) _attach(payload.top_trade);
+  (payload.leaderboard || []).forEach(_attach);
 
   res.setHeader('Cache-Control', 'no-store');
   res.status(200).json(payload);

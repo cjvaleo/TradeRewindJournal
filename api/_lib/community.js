@@ -231,10 +231,9 @@ export function aggGroupStats(trades, ctx) {
   const net = trades.reduce(function (s, t) { return s + (num(t.pnl) || 0); }, 0);
   const totalPoints = trades.reduce(function (s, t) { return s + (num(t.points) || 0); }, 0);
 
-  // Session 20a follow-up #5 — Community page hero needs per-account
-  // avg_trade, the single top per-account trade, and per-user totals
-  // ranked by per-account sum. Profile fields (username/avatar) are
-  // resolved by the endpoint via a profiles join; we only return user_id.
+  // Session 20a follow-up #5 — per-account avg_trade + single top
+  // per-account trade.  Profile fields (username/avatar) are resolved
+  // by the endpoint via a profiles join; we only return user_id.
   const avgTrade = trades.length
     ? trades.reduce(function (s, t) { return s + perAccountPnl(t); }, 0) / trades.length
     : 0;
@@ -253,12 +252,20 @@ export function aggGroupStats(trades, ctx) {
     user_id: topTradeT.user_id || null,
   } : null;
 
+  // Session 20a follow-up #7 — per-user reducer + ranked leaderboard.
+  // Previously this produced a single `top_trader` field for a card on
+  // the hero (now removed) and the leaderboard rail kept its own
+  // client-side aggregation off the community_posts cache — the two
+  // rails drifted because the cache and the real trades table didn't
+  // round-trip 1:1.  Now /api/community/group-stats is the single
+  // source of truth for both the hero numbers and the rail: ranks
+  // members by per-account total and returns the top 4.
   const byUser = {};
   trades.forEach(function (t) {
     if (!t.user_id) return;
     if (!byUser[t.user_id]) byUser[t.user_id] = {
       user_id: t.user_id, gross_total: 0, per_account_total: 0,
-      trade_count: 0, wins: 0, losses: 0, accts: []
+      trade_count: 0, wins: 0, losses: 0
     };
     const u = byUser[t.user_id];
     u.gross_total      += num(t.pnl) || 0;
@@ -267,20 +274,20 @@ export function aggGroupStats(trades, ctx) {
     const pn = num(t.pnl);
     if (pn != null && pn > 0) u.wins++;
     else if (pn != null && pn < 0) u.losses++;
-    u.accts.push(Math.max(1, Number(t.accounts) || 1));
   });
-  const ranked = Object.values(byUser).sort(function (a, b) { return b.per_account_total - a.per_account_total; });
-  const winner = ranked[0] || null;
-  const top_trader = winner ? {
-    user_id: winner.user_id,
-    gross_total: round(winner.gross_total, 2),
-    per_account_total: round(winner.per_account_total, 2),
-    trade_count: winner.trade_count,
-    wins: winner.wins,
-    losses: winner.losses,
-    accts_min: Math.min.apply(null, winner.accts),
-    accts_max: Math.max.apply(null, winner.accts),
-  } : null;
+  const leaderboard = Object.values(byUser)
+    .sort(function (a, b) { return b.per_account_total - a.per_account_total; })
+    .slice(0, 4)
+    .map(function (u) {
+      return {
+        user_id: u.user_id,
+        gross_total: round(u.gross_total, 2),
+        per_account_total: round(u.per_account_total, 2),
+        trade_count: u.trade_count,
+        wins: u.wins,
+        losses: u.losses,
+      };
+    });
 
   return {
     total_trades: trades.length,
@@ -293,7 +300,7 @@ export function aggGroupStats(trades, ctx) {
     total_points: round(totalPoints, 1),
     net_pnl: round(net, 2),
     top_trade: top_trade,
-    top_trader: top_trader,
+    leaderboard: leaderboard,
   };
 }
 
