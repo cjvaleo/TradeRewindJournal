@@ -6970,10 +6970,15 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 }
 #pg-community .hero-row2{
   position:relative;width:100%;max-width:560px;min-width:0;
-  padding:14px 18px;border-radius:12px;
+  /* Follow-up #13 — 22/24 padding so the identity row + trade list
+     have room to breathe.  The earlier 14/18 felt cramped against
+     the 30px italic name + 26px italic P&L. */
+  padding:22px 24px;border-radius:12px;
 }
 #pg-community .hero-row2::before{
-  content:'';position:absolute;left:0;top:16px;width:2px;height:46px;
+  /* Stripe top aligned to the new top padding so it visually leads
+     the header label, not the bare card edge. */
+  content:'';position:absolute;left:0;top:22px;width:2px;height:46px;
   border-radius:0 2px 2px 0;
 }
 #pg-community .hero-row2.totd{
@@ -7027,8 +7032,8 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 }
 #pg-community .hero-row2 .r2-totd-pnl.neg{color:var(--n-loss)}
 #pg-community .hero-row2 .r2-totd-pnl-label{
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.12em;
-  text-transform:uppercase;color:rgba(255,255,255,0.4);margin-top:2px;text-align:right;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.12em;
+  text-transform:uppercase;color:rgba(255,255,255,0.42);margin-top:2px;text-align:right;
 }
 #pg-community .hero-row2 .r2-totd-div{
   height:1px;background:linear-gradient(90deg,
@@ -7039,19 +7044,41 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 }
 #pg-community .hero-row2 .r2-totd-trades-h{
   font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;
-  text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:6px;
+  text-transform:uppercase;color:rgba(255,255,255,0.4);
+  margin-bottom:8px;text-align:left;
 }
+/* Per-trade row.  Each row is its own subtle card: tinted background +
+   hairline border + 8px radius.  The 1fr middle column lets the meta
+   block breathe so the index/symbol stay flush left and the pnl stays
+   flush right without clumping in the middle (follow-up #13 — the
+   earlier `auto` middle column produced a huge dead gap on rows with
+   short symbols).  LIVE/EVAL chip column deferred until account_type
+   is populated (88% null today). */
 #pg-community .hero-row2 .r2-totd-row{
   display:grid;
-  grid-template-columns:18px minmax(40px,1fr) auto auto;
-  gap:10px;align-items:center;padding:4px 0;
-  font-family:var(--n-font-mono);font-size:11px;
+  grid-template-columns:auto auto 1fr auto;
+  gap:12px;align-items:center;
+  padding:10px 14px;
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.04);
+  border-radius:8px;
+  font-size:12px;
 }
-#pg-community .hero-row2 .r2-totd-num   {color:rgba(255,255,255,0.35);font-size:10px}
-#pg-community .hero-row2 .r2-totd-sym   {color:#f0efea;letter-spacing:0.04em}
-#pg-community .hero-row2 .r2-totd-meta  {color:rgba(255,255,255,0.4);font-size:10px}
-#pg-community .hero-row2 .r2-totd-rowpnl{
+#pg-community .hero-row2 .r2-totd-row + .r2-totd-row{margin-top:6px}
+#pg-community .hero-row2 .r2-totd-num{
+  font-family:var(--n-font-mono);font-size:11px;
+  color:rgba(255,255,255,0.4);
+}
+#pg-community .hero-row2 .r2-totd-sym{
   font-family:var(--n-font-display);font-style:italic;font-size:14px;
+  color:#f0efea;
+}
+#pg-community .hero-row2 .r2-totd-meta{
+  font-family:var(--n-font-mono);font-size:10.5px;
+  color:rgba(255,255,255,0.55);
+}
+#pg-community .hero-row2 .r2-totd-rowpnl{
+  font-family:var(--n-font-display);font-style:italic;font-size:15px;
   color:var(--n-profit);text-align:right;
 }
 #pg-community .hero-row2 .r2-totd-rowpnl.neg{color:var(--n-loss)}
@@ -15942,9 +15969,19 @@ async function renderHeroPnl(g, period){
 
   document.getElementById('comm-hero-trades').textContent = stats.count;
 
+  // Win rate is statistically meaningless on tiny samples — a single
+  // green trade reads as "100% win rate" which is misleading.  On the
+  // Today period only, mute the percentage when the sample is < 5
+  // trades.  Other periods always show the percentage because by then
+  // the sample is large enough to mean something (follow-up #13).
   var wrEl = document.getElementById('comm-hero-winrate');
-  wrEl.textContent = stats.winRate + '%';
-  wrEl.className = 'hero-stat-value' + (stats.winRate >= 50 ? ' profit' : (stats.count ? ' loss' : ''));
+  if(period === 'today' && stats.count < 5){
+    wrEl.textContent = '—';
+    wrEl.className   = 'hero-stat-value neutral';
+  } else {
+    wrEl.textContent = stats.winRate + '%';
+    wrEl.className   = 'hero-stat-value' + (stats.winRate >= 50 ? ' profit' : (stats.count ? ' loss' : ''));
+  }
 
   // Total Points is a *derived* metric — paint it cool blue regardless
   // of sign so it visually separates from the P&L-tinted columns.
