@@ -8087,6 +8087,12 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   max-height:380px;overflow-y:auto;overflow-x:hidden;
   scrollbar-width:none;       /* Firefox */
   -ms-overflow-style:none;    /* IE / legacy Edge */
+  /* Trap scroll momentum inside the rail.  Without this, hitting
+     the top/bottom of the list chains the wheel event up to the
+     page body and the whole community feed scrolls behind it —
+     jarring when the user just wanted to browse the top traders.
+     Session 20a follow-up #11. */
+  overscroll-behavior:contain;
 }
 #pg-community #feed-leaderboard::-webkit-scrollbar{
   display:none;               /* Safari + Chrome */
