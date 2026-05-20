@@ -7988,7 +7988,23 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 #all-members-modal .mem-status{width:7px;height:7px;border-radius:50%;background:var(--n-text-4);flex-shrink:0}
 #all-members-modal .mem-status.online{background:var(--n-profit);box-shadow:0 0 6px rgba(95,179,137,0.45)}
 
-/* Leaderboard */
+/* Leaderboard.  Session 20a follow-up #7 second pass — the rail
+   now renders every member with ≥1 trade (no top-N truncation), so
+   the container scrolls when the list exceeds the visible area.
+   max-height is sized so ~8 rows fit before the scrollbar appears;
+   the thin sage scrollbar matches the card's accent. */
+#pg-community #feed-leaderboard{
+  max-height:380px;overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:rgba(95,179,137,0.35) transparent;
+}
+#pg-community #feed-leaderboard::-webkit-scrollbar{width:6px}
+#pg-community #feed-leaderboard::-webkit-scrollbar-track{background:transparent}
+#pg-community #feed-leaderboard::-webkit-scrollbar-thumb{
+  background:rgba(95,179,137,0.25);border-radius:3px;
+}
+#pg-community #feed-leaderboard::-webkit-scrollbar-thumb:hover{
+  background:rgba(95,179,137,0.45);
+}
 #pg-community .lb-row{
   display:flex;align-items:center;gap:10px;padding:9px 0;
   border-bottom:1px solid var(--n-border);transition:transform .2s;
@@ -15408,18 +15424,13 @@ async function renderFeedLeaderboard(g){
     if(a >= 1000) return s + '$' + (a/1000).toFixed(1) + 'k';
     return s + '$' + Math.round(a);
   }
-  function _perAcctText(n){
-    // _fmtShortMoney already prepends the sign; use it for consistency
-    // with the Top Trade sub-line (cents stripped for compactness on
-    // the narrow rail).
-    if(typeof _fmtShortMoney !== 'function') return '';
-    return _fmtShortMoney(n) + '/acct';
-  }
 
+  // Render every member with ≥1 trade in the period — backend already
+  // returns the full ranked list; the rail scrolls in CSS when the
+  // member count exceeds the visible area.
   el.innerHTML = lb.map(function(r,i){
     var isMe   = !!(myUid && r.user_id === myUid);
     var gross  = Number(r.gross_total) || 0;
-    var perAct = Number(r.per_account_total) || 0;
     var valStr = _shortK(gross);
     var valCls = gross>0 ? 'profit' : gross<0 ? 'loss' : '';
 
@@ -15437,7 +15448,6 @@ async function renderFeedLeaderboard(g){
       + '<div class="lb-av av ' + avTone + avExtra + '">' + avInner + '</div>'
       + '<div class="lb-name">@' + safeHand
       +   (isMe ? ' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase">you</span>' : '')
-      +   '<div class="lb-handle">' + _perAcctText(perAct) + '</div>'
       + '</div>'
       + '<span class="lb-pl ' + valCls + '">' + valStr + '</span>'
       + '</div>';

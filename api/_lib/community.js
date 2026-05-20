@@ -275,9 +275,11 @@ export function aggGroupStats(trades, ctx) {
     if (pn != null && pn > 0) u.wins++;
     else if (pn != null && pn < 0) u.losses++;
   });
+  // Every member with at least one trade in the period, ranked by
+  // per-account total descending.  No truncation — the rail scrolls
+  // on the client (Session 20a follow-up #7 second pass).
   const leaderboard = Object.values(byUser)
     .sort(function (a, b) { return b.per_account_total - a.per_account_total; })
-    .slice(0, 4)
     .map(function (u) {
       return {
         user_id: u.user_id,
