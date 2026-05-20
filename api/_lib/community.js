@@ -276,10 +276,12 @@ export function aggGroupStats(trades, ctx) {
     else if (pn != null && pn < 0) u.losses++;
   });
   // Every member with at least one trade in the period, ranked by
-  // per-account total descending.  No truncation — the rail scrolls
-  // on the client (Session 20a follow-up #7 second pass).
+  // gross_total descending — that's the headline $ rendered on the
+  // rail, so the visible order matches the visible values (Session
+  // 20a follow-up #9 second pass).  per_account_total is still in
+  // the row shape for future use; we just don't rank by it.
   const leaderboard = Object.values(byUser)
-    .sort(function (a, b) { return b.per_account_total - a.per_account_total; })
+    .sort(function (a, b) { return b.gross_total - a.gross_total; })
     .map(function (u) {
       return {
         user_id: u.user_id,
