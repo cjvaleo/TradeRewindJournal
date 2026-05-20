@@ -231,27 +231,11 @@ export function aggGroupStats(trades, ctx) {
   const net = trades.reduce(function (s, t) { return s + (num(t.pnl) || 0); }, 0);
   const totalPoints = trades.reduce(function (s, t) { return s + (num(t.points) || 0); }, 0);
 
-  // Session 20a follow-up #5 — per-account avg_trade + single top
-  // per-account trade.  Profile fields (username/avatar) are resolved
-  // by the endpoint via a profiles join; we only return user_id.
-  const avgTrade = trades.length
-    ? trades.reduce(function (s, t) { return s + perAccountPnl(t); }, 0) / trades.length
-    : 0;
-
-  let topTradeT = null, topTradeV = -Infinity;
-  trades.forEach(function (t) {
-    const v = perAccountPnl(t);
-    if (v > topTradeV) { topTradeV = v; topTradeT = t; }
-  });
-  const top_trade = topTradeT ? {
-    pnl: round(topTradeV, 2),
-    symbol: (typeof topTradeT.sym === 'string' && topTradeT.sym.trim()) ? topTradeT.sym.trim() : null,
-    contracts: num(topTradeT.qty),
-    points: num(topTradeT.points),
-    account_type: topTradeT.account_type || null,
-    user_id: topTradeT.user_id || null,
-  } : null;
-
+  // Session 20a follow-up #12 — top_trade and avg_trade are gone: the
+  // Top Trade card was removed from the hero, and avg_trade was a
+  // duplicate of (net_pnl / total_trades) that nothing read once the
+  // Avg Trade column dropped from Row 1.
+  //
   // Session 20a follow-up #7 — per-user reducer + ranked leaderboard.
   // Previously this produced a single `top_trader` field for a card on
   // the hero (now removed) and the leaderboard rail kept its own
@@ -298,13 +282,70 @@ export function aggGroupStats(trades, ctx) {
     trader_count: (ctx && ctx.memberCount) || 0,
     win_rate: trades.length ? Math.round(wins.length / trades.length * 100) : 0,
     avg_rr: rs.length ? round(mean(rs), 1) : 0,
-    avg_trade: round(avgTrade, 2),
     avg_points_per_win: winPts.length ? round(mean(winPts), 1) : 0,
     avg_points_per_loss: lossPts.length ? round(mean(lossPts), 1) : 0,
     total_points: round(totalPoints, 1),
     net_pnl: round(net, 2),
-    top_trade: top_trade,
     leaderboard: leaderboard,
+  };
+}
+
+// Session 20a follow-up #12 — Best Day card for week/month/all-time.
+// Groups trades by their effective date (already tz-adjusted upstream),
+// picks the day with the highest net P&L, and returns a breakdown
+// snapshot the hero card can render directly.  Returns null if there
+// are no trades, or if the best day's net is <= 0 — the spec calls
+// for an empty state in that case rather than a "Best day: $-450" card.
+export function bestDay(trades) {
+  if (!trades || !trades.length) return null;
+
+  const byDate = {};
+  trades.forEach(function (t) {
+    const d = effDate(t);
+    if (!d) return;
+    const e = byDate[d] || (byDate[d] = {
+      date: d, net: 0, trades: 0, wins: 0, losses: 0, users: {}
+    });
+    const p = num(t.pnl);
+    e.net += (p || 0);
+    e.trades++;
+    if (p != null && p > 0) e.wins++;
+    else if (p != null && p < 0) e.losses++;
+    if (t.user_id) {
+      const u = e.users[t.user_id] || (e.users[t.user_id] = { net: 0 });
+      u.net += (p || 0);
+    }
+  });
+
+  const days = Object.values(byDate);
+  if (!days.length) return null;
+  days.sort(function (a, b) { return b.net - a.net; });
+  const best = days[0];
+  if (!(best.net > 0)) return null;   // no profitable day → empty state
+
+  // Distinct users with positive day-pnl on the best day
+  let profitable = 0;
+  Object.keys(best.users).forEach(function (uid) {
+    if (best.users[uid].net > 0) profitable++;
+  });
+
+  // day_label: 3-letter day-of-week in UTC.  Using UTC keeps the label
+  // stable regardless of where the server is hosted; the rendered
+  // date itself is already tz-aware via effDate.
+  const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const d = new Date(best.date + 'T12:00:00Z');
+  const day_label = DOW[d.getUTCDay()];
+
+  const decided = best.wins + best.losses;
+  const win_rate = decided > 0 ? Math.round((best.wins / decided) * 100) / 100 : 0;
+
+  return {
+    date: best.date,
+    day_label: day_label,
+    net_pnl: round(best.net, 2),
+    traders_profitable: profitable,
+    total_trades: best.trades,
+    win_rate: win_rate,
   };
 }
 

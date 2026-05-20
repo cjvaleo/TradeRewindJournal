@@ -6938,7 +6938,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 /* Session 20a follow-up #5 — Row 1 = 4-col grid with the spec's exact
    label metrics; Total Points is cool-blue (derived). */
 #pg-community .hero-pnl-stats{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:24px;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
   margin-top:24px;padding-top:22px;border-top:1px solid var(--n-border);
 }
 #pg-community .hero-stat{display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -6954,84 +6954,130 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 #pg-community .hero-stat-value.loss{color:var(--n-loss)}
 #pg-community .hero-stat-value.neutral{color:var(--n-text-3)}
 #pg-community .hero-stat-value.cool{color:#6ea8ff}
-/* Row 2 — Top Trade card.  Session 20a follow-up #7 collapsed the
-   old 2-col Top Trade + Top Trader grid to a single centered card
-   (max 500px) since the leaderboard rail now covers the "who's
-   leading" surface. */
+/* ── Row 2 card ─────────────────────────────────────────────────────
+   Session 20a follow-up #12 — single card slot in Row 2, populated
+   by renderHeroPnl based on the active period:
+     today          → .hero-row2.totd   (gold accent)
+     week/month/all → .hero-row2.bestday (sage accent)
+   States are managed via class toggles:
+     .is-loading → shows the shimmer skeleton, hides content
+     .is-empty   → shows "No trades yet" microcopy, hides content
+   Default (no state class) → JS innerHTML drives the card body. */
 #pg-community .hero-pnl-top-row{
   display:flex;justify-content:center;
   margin-top:22px;padding-top:22px;
   border-top:1px solid rgba(255,255,255,.06);
 }
-#pg-community .hero-pnl-top-row .hero-top-stat{
-  width:100%;max-width:500px;
+#pg-community .hero-row2{
+  position:relative;width:100%;max-width:560px;min-width:0;
+  padding:14px 18px;border-radius:12px;
 }
-#pg-community .hero-top-stat{
-  position:relative;display:flex;flex-direction:column;gap:10px;
-  padding:14px 18px;border-radius:12px;min-width:0;
+#pg-community .hero-row2::before{
+  content:'';position:absolute;left:0;top:16px;width:2px;height:46px;
+  border-radius:0 2px 2px 0;
+}
+#pg-community .hero-row2.totd{
+  background:linear-gradient(180deg, rgba(245,215,124,0.05), rgba(245,215,124,0.015));
+  border:1px solid rgba(245,215,124,0.22);
+}
+#pg-community .hero-row2.totd::before{
+  background:linear-gradient(to bottom, #f5d77c, rgba(245,215,124,0.3));
+}
+#pg-community .hero-row2.bestday{
   background:rgba(95,179,137,0.03);
-  border:1px solid rgba(95,179,137,0.1);
+  border:1px solid rgba(95,179,137,0.12);
 }
-#pg-community .hero-top-stat::before{
-  content:'';position:absolute;left:0;top:16px;width:2px;height:36px;
-  background:var(--n-profit);border-radius:0 2px 2px 0;
+#pg-community .hero-row2.bestday::before{
+  background:#5fb389;
 }
-#pg-community .hero-top-header{
-  display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;
+/* Generic header row inside the Row 2 card */
+#pg-community .hero-row2 .r2-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:8px;min-width:0;margin-bottom:10px;
 }
-#pg-community .hero-pill{
-  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.12em;
-  font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:3px;
-  white-space:nowrap;
+#pg-community .hero-row2 .r2-head-label{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-4);
 }
-#pg-community .hero-pill.live{
-  background:rgba(95,179,137,0.12);color:var(--n-profit);
-  border:1px solid rgba(95,179,137,0.25);
+#pg-community .hero-row2.totd .r2-head-label{color:#f5d77c}
+#pg-community .hero-row2 .r2-head-meta{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.06em;
+  color:var(--n-text-4);
 }
-#pg-community .hero-pill.eval{
-  background:rgba(255,255,255,0.04);color:var(--n-text-3);
-  border:1px solid rgba(255,255,255,0.08);
-}
-#pg-community .hero-pill:empty{display:none}
-/* Session 20a follow-up #6 — center the $ + by + avatar + handle group
-   within each Top Performers card.  justify-content:center on the
-   existing flex container produces the same visual result as the
-   wrapper-with-inline-flex pattern, with no HTML restructure. */
-#pg-community .hero-top-main{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  flex-wrap:wrap;min-width:0;
-}
-#pg-community .hero-top-main .hero-stat-value{font-size:32px}
-#pg-community .hero-top-by-text{
-  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-3);
-}
-#pg-community .hero-top-avatar{display:inline-flex;align-items:center;flex-shrink:0}
-#pg-community .hero-top-avatar .av{
-  width:22px!important;height:22px!important;font-size:9px!important;
-}
-#pg-community .hero-top-handle{
-  font-family:var(--n-font-sans);font-size:14px;font-weight:500;color:#f5f4f0;
-  max-width:14ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-/* Sub-detail line — 11px mono, low-opacity white.  Centered to match
-   the centered middle row above it (follow-up #6). */
-#pg-community .hero-top-sub{
-  font-family:var(--n-font-mono);font-size:11px;color:rgba(255,255,255,0.4);
-  margin-top:2px;text-align:center;
-}
-#pg-community .hero-top-sub:empty{display:none}
 
-/* Session 20a follow-up #9 — Top Trade card loading + empty states.
-   Skeleton uses a subtle sage-tinted shimmer so it reads as "data
-   coming" without flashing a misleading "+$0 by —" placeholder.
-   Pulse is gentle (1.5s, ease-in-out) so it doesn't pull focus. */
-#pg-community .hero-top-skel{
-  display:none;flex-direction:column;gap:8px;
-  align-items:center;justify-content:center;
+/* ── TOTD card body ─────────────────────────────────────────────── */
+#pg-community .hero-row2 .r2-totd-id{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:4px 0 12px;
 }
-#pg-community .hero-top-skel-row{
-  display:flex;align-items:center;gap:10px;
+#pg-community .hero-row2 .r2-totd-idl{display:flex;align-items:center;gap:10px;min-width:0}
+#pg-community .hero-row2 .r2-totd-av{flex-shrink:0}
+#pg-community .hero-row2 .r2-totd-av .av{width:30px!important;height:30px!important;font-size:11px!important}
+#pg-community .hero-row2 .r2-totd-name{
+  font-family:var(--n-font-sans);font-size:15px;font-weight:500;color:#f5f4f0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:18ch;
 }
+#pg-community .hero-row2 .r2-totd-sub{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.06em;
+  color:rgba(255,255,255,0.4);margin-top:1px;
+}
+#pg-community .hero-row2 .r2-totd-pnl{
+  font-family:var(--n-font-display);font-style:italic;font-size:26px;
+  color:var(--n-profit);line-height:1;text-align:right;
+}
+#pg-community .hero-row2 .r2-totd-pnl.neg{color:var(--n-loss)}
+#pg-community .hero-row2 .r2-totd-pnl-label{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.12em;
+  text-transform:uppercase;color:rgba(255,255,255,0.4);margin-top:2px;text-align:right;
+}
+#pg-community .hero-row2 .r2-totd-div{
+  height:1px;background:linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,0.08) 50%,
+    transparent 100%);
+  margin:4px -4px 10px;
+}
+#pg-community .hero-row2 .r2-totd-trades-h{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;
+  text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:6px;
+}
+#pg-community .hero-row2 .r2-totd-row{
+  display:grid;
+  grid-template-columns:18px minmax(40px,1fr) auto auto;
+  gap:10px;align-items:center;padding:4px 0;
+  font-family:var(--n-font-mono);font-size:11px;
+}
+#pg-community .hero-row2 .r2-totd-num   {color:rgba(255,255,255,0.35);font-size:10px}
+#pg-community .hero-row2 .r2-totd-sym   {color:#f0efea;letter-spacing:0.04em}
+#pg-community .hero-row2 .r2-totd-meta  {color:rgba(255,255,255,0.4);font-size:10px}
+#pg-community .hero-row2 .r2-totd-rowpnl{
+  font-family:var(--n-font-display);font-style:italic;font-size:14px;
+  color:var(--n-profit);text-align:right;
+}
+#pg-community .hero-row2 .r2-totd-rowpnl.neg{color:var(--n-loss)}
+
+/* ── Best Day card body ─────────────────────────────────────────── */
+#pg-community .hero-row2 .r2-bd-value{
+  font-family:var(--n-font-display);font-style:italic;font-size:40px;
+  color:var(--n-profit);text-align:center;line-height:1;margin-top:4px;
+}
+#pg-community .hero-row2 .r2-bd-sub{
+  font-family:var(--n-font-mono);font-size:11px;color:rgba(255,255,255,0.5);
+  text-align:center;margin-top:8px;letter-spacing:0.04em;
+}
+
+/* ── Loading + empty states ─────────────────────────────────────── */
+#pg-community .hero-row2 .hero-row2-skel{
+  display:none;flex-direction:column;align-items:center;gap:10px;padding:8px 0;
+}
+#pg-community .hero-row2.is-loading .hero-row2-skel{display:flex}
+#pg-community .hero-row2.is-loading > :not(.hero-row2-skel){display:none}
+#pg-community .hero-row2.is-empty::before{display:none}
+#pg-community .hero-row2-empty{
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.06em;
+  color:rgba(255,255,255,0.4);text-align:center;padding:14px 0;
+}
+
 #pg-community .skel-bar{
   display:inline-block;height:14px;border-radius:4px;
   background:linear-gradient(90deg,
@@ -7041,32 +7087,12 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   background-size:200% 100%;
   animation:skel-shimmer 1.5s ease-in-out infinite;
 }
-#pg-community .skel-bar-pnl   { width:110px;height:28px;border-radius:5px }
-#pg-community .skel-bar-by    { width:18px;height:12px }
-#pg-community .skel-bar-handle{ width:90px;height:14px }
-#pg-community .skel-bar-sub   { width:160px;height:10px;margin-top:2px }
+#pg-community .skel-bar-label   { width:90px;height:11px }
+#pg-community .skel-bar-headline{ width:160px;height:32px;border-radius:5px }
+#pg-community .skel-bar-sub     { width:200px;height:11px }
 @keyframes skel-shimmer{
   0%   { background-position: 100% 0; }
   100% { background-position: -100% 0; }
-}
-#pg-community .hero-top-empty{
-  display:none;
-  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.06em;
-  color:rgba(255,255,255,0.4);text-align:center;padding:6px 0;
-}
-/* State toggles — only one of skel / main+sub / empty is visible. */
-#pg-community .hero-top-stat.is-loading .hero-top-skel{display:flex}
-#pg-community .hero-top-stat.is-loading .hero-top-main,
-#pg-community .hero-top-stat.is-loading .hero-top-sub,
-#pg-community .hero-top-stat.is-loading .hero-top-empty{display:none}
-#pg-community .hero-top-stat.is-empty .hero-top-empty{display:block}
-#pg-community .hero-top-stat.is-empty .hero-top-main,
-#pg-community .hero-top-stat.is-empty .hero-top-sub,
-#pg-community .hero-top-stat.is-empty .hero-top-skel{display:none}
-#pg-community .hero-top-stat.is-empty::before{
-  /* Drop the sage left stripe in the empty state — looks weird
-     hovering over a single line of microcopy. */
-  display:none;
 }
 
 /* Leaderboard skeleton — 5 ghost rows shown initially.  Same shimmer
@@ -8084,14 +8110,14 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
    looked out of place against the chrome aesthetic).  Trackpad /
    wheel / touch scroll still work — just no visible bar. */
 #pg-community #feed-leaderboard{
-  max-height:380px;overflow-y:auto;overflow-x:hidden;
+  /* Session 20a follow-up #12 — the sidebar TOTD widget moved into
+     the hero, so the rail has more vertical room.  Bumped 380→640
+     so ~14 rows fit before scroll engages.  Container still scrolls
+     (overscroll-behavior:contain stops momentum chaining to the
+     page body when the rail hits its top/bottom). */
+  max-height:640px;overflow-y:auto;overflow-x:hidden;
   scrollbar-width:none;       /* Firefox */
   -ms-overflow-style:none;    /* IE / legacy Edge */
-  /* Trap scroll momentum inside the rail.  Without this, hitting
-     the top/bottom of the list chains the wheel event up to the
-     page body and the whole community feed scrolls behind it —
-     jarring when the user just wanted to browse the top traders.
-     Session 20a follow-up #11. */
   overscroll-behavior:contain;
 }
 #pg-community #feed-leaderboard::-webkit-scrollbar{
@@ -9003,12 +9029,6 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   [id$="-modal"] button{
     min-height:36px;padding:8px 14px;
   }
-
-  /* Community Trade-of-the-Day PIN TRADE / UNPIN button — JS-injected
-     into #feed-totd with hardcoded inline padding:3px 10px (~26px tall).
-     Lives outside any modal so the rule above misses it; target the
-     container directly. */
-  #feed-totd button{min-height:36px;padding:8px 12px}
 
   /* Hide #mobile-nav while any modal is open. Every modal in the SPA is
      DOM-nested inside its parent .page (pg-log, pg-community, pg-sync,
@@ -10966,46 +10986,25 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         <div class="hero-pnl">
           <div class="hero-pnl-label">Group P&amp;L &middot; <span id="comm-hero-period">This Week</span></div>
           <div class="hero-pnl-value" id="comm-hero-pnl">+$0<span class="cents">.00</span></div>
-          <!-- Row 1 — five summary stats (Session 20a follow-up #3) -->
+          <!-- Row 1 — three summary stats (Session 20a follow-up #12
+               dropped Avg Trade — it was net_pnl/total_trades with
+               extra steps and the column didn't add information). -->
           <div class="hero-pnl-stats">
             <div class="hero-stat"><span class="hero-stat-value" id="comm-hero-trades">0</span><span class="hero-stat-label">Trades</span></div>
             <div class="hero-stat"><span class="hero-stat-value" id="comm-hero-winrate">0%</span><span class="hero-stat-label">Win Rate</span></div>
-            <div class="hero-stat"><span class="hero-stat-value" id="comm-hero-avg">+$0</span><span class="hero-stat-label">Avg Trade</span></div>
             <div class="hero-stat"><span class="hero-stat-value" id="comm-hero-points">&mdash;</span><span class="hero-stat-label">Total Points</span></div>
           </div>
-          <!-- Row 2 — Top Trade only.  Top Trader card was removed
-               in Session 20a follow-up #7 (the leaderboard rail at the
-               right of the feed is the canonical "who's leading"
-               surface now, fed by the same /api/community/group-stats
-               source as the hero numbers). -->
+          <!-- Row 2 — populated by renderHeroPnl based on the active
+               period.  On `today` it renders the gold Trader-of-the-Day
+               card; on week/month/all it renders the sage Best Day
+               card; before the API resolves, a generic shimmer. -->
           <div class="hero-pnl-top-row">
-            <div class="hero-top-stat is-loading">
-              <div class="hero-top-header">
-                <span class="hero-stat-label">Top Trade</span>
-                <span class="hero-pill" id="comm-hero-best-pill"></span>
-              </div>
-              <!-- Loading skeleton — shown before renderHeroPnl resolves
-                   (Session 20a follow-up #9). Three shimmer bars in the
-                   slots where headline / "by" / handle will land, plus a
-                   sub-line bar. -->
-              <div class="hero-top-skel" aria-hidden="true">
-                <div class="hero-top-skel-row">
-                  <span class="skel-bar skel-bar-pnl"></span>
-                  <span class="skel-bar skel-bar-by"></span>
-                  <span class="skel-bar skel-bar-handle"></span>
-                </div>
+            <div id="comm-hero-row2" class="hero-row2 is-loading">
+              <div class="hero-row2-skel" aria-hidden="true">
+                <span class="skel-bar skel-bar-label"></span>
+                <span class="skel-bar skel-bar-headline"></span>
                 <span class="skel-bar skel-bar-sub"></span>
               </div>
-              <div class="hero-top-main">
-                <span class="hero-stat-value" id="comm-hero-best">&mdash;</span>
-                <span class="hero-top-by-text">by</span>
-                <span class="hero-top-avatar" id="comm-hero-best-avatar"></span>
-                <span class="hero-top-handle" id="comm-hero-best-handle">&mdash;</span>
-              </div>
-              <div class="hero-top-sub" id="comm-hero-best-detail"></div>
-              <!-- Empty state — API returned null top_trade (period has
-                   no trades).  Toggled by `.is-empty` on the parent. -->
-              <div class="hero-top-empty">No trades yet</div>
             </div>
           </div>
         </div>
@@ -11023,8 +11022,10 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
       </div>
 
       <aside class="rail">
-        <!-- Trade of the Day — populated by renderTOTD when today has trades -->
-        <div id="feed-totd" style="display:none"></div>
+        <!-- Trader of the Day moved into the hero's Row 2 on the
+             Today tab (Session 20a follow-up #12).  The sidebar widget
+             that lived here is gone — the rail now leads with the
+             leaderboard so the freed vertical space goes to ranking. -->
 
         <div class="card">
           <div class="card-title">Top This Week</div>
@@ -12547,7 +12548,7 @@ function openCommFeed(gid){
     editBtn.style.display='';
     editBtn.title = (currentUser&&g.owner_id===currentUser.id) ? 'Edit group' : 'Group info';
   }
-  renderFeedPosts(g);renderFeedLeaderboard(g);renderFeedMembers(g);renderTOTD(g);renderHeroPnl(g,_commPeriod);
+  renderFeedPosts(g);renderFeedLeaderboard(g);renderFeedMembers(g);renderHeroPnl(g,_commPeriod);
   // Group PnL Card auto-pop was REMOVED — the card is now a LIVE/today
   // view, not a once-daily recap, so a forced pop-up on community
   // visit is the wrong UX. Entry point is the community's badge in
@@ -12885,7 +12886,6 @@ async function syncAndLoadCommFeed(g){
 
   await loadFeedEngagement(g);
   renderFeedPosts(g);
-  renderTOTD(g);
   renderHeroPnl(g, _commPeriod);
   if(_comm){
     renderGroupStats(_comm);
@@ -15826,98 +15826,13 @@ function openAllMembersModal(){
   modal.style.display = 'flex';
 }
 
-/* ── TRADER OF THE DAY (Session 17) ─────────────────────────
-   The community member with the highest net P&L today. Fetched from
-   /api/community/trader-of-the-day (Pro-gated, membership-authorized);
-   renders the .totd2-* card. Empty / error / non-Pro → empty state. */
-function _totd2EmptyCard(card){
-  card.style.display = 'block';
-  card.innerHTML =
-      '<div class="totd2">'
-    +   '<div class="totd2-label">🏆 Trader of the Day</div>'
-    +   '<div class="totd2-empty">No trades yet today</div>'
-    +   '<div class="totd2-empty-sub">Be the first to log a trade today</div>'
-    + '</div>';
-}
-async function renderTOTD(g){
-  var card = document.getElementById('feed-totd');
-  if(!card) return;
-  if(!g){ card.style.display='none'; return; }
-  card.style.display = 'block';
-
-  var reqId = g.id;
-  var resp;
-  try {
-    resp = await rvFetch('/api/community/trader-of-the-day?community_id=' + encodeURIComponent(g.id)
-      + '&tz_offset=' + new Date().getTimezoneOffset());
-  } catch(e){ resp = { ok:false }; }
-  // A community switch landed mid-flight — drop this stale result.
-  if(typeof _comm !== 'undefined' && _comm && _comm.id !== reqId) return;
-
-  if(!resp || !resp.ok || !resp.data || resp.data.empty || !resp.data.username){
-    _totd2EmptyCard(card);
-    return;
-  }
-  var d = resp.data;
-
-  function _m(v){
-    var sign = v > 0 ? '+' : v < 0 ? '−' : '';
-    return sign + '$' + Math.abs(v).toLocaleString('en-US');
-  }
-  var net    = Number(d.net_pnl_today) || 0;
-  var negCls = net < 0 ? ' neg' : '';
-  var handle = String(d.username || 'trader').replace(/^@/, '');
-  // Session 19 — profile display name + avatar, same pattern as Feed Posts.
-  var dispName = d.display_name || d.username || handle;
-  var nameLine = d.display_name ? dispName : ('@' + handle);
-  var avHtml = (typeof renderUserAvatar === 'function')
-    ? renderUserAvatar({
-        avatar_finish:    d.avatar_finish,
-        avatar_initials:  d.avatar_initials,
-        avatar_image_url: d.avatar_image_url,
-        username: d.username, name: dispName
-      }, 'md')
-    : '<div class="totd2-av-fallback">' + _eodSafe((handle.charAt(0)||'T').toUpperCase()) + '</div>';
-  var list = Array.isArray(d.trades_today) ? d.trades_today : [];
-
-  var rows = list.map(function(tr){
-    // Session 20a follow-up — rows show $ P&L (not points). `points`
-    // still rides along in the response, just no longer rendered.
-    var pnl = (tr.pnl == null || isNaN(Number(tr.pnl))) ? null : Number(tr.pnl);
-    var pnlCls = pnl == null ? '' : (pnl < 0 ? ' neg' : '');
-    var pnlTxt = pnl == null ? '—' : _fmtShortMoney(pnl);
-    var ct = (tr.contracts != null && !isNaN(Number(tr.contracts))) ? Number(tr.contracts) : null;
-    return '<div class="totd2-row">'
-      + '<span class="totd2-row-l">'
-      +   '<span class="totd2-num">' + _eodSafe(String(tr.trade_number || '')) + '</span>'
-      +   '<span class="totd2-sym">' + _eodSafe(tr.symbol || '—') + '</span>'
-      +   (ct != null ? '<span class="totd2-ct">' + ct + 'ct</span>' : '')
-      +   (tr.accounts ? '<span class="totd2-accts">' + _eodSafe(String(tr.accounts)) + ' accts</span>' : '')
-      + '</span>'
-      + '<span class="totd2-row-r">'
-      +   '<span class="totd2-pts' + pnlCls + '">' + pnlTxt + '</span>'
-      + '</span>'
-      + '</div>';
-  }).join('');
-
-  card.innerHTML =
-      '<div class="totd2">'
-    +   '<div class="totd2-label">🏆 Trader of the Day</div>'
-    +   '<div class="totd2-id-row">'
-    +     '<div class="totd2-id">'
-    +       '<div class="totd2-av">' + avHtml + '</div>'
-    +       '<div class="totd2-idtext"><div class="totd2-handle">' + _eodSafe(nameLine) + '</div>'
-    +         '<div class="totd2-sub">today</div></div>'
-    +     '</div>'
-    +     '<div class="totd2-pnl-wrap">'
-    +       '<div class="totd2-pnl' + negCls + '">' + _m(net) + '</div>'
-    +       '<div class="totd2-pnl-l">Net P&amp;L</div>'
-    +     '</div>'
-    +   '</div>'
-    +   '<div class="totd2-trades-h">Trades · ' + list.length + ' Today</div>'
-    +   '<div class="totd2-trades">' + rows + '</div>'
-    + '</div>';
-}
+/* Session 20a follow-up #12 — the sidebar TOTD widget was removed
+   (Trader of the Day now lives in the hero's Row 2 on the Today
+   period).  The renderTOTD function + _totd2EmptyCard helper + their
+   call sites in renderFeed / setCommPeriod / membership-edit hooks
+   are all gone.  The standalone /api/community/trader-of-the-day
+   endpoint is also no longer hit from the client — TOTD data rides
+   along with the rest of the hero in /api/community/group-stats. */
 
 /* Scroll to a specific post by data-pid and flash its border for 1.5s. */
 function scrollToPost(pid){
@@ -15973,7 +15888,7 @@ function _fmtShortMoney(n){
    "784 vs 2,400" between surfaces). Period: today / week / month / all
    with viewer's tz_offset for "today". */
 async function computeGroupStats(commId, period){
-  var fallback = {total:0, count:0, winRate:0, avg:0, totalPoints:0, topTrade:null, leaderboard:[]};
+  var fallback = {total:0, count:0, winRate:0, totalPoints:0, leaderboard:[], bestDay:null, traderOfDay:null};
   if(!commId) return fallback;
   var tzOffset = new Date().getTimezoneOffset();
   var url = '/api/community/group-stats?community_id=' + encodeURIComponent(commId)
@@ -15987,10 +15902,14 @@ async function computeGroupStats(commId, period){
     total:       Number(d.net_pnl)      || 0,
     count:       Number(d.total_trades) || 0,
     winRate:     Number(d.win_rate)     || 0,
-    avg:         Number(d.avg_trade)    || 0,
     totalPoints: Number(d.total_points) || 0,
-    topTrade:    d.top_trade           || null,
     leaderboard: Array.isArray(d.leaderboard) ? d.leaderboard : [],
+    // Session 20a follow-up #12 — Row 2 surfaces.  bestDay populates
+    // the sage card on week/month/all; traderOfDay populates the
+    // gold card on today.  Exactly one of these is non-null per
+    // response, picked server-side from the active period.
+    bestDay:     d.best_day      || null,
+    traderOfDay: d.trader_of_day || null,
   };
 }
 
@@ -15998,24 +15917,24 @@ async function renderHeroPnl(g, period){
   if(!document.getElementById('comm-hero-pnl') || !g) return;
   period = period || _commPeriod || 'week';
 
-  // Session 20a follow-up #9 — Top Trade card starts in the loading
-  // skeleton state (CSS class on the card root), then swaps to data
-  // or empty-state after the API resolves.  The Row 1 headline +
-  // stats strip don't get a skeleton because they update inline and
-  // the values are visible from the static placeholder + render.
-  var bestCard = document.querySelector('#pg-community .hero-pnl-top-row .hero-top-stat');
-  if(bestCard){ bestCard.classList.add('is-loading'); bestCard.classList.remove('is-empty'); }
+  // Row 2 card swaps between TOTD (gold) and Best Day (sage) variants
+  // based on the active period.  Start in the loading skeleton state
+  // so the card doesn't flash empty during the API round-trip.
+  var row2 = document.getElementById('comm-hero-row2');
+  if(row2){
+    row2.className = 'hero-row2 is-loading ' + (period === 'today' ? 'totd' : 'bestday');
+    row2.innerHTML =
+        '<div class="hero-row2-skel" aria-hidden="true">'
+      +   '<span class="skel-bar skel-bar-label"></span>'
+      +   '<span class="skel-bar skel-bar-headline"></span>'
+      +   '<span class="skel-bar skel-bar-sub"></span>'
+      + '</div>';
+  }
 
   var stats = await computeGroupStats(g.id, period);
   console.log('[hero stats]', stats);
 
-  if(bestCard){
-    bestCard.classList.remove('is-loading');
-    if(!stats.topTrade) bestCard.classList.add('is-empty');
-    else                bestCard.classList.remove('is-empty');
-  }
-
-  // ── Row 1 — headline P&L + 4-stat strip ──────────────────────────
+  // ── Row 1 — headline P&L + 3-stat strip ─────────────────────────
   var totalPnl = stats.total;
   var valEl = document.getElementById('comm-hero-pnl');
   valEl.innerHTML = _fmtMoney(totalPnl);
@@ -16027,10 +15946,6 @@ async function renderHeroPnl(g, period){
   wrEl.textContent = stats.winRate + '%';
   wrEl.className = 'hero-stat-value' + (stats.winRate >= 50 ? ' profit' : (stats.count ? ' loss' : ''));
 
-  var avgEl = document.getElementById('comm-hero-avg');
-  avgEl.textContent = _fmtShortMoney(stats.avg);
-  avgEl.className = 'hero-stat-value' + (stats.avg > 0 ? ' profit' : stats.avg < 0 ? ' loss' : '');
-
   // Total Points is a *derived* metric — paint it cool blue regardless
   // of sign so it visually separates from the P&L-tinted columns.
   var pointsEl = document.getElementById('comm-hero-points');
@@ -16040,69 +15955,110 @@ async function renderHeroPnl(g, period){
     pointsEl.className = 'hero-stat-value cool';
   }
 
-  // ── Row 2 — Top Trade card (Top Trader card removed in follow-up
-  //    #7; the leaderboard rail is the canonical "who's leading"
-  //    surface and now reads from the same API). ─────────────────────
-  function _handleText(u){
-    if(!u) return '—';
-    if(u.display_name && String(u.display_name).trim()) return u.display_name;
-    return '@' + String(u.username||'trader').replace(/^@/,'');
-  }
-  function _avatarHtml(u){
-    if(!u || typeof renderUserAvatar !== 'function') return '';
-    return renderUserAvatar({
-      avatar_finish:   u.avatar_finish,
-      avatar_initials: u.avatar_initials,
-      avatar_image_url: u.avatar_url,
-      username:        u.username,
-      name:            u.display_name || u.username,
-    }, 'sm');
-  }
+  // ── Row 2 — render TOTD (today) or Best Day (week/month/all) ────
+  if(row2) _renderHeroRow2(row2, period, stats);
+}
 
-  // Top Trade — best per-account P&L of the period.
-  var tt = stats.topTrade;
-  var bestEl       = document.getElementById('comm-hero-best');
-  var bestPillEl   = document.getElementById('comm-hero-best-pill');
-  var bestAvEl     = document.getElementById('comm-hero-best-avatar');
-  var bestHandleEl = document.getElementById('comm-hero-best-handle');
-  var bestDetailEl = document.getElementById('comm-hero-best-detail');
+// Splits the Row 2 card render off renderHeroPnl so the conditional
+// (today vs best-day) and the two card layouts stay readable.  All
+// avatars/handles are run through renderUserAvatar / safeText so
+// stale profile fields can't inject markup.
+function _renderHeroRow2(row2, period, stats){
+  var labels = { today:'Today', week:'this week', month:'this month', all:'all-time' };
+  var qual   = labels[period] || labels.week;
 
-  if(bestEl){
-    bestEl.textContent = tt ? _fmtShortMoney(Number(tt.pnl)||0) : '—';
-    bestEl.className   = 'hero-stat-value' + (tt && Number(tt.pnl)>0 ? ' profit' : tt && Number(tt.pnl)<0 ? ' loss' : '');
-  }
-  if(bestPillEl){
-    // account_type enum: paper | eval | funded | live | NULL
-    //   live + funded → LIVE pill   (real money)
-    //   eval          → EVAL pill
-    //   paper / null  → no pill
-    var atype = tt && tt.account_type ? String(tt.account_type).toLowerCase() : '';
-    if(atype === 'live' || atype === 'funded'){
-      bestPillEl.textContent = 'LIVE';
-      bestPillEl.className   = 'hero-pill live';
-    } else if(atype === 'eval'){
-      bestPillEl.textContent = 'EVAL';
-      bestPillEl.className   = 'hero-pill eval';
-    } else {
-      bestPillEl.textContent = '';
-      bestPillEl.className   = 'hero-pill';
+  // ── period === 'today' → TOTD card ────────────────────────────
+  if(period === 'today'){
+    var t = stats.traderOfDay;
+    row2.className = 'hero-row2 totd' + (t ? '' : ' is-empty');
+    if(!t){
+      row2.innerHTML =
+          '<div class="r2-head"><span class="r2-head-label">🏆 Trader of the Day</span>'
+        + '<span class="r2-head-meta">Today</span></div>'
+        + '<div class="hero-row2-empty">No trades yet today</div>';
+      return;
     }
-  }
-  if(bestAvEl)     bestAvEl.innerHTML     = _avatarHtml(tt);
-  if(bestHandleEl) bestHandleEl.textContent = _handleText(tt);
-  if(bestDetailEl){
-    var bits = [];
-    if(tt){
-      if(tt.symbol && tt.symbol !== '—') bits.push(tt.symbol);
-      if(tt.contracts != null && !isNaN(Number(tt.contracts))) bits.push(Number(tt.contracts)+'ct');
-      if(tt.points != null && !isNaN(Number(tt.points))){
-        var pv = Number(tt.points);
-        bits.push((pv>0?'+':'')+(Math.round(pv*10)/10)+' pts');
-      }
-    }
-    bestDetailEl.textContent = bits.join(' · ');
+    var avHtml = (typeof renderUserAvatar === 'function') ? renderUserAvatar({
+      avatar_finish:    t.avatar_finish,
+      avatar_initials:  t.avatar_initials,
+      avatar_image_url: t.avatar_url || t.avatar_image_url,
+      username:         t.username,
+      name:             t.display_name || t.username,
+    }, 'md') : '';
+    var name   = t.display_name && String(t.display_name).trim()
+                  ? safeText(t.display_name)
+                  : '@' + safeText(String(t.username || 'trader').replace(/^@/, ''));
+    var handle = '@' + safeText(String(t.username || 'trader').replace(/^@/, ''));
+    var net    = Number(t.net_pnl_today) || 0;
+    var netCls = net < 0 ? ' neg' : '';
+    var netTxt = (net >= 0 ? '+' : '−') + '$' + Math.abs(net).toLocaleString('en-US');
+    var list = Array.isArray(t.trades_today) ? t.trades_today : [];
+
+    var rowsHtml = list.map(function(tr){
+      var pnl    = (tr.pnl == null || isNaN(Number(tr.pnl))) ? null : Number(tr.pnl);
+      var pnlCls = pnl == null ? '' : (pnl < 0 ? ' neg' : '');
+      var pnlTxt = pnl == null ? '—' : _fmtShortMoney(pnl);
+      var ct     = (tr.contracts != null && !isNaN(Number(tr.contracts))) ? Number(tr.contracts) : null;
+      var meta   = [];
+      if(ct != null)     meta.push(ct + 'ct');
+      if(tr.accounts)    meta.push(tr.accounts + ' accts');
+      return '<div class="r2-totd-row">'
+        + '<span class="r2-totd-num">' + safeText(String(tr.trade_number || '')) + '</span>'
+        + '<span class="r2-totd-sym">' + safeText(tr.symbol || '—') + '</span>'
+        + '<span class="r2-totd-meta">' + meta.join(' · ') + '</span>'
+        + '<span class="r2-totd-rowpnl' + pnlCls + '">' + pnlTxt + '</span>'
+      + '</div>';
+    }).join('');
+
+    row2.innerHTML =
+        '<div class="r2-head">'
+      +   '<span class="r2-head-label">🏆 Trader of the Day</span>'
+      +   '<span class="r2-head-meta">Today</span>'
+      + '</div>'
+      + '<div class="r2-totd-id">'
+      +   '<div class="r2-totd-idl">'
+      +     '<span class="r2-totd-av">' + avHtml + '</span>'
+      +     '<div><div class="r2-totd-name">' + name + '</div>'
+      +     '<div class="r2-totd-sub">' + handle + ' &middot; today</div></div>'
+      +   '</div>'
+      +   '<div><div class="r2-totd-pnl' + netCls + '">' + netTxt + '</div>'
+      +     '<div class="r2-totd-pnl-label">Net P&amp;L</div></div>'
+      + '</div>'
+      + '<div class="r2-totd-div"></div>'
+      + '<div class="r2-totd-trades-h">Trades &middot; ' + list.length + ' today</div>'
+      + rowsHtml;
+    return;
   }
 
+  // ── period === 'week' / 'month' / 'all' → Best Day card ────────
+  var bd = stats.bestDay;
+  row2.className = 'hero-row2 bestday' + (bd ? '' : ' is-empty');
+  if(!bd){
+    row2.innerHTML =
+        '<div class="r2-head"><span class="r2-head-label">Best Day · ' + qual + '</span></div>'
+      + '<div class="hero-row2-empty">No trades yet</div>';
+    return;
+  }
+  // "May 15 · Thu" — short month + day-of-week label
+  var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var d = new Date(bd.date + 'T12:00:00Z');
+  var dateMeta = MONTHS[d.getUTCMonth()] + ' ' + d.getUTCDate()
+               + (bd.day_label ? ' · ' + bd.day_label : '');
+  var netTxt = _fmtShortMoney(Number(bd.net_pnl) || 0);
+  var wrPct  = Math.round((Number(bd.win_rate) || 0) * 100);
+  var subBits = [
+    bd.traders_profitable + ' trader' + (bd.traders_profitable === 1 ? '' : 's') + ' profitable',
+    bd.total_trades + ' trade' + (bd.total_trades === 1 ? '' : 's'),
+    wrPct + '% win rate',
+  ];
+
+  row2.innerHTML =
+      '<div class="r2-head">'
+    +   '<span class="r2-head-label">Best Day &middot; ' + qual + '</span>'
+    +   '<span class="r2-head-meta">' + dateMeta + '</span>'
+    + '</div>'
+    + '<div class="r2-bd-value">' + netTxt + '</div>'
+    + '<div class="r2-bd-sub">' + subBits.join(' &middot; ') + '</div>';
 }
 
 function setCommPeriod(period, btn){
@@ -16299,7 +16255,6 @@ async function removeMember(memberId){
   if(typeof renderFeedMembers==='function') renderFeedMembers(_comm);
   if(typeof renderFeedLeaderboard==='function') renderFeedLeaderboard(_comm);
   if(typeof renderHeroPnl==='function') renderHeroPnl(_comm, _commPeriod);
-  if(typeof renderTOTD==='function') renderTOTD(_comm);
   if(typeof renderCommSidebar==='function') renderCommSidebar();
   if(typeof renderEditMembersList==='function') renderEditMembersList();
   var amModal = document.getElementById('all-members-modal');

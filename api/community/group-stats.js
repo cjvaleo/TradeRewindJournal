@@ -1,8 +1,9 @@
 // GET /api/community/group-stats?community_id=X&period=Y&tz_offset=Z
-// Community-wide aggregate. Standalone handler so we can resolve the
-// profile (username + avatar) for top_trade and top_trader, and so the
-// Community-page hero can use this endpoint as its single source of
-// truth (kills the community_posts.pnl_today drift).
+// Community-wide aggregate.  Single source of truth for the standalone
+// Community page hero + leaderboard rail + Row 2 card (TOTD on today,
+// Best Day on week/month/all-time).  Standalone handler so we can
+// resolve display profiles for the leaderboard + TOTD in one batched
+// read instead of round-tripping to a second endpoint.
 //
 // `period` accepts: today | week | month | all (TZ-aware "today" via
 // tz_offset = JS Date.getTimezoneOffset() minutes, positive west of UTC).
@@ -15,6 +16,8 @@ import {
   communityMemberIds,
   loadMemberTrades,
   aggGroupStats,
+  bestDay,
+  traderOfTheDay,
 } from '../_lib/community.js';
 
 export default async function handler(req, res) {
@@ -57,35 +60,47 @@ export default async function handler(req, res) {
      : '7d';
   const tzRaw = (req.query && req.query.tz_offset != null) ? parseInt(req.query.tz_offset, 10) : 0;
   const tzOffset = Number.isFinite(tzRaw) ? tzRaw : 0;
+  const localToday = new Date(Date.now() - tzOffset * 60000).toISOString().slice(0, 10);
 
   let payload;
+  let totdRaw = null;
   try {
     let trades = await loadMemberTrades(memberIds, rangeForLoad);
     if (period === 'today') {
-      const localToday = new Date(Date.now() - tzOffset * 60000).toISOString().slice(0, 10);
       trades = trades.filter(function (t) {
         const d = (typeof t.date === 'string' && /^\d{4}-\d{2}-\d{2}/.test(t.date)) ? t.date.slice(0, 10)
           : (typeof t.created_at === 'string' && t.created_at.length >= 10) ? t.created_at.slice(0, 10)
           : null;
         return d === localToday;
       });
+      // Trader of the Day uses the already-filtered today rows so the
+      // hero card + the (legacy) standalone TOTD endpoint agree.
+      totdRaw = traderOfTheDay(trades, localToday);
     }
     payload = aggGroupStats(trades, { memberCount: memberIds.length, memberIds: memberIds });
+
+    // Best Day card on week/month/all only — `today` is itself a single
+    // day so a "best day" picker would be a tautology.
+    if (period !== 'today') {
+      payload.best_day = bestDay(trades);
+    }
+    if (totdRaw) payload.trader_of_day = totdRaw;
   } catch (e) {
     console.error('[group-stats] aggregation failed:', e && e.message);
     res.status(500).json({ error: 'aggregation failed' });
     return;
   }
 
-  // Resolve usernames + avatars for the top_trade taker and every
-  // leaderboard entry in a single batched profiles read.  Session 20a
-  // follow-up #7 — the leaderboard rail now consumes this endpoint too,
-  // so the ids list includes the ranked top-N members.
+  // Batched profile lookup for every user the response references:
+  // leaderboard rows + the Trader of the Day winner.  One query keeps
+  // the endpoint cheap even on large communities.
   const idSet = {};
-  if (payload.top_trade && payload.top_trade.user_id) idSet[payload.top_trade.user_id] = 1;
   (payload.leaderboard || []).forEach(function (row) {
     if (row && row.user_id) idSet[row.user_id] = 1;
   });
+  if (payload.trader_of_day && payload.trader_of_day.user_id) {
+    idSet[payload.trader_of_day.user_id] = 1;
+  }
   const ids = Object.keys(idSet);
   const profMap = {};
   if (ids.length) {
@@ -108,8 +123,8 @@ export default async function handler(req, res) {
     obj.avatar_finish   = p.avatar_finish || p.color || null;
     obj.avatar_initials = p.avatar_initials || p.initials || null;
   }
-  if (payload.top_trade) _attach(payload.top_trade);
   (payload.leaderboard || []).forEach(_attach);
+  if (payload.trader_of_day) _attach(payload.trader_of_day);
 
   res.setHeader('Cache-Control', 'no-store');
   res.status(200).json(payload);
