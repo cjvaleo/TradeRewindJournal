@@ -6987,12 +6987,13 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   border:1px solid rgba(255,255,255,0.08);
 }
 #pg-community .hero-pill:empty{display:none}
-#pg-community .hero-microcopy{
-  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.04em;
-  color:var(--n-text-3);white-space:nowrap;
-}
+/* Session 20a follow-up #6 — center the $ + by + avatar + handle group
+   within each Top Performers card.  justify-content:center on the
+   existing flex container produces the same visual result as the
+   wrapper-with-inline-flex pattern, with no HTML restructure. */
 #pg-community .hero-top-main{
-  display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  flex-wrap:wrap;min-width:0;
 }
 #pg-community .hero-top-main .hero-stat-value{font-size:30px}
 #pg-community .hero-top-by-text{
@@ -7006,10 +7007,11 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   font-family:var(--n-font-sans);font-size:14px;font-weight:500;color:#f5f4f0;
   max-width:14ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-/* Sub-detail line — 11px mono, low-opacity white. */
+/* Sub-detail line — 11px mono, low-opacity white.  Centered to match
+   the centered middle row above it (follow-up #6). */
 #pg-community .hero-top-sub{
   font-family:var(--n-font-mono);font-size:11px;color:rgba(255,255,255,0.4);
-  margin-top:2px;
+  margin-top:2px;text-align:center;
 }
 #pg-community .hero-top-sub:empty{display:none}
 @media (max-width:720px){
@@ -10873,7 +10875,6 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             <div class="hero-top-stat">
               <div class="hero-top-header">
                 <span class="hero-stat-label">Top Trader</span>
-                <span class="hero-microcopy">ranked per-acct</span>
               </div>
               <div class="hero-top-main">
                 <span class="hero-stat-value" id="comm-hero-top-pnl">+$0</span>
