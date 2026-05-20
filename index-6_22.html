@@ -8078,19 +8078,19 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 /* Leaderboard.  Session 20a follow-up #7 second pass — the rail
    now renders every member with ≥1 trade (no top-N truncation), so
    the container scrolls when the list exceeds the visible area.
-   max-height is sized so ~8 rows fit before the scrollbar appears;
-   the thin sage scrollbar matches the card's accent. */
+   Follow-up #10: scrollbar is hidden in all browsers (the thin
+   sage skin we tried earlier didn't survive Safari's ::-webkit-
+   scrollbar handling and fell back to a chunky system bar that
+   looked out of place against the chrome aesthetic).  Trackpad /
+   wheel / touch scroll still work — just no visible bar. */
 #pg-community #feed-leaderboard{
   max-height:380px;overflow-y:auto;overflow-x:hidden;
-  scrollbar-width:thin;scrollbar-color:rgba(95,179,137,0.35) transparent;
+  scrollbar-width:none;       /* Firefox */
+  -ms-overflow-style:none;    /* IE / legacy Edge */
 }
-#pg-community #feed-leaderboard::-webkit-scrollbar{width:6px}
-#pg-community #feed-leaderboard::-webkit-scrollbar-track{background:transparent}
-#pg-community #feed-leaderboard::-webkit-scrollbar-thumb{
-  background:rgba(95,179,137,0.25);border-radius:3px;
-}
-#pg-community #feed-leaderboard::-webkit-scrollbar-thumb:hover{
-  background:rgba(95,179,137,0.45);
+#pg-community #feed-leaderboard::-webkit-scrollbar{
+  display:none;               /* Safari + Chrome */
+  width:0;height:0;
 }
 #pg-community .lb-row{
   display:flex;align-items:center;gap:10px;padding:9px 0;
