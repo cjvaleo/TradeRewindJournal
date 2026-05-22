@@ -1402,9 +1402,14 @@
   font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.22em;
   text-transform:uppercase;font-weight:500;margin-bottom:6px;color:var(--n-text-3);
 }
-#pg-upgrade .up-card.direct .uc-tag{color:var(--n-text)}
+#pg-upgrade .up-card.direct .uc-tag{color:var(--n-gold)}
 #pg-upgrade .up-card.premium .uc-tag{color:var(--n-cool)}
 #pg-upgrade .up-card.elite .uc-tag{color:var(--n-profit)}
+/* Session 20b — Direct card carries a gold border accent. */
+#pg-upgrade .up-card.direct{border-color:rgba(245,215,124,0.22)}
+#pg-upgrade .up-card.direct::before{
+  background:linear-gradient(90deg, transparent, rgba(245,215,124,0.40), transparent);
+}
 
 #pg-upgrade .uc-h{
   font-family:var(--n-font-display);font-style:italic;
@@ -1430,10 +1435,10 @@
 }
 #pg-upgrade .uc-big{
   font-family:var(--n-font-display);font-style:italic;
-  font-size:50px;line-height:0.95;letter-spacing:-0.025em;color:var(--n-text);
+  font-size:40px;line-height:0.95;letter-spacing:-0.025em;color:var(--n-text);
 }
 #pg-upgrade .uc-big.cool{color:var(--n-cool)}
-#pg-upgrade .uc-big.green{color:var(--n-profit);font-size:42px}
+#pg-upgrade .uc-big.green{color:var(--n-profit);font-size:40px}
 #pg-upgrade .uc-period{
   font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;
   color:var(--n-text-3);text-transform:uppercase;
@@ -1458,6 +1463,67 @@
   color:var(--n-text-3);text-transform:uppercase;
   padding-top:10px;padding-bottom:4px;
 }
+/* Session 20b — coloured section labels in the Free column:
+   gold for the 30-day-trial section, muted for the locked section. */
+#pg-upgrade .uc-feat-h.gold{color:rgba(245,215,124,0.7)}
+#pg-upgrade .uc-feat-h.muted{color:rgba(255,255,255,0.3)}
+
+/* ★ gold-star feature row — the single 30-day-trial line (Calendar). */
+#pg-upgrade .uc-feat-star{
+  display:flex;align-items:flex-start;gap:7px;
+  padding:5px 0;font-size:11px;line-height:1.4;color:var(--n-text-2);
+}
+#pg-upgrade .uc-feat-star::before{
+  content:'\2605';color:var(--n-gold);font-size:11px;flex-shrink:0;
+}
+
+/* ── Hero feature cards (Pro · Direct ×2, TA Premium ×1) ─────────── */
+#pg-upgrade .uc-hero-feat{border-radius:10px;padding:16px;margin-bottom:10px}
+#pg-upgrade .uc-hero-feat.gold{
+  background:linear-gradient(180deg, rgba(245,215,124,0.05), rgba(245,215,124,0.015));
+  border:1px solid rgba(245,215,124,0.18);
+}
+#pg-upgrade .uc-hero-feat.sage{
+  background:rgba(95,179,137,0.04);
+  border:1px solid rgba(95,179,137,0.15);
+}
+#pg-upgrade .uc-hf-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;margin-bottom:8px;min-height:22px;
+}
+#pg-upgrade .uc-hf-label{
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.16em;
+  text-transform:uppercase;font-weight:600;white-space:nowrap;
+}
+#pg-upgrade .uc-hero-feat.gold .uc-hf-label{color:var(--n-gold)}
+#pg-upgrade .uc-hero-feat.sage .uc-hf-label{color:var(--n-profit)}
+#pg-upgrade .uc-hf-headline{
+  font-family:var(--n-font-display);font-style:italic;font-size:17px;
+  line-height:1.2;color:var(--n-text);margin-bottom:5px;
+}
+#pg-upgrade .uc-hero-feat.sage .uc-hf-headline{font-size:16px}
+#pg-upgrade .uc-hf-sub{font-size:12px;line-height:1.5;color:var(--n-text-3)}
+
+/* Avatar stack — 4 × 22px circles overlapping 7px. Decorative. */
+#pg-upgrade .uc-avstack{display:inline-flex;flex-shrink:0}
+#pg-upgrade .uc-av-c{
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono);font-size:7.5px;font-weight:600;color:#fff;
+  border:1.5px solid var(--n-surface);margin-left:-7px;
+}
+#pg-upgrade .uc-av-c:first-child{margin-left:0}
+#pg-upgrade .uc-av-more{background:rgba(245,215,124,0.16);color:var(--n-gold)}
+
+/* Mini-chart — 5 sage bars, purely decorative. */
+#pg-upgrade .uc-minichart{
+  display:inline-flex;align-items:flex-end;gap:3px;
+  width:60px;height:30px;flex-shrink:0;
+}
+#pg-upgrade .uc-minichart span{
+  flex:1;border-radius:1.5px;
+  background:linear-gradient(180deg, var(--n-profit), rgba(95,179,137,0.25));
+}
 
 #pg-upgrade .uc-cta{
   margin-top:auto;padding:12px;
@@ -1475,8 +1541,8 @@
 #pg-upgrade .uc-cta.free:hover{transform:none}
 #pg-upgrade .uc-cta.free[disabled]{opacity:0.7}
 #pg-upgrade .uc-cta.direct{
-  background:linear-gradient(180deg, #f5f5f5 0%, #dadada 100%);
-  color:var(--n-bg);
+  background:linear-gradient(180deg, #f5d77c 0%, #e0bd5a 100%);
+  color:#2a2410;
 }
 #pg-upgrade .uc-cta.discord{
   background:linear-gradient(180deg, #7289da 0%, #5b6eae 100%);
@@ -2099,6 +2165,72 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   background:var(--n-bg);
   position:relative;z-index:1;
 }
+
+/* ── Calendar 30-day trial gate (Session 20b) ───────────────────────
+   .cal-locked blurs + freezes the gated content; #cal-paywall overlays
+   a centered upgrade card; #cal-trial-banner is the last-3-days nudge. */
+#pg-calendar.cal-locked #cal-gated-content{
+  filter:opacity(0.4) blur(2px);
+  pointer-events:none;user-select:none;
+}
+#pg-calendar .cal-paywall{
+  position:absolute;inset:0;z-index:20;
+  display:none;align-items:center;justify-content:center;padding:24px;
+}
+#pg-calendar .cal-paywall-card{
+  max-width:420px;width:100%;text-align:center;
+  background:linear-gradient(180deg, var(--n-surface-2) 0%, var(--n-surface) 100%);
+  border:1px solid rgba(245,215,124,0.22);border-radius:16px;
+  padding:36px 32px;box-shadow:0 24px 60px rgba(0,0,0,0.55);
+}
+#pg-calendar .cal-paywall-title{
+  font-family:var(--n-font-display);font-style:italic;font-size:28px;
+  color:var(--n-text);letter-spacing:-0.015em;margin-bottom:8px;
+}
+#pg-calendar .cal-paywall-sub{
+  font-family:var(--n-font-sans);font-size:14px;color:var(--n-text-2);
+  line-height:1.5;margin-bottom:22px;
+}
+#pg-calendar .cal-paywall-cta{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 24px;border:none;border-radius:9px;cursor:pointer;
+  font-family:var(--n-font-sans);font-size:13px;font-weight:600;
+  background:linear-gradient(180deg, #f5d77c 0%, #e0bd5a 100%);
+  color:#2a2410;transition:transform 150ms;
+}
+#pg-calendar .cal-paywall-cta:hover{transform:translateY(-1px)}
+#pg-calendar .cal-paywall-secondary{
+  margin-top:14px;font-family:var(--n-font-sans);font-size:12px;
+  color:var(--n-text-3);
+}
+#pg-calendar .cal-paywall-secondary a{
+  color:var(--n-text-2);text-decoration:underline;cursor:pointer;
+}
+#pg-calendar .cal-paywall-secondary a:hover{color:var(--n-text)}
+#pg-calendar .cal-trial-banner{
+  display:none;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 16px;margin-bottom:18px;border-radius:9px;
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.04em;
+}
+#pg-calendar .cal-trial-banner .ctb-cta{
+  background:none;border:none;cursor:pointer;white-space:nowrap;
+  font-family:var(--n-font-mono);font-size:11px;font-weight:600;letter-spacing:0.04em;
+}
+#pg-calendar .cal-trial-banner.soft{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  color:var(--n-text-3);
+}
+#pg-calendar .cal-trial-banner.soft .ctb-cta{color:var(--n-text-2)}
+#pg-calendar .cal-trial-banner.amber{
+  background:rgba(245,215,124,0.06);border:1px solid rgba(245,215,124,0.22);
+  color:rgba(245,215,124,0.85);
+}
+#pg-calendar .cal-trial-banner.amber .ctb-cta{color:var(--n-gold)}
+#pg-calendar .cal-trial-banner.urgent{
+  background:rgba(245,215,124,0.12);border:1px solid rgba(245,215,124,0.40);
+  color:var(--n-gold);
+}
+#pg-calendar .cal-trial-banner.urgent .ctb-cta{color:var(--n-gold);text-decoration:underline}
 
 #pg-calendar .cal-head{
   display:flex;align-items:flex-start;justify-content:space-between;
@@ -10664,12 +10796,17 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
     </div>
   </div>
 
-  <!-- FREE-TIER 30-DAY CAP BANNER — always shown for free users since past
-       months render empty (trades older than 30 days are filtered out). -->
-  <div id="calendar-cap-banner" class="free-cap-banner" style="display:none">
-    <div class="fcb-text">Showing the last 30 days &middot; <strong>Free plan</strong> &middot; past months are empty</div>
-    <button class="fcb-cta" onclick="openUpgradeModal('calendar')">Unlock unlimited &rarr;</button>
-  </div>
+  <!-- TRIAL COUNTDOWN BANNER — Session 20b.  Shown only in the last 3
+       days of an active free trial; tone shifts soft→amber→urgent as
+       days run down.  Populated + toggled by applyCalendarGate().
+       Replaces the old free-cap banner (the 30-day data cap no longer
+       applies to the Calendar — the trial paywall is the gate now). -->
+  <div id="cal-trial-banner" class="cal-trial-banner" style="display:none"></div>
+
+  <!-- GATED CONTENT — blurred + non-interactive once the free trial
+       expires (.cal-locked on #pg-calendar). The header above stays
+       crisp; only the calendar surface goes behind the paywall. -->
+  <div id="cal-gated-content">
 
   <!-- VIEW TABS — Month grid vs Heatmap -->
   <div class="cal-view-tabs">
@@ -10776,6 +10913,20 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
     <!-- Heatmap day detail uses the same #cal-day-title / #cal-day-body
          that the month view uses. Clicking a cell flips back to Month
          and scrolls the day panel into view. -->
+  </div>
+
+  </div><!-- /#cal-gated-content -->
+
+  <!-- TRIAL-EXPIRED PAYWALL — Session 20b.  Overlaid on the blurred
+       calendar shell when a non-grandfathered free user is past day
+       30. applyCalendarGate() toggles display + the .cal-locked class. -->
+  <div id="cal-paywall" class="cal-paywall" style="display:none">
+    <div class="cal-paywall-card">
+      <div class="cal-paywall-title">Calendar trial ended.</div>
+      <div class="cal-paywall-sub">Upgrade to Pro to keep tracking your trades visually.</div>
+      <button class="cal-paywall-cta" onclick="goTo('upgrade')">Subscribe to Pro &rarr;</button>
+      <div class="cal-paywall-secondary">or <a onclick="goTo('log')">Continue with Log Trade</a></div>
+    </div>
   </div>
 </div>
 <!-- ANALYTICS -->
@@ -11502,74 +11653,111 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
   <div class="up-cards">
 
-    <!-- FREE -->
+    <!-- FREE — Session 20b: three labelled sections (always-free /
+         30-day trial / locked) so the trial is legible at a glance. -->
     <div class="up-card free">
       <span class="uc-active-pill free" id="uc-pill-free" style="display:none">Active</span>
       <div class="uc-tag">&#9733; Free Tier</div>
       <div class="uc-h">Free.</div>
-      <div class="uc-desc">A real journal. Free forever &mdash; no caps, no card.</div>
+      <div class="uc-desc">Log trades forever. Plus a 30-day taste of Pro.</div>
       <div class="uc-price"><span class="uc-big">$0</span><span class="uc-period">forever</span></div>
-      <div class="uc-feat">Unlimited trades + screenshots</div>
+
+      <div class="uc-feat-h">Always free</div>
+      <div class="uc-feat">Unlimited Log Trade</div>
       <div class="uc-feat">Unlimited trading accounts</div>
-      <div class="uc-feat">Calendar + heatmap views</div>
-      <div class="uc-feat">Stats: best/worst day, win rate, streak</div>
-      <div class="uc-feat">Equity curve</div>
+      <div class="uc-feat">Screenshots + tags + notes</div>
       <div class="uc-feat">Grade + emotion + confidence</div>
       <div class="uc-feat">Auto-calc P&amp;L</div>
       <div class="uc-feat">Export your data</div>
-      <div class="uc-feat-h">Upgrade for more</div>
-      <div class="uc-feat-x">Communities (create + invite)</div>
-      <div class="uc-feat-x">CSV import + multi-account copies</div>
-      <div class="uc-feat-x">Advanced analytics + insights</div>
-      <div class="uc-feat-x">PDF export + priority support</div>
+
+      <div class="uc-feat-h gold">30-day free trial</div>
+      <div class="uc-feat-star">Calendar + heatmap views</div>
+
+      <div class="uc-feat-h muted">Upgrade for full access</div>
+      <div class="uc-feat-x">History</div>
+      <div class="uc-feat-x">Review + advanced insights</div>
+      <div class="uc-feat-x">Communities</div>
+      <div class="uc-feat-x">CSV bulk import</div>
+      <div class="uc-feat-x">PDF journal export</div>
+
       <button class="uc-cta free" id="uc-cta-free" disabled>Current plan</button>
     </div>
 
-    <!-- PRO DIRECT -->
+    <!-- PRO DIRECT — two hero feature cards lead the body, then a
+         tight "everything else" list. -->
     <div class="up-card direct">
       <span class="uc-active-pill direct" id="uc-pill-direct" style="display:none">Active</span>
-      <div class="uc-tag">&#9733; Pro &middot; Direct</div>
+      <div class="uc-tag gold">&#9733; Pro &middot; Direct</div>
       <div class="uc-h"><em class="gold">Pro.</em></div>
-      <div class="uc-desc">Full Pro features + your own communities. Cancel anytime.</div>
+      <div class="uc-desc">Everything unlocked. Cancel anytime.</div>
       <div class="uc-price"><span class="uc-big">$19</span><span class="uc-period">per month</span></div>
-      <div class="uc-feat-h">Communities</div>
-      <div class="uc-feat">Create your own communities</div>
-      <div class="uc-feat">Invite Pro friends + live group P&amp;L</div>
-      <div class="uc-feat">Trade of the Day + leaderboards</div>
-      <div class="uc-feat-h">Convenience</div>
-      <div class="uc-feat">CSV bulk import</div>
+
+      <!-- Hero feature 1 — Communities -->
+      <div class="uc-hero-feat gold">
+        <div class="uc-hf-head">
+          <span class="uc-hf-label">&#9733; Communities</span>
+          <span class="uc-avstack">
+            <span class="uc-av-c" style="background:linear-gradient(135deg,#5a7fb5,#3c5a8a)">AK</span>
+            <span class="uc-av-c" style="background:linear-gradient(135deg,#5fb389,#3f8a66)">JM</span>
+            <span class="uc-av-c" style="background:linear-gradient(135deg,#9a7fc0,#6f5594)">RL</span>
+            <span class="uc-av-c uc-av-more">+12</span>
+          </span>
+        </div>
+        <div class="uc-hf-headline">Trade alongside your circle.</div>
+        <div class="uc-hf-sub">Create or join groups &middot; live group P&amp;L &middot; Trader of the Day leaderboards &middot; share trades + react.</div>
+      </div>
+
+      <!-- Hero feature 2 — Advanced Insights -->
+      <div class="uc-hero-feat gold">
+        <div class="uc-hf-head">
+          <span class="uc-hf-label">&#9733; Advanced Insights</span>
+          <span class="uc-minichart" aria-hidden="true">
+            <span style="height:42%"></span><span style="height:68%"></span>
+            <span style="height:52%"></span><span style="height:88%"></span>
+            <span style="height:72%"></span>
+          </span>
+        </div>
+        <div class="uc-hf-headline">See what's actually working.</div>
+        <div class="uc-hf-sub">P&amp;L by session &middot; symbol &middot; setup &middot; emotion &middot; heatmap day &times; hour &middot; holding time &middot; R:R analysis.</div>
+      </div>
+
+      <div class="uc-feat-h">Everything else unlocked</div>
+      <div class="uc-feat">History + full search</div>
+      <div class="uc-feat">Calendar + heatmap (no time limit)</div>
+      <div class="uc-feat">CSV bulk import (incl. Tradovate)</div>
       <div class="uc-feat">Multi-account copies (&times;N at once)</div>
       <div class="uc-feat">PDF journal export</div>
-      <div class="uc-feat-h">Advanced Insights</div>
-      <div class="uc-feat">P&amp;L by session &middot; symbol &middot; setup &middot; emotion</div>
-      <div class="uc-feat">Heatmap day &times; hour</div>
-      <div class="uc-feat">Holding time + Risk:Reward analysis</div>
-      <div class="uc-feat-h">Perks</div>
-      <div class="uc-feat">Priority email support</div>
-      <div class="uc-feat">Early access to new features</div>
+
       <button class="uc-cta direct" id="uc-cta-direct-sub" onclick="tierUpgradeFlow('direct')">Subscribe &rarr;</button>
       <button class="uc-cta uc-cta-manage" id="uc-cta-direct-manage" onclick="openStripePortal(this)" style="display:none"><span class="btn-stripe-portal-label">Manage billing &rarr;</span></button>
     </div>
 
     <!-- PRO · TRADING ARK PREMIUM — free Pro for TA Premium members.
-         Was the old Premium card; the retired Elite card's green "free"
-         treatment (.up-card.elite) is reused here since this is now the
-         free tier. id is stable for refreshUpgradePage()'s show/hide. -->
+         id is stable for refreshUpgradePage()'s show/hide. -->
     <div class="up-card elite" id="uc-tapremium">
       <span class="uc-active-pill tapremium" id="uc-pill-tapremium" style="display:none">Active</span>
-      <div class="best-pill">Best Value</div>
-      <div class="uc-tag">&#9733; Pro &middot; Trading Ark Premium</div>
+      <div class="uc-tag green">&#9733; Pro &middot; TA Premium</div>
       <div class="uc-h">100% <em class="green">free.</em></div>
       <div class="uc-desc">Included with your Trading Ark Premium membership. Sign in with Discord to unlock &mdash; no card, ever.</div>
       <div class="uc-price"><span class="uc-strike">$19</span><span class="uc-big green">FREE</span><span class="uc-period">included</span></div>
-      <div class="uc-feat">&#9733; Trading Ark community</div>
-      <div class="uc-feat">Everything in Pro &middot; Direct</div>
-      <div class="uc-feat">100% free while you're a TA Premium member</div>
-      <div class="uc-feat">Auto-synced via your Discord role</div>
+
+      <!-- Hero feature — Trading Ark community (sage) -->
+      <div class="uc-hero-feat sage">
+        <div class="uc-hf-head">
+          <span class="uc-hf-label">&#9733; Trading Ark Community</span>
+        </div>
+        <div class="uc-hf-headline">Real prop traders. Live alerts.</div>
+        <div class="uc-hf-sub">Discord community &middot; live trading classes &middot; daily setups &middot; plus Rewind Pro at no extra cost.</div>
+      </div>
+
+      <div class="uc-feat-h">Everything in Pro</div>
+      <div class="uc-feat">Communities &middot; Insights &middot; everything unlocked</div>
+
       <div class="uc-feat-h">Whop bundle perks</div>
       <div class="uc-feat">Trading Ark Discord (full access)</div>
-      <div class="uc-feat">Trading classes + live alerts</div>
-      <div class="uc-feat">Priority + first access to new features</div>
+      <div class="uc-feat">Trading classes &middot; live alerts</div>
+      <div class="uc-feat">Auto-synced via your Discord role</div>
+
       <button class="uc-cta discord-elite" id="uc-cta-ta-signin" onclick="tierUpgradeFlow('premium')">
         <svg viewBox="0 0 71 55" width="14" height="14" fill="white"><path d="M60 4.7A58.5 58.5 0 0 0 45.6 0c-.6 1.1-1.4 2.6-1.9 3.8a54 54 0 0 0-16.4 0c-.5-1.2-1.3-2.7-2-3.8C20.5 0 15.5 1.6 11 4.8 1.7 18.6-.8 32 .4 45.3a58.7 58.7 0 0 0 18 9c1.5-2 2.7-4 3.8-6.3-2.1-.8-4-1.7-5.9-2.9.5-.4 1-.7 1.5-1.1 11.4 5.2 23.7 5.2 35 0l1.5 1.1c-1.9 1.1-3.9 2.1-6 2.9 1.1 2.2 2.4 4.3 3.9 6.3a58.7 58.7 0 0 0 18-9c1.5-15.4-2.6-28.8-10.2-40.6zM23.7 37.3c-3.5 0-6.4-3.2-6.4-7.1 0-4 2.8-7.2 6.4-7.2 3.5 0 6.4 3.2 6.4 7.2 0 3.9-2.9 7.1-6.4 7.1zm23.6 0c-3.5 0-6.4-3.2-6.4-7.1 0-4 2.8-7.2 6.4-7.2 3.5 0 6.4 3.2 6.4 7.2 0 3.9-2.8 7.1-6.4 7.1z"/></svg>
         Sign in with Discord
@@ -17256,8 +17444,9 @@ function renderRecentList(){
 
 function buildCal(y,m,container,clickable){
   const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),dp={},dc={};
-  // 30-day cap for Free tier — past months render empty.
-  const view = _visibleTrades();
+  // Calendar opts out of the _visibleTrades() 30-day data cap — its
+  // own gate is the trial paywall (Session 20b).  Full history shows.
+  const view = _calendarTrades();
   view.forEach(t=>{if(!t.date)return;const td=new Date(t.date+'T00:00:00');if(td.getFullYear()===y&&td.getMonth()===m){const d=td.getDate();dp[d]=(dp[d]||0)+t.pnl;dc[d]=(dc[d]||0)+1;}});
   const n=new Date();let h='';
 
@@ -17355,9 +17544,11 @@ function buildDashMiniCal(y,m,container){
 function dashCalPrev(){dashCalM--;if(dashCalM<0){dashCalM=11;dashCalY--;}renderDashCal();}
 function dashCalNext(){dashCalM++;if(dashCalM>11){dashCalM=0;dashCalY++;}renderDashCal();}
 function renderCalPage(){
-  // Banner always on for free tier — past months render empty because
-  // _visibleTrades() filters out anything older than 30 days.
-  toggleFreeCapBanner('calendar', isFreeTier());
+  // Session 20b — the 30-day free-trial gate.  applyCalendarGate()
+  // blurs + paywalls the surface for expired free users, or shows the
+  // last-3-days countdown banner; renders normally otherwise.  The
+  // grid still builds underneath so the paywall sits over real content.
+  applyCalendarGate();
   document.getElementById('cal-lbl').textContent=MONTHS[calMonth]+' '+calYear;
   buildCal(calYear,calMonth,'big-cal',true);
   if(selDay)showDay(selDay);
@@ -17413,11 +17604,10 @@ function renderCalHeatmap(){
   startMonday.setDate(startMonday.getDate() - 7*weeks);
 
   // Group trades by day and get max abs daily P&L for tier scaling.
-  // 30-day cap applies for free tier (heatmap cells outside the window
-  // render with zero contribution → blank cells, consistent with the
-  // calendar grid and the empty-month banner).
+  // Calendar heatmap uses the full uncapped history — the Calendar's
+  // gate is the 30-day trial paywall, not the data cap (Session 20b).
   var byDay = {};
-  _visibleTrades().forEach(function(t){
+  _calendarTrades().forEach(function(t){
     if(!t.date) return;
     var key = String(t.date).slice(0,10);
     if(!byDay[key]) byDay[key] = {pnl:0, count:0};
@@ -17556,9 +17746,9 @@ function onCalHmCellClick(dateStr){
 function showDay(d){
   selDay=d;
   var ds=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-  // Free tier: day-detail respects the 30-day cap (past days outside the
-  // window will show an empty list, consistent with the calendar grid).
-  var dt=_visibleTrades().filter(function(t){return t.date===ds;});
+  // Calendar day-detail uses the full uncapped history (Session 20b —
+  // the trial paywall is the gate, not the _visibleTrades() data cap).
+  var dt=_calendarTrades().filter(function(t){return t.date===ds;});
   buildCal(calYear,calMonth,'big-cal',true);
   openDayReview(ds, dt);
   refreshCalendarStats();
@@ -19860,6 +20050,94 @@ function _visibleTrades(){
   return trades.filter(_within30Days);
 }
 window._visibleTrades = _visibleTrades;
+
+/* ─── Calendar 30-day trial gate (Session 20b) ───────────────
+   Free users get 30 days of full Calendar access from signup, then a
+   paywall.  This is a DIFFERENT 30-day concept from _visibleTrades()
+   above (that's a data-recency cap on History/Equity/Dashboard).  The
+   Calendar opts out of that cap entirely — whenever the Calendar page
+   is visible at all, the viewer has earned the full uncapped view
+   ("a 30-day taste of Pro"); the trial paywall is the gate, not a
+   data clip.  _calendarTrades() is what every Calendar render path
+   iterates instead of _visibleTrades(). */
+function _calendarTrades(){ return trades; }
+window._calendarTrades = _calendarTrades;
+
+/* Grandfather cutoff — accounts created before this ISO date predate
+   the Calendar trial gate and keep Calendar forever.  Hardcoded for
+   now; can move to env/config later. */
+var TRIAL_GRANDFATHER_CUTOFF = '2026-05-22';
+
+/* getTrialStatus() — adapted from the Session 20b spec.  The spec
+   assumed a user.tier prop + a user arg; this codebase has neither —
+   tier is the async-cached window._userTier, and account age comes
+   from the Supabase auth user's created_at.  So this reads globals
+   instead of taking an argument.  Fails OPEN everywhere: any
+   uncertainty (paid tier, missing/garbage created_at, pre-cutoff
+   signup) grants access rather than locking someone out. */
+function getTrialStatus(){
+  // Paid tiers — no trial concept, unlimited access.
+  if (typeof isFreeTier === 'function' && !isFreeTier()) {
+    return { active:true, expired:false, grandfathered:false, days_remaining:null };
+  }
+  var created = (typeof currentUser === 'object' && currentUser) ? currentUser.created_at : null;
+  var signupMs = created ? Date.parse(created) : NaN;
+  // Missing / unparseable created_at → grandfather (never lock out).
+  if (!Number.isFinite(signupMs)) {
+    return { active:true, expired:false, grandfathered:true, days_remaining:null };
+  }
+  // Signed up before the cutoff → grandfathered, no gate.
+  if (signupMs < Date.parse(TRIAL_GRANDFATHER_CUTOFF + 'T00:00:00Z')) {
+    return { active:true, expired:false, grandfathered:true, days_remaining:null };
+  }
+  var daysSince = Math.floor((Date.now() - signupMs) / 86400000);
+  var remaining = 30 - daysSince;
+  return {
+    active: remaining > 0,
+    expired: remaining <= 0,
+    grandfathered: false,
+    days_remaining: Math.max(0, remaining),
+  };
+}
+window.getTrialStatus = getTrialStatus;
+
+/* Blur + paywall the Calendar when the free trial has expired; show a
+   soft countdown banner in the last 3 days.  Called from
+   renderCalPage() before the grid builds. */
+function applyCalendarGate(){
+  var page    = document.getElementById('pg-calendar');
+  var paywall = document.getElementById('cal-paywall');
+  var banner  = document.getElementById('cal-trial-banner');
+  if (!page) return;
+  var ts = getTrialStatus();
+
+  if (ts.expired) {
+    page.classList.add('cal-locked');
+    if (paywall) paywall.style.display = 'flex';
+    if (banner)  banner.style.display  = 'none';
+    return;
+  }
+  page.classList.remove('cal-locked');
+  if (paywall) paywall.style.display = 'none';
+
+  // Countdown banner — only in the last 3 days of an active trial.
+  // Grandfathered + paid users never see it (days_remaining is null).
+  if (banner) {
+    var d = ts.days_remaining;
+    if (!ts.grandfathered && d != null && d > 0 && d <= 3) {
+      var tone = d <= 1 ? 'urgent' : d <= 2 ? 'amber' : 'soft';
+      banner.className = 'cal-trial-banner ' + tone;
+      banner.innerHTML =
+          '<span class="ctb-text">Calendar trial ends in ' + d + ' day'
+        + (d === 1 ? '' : 's') + ' &middot; Upgrade to keep it</span>'
+        + '<button class="ctb-cta" onclick="goTo(\'upgrade\')">Upgrade &rarr;</button>';
+      banner.style.display = 'flex';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+}
+window.applyCalendarGate = applyCalendarGate;
 
 // Show/hide the per-page cap banner. Element id pattern: `{page}-cap-banner`.
 function toggleFreeCapBanner(page, isCapped){
@@ -26761,9 +27039,9 @@ function renderFeed() {}
    CALENDAR — MONTHLY STATS + DAY REVIEW
 ═══════════════════════════════════════════════════════ */
 function refreshCalendarStats() {
-  // Free tier: stats reflect the 30-day cap (months > 30 days back will
-  // have 0 trades, so totals/streaks recompute against the visible window).
-  var view = _visibleTrades();
+  // Calendar stats use the full uncapped history (Session 20b — the
+  // trial paywall gates the page, not the _visibleTrades() data cap).
+  var view = _calendarTrades();
   var now = new Date(); var cy = calYear||now.getFullYear(); var cm2 = calMonth!==undefined?calMonth:now.getMonth();
   var monthTrades = view.filter(function(t){var d=new Date(t.date);return d.getFullYear()===cy&&d.getMonth()===cm2;});
   var dayMap = {};
@@ -26814,9 +27092,9 @@ function openImgLightbox(src){ openScreenshotLightbox(src); }
 function showWeekSummary(y,m,dayStart){
   var wStart=new Date(y,m,dayStart);
   var wEnd=new Date(wStart);wEnd.setDate(wEnd.getDate()+6);
-  // Week summary respects the 30-day cap for free tier — older weeks
-  // in past months show as empty consistent with the calendar grid.
-  var wTrades=_visibleTrades().filter(function(t){
+  // Week summary uses the full uncapped history (Session 20b — the
+  // Calendar's gate is the trial paywall, not the data cap).
+  var wTrades=_calendarTrades().filter(function(t){
     if(!t.date)return false;
     var td=new Date(t.date+'T12:00:00');
     return td>=wStart&&td<=wEnd;
