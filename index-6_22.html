@@ -4345,6 +4345,52 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   border:1px solid rgba(245,215,124,0.5);transition:.15s;
 }
 #upgrade-modal .up-modal-cta:hover{background:#fce8a8;box-shadow:0 4px 18px rgba(245,215,124,0.18)}
+/* Session 20c — two-line body for field-gate reasons + "Maybe later"
+   secondary action.  Generic single-line reasons (community, calendar,
+   etc.) bypass the line wrappers and stay textContent. */
+#upgrade-modal .up-modal-line1{color:var(--n-text);margin-bottom:6px}
+#upgrade-modal .up-modal-line2{color:var(--n-text-3);font-size:13px}
+#upgrade-modal .up-modal-later{
+  display:block;width:100%;margin-top:10px;padding:8px;background:none;border:none;
+  font-family:var(--n-font-sans);font-size:12px;color:var(--n-text-3);
+  cursor:pointer;transition:color .12s;
+}
+#upgrade-modal .up-modal-later:hover{color:var(--n-text-2)}
+
+/* ─── Session 20c — Pro-feature field gates (Log Trade + Edit Modal) ──
+   Two display modes per gated field:
+   .field-gated     → empty/new field, locked input, click-anywhere opens modal
+   .field-readonly  → existing data preserved, no edit but readable
+   A single gold lock icon sits next to the field label in both. */
+.field-gated{position:relative;opacity:0.5;cursor:not-allowed}
+.field-gated > *{pointer-events:none}
+.field-gated::after{
+  /* Transparent click-catcher so a tap anywhere on the gated row
+     opens the upgrade modal, even though pointer-events is off on
+     the inner controls. */
+  content:'';position:absolute;inset:0;cursor:pointer;pointer-events:auto;z-index:2;
+}
+.field-readonly{position:relative;cursor:pointer}
+.field-readonly > .rw-input,
+.field-readonly textarea.rw-input,
+.field-readonly .cf-pills,
+.field-readonly .lt-refl-btns{
+  pointer-events:none;opacity:0.85;
+}
+.field-readonly::after{
+  content:'';position:absolute;inset:0;cursor:pointer;pointer-events:auto;z-index:2;
+}
+.field-lock-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:11px;color:#f5d77c;opacity:0.85;margin-left:6px;
+  pointer-events:none;
+}
+.field-readonly-microcopy{
+  display:none;font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.04em;
+  color:rgba(245,215,124,0.7);margin-top:6px;cursor:pointer;
+}
+.field-readonly-microcopy.on{display:block}
+.field-readonly-microcopy:hover{color:#f5d77c}
 
 /* Free-tier 30-day data cap banner — sits above the gated page's content.
    Same gold treatment as the Pro feature pill on the upgrade modal. */
@@ -10127,7 +10173,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
           <div data-rwbuild="header:Analysis"></div>
 
             <!-- Confluences (tagged analysis) -->
-            <div class="rw-field" id="lt-sec-confluences">
+            <div class="rw-field" id="lt-sec-confluences" data-gated-field="tags" data-gated-scope="rw">
               <div class="rw-field-l rw-field-l-flex">
                 <span>Confluences</span>
                 <span class="cf-count" id="cf-count">0 added</span>
@@ -10144,7 +10190,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             </div>
 
             <!-- Notes (prose) — chart observations paired with confluences -->
-            <div class="rw-field" id="lt-f-notes">
+            <div class="rw-field" id="lt-f-notes" data-gated-field="notes" data-gated-scope="rw">
               <div class="rw-field-l">Notes</div>
               <textarea id="lg-notes" class="rw-input rw-textarea" placeholder="Setup, what worked, what didn&rsquo;t, lessons&hellip;"></textarea>
             </div>
@@ -10152,24 +10198,16 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         </div><!-- /lt-col (right) -->
       </div><!-- /lt-cols -->
 
-        <!-- ============ MINDSET — grading (Free-tier veiled) ============ -->
+        <!-- ============ MINDSET — Session 20c replaces the old
+             section-level lock-veil with per-field locks managed by
+             applyFieldGates('rw').  Grade / Emotion / Confidence are
+             individually marked data-gated-field via buildReflectionRow. -->
         <div class="rw-section" id="lt-sec-reflection">
           <div data-rwbuild="header:Mindset"></div>
 
           <div data-rwbuild="refl:grade:rw:4"></div>
           <div data-rwbuild="refl:emotion:rw:3"></div>
           <div data-rwbuild="refl:confidence:rw:3"></div>
-
-          <!-- LOCK VEIL (free tier only — toggled by applyLogTradeTier) -->
-          <div class="lock-veil" id="lt-veil-reflection" style="display:none">
-            <div class="pro-badge">
-              <svg viewBox="0 0 24 24"><path d="M12 1l3 6 6 .9-4.5 4.4 1 6.2L12 16.8 6.5 18.5l1-6.2L3 7.9 9 7z"/></svg>
-              Pro
-            </div>
-            <div class="head">Unlock the journal</div>
-            <div class="sub">Track your mindset and notes. The Pro tier turns Rewind from a tracker into a journal.</div>
-            <a href="javascript:goTo('upgrade')" class="cta">Upgrade <span>&rarr;</span></a>
-          </div>
         </div>
 
         <!-- ACTIONS -->
@@ -10624,7 +10662,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
           <!-- Confluences picker (cem-cf-* second instance). Every cf* handler
                in inline onclick passes cemConfluencesState as the final arg. -->
-          <div class="rw-field" id="cem-cf-section">
+          <div class="rw-field" id="cem-cf-section" data-gated-field="tags" data-gated-scope="cem">
             <div class="rw-field-l rw-field-l-flex">
               <span>Confluences</span>
               <span class="cf-count" id="cem-cf-count">0 added</span>
@@ -10640,7 +10678,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
           </div>
 
           <!-- Notes -->
-          <div class="rw-field" id="cem-f-notes">
+          <div class="rw-field" id="cem-f-notes" data-gated-field="notes" data-gated-scope="cem">
             <div class="rw-field-l">Notes</div>
             <textarea id="cem-notes" class="rw-input rw-textarea" placeholder="Setup, what worked, what didn&rsquo;t, lessons&hellip;"></textarea>
           </div>
@@ -18267,6 +18305,11 @@ function openCalEdit(id){
   var delModal = document.getElementById('cem-delete-confirm');
   if(delModal) delModal.style.display = 'none';
 
+  // Session 20c — apply per-field gates with this trade as context so
+  // fields with existing data render as read-only and empty ones as
+  // locked-input.  Grandfathered users get no chrome (handler clears).
+  if (typeof applyFieldGates === 'function') applyFieldGates('cem', t);
+
   document.getElementById('cal-edit-modal').style.display='flex';
   // Lock the page behind the modal — it's a blocking overlay.
   document.body.style.overflow='hidden';
@@ -18367,6 +18410,15 @@ function saveCalEdit(){
   var cemConfluencePillsSnapshot = (typeof cemConfluencesState !== 'undefined' && Array.isArray(cemConfluencesState.selected))
     ? cemConfluencesState.selected.slice()
     : null;
+  // Session 20c — tags (confluences) defense.  For free post-cutoff
+  // users editing an existing trade, ignore whatever the picker
+  // shows and snapshot null so saveTradeConfluences keeps the
+  // already-saved set intact (the picker may have been tampered with
+  // via DevTools).  Pro / grandfathered users go through the normal
+  // path.
+  if (typeof isGrandfathered === 'function' && !isGrandfathered()) {
+    cemConfluencePillsSnapshot = null;
+  }
 
   // Now validate — if it fails, modal stays open with the user's edits intact.
   if(!sym || isNaN(entry) || isNaN(exit)){
@@ -18421,6 +18473,27 @@ function saveCalEdit(){
   t.grade=(typeof GRADES!=='undefined'&&GRADES[gi]&&GRADES[gi].label)||'B';
   t.emotion=emotionVal;
   t.confidence=confVal;
+  // Session 20c — defense in depth in the Edit Modal save path.  Free
+  // post-cutoff users see the 5 fields locked/read-only in the UI; if
+  // a determined user bypasses the front-end and edits the inputs,
+  // we still refuse to persist their changes to the gated fields.
+  // For the read-only branch (existing data + new free post-cutoff),
+  // we preserve whatever was already on the trade (don't wipe it).
+  if (typeof isGrandfathered === 'function' && !isGrandfathered()) {
+    // Whatever the user just typed gets dropped; the prior saved
+    // value sticks via the original `t` reference (note: we re-read
+    // those from snapshots above, so reverting means re-fetching
+    // from the unchanged source-of-truth on the trade).
+    var origGated = trades.find(function(x){ return x.id === _cemId; });
+    if (origGated) {
+      t.notes      = origGated.notes;
+      t.grade      = origGated.grade;
+      t.emotion    = origGated.emotion;
+      t.confidence = origGated.confidence;
+    } else {
+      delete t.notes; delete t.grade; delete t.emotion; delete t.confidence;
+    }
+  }
   t.images=_cemImages.slice();
   // Chunk 3 — persist new fields. account_type is also sent as a top-level
   // column by saveTradeToSupa (whitelisted there too); tradingview_link
@@ -18715,7 +18788,12 @@ function buildReflectionRow(type, scope, value){
     var hval = (type==='grade') ? (value-1) : value;
     hidden = '<input type="hidden" id="'+hid+'" value="'+hval+'"/>';
   }
-  return '<div class="rw-field lt-refl-row">'+
+  // Session 20c — tag each refl row with data-gated-field so the
+  // per-field gate (applyFieldGates) can target grade/emotion/confidence
+  // by name in both the Log Trade form (scope=rw) and the Edit Modal
+  // (scope=cem).  The CSV scope is also tagged but applyFieldGates
+  // only walks the rw + cem scopes; the CSV pane has its own veil.
+  return '<div class="rw-field lt-refl-row" data-gated-field="'+type+'" data-gated-scope="'+scope+'">'+
     '<div class="rw-field-l">'+def.label+'</div>'+
     '<div class="lt-refl-btns" id="'+scope+'-'+attr+'-chips">'+btns+'</div>'+
     hidden+
@@ -18959,16 +19037,20 @@ async function applyLogTradeTier(){
   try {
     if (typeof getCurrentTier === 'function') {
       var t = await getCurrentTier();
+      // Update the global cache so isFreeTier() / isGrandfathered() —
+      // which applyFieldGates reads — sees the same tier this function
+      // just resolved. Without this, the field-gate read could lag the
+      // CSV-pane veil read on a cold cache.
+      window._userTier = t || window._userTier;
       isFree = !(t && t.isActive);
     }
   } catch (e) {
     console.warn('[lt-tier] getCurrentTier threw, defaulting to free:', e && e.message);
   }
-  var sec = document.getElementById('lt-sec-reflection');
-  var veilR = document.getElementById('lt-veil-reflection');
-  if (sec)   sec.classList.toggle('locked', isFree);
-  if (veilR) veilR.style.display = isFree ? '' : 'none';
-
+  // Session 20c — the Mindset section's old lock-veil is gone.
+  // grade/emotion/confidence are now individually locked by
+  // applyFieldGates('rw'); section .locked toggle no longer fires.
+  // CSV pane veil stays (separate gate, ALL free, not per-field).
   var csvPane = document.getElementById('lt-csv-pane');
   var veilC   = document.getElementById('lt-veil-csv');
   if (csvPane) csvPane.classList.toggle('locked', isFree);
@@ -18978,8 +19060,104 @@ async function applyLogTradeTier(){
   var pin = document.getElementById('lt-csv-pro-pin');
   if (rec) rec.style.display = isFree ? 'none' : '';
   if (pin) pin.style.display = isFree ? '' : 'none';
+
+  // Per-field gates run synchronously off the cached _userTier +
+  // currentUser.created_at; no awaiting needed.
+  if (typeof applyFieldGates === 'function') applyFieldGates('rw');
 }
 window.applyLogTradeTier = applyLogTradeTier;
+
+/* ─── Session 20c — Pro-feature field-gate engine ───────────────────
+   Walks every [data-gated-field][data-gated-scope=...] element inside
+   the given scope (rw=Log Trade form, cem=Edit Modal), toggles the
+   .field-gated or .field-readonly class, and ensures each has its
+   own gold lock-icon + click-to-upgrade handler.  Idempotent — safe
+   to call repeatedly (cleans existing chrome on the wrapper before
+   re-adding).  Grandfathered users get all locks cleared. */
+function applyFieldGates(scope, trade){
+  if (!scope) return;
+  var rows = document.querySelectorAll('[data-gated-scope="' + scope + '"][data-gated-field]');
+  var grandfathered = isGrandfathered();
+  rows.forEach(function(row){
+    var field = row.getAttribute('data-gated-field');
+    // Always strip prior chrome so a tier change re-paints cleanly.
+    row.classList.remove('field-gated');
+    row.classList.remove('field-readonly');
+    var oldIcon = row.querySelector(':scope > .rw-field-l .field-lock-icon');
+    if (oldIcon) oldIcon.remove();
+    if (row._gateClickHandler) {
+      row.removeEventListener('click', row._gateClickHandler, true);
+      row._gateClickHandler = null;
+    }
+    if (grandfathered) return;  // no gate for paid / pre-cutoff / unknown
+
+    // Pick the display mode.  For Edit Modal (cem) with existing data
+    // in this field, prefer read-only so we don't hide what the user
+    // wrote pre-trial; otherwise it's the locked-input pattern.
+    var hasData = trade && _proGatedFieldHasData(trade, field);
+    row.classList.add(hasData ? 'field-readonly' : 'field-gated');
+
+    // Gold lock icon next to the label.
+    var label = row.querySelector(':scope > .rw-field-l');
+    if (label) {
+      var icon = document.createElement('span');
+      icon.className = 'field-lock-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.innerHTML = '&#128274;';   // 🔒
+      label.appendChild(icon);
+    }
+    // Click handler — opens the upgrade modal with field-specific copy.
+    // Capture phase so the click-catcher pseudo-element forwards through.
+    var handler = function(e){
+      e.preventDefault(); e.stopPropagation();
+      if (typeof openUpgradeModal === 'function') openUpgradeModal(field);
+    };
+    row.addEventListener('click', handler, true);
+    row._gateClickHandler = handler;
+  });
+
+  // Read-only microcopy for the Edit Modal — appears once per scope
+  // if ANY filled gated field is read-only.  Lives at end of scope.
+  if (scope === 'cem') {
+    var anyReadonly = !!document.querySelector('[data-gated-scope="cem"].field-readonly');
+    var mc = document.getElementById('cem-pro-microcopy');
+    if (!mc) {
+      var mindset = document.querySelector('#calendar-edit-modal .cem-section') || document.querySelector('.cem-section');
+      if (mindset) {
+        mc = document.createElement('div');
+        mc.id = 'cem-pro-microcopy';
+        mc.className = 'field-readonly-microcopy';
+        mc.innerHTML = '&#128274; Read-only &middot; Upgrade to edit';
+        mc.onclick = function(){
+          if (typeof openUpgradeModal === 'function') openUpgradeModal('grade');
+        };
+        mindset.parentNode.appendChild(mc);
+      }
+    }
+    if (mc) mc.classList.toggle('on', !grandfathered && anyReadonly);
+  }
+}
+window.applyFieldGates = applyFieldGates;
+
+/* True iff the given trade has a non-empty value for the named gated
+   field.  Drives the Edit Modal's "read-only existing data" branch. */
+function _proGatedFieldHasData(t, field){
+  if (!t) return false;
+  if (field === 'tags') {
+    return Array.isArray(t.confluences) && t.confluences.length > 0;
+  }
+  if (field === 'notes') {
+    return !!(t.notes && String(t.notes).trim());
+  }
+  if (field === 'grade') {
+    return !!(t.grade && t.grade !== 'B');  // 'B' is the default neutral
+  }
+  if (field === 'emotion' || field === 'confidence') {
+    var v = Number(t[field]);
+    return Number.isFinite(v) && v !== 3;   // 3 is the default neutral
+  }
+  return false;
+}
 
 /* ─────────────────────────────────────────────────────────────
    CONFLUENCES PICKER — Phase 1 (Chunk 2 of CONFLUENCES_SPEC)
@@ -19952,6 +20130,19 @@ async function refreshUserTier(){
     console.warn('[tier-cache] refresh failed:', e && e.message);
   }
   if (typeof applyTierGating === 'function') applyTierGating();
+  // Session 20c — live unlock on mid-session tier change.  The Log
+  // Trade form's gates and (if open) the Edit Modal both repaint
+  // off the fresh cache.  Idempotent — applyFieldGates clears prior
+  // chrome before re-adding, so a grandfathered/upgraded user gets
+  // a clean form without a reload.
+  if (typeof applyFieldGates === 'function') {
+    applyFieldGates('rw');
+    var editOpen = document.getElementById('cal-edit-modal');
+    if (editOpen && editOpen.style.display !== 'none' && typeof _cemId !== 'undefined') {
+      var openTrade = trades && trades.find && trades.find(function(x){return x.id === _cemId;});
+      applyFieldGates('cem', openTrade);
+    }
+  }
 }
 window.refreshUserTier = refreshUserTier;
 
@@ -19993,15 +20184,38 @@ const UPGRADE_REASONS = {
   history:  { title: 'Unlimited history with Pro',  body: "Free shows your last 30 days. Upgrade to see every trade you've ever logged." },
   equity:   { title: 'Full equity curve with Pro',  body: 'Free shows the last 30 days. Upgrade for unlimited history.' },
   calendar: { title: 'Full calendar with Pro',      body: 'Free shows 30 days. Upgrade to navigate any month.' },
+  // Session 20c — per-field gate reasons.  Title is uniform "Pro
+  // feature." per spec; the field-specific line and the catch-all
+  // come from FIELD_PRO_COPY below so we don't duplicate copy.
+  tags:       { title: 'Pro feature.', body: 'Tagging trades is part of Pro.' },
+  notes:      { title: 'Pro feature.', body: 'Trade notes are part of Pro.' },
+  grade:      { title: 'Pro feature.', body: 'Grading trades is part of Pro.' },
+  emotion:    { title: 'Pro feature.', body: 'Emotion tracking is part of Pro.' },
+  confidence: { title: 'Pro feature.', body: 'Confidence tracking is part of Pro.' },
 };
+// Generic second body line shown under the field-specific one for
+// any of the 5 gated fields.  Mirrors the spec verbatim.
+var FIELD_PRO_BODY_TAIL = 'Upgrade to unlock tags, notes, grading, emotion + confidence tracking, and everything else.';
+var PRO_FIELD_REASONS = { tags:1, notes:1, grade:1, emotion:1, confidence:1 };
 function openUpgradeModal(reason){
   var r = UPGRADE_REASONS[reason] || UPGRADE_REASONS.community;
   var modal = document.getElementById('upgrade-modal');
   var titleEl = document.getElementById('upgrade-modal-title');
   var bodyEl  = document.getElementById('upgrade-modal-body');
   if (titleEl) titleEl.textContent = r.title;
-  if (bodyEl)  bodyEl.textContent  = r.body;
-  if (modal)   modal.classList.add('on');
+  if (bodyEl) {
+    // Session 20c — the 5 field-gate reasons get a two-line body:
+    // field-specific line + the catch-all tail.  Other reasons keep
+    // the single line they always had.
+    if (PRO_FIELD_REASONS[reason]) {
+      bodyEl.innerHTML =
+          '<div class="up-modal-line1">' + r.body + '</div>'
+        + '<div class="up-modal-line2">' + FIELD_PRO_BODY_TAIL + '</div>';
+    } else {
+      bodyEl.textContent = r.body;
+    }
+  }
+  if (modal) modal.classList.add('on');
 }
 function closeUpgradeModal(){
   var modal = document.getElementById('upgrade-modal');
@@ -20103,6 +20317,38 @@ function getTrialStatus(){
   };
 }
 window.getTrialStatus = getTrialStatus;
+
+/* ─── Session 20c — Pro-feature field gates ─────────────────────────
+   Factored out of getTrialStatus so the save-handler defense + the
+   in-form lock + the read-only-existing-data branch all read from
+   one source.  Paid tier, missing/garbage created_at, or a pre-cutoff
+   signup are all considered "grandfathered" — never punish a
+   pre-cutoff user.  Gated fields lock only for free users who
+   signed up on or after TRIAL_GRANDFATHER_CUTOFF. */
+function isGrandfathered(){
+  if (typeof isFreeTier === 'function' && !isFreeTier()) return true;  // paid
+  var created = (typeof currentUser === 'object' && currentUser) ? currentUser.created_at : null;
+  var signupMs = created ? Date.parse(created) : NaN;
+  if (!Number.isFinite(signupMs)) return true;                          // missing → safe
+  if (signupMs < Date.parse(TRIAL_GRANDFATHER_CUTOFF + 'T00:00:00Z')) return true;
+  return false;
+}
+window.isGrandfathered = isGrandfathered;
+
+/* Names mirror the trade payload keys so the save-handler can use
+   the same constant.  "tags" is the spec name; the codebase field is
+   `confluences` — alias kept for spec parity in the modal copy. */
+var PRO_GATED_FIELDS = ['tags', 'notes', 'grade', 'emotion', 'confidence'];
+
+function isFieldGated(fieldName){
+  if (!fieldName) return false;
+  if (PRO_GATED_FIELDS.indexOf(fieldName) < 0) return false;
+  if (isGrandfathered()) return false;
+  // At this point: free tier, post-cutoff signup → gated.
+  return true;
+}
+window.isFieldGated = isFieldGated;
+window.PRO_GATED_FIELDS = PRO_GATED_FIELDS;
 
 /* Blur + paywall the Calendar when the free trial has expired; show a
    soft countdown banner in the last 3 days.  Called from
@@ -20774,6 +21020,18 @@ function fullLog(){
   const points = (lgType==='long' ? exit-entry : entry-exit);
 
   var newTrade = {id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,pnl,rr,points,grade,emotion,confidence,images:[...noteImages],created_at:new Date().toISOString(),account_type:accountType,tradingview_link:tradingviewLink||undefined};
+  // Session 20c — defense in depth.  A motivated free post-cutoff user
+  // could re-enable the locked inputs via DevTools and type into them;
+  // the front-end gate doesn't block that.  Strip the gated fields
+  // here so the DB never receives Pro-only values from a free user.
+  // (Tags = confluences, handled by its own snapshot a few lines below;
+  // we clear it there too via the same guard.)
+  if (typeof isGrandfathered === 'function' && !isGrandfathered()) {
+    delete newTrade.notes;
+    delete newTrade.grade;
+    delete newTrade.emotion;
+    delete newTrade.confidence;
+  }
   trades.unshift(newTrade);
   save();renderAll();
 
@@ -20787,6 +21045,11 @@ function fullLog(){
   var _cfPillsSnapshot = (typeof confluencesState !== 'undefined' && confluencesState.selected)
     ? confluencesState.selected.slice()
     : [];
+  // Session 20c — strip the tags (confluences) snapshot too for
+  // free post-cutoff users; matches the other 4 field-gate strips.
+  if (typeof isGrandfathered === 'function' && !isGrandfathered()) {
+    _cfPillsSnapshot = [];
+  }
   newTrade.confluences = _cfPillsSnapshot;
   shareTradeToCommunity(newTrade);
   if (typeof _cfPersistForTrade === 'function') {
@@ -29481,7 +29744,8 @@ if (document.readyState === 'loading') {
     </div>
     <div class="up-modal-title" id="upgrade-modal-title">Unlock with Pro</div>
     <div class="up-modal-body" id="upgrade-modal-body"></div>
-    <a href="javascript:goTo('upgrade');closeUpgradeModal()" class="up-modal-cta">See Pro plans &rarr;</a>
+    <a href="javascript:goTo('upgrade');closeUpgradeModal()" class="up-modal-cta">Subscribe to Pro &rarr;</a>
+    <button type="button" class="up-modal-later" onclick="closeUpgradeModal()">Maybe later</button>
   </div>
 </div>
 
