@@ -20348,7 +20348,13 @@ window.isGrandfathered = isGrandfathered;
 var PRO_GATED_FIELDS = ['tags', 'notes', 'grade', 'emotion', 'confidence'];
 
 function isFieldGated(fieldName){
-  if (!fieldName) return false;
+  // Session 20c follow-up #2 — no-arg call now returns the global
+  // "is this user gated at all?" boolean.  Per-field semantics
+  // unchanged for any explicit field name.  Fixes the QA footgun
+  // where `isFieldGated()` returned false even on confirmed
+  // post-cutoff users because the field-name guard short-circuited
+  // before isGrandfathered ran.
+  if (!fieldName) return !isGrandfathered();
   if (PRO_GATED_FIELDS.indexOf(fieldName) < 0) return false;
   if (isGrandfathered()) return false;
   // At this point: free tier, post-cutoff signup → gated.
