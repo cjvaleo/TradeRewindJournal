@@ -4359,16 +4359,31 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
 /* ─── Session 20c — Pro-feature field gates (Log Trade + Edit Modal) ──
    Two display modes per gated field:
-   .field-gated     → empty/new field, locked input, click-anywhere opens modal
-   .field-readonly  → existing data preserved, no edit but readable
-   A single gold lock icon sits next to the field label in both. */
-.field-gated{position:relative;opacity:0.5;cursor:not-allowed}
-.field-gated > *{pointer-events:none}
+   .field-gated     → empty/new field, blurred under a centered gold
+                      lock overlay (matches the Calendar paywall
+                      pattern from Session 20b — see #pg-calendar
+                      .cal-paywall).  Click-anywhere opens the
+                      upgrade modal.
+   .field-readonly  → existing data preserved + readable, no blur.
+                      A "🔒 Read-only · Upgrade to edit" microcopy
+                      below the field group carries the gate signal.
+   Follow-up #1 dropped the per-label lock icon — the centered
+   overlay alone reads cleaner and is harder to mistake for a CSS
+   render bug. */
+.field-gated{position:relative;cursor:not-allowed}
+.field-gated > *{
+  pointer-events:none;
+  filter:opacity(0.4) blur(2px);
+}
 .field-gated::after{
-  /* Transparent click-catcher so a tap anywhere on the gated row
-     opens the upgrade modal, even though pointer-events is off on
-     the inner controls. */
-  content:'';position:absolute;inset:0;cursor:pointer;pointer-events:auto;z-index:2;
+  /* Centered 🔒 emoji + a transparent click-catcher rolled into one
+     pseudo-element.  The emoji sits in the middle of the row; the
+     ::after still spans the row so taps anywhere open the modal. */
+  content:'\1F512';
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:#f5d77c;opacity:0.95;
+  cursor:pointer;pointer-events:auto;z-index:2;
 }
 .field-readonly{position:relative;cursor:pointer}
 .field-readonly > .rw-input,
@@ -4379,11 +4394,6 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 }
 .field-readonly::after{
   content:'';position:absolute;inset:0;cursor:pointer;pointer-events:auto;z-index:2;
-}
-.field-lock-icon{
-  display:inline-flex;align-items:center;justify-content:center;
-  font-size:11px;color:#f5d77c;opacity:0.85;margin-left:6px;
-  pointer-events:none;
 }
 .field-readonly-microcopy{
   display:none;font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.04em;
@@ -19083,6 +19093,11 @@ function applyFieldGates(scope, trade){
     // Always strip prior chrome so a tier change re-paints cleanly.
     row.classList.remove('field-gated');
     row.classList.remove('field-readonly');
+    // Strip any per-label lock icon left over from the earlier
+    // chrome iteration (Session 20c follow-up #1 dropped these — the
+    // centered ::after overlay carries the signal now).  Cleanup
+    // remains so caches with the prior markup migrate without a
+    // visual artifact.
     var oldIcon = row.querySelector(':scope > .rw-field-l .field-lock-icon');
     if (oldIcon) oldIcon.remove();
     if (row._gateClickHandler) {
@@ -19093,19 +19108,11 @@ function applyFieldGates(scope, trade){
 
     // Pick the display mode.  For Edit Modal (cem) with existing data
     // in this field, prefer read-only so we don't hide what the user
-    // wrote pre-trial; otherwise it's the locked-input pattern.
+    // wrote pre-trial; otherwise it's the locked-input pattern with
+    // the blur + centered lock overlay.
     var hasData = trade && _proGatedFieldHasData(trade, field);
     row.classList.add(hasData ? 'field-readonly' : 'field-gated');
 
-    // Gold lock icon next to the label.
-    var label = row.querySelector(':scope > .rw-field-l');
-    if (label) {
-      var icon = document.createElement('span');
-      icon.className = 'field-lock-icon';
-      icon.setAttribute('aria-hidden', 'true');
-      icon.innerHTML = '&#128274;';   // 🔒
-      label.appendChild(icon);
-    }
     // Click handler — opens the upgrade modal with field-specific copy.
     // Capture phase so the click-catcher pseudo-element forwards through.
     var handler = function(e){
