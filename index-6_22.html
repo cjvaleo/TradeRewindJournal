@@ -19085,7 +19085,16 @@ window.applyLogTradeTier = applyLogTradeTier;
    to call repeatedly (cleans existing chrome on the wrapper before
    re-adding).  Grandfathered users get all locks cleared. */
 function applyFieldGates(scope, trade){
-  if (!scope) return;
+  // Session 20c follow-up #3 — no-arg call applies to every scope.
+  // Same ergonomic fix as isFieldGated() no-arg: QA + console use
+  // expects "just gate everything" without needing to know the
+  // scope keys.  Edit-Modal call sites still pass an explicit
+  // 'cem' + trade so the per-trade read-only branch keeps working.
+  if (!scope) {
+    applyFieldGates('rw');
+    applyFieldGates('cem', trade);
+    return;
+  }
   var rows = document.querySelectorAll('[data-gated-scope="' + scope + '"][data-gated-field]');
   var grandfathered = isGrandfathered();
   rows.forEach(function(row){
