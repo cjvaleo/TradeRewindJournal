@@ -10158,23 +10158,30 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
               </div>
               <div id="note-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
 
-              <!-- TradingView link paste -->
-              <div class="rw-tv-wrap">
-                <svg class="rw-tv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <polyline points="3,17 9,11 13,15 21,7"/>
-                  <polyline points="14,7 21,7 21,14"/>
-                </svg>
-                <input type="url" id="lg-tv-link" class="rw-tv-input" placeholder="Paste TradingView link&hellip;" oninput="onTVLinkInput()" autocomplete="off"/>
-                <span class="rw-tv-ok" id="lg-tv-ok" style="display:none">&#10003; Linked</span>
+              <!-- TradingView link paste — gated for free post-cutoff
+                   users (Session 20c follow-up #5).  The Screenshot
+                   dropzone above stays always-free; only this TV-link
+                   sub-block + its preview + helper get the lock
+                   treatment via the data-gated-* attrs on the outer
+                   wrapper. -->
+              <div class="rw-tv-section" data-gated-field="tv_link" data-gated-scope="rw">
+                <div class="rw-tv-wrap">
+                  <svg class="rw-tv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <polyline points="3,17 9,11 13,15 21,7"/>
+                    <polyline points="14,7 21,7 21,14"/>
+                  </svg>
+                  <input type="url" id="lg-tv-link" class="rw-tv-input" placeholder="Paste TradingView link&hellip;" oninput="onTVLinkInput()" autocomplete="off"/>
+                  <span class="rw-tv-ok" id="lg-tv-ok" style="display:none">&#10003; Linked</span>
+                </div>
+                <!-- Chunk 2.5: inline snapshot preview (only for /x/ URLs).
+                     The S3 image can 404 if the snapshot has expired — onerror
+                     hides the wrap entirely, falling back to the link + ✓ badge. -->
+                <div class="rw-tv-preview-wrap" id="lg-tv-preview-wrap" style="display:none">
+                  <img id="lg-tv-preview" class="rw-tv-preview" alt="TradingView snapshot preview" onerror="onTVPreviewError(this)" onclick="if(this.src){openScreenshotLightbox(this.src);}"/>
+                  <span class="rw-tv-preview-badge">TV Snapshot</span>
+                </div>
+                <div class="rw-helper">Paste your &ldquo;Copy link&rdquo; from TradingView&rsquo;s snapshot menu.</div>
               </div>
-              <!-- Chunk 2.5: inline snapshot preview (only for /x/ URLs).
-                   The S3 image can 404 if the snapshot has expired — onerror
-                   hides the wrap entirely, falling back to the link + ✓ badge. -->
-              <div class="rw-tv-preview-wrap" id="lg-tv-preview-wrap" style="display:none">
-                <img id="lg-tv-preview" class="rw-tv-preview" alt="TradingView snapshot preview" onerror="onTVPreviewError(this)" onclick="if(this.src){openScreenshotLightbox(this.src);}"/>
-                <span class="rw-tv-preview-badge">TV Snapshot</span>
-              </div>
-              <div class="rw-helper">Paste your &ldquo;Copy link&rdquo; from TradingView&rsquo;s snapshot menu.</div>
             </div>
         </div>
 
@@ -10649,20 +10656,24 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             </div>
             <div id="cem-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
 
-            <!-- TradingView link (Chunk 2.5 — editable in modal) -->
-            <div class="rw-tv-wrap" style="margin-top:10px">
-              <svg class="rw-tv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <polyline points="3,17 9,11 13,15 21,7"/>
-                <polyline points="14,7 21,7 21,14"/>
-              </svg>
-              <input type="url" id="cem-tv-link" class="rw-tv-input" placeholder="Paste TradingView link&hellip;" oninput="cemOnTVLinkInput()" autocomplete="off"/>
-              <span class="rw-tv-ok" id="cem-tv-ok" style="display:none">&#10003; Linked</span>
+            <!-- TradingView link (Chunk 2.5 — editable in modal).
+                 Session 20c follow-up #5 — TV link is now gated for
+                 free post-cutoff users; data-gated-* on the sub-wrapper. -->
+            <div class="rw-tv-section" data-gated-field="tv_link" data-gated-scope="cem" style="margin-top:10px">
+              <div class="rw-tv-wrap">
+                <svg class="rw-tv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <polyline points="3,17 9,11 13,15 21,7"/>
+                  <polyline points="14,7 21,7 21,14"/>
+                </svg>
+                <input type="url" id="cem-tv-link" class="rw-tv-input" placeholder="Paste TradingView link&hellip;" oninput="cemOnTVLinkInput()" autocomplete="off"/>
+                <span class="rw-tv-ok" id="cem-tv-ok" style="display:none">&#10003; Linked</span>
+              </div>
+              <div class="rw-tv-preview-wrap" id="cem-tv-preview-wrap" style="display:none">
+                <img id="cem-tv-preview" class="rw-tv-preview" alt="TradingView snapshot" onerror="cemOnTVPreviewError(this)" onclick="if(this.src){openScreenshotLightbox(this.src);}"/>
+                <span class="rw-tv-preview-badge">TV Snapshot</span>
+              </div>
+              <div class="rw-helper">Paste your &ldquo;Copy link&rdquo; from TradingView&rsquo;s snapshot menu.</div>
             </div>
-            <div class="rw-tv-preview-wrap" id="cem-tv-preview-wrap" style="display:none">
-              <img id="cem-tv-preview" class="rw-tv-preview" alt="TradingView snapshot" onerror="cemOnTVPreviewError(this)" onclick="if(this.src){openScreenshotLightbox(this.src);}"/>
-              <span class="rw-tv-preview-badge">TV Snapshot</span>
-            </div>
-            <div class="rw-helper">Paste your &ldquo;Copy link&rdquo; from TradingView&rsquo;s snapshot menu.</div>
           </div>
       </div>
 
@@ -18484,24 +18495,28 @@ function saveCalEdit(){
   t.emotion=emotionVal;
   t.confidence=confVal;
   // Session 20c — defense in depth in the Edit Modal save path.  Free
-  // post-cutoff users see the 5 fields locked/read-only in the UI; if
-  // a determined user bypasses the front-end and edits the inputs,
+  // post-cutoff users see the gated fields locked/read-only in the UI;
+  // if a determined user bypasses the front-end and edits the inputs,
   // we still refuse to persist their changes to the gated fields.
   // For the read-only branch (existing data + new free post-cutoff),
   // we preserve whatever was already on the trade (don't wipe it).
+  // Follow-up #5 — preserve 3 more payload keys (stop / accounts /
+  // tradingview_link) the same way; otherwise saveCalEdit would
+  // overwrite an existing trade's Advanced + TV-link values with
+  // whatever the locked inputs report (typically default/zero).
   if (typeof isGrandfathered === 'function' && !isGrandfathered()) {
-    // Whatever the user just typed gets dropped; the prior saved
-    // value sticks via the original `t` reference (note: we re-read
-    // those from snapshots above, so reverting means re-fetching
-    // from the unchanged source-of-truth on the trade).
     var origGated = trades.find(function(x){ return x.id === _cemId; });
     if (origGated) {
-      t.notes      = origGated.notes;
-      t.grade      = origGated.grade;
-      t.emotion    = origGated.emotion;
-      t.confidence = origGated.confidence;
+      t.notes             = origGated.notes;
+      t.grade             = origGated.grade;
+      t.emotion           = origGated.emotion;
+      t.confidence        = origGated.confidence;
+      t.stop              = origGated.stop;
+      t.accounts          = origGated.accounts;
+      t.tradingview_link  = origGated.tradingview_link;
     } else {
       delete t.notes; delete t.grade; delete t.emotion; delete t.confidence;
+      delete t.stop; delete t.accounts; delete t.tradingview_link;
     }
   }
   t.images=_cemImages.slice();
@@ -18895,7 +18910,13 @@ function buildAdvancedToggle(scope){
   var calc = (scope==='cem') ? 'cemCalcLive()' : 'calcLivePnl()';
   var stopId = (scope==='cem') ? 'cem-stop' : 'lg-stop';
   var acctId = (scope==='cem') ? 'cem-accounts' : 'lg-accounts';
-  return '<div class="lt-advanced" id="'+P+'-advanced">'+
+  // Session 20c follow-up #5 — the whole Advanced section is gated for
+  // free post-cutoff users.  data-gated-* on the outer wrapper lets
+  // applyFieldGates blur the section + intercept the toggle click via
+  // the ::after click-catcher; rwToggleAdvanced never fires when the
+  // .field-gated > * pointer-events:none rule is active, so the
+  // section stays collapsed and the click opens the upgrade modal.
+  return '<div class="lt-advanced" id="'+P+'-advanced" data-gated-field="advanced" data-gated-scope="'+scope+'">'+
     '<div class="lt-adv-head" onclick="rwToggleAdvanced(\''+scope+'\')">'+
       '<span class="lt-adv-caret" id="'+P+'-adv-caret">▷</span>'+
       '<span class="lt-adv-title">Advanced</span>'+
@@ -20208,11 +20229,15 @@ const UPGRADE_REASONS = {
   grade:      { title: 'Pro feature.', body: 'Grading trades is part of Pro.' },
   emotion:    { title: 'Pro feature.', body: 'Emotion tracking is part of Pro.' },
   confidence: { title: 'Pro feature.', body: 'Confidence tracking is part of Pro.' },
+  // Session 20c follow-up #5 — TV-link paste + Advanced (Stop Loss
+  // + multi-account) join the gated set.
+  tv_link:    { title: 'Pro feature.', body: 'TradingView chart links are part of Pro.' },
+  advanced:   { title: 'Pro feature.', body: 'Stop loss and multi-account tracking are part of Pro.' },
 };
 // Generic second body line shown under the field-specific one for
-// any of the 5 gated fields.  Mirrors the spec verbatim.
+// any gated field.  Mirrors the spec verbatim.
 var FIELD_PRO_BODY_TAIL = 'Upgrade to unlock tags, notes, grading, emotion + confidence tracking, and everything else.';
-var PRO_FIELD_REASONS = { tags:1, notes:1, grade:1, emotion:1, confidence:1 };
+var PRO_FIELD_REASONS = { tags:1, notes:1, grade:1, emotion:1, confidence:1, tv_link:1, advanced:1 };
 function openUpgradeModal(reason){
   var r = UPGRADE_REASONS[reason] || UPGRADE_REASONS.community;
   var modal = document.getElementById('upgrade-modal');
@@ -20354,7 +20379,12 @@ window.isGrandfathered = isGrandfathered;
 /* Names mirror the trade payload keys so the save-handler can use
    the same constant.  "tags" is the spec name; the codebase field is
    `confluences` — alias kept for spec parity in the modal copy. */
-var PRO_GATED_FIELDS = ['tags', 'notes', 'grade', 'emotion', 'confidence'];
+// Session 20c follow-up #5 — added 'tv_link' (TradingView paste) and
+// 'advanced' (Stop Loss + # of Accounts) to the gated set.  Field
+// names are used by applyFieldGates' click → openUpgradeModal(name)
+// path; the actual payload-key strip is in fullLog / saveCalEdit and
+// uses the live payload field names (tradingview_link, stop, accounts).
+var PRO_GATED_FIELDS = ['tags', 'notes', 'grade', 'emotion', 'confidence', 'tv_link', 'advanced'];
 
 function isFieldGated(fieldName){
   // Session 20c follow-up #2 — no-arg call now returns the global
@@ -21048,11 +21078,16 @@ function fullLog(){
   // here so the DB never receives Pro-only values from a free user.
   // (Tags = confluences, handled by its own snapshot a few lines below;
   // we clear it there too via the same guard.)
+  // Follow-up #5 added 3 more payload keys to strip: stop / accounts
+  // (the Advanced section) and tradingview_link (the TV-paste field).
   if (typeof isGrandfathered === 'function' && !isGrandfathered()) {
     delete newTrade.notes;
     delete newTrade.grade;
     delete newTrade.emotion;
     delete newTrade.confidence;
+    delete newTrade.stop;
+    delete newTrade.accounts;
+    delete newTrade.tradingview_link;
   }
   trades.unshift(newTrade);
   save();renderAll();
@@ -21153,12 +21188,26 @@ function _rwClearErr(fieldEl){
   if(m) m.remove();
 }
 
-// Run a rule set. Each rule: { fields:[ids], msg, ok:fn }. The message
-// renders under the FIRST field id. Paints every field's error state
-// and returns the first failing rule (or null when all pass).
+// Run a rule set. Each rule: { fields:[ids], msg, ok:fn, gated?:bool }.
+// Session 20c follow-up #5 — rules tagged `gated:true` are skipped for
+// free post-cutoff users (the fields they validate are locked by the
+// field-gate engine, so a gated user can never satisfy them and would
+// be stuck unable to submit).  Pro + grandfathered users get the full
+// rule set.  The message renders under the FIRST field id.
 function _rwRunRules(rules){
   var firstBad = null;
+  var isGated  = (typeof isFieldGated === 'function') && isFieldGated();
   rules.forEach(function(rule){
+    if (rule.gated && isGated) {
+      // Skip this rule for gated users AND clear any stale error
+      // chrome left over from a prior pass (defensive in case the
+      // user upgraded mid-session and we're re-validating).
+      rule.fields.forEach(function(fid){
+        var el = document.getElementById(fid);
+        if (el) _rwClearErr(el);
+      });
+      return;
+    }
     var ok = false;
     try { ok = !!rule.ok(); } catch(e){ ok = false; }
     rule.fields.forEach(function(fid, i){
@@ -21228,7 +21277,10 @@ var LT_RULES = [
     ok:function(){ var q=parseFloat(document.getElementById('lg-qty').value); return !isNaN(q) && q>0; } },
   { fields:['lt-f-evidence'], msg:'Upload a screenshot or paste a TradingView link',
     ok:function(){ return _ltScreenshotCount() >= 1 || _rwValidTVLink('lg-tv-link'); } },
+  // gated:true → skipped for free post-cutoff users; both fields are
+  // locked by applyFieldGates so a gated user can't satisfy the rule.
   { fields:['lt-sec-confluences','lt-f-notes'], msg:'Add at least 1 confluence and a note',
+    gated:true,
     ok:function(){ return _ltConfluenceCount() >= 1 && !!(document.getElementById('lg-notes').value||'').trim(); } }
 ];
 function validateLogTrade(){ return !_rwRunRules(LT_RULES); }
@@ -21261,7 +21313,9 @@ var CEM_RULES = [
     ok:function(){ var q=parseFloat(document.getElementById('cem-qty').value); return !isNaN(q) && q>0; } },
   { fields:['cem-f-evidence'], msg:'Upload a screenshot or paste a TradingView link',
     ok:function(){ return _cemScreenshotCount() >= 1 || _rwValidTVLink('cem-tv-link'); } },
+  // gated:true → skipped for free post-cutoff users (see LT_RULES note).
   { fields:['cem-cf-section','cem-f-notes'], msg:'Add at least 1 confluence and a note',
+    gated:true,
     ok:function(){ return _cemConfluenceCount() >= 1 && !!(document.getElementById('cem-notes').value||'').trim(); } }
 ];
 function validateCalEdit(){ return !_rwRunRules(CEM_RULES); }
