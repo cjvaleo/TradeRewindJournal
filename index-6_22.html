@@ -4716,6 +4716,74 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 }
 #pg-history.on > .ph{display:none}
 
+/* ── History 30-day trial gate (Session 20d) ────────────────────────
+   Mirrors #pg-calendar's trial-gate styles from Session 20b verbatim,
+   scoped to History instead.  Kept as a parallel block (not factored
+   into shared classes) so both pages stay self-contained; a future
+   third gated page can prompt the shared refactor. */
+#pg-history.hist-locked #hist-gated-content{
+  filter:opacity(0.4) blur(2px);
+  pointer-events:none;user-select:none;
+}
+#pg-history .hist-paywall{
+  position:absolute;inset:0;z-index:20;
+  display:none;align-items:center;justify-content:center;padding:24px;
+}
+#pg-history .hist-paywall-card{
+  max-width:420px;width:100%;text-align:center;
+  background:linear-gradient(180deg, var(--n-surface-2) 0%, var(--n-surface) 100%);
+  border:1px solid rgba(245,215,124,0.22);border-radius:16px;
+  padding:36px 32px;box-shadow:0 24px 60px rgba(0,0,0,0.55);
+}
+#pg-history .hist-paywall-title{
+  font-family:var(--n-font-display);font-style:italic;font-size:28px;
+  color:var(--n-text);letter-spacing:-0.015em;margin-bottom:8px;
+}
+#pg-history .hist-paywall-sub{
+  font-family:var(--n-font-sans);font-size:14px;color:var(--n-text-2);
+  line-height:1.5;margin-bottom:22px;
+}
+#pg-history .hist-paywall-cta{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 24px;border:none;border-radius:9px;cursor:pointer;
+  font-family:var(--n-font-sans);font-size:13px;font-weight:600;
+  background:linear-gradient(180deg, #f5d77c 0%, #e0bd5a 100%);
+  color:#2a2410;transition:transform 150ms;
+}
+#pg-history .hist-paywall-cta:hover{transform:translateY(-1px)}
+#pg-history .hist-paywall-secondary{
+  margin-top:14px;font-family:var(--n-font-sans);font-size:12px;
+  color:var(--n-text-3);
+}
+#pg-history .hist-paywall-secondary a{
+  color:var(--n-text-2);text-decoration:underline;cursor:pointer;
+}
+#pg-history .hist-paywall-secondary a:hover{color:var(--n-text)}
+#pg-history .hist-trial-banner{
+  display:none;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 16px;margin-bottom:18px;border-radius:9px;
+  font-family:var(--n-font-mono);font-size:11px;letter-spacing:0.04em;
+}
+#pg-history .hist-trial-banner .htb-cta{
+  background:none;border:none;cursor:pointer;white-space:nowrap;
+  font-family:var(--n-font-mono);font-size:11px;font-weight:600;letter-spacing:0.04em;
+}
+#pg-history .hist-trial-banner.soft{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  color:var(--n-text-3);
+}
+#pg-history .hist-trial-banner.soft .htb-cta{color:var(--n-text-2)}
+#pg-history .hist-trial-banner.amber{
+  background:rgba(245,215,124,0.06);border:1px solid rgba(245,215,124,0.22);
+  color:rgba(245,215,124,0.85);
+}
+#pg-history .hist-trial-banner.amber .htb-cta{color:var(--n-gold)}
+#pg-history .hist-trial-banner.urgent{
+  background:rgba(245,215,124,0.12);border:1px solid rgba(245,215,124,0.40);
+  color:var(--n-gold);
+}
+#pg-history .hist-trial-banner.urgent .htb-cta{color:var(--n-gold);text-decoration:underline}
+
 #pg-history .h-head{
   display:flex;align-items:flex-start;justify-content:space-between;
   margin-bottom:24px;flex-wrap:wrap;gap:14px;border:none;padding:0;
@@ -10794,11 +10862,19 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
     </div>
   </div>
 
-  <!-- FREE-TIER 30-DAY CAP BANNER — toggled by toggleFreeCapBanner('history') -->
-  <div id="history-cap-banner" class="free-cap-banner" style="display:none">
-    <div class="fcb-text">Showing the last 30 days &middot; <strong>Free plan</strong></div>
-    <button class="fcb-cta" onclick="openUpgradeModal('history')">Unlock unlimited &rarr;</button>
-  </div>
+  <!-- TRIAL COUNTDOWN BANNER — Session 20d (mirrors Calendar's
+       cal-trial-banner from 20b).  Shown only in the last 3 days
+       of an active free trial; tone shifts soft→amber→urgent.
+       Replaces the old free-cap banner — the 30-day data cap no
+       longer applies to History during the trial; the trial
+       paywall is the gate now. -->
+  <div id="hist-trial-banner" class="hist-trial-banner" style="display:none"></div>
+
+  <!-- GATED CONTENT — blurred + non-interactive once the free
+       trial expires (.hist-locked on #pg-history).  The header
+       above stays crisp; only the summary + table go behind the
+       paywall. -->
+  <div id="hist-gated-content">
 
   <!-- SUMMARY -->
   <div class="h-summary">
@@ -10834,6 +10910,21 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         </thead>
         <tbody id="hist-body"></tbody>
       </table>
+    </div>
+  </div>
+
+  </div><!-- /#hist-gated-content -->
+
+  <!-- TRIAL-EXPIRED PAYWALL — Session 20d (mirrors Calendar's
+       cal-paywall from 20b).  Overlaid on the blurred History
+       shell when a non-grandfathered free user is past day 30.
+       applyHistoryGate() toggles display + the .hist-locked class. -->
+  <div id="hist-paywall" class="hist-paywall" style="display:none">
+    <div class="hist-paywall-card">
+      <div class="hist-paywall-title">History trial ended.</div>
+      <div class="hist-paywall-sub">Upgrade to Pro to keep reviewing your full trade history.</div>
+      <button class="hist-paywall-cta" onclick="goTo('upgrade')">Subscribe to Pro &rarr;</button>
+      <div class="hist-paywall-secondary">or <a onclick="goTo('log')">Continue with Log Trade</a></div>
     </div>
   </div>
 </div>
@@ -11730,11 +11821,11 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 
       <div class="uc-feat-h gold">30-day free trial</div>
       <div class="uc-feat-star">Calendar + heatmap views</div>
+      <div class="uc-feat-star">History + full search</div>
 
       <div class="uc-feat-h muted">Upgrade for full access</div>
       <div class="uc-feat-x">Tags + notes</div>
       <div class="uc-feat-x">Grade + emotion + confidence</div>
-      <div class="uc-feat-x">History</div>
       <div class="uc-feat-x">Review + advanced insights</div>
       <div class="uc-feat-x">Communities</div>
       <div class="uc-feat-x">CSV bulk import</div>
@@ -11784,7 +11875,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
       <div class="uc-feat-h">Everything else unlocked</div>
       <div class="uc-feat">Tags + notes</div>
       <div class="uc-feat">Grade + emotion + confidence</div>
-      <div class="uc-feat">History + full search</div>
+      <div class="uc-feat">History + full search (no time limit)</div>
       <div class="uc-feat">Calendar + heatmap (no time limit)</div>
       <div class="uc-feat">CSV bulk import (incl. Tradovate)</div>
       <div class="uc-feat">Multi-account copies (&times;N at once)</div>
@@ -20321,6 +20412,15 @@ window._visibleTrades = _visibleTrades;
 function _calendarTrades(){ return trades; }
 window._calendarTrades = _calendarTrades;
 
+/* Same opt-out for History — the History page joined the 30-day
+   trial gate in Session 20d.  When the page is visible at all
+   (trial active, grandfathered, or paid), the user gets the full
+   uncapped history; when expired, the paywall covers the surface
+   so the data cap is moot anyway.  Other surfaces (Equity, Dashboard)
+   keep using _visibleTrades(). */
+function _historyTrades(){ return trades; }
+window._historyTrades = _historyTrades;
+
 /* Grandfather cutoff — accounts created before this ISO date predate
    the Calendar trial gate and keep Calendar forever.  Hardcoded for
    now; can move to env/config later. */
@@ -20439,6 +20539,43 @@ function applyCalendarGate(){
   }
 }
 window.applyCalendarGate = applyCalendarGate;
+
+/* Session 20d — same trial-gate pattern for History.  Mirrors
+   applyCalendarGate verbatim; only the element IDs + .hist-locked
+   class differ. */
+function applyHistoryGate(){
+  var page    = document.getElementById('pg-history');
+  var paywall = document.getElementById('hist-paywall');
+  var banner  = document.getElementById('hist-trial-banner');
+  if (!page) return;
+  var ts = getTrialStatus();
+
+  if (ts.expired) {
+    page.classList.add('hist-locked');
+    if (paywall) paywall.style.display = 'flex';
+    if (banner)  banner.style.display  = 'none';
+    return;
+  }
+  page.classList.remove('hist-locked');
+  if (paywall) paywall.style.display = 'none';
+
+  // Countdown banner — last 3 days of an active trial only.
+  if (banner) {
+    var d = ts.days_remaining;
+    if (!ts.grandfathered && d != null && d > 0 && d <= 3) {
+      var tone = d <= 1 ? 'urgent' : d <= 2 ? 'amber' : 'soft';
+      banner.className = 'hist-trial-banner ' + tone;
+      banner.innerHTML =
+          '<span class="htb-text">History trial ends in ' + d + ' day'
+        + (d === 1 ? '' : 's') + ' &middot; Upgrade to keep it</span>'
+        + '<button class="htb-cta" onclick="goTo(\'upgrade\')">Upgrade &rarr;</button>';
+      banner.style.display = 'flex';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+}
+window.applyHistoryGate = applyHistoryGate;
 
 // Show/hide the per-page cap banner. Element id pattern: `{page}-cap-banner`.
 function toggleFreeCapBanner(page, isCapped){
@@ -23867,9 +24004,12 @@ async function renderHistory(){
   // Filter compares against t.account_type, matching the schema column
   // shipped by visual-redesign-migration.sql.
   const fa=(document.getElementById('h-acct')||{}).value||'';
-  // Free tier sees the last 30 days only; Pro sees everything.
-  const view = _visibleTrades();
-  toggleFreeCapBanner('history', view !== trades);
+  // Session 20d — History joined the 30-day trial gate.  Full
+  // uncapped history while the trial is active / grandfathered /
+  // paid; expired free users see the paywall overlay handle the
+  // gate (the underlying table still renders behind the blur).
+  applyHistoryGate();
+  const view = _historyTrades();
   const ft=view.filter(t=>{
     if(fm&&t.market!==fm)return false;
     if(fd&&t.type!==fd)return false;
