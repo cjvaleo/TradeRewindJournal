@@ -4286,6 +4286,11 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 .sb .ni .ni-lock svg{width:12px;height:12px;stroke-width:1.8;fill:none;stroke:currentColor}
 .sb.is-collapsed .ni-lock{display:none}
+/* Gold variant — Session 20f.  Used for Calendar / History / Review
+   when the active user has no access (trial expired, or post-cutoff
+   free with no trial).  Toggled by applySidebarLocks() — appended on
+   lock, removed on unlock. */
+.sb .ni .ni-lock.gold{color:#f5d77c;opacity:0.75}
 
 /* Analytics locked tabs — visible but visually dimmed; lock icon shown */
 #pg-analytics .sec-tab .tab-lock-icon{
@@ -20271,6 +20276,9 @@ async function refreshUserTier(){
       applyFieldGates('cem', openTrade);
     }
   }
+  // Session 20f — sidebar lock icons.  Re-paint after tier refresh
+  // so a mid-session upgrade drops the gold locks without reload.
+  if (typeof applySidebarLocks === 'function') applySidebarLocks();
 }
 window.refreshUserTier = refreshUserTier;
 
@@ -20516,10 +20524,14 @@ function applyCalendarGate(){
     page.classList.add('cal-locked');
     if (paywall) paywall.style.display = 'flex';
     if (banner)  banner.style.display  = 'none';
+    // Session 20f — keep the sidebar's gold lock in sync with the
+    // page-level state.  Idempotent + cheap.
+    if (typeof applySidebarLocks === 'function') applySidebarLocks();
     return;
   }
   page.classList.remove('cal-locked');
   if (paywall) paywall.style.display = 'none';
+  if (typeof applySidebarLocks === 'function') applySidebarLocks();
 
   // Countdown banner — only in the last 3 days of an active trial.
   // Grandfathered + paid users never see it (days_remaining is null).
@@ -20554,10 +20566,12 @@ function applyHistoryGate(){
     page.classList.add('hist-locked');
     if (paywall) paywall.style.display = 'flex';
     if (banner)  banner.style.display  = 'none';
+    if (typeof applySidebarLocks === 'function') applySidebarLocks();
     return;
   }
   page.classList.remove('hist-locked');
   if (paywall) paywall.style.display = 'none';
+  if (typeof applySidebarLocks === 'function') applySidebarLocks();
 
   // Countdown banner — last 3 days of an active trial only.
   if (banner) {
@@ -20576,6 +20590,61 @@ function applyHistoryGate(){
   }
 }
 window.applyHistoryGate = applyHistoryGate;
+
+/* Session 20f — sidebar lock icons for the 3 gated pages.  Gold
+   variant of the existing .ni-lock pattern (already used for
+   Community + Broker Sync, muted color).  Per-page conditions
+   mirror the page-level gate exactly:
+     calendar / history — locked when trial expired (days_remaining
+       <= 0 and not grandfathered)
+     analytics (Review) — locked whenever isGrandfathered() returns
+       false (no trial; post-cutoff free → lock from day 1)
+   Idempotent; queries `.sb .ni[data-page=...]` so both the desktop
+   sidebar and the mobile drawer's cloned nav.sb get the same
+   treatment.  Tooltip text differs per condition ("Trial ended"
+   for an expired Calendar/History; "Pro feature" for Review or any
+   never-trialed page). */
+function applySidebarLocks(){
+  var GATE_LOCK_SVG = '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+  var ts = (typeof getTrialStatus === 'function') ? getTrialStatus() : null;
+  var grandfathered = (typeof isGrandfathered === 'function') && isGrandfathered();
+
+  // Per-page lock decision + tooltip.  null tooltip → no lock.
+  function decide(page){
+    if (grandfathered) return null;          // paid + pre-cutoff + anon
+    if (page === 'analytics') return 'Pro feature';      // Review — no trial
+    if (page === 'calendar' || page === 'history') {
+      if (ts && ts.expired) return 'Trial ended';
+      return null;                           // still in trial → no lock
+    }
+    return null;
+  }
+
+  ['calendar', 'history', 'analytics'].forEach(function(page){
+    var tooltip = decide(page);
+    // querySelectorAll hits the desktop sidebar AND the mobile
+    // drawer's cloned nav — both carry `.sb` and the data-page attr.
+    var items = document.querySelectorAll('.sb .ni[data-page="' + page + '"]');
+    items.forEach(function(ni){
+      var existing = ni.querySelector(':scope > .ni-lock.gold');
+      if (tooltip) {
+        if (!existing) {
+          var span = document.createElement('span');
+          span.className = 'ni-lock gold';
+          span.setAttribute('title', tooltip);
+          span.innerHTML = GATE_LOCK_SVG;
+          ni.appendChild(span);
+        } else if (existing.getAttribute('title') !== tooltip) {
+          // Tooltip text changed (trial just expired) — sync it.
+          existing.setAttribute('title', tooltip);
+        }
+      } else if (existing) {
+        existing.remove();
+      }
+    });
+  });
+}
+window.applySidebarLocks = applySidebarLocks;
 
 // Show/hide the per-page cap banner. Element id pattern: `{page}-cap-banner`.
 function toggleFreeCapBanner(page, isCapped){
