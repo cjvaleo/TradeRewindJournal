@@ -5099,6 +5099,50 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 }
 #pg-analytics.on > .ph{display:none}
 
+/* ── Review Pro-feature paywall (Session 20e) ───────────────────────
+   Same shape as the Calendar / History gates from 20b / 20d but no
+   trial — post-cutoff free users hit the paywall on day 1.  Kept as
+   its own scoped block (not factored into a shared class) until a
+   future page would trigger that refactor. */
+#pg-analytics.rev-locked #rev-gated-content{
+  filter:opacity(0.4) blur(2px);
+  pointer-events:none;user-select:none;
+}
+#pg-analytics .rev-paywall{
+  position:absolute;inset:0;z-index:20;
+  display:none;align-items:center;justify-content:center;padding:24px;
+}
+#pg-analytics .rev-paywall-card{
+  max-width:420px;width:100%;text-align:center;
+  background:linear-gradient(180deg, var(--n-surface-2) 0%, var(--n-surface) 100%);
+  border:1px solid rgba(245,215,124,0.22);border-radius:16px;
+  padding:36px 32px;box-shadow:0 24px 60px rgba(0,0,0,0.55);
+}
+#pg-analytics .rev-paywall-title{
+  font-family:var(--n-font-display);font-style:italic;font-size:28px;
+  color:var(--n-text);letter-spacing:-0.015em;margin-bottom:8px;
+}
+#pg-analytics .rev-paywall-sub{
+  font-family:var(--n-font-sans);font-size:14px;color:var(--n-text-2);
+  line-height:1.5;margin-bottom:22px;
+}
+#pg-analytics .rev-paywall-cta{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 24px;border:none;border-radius:9px;cursor:pointer;
+  font-family:var(--n-font-sans);font-size:13px;font-weight:600;
+  background:linear-gradient(180deg, #f5d77c 0%, #e0bd5a 100%);
+  color:#2a2410;transition:transform 150ms;
+}
+#pg-analytics .rev-paywall-cta:hover{transform:translateY(-1px)}
+#pg-analytics .rev-paywall-secondary{
+  margin-top:14px;font-family:var(--n-font-sans);font-size:12px;
+  color:var(--n-text-3);
+}
+#pg-analytics .rev-paywall-secondary a{
+  color:var(--n-text-2);text-decoration:underline;cursor:pointer;
+}
+#pg-analytics .rev-paywall-secondary a:hover{color:var(--n-text)}
+
 /* ════════ PERSONAL TAB — /analytics Review page (Session 6) ════════ */
 .rvp-sec{margin-bottom:42px}
 .rvp-sec:last-child{margin-bottom:0}
@@ -11082,6 +11126,16 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 <!-- ANALYTICS -->
 <div id="pg-analytics" class="page">
  <!-- ════════ REVIEW PAGE — Analytics tab (The Brief) + Rules tab ════════ -->
+
+ <!-- GATED CONTENT — blurred + non-interactive for post-cutoff free
+      users (.rev-locked on #pg-analytics).  Unlike Calendar (20b) and
+      History (20d), Review has NO 30-day trial — post-cutoff free
+      users hit the paywall on day 1.  applyReviewGate() toggles the
+      class + paywall display.  Grandfathered + Pro tiers bypass
+      entirely so the existing per-sub-tab data-locked system (which
+      pre-cutoff free users have always seen) still applies inside. -->
+ <div id="rev-gated-content">
+
  <div class="rv">
   <div class="rv-tabs">
     <button type="button" class="rv-tab on" id="rv-tab-analytics"  onclick="rvTab('analytics')">Personal</button>
@@ -11111,6 +11165,22 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   </div>
 
  </div><!-- /rv -->
+
+ </div><!-- /#rev-gated-content -->
+
+ <!-- PRO-ONLY PAYWALL — Session 20e.  Overlaid on the blurred Review
+      shell when a post-cutoff free user lands here.  No trial period
+      (unlike Calendar/History): post-cutoff free users see this from
+      day 1.  applyReviewGate() toggles display + the .rev-locked
+      class on #pg-analytics. -->
+ <div id="rev-paywall" class="rev-paywall" style="display:none">
+   <div class="rev-paywall-card">
+     <div class="rev-paywall-title">Review is a Pro feature.</div>
+     <div class="rev-paywall-sub">Upgrade to Pro to unlock advanced insights and trade analysis.</div>
+     <button class="rev-paywall-cta" onclick="goTo('upgrade')">Subscribe to Pro &rarr;</button>
+     <div class="rev-paywall-secondary">or <a onclick="goTo('log')">Continue with Log Trade</a></div>
+   </div>
+ </div>
 </div>
 <!-- BROKER SYNC -->
 <div id="pg-sync" class="page">
@@ -20577,6 +20647,26 @@ function applyHistoryGate(){
 }
 window.applyHistoryGate = applyHistoryGate;
 
+/* Session 20e — Review paywall, no trial.  Same shape as the Calendar
+   and History gates but the condition is simpler: post-cutoff free
+   users see the paywall immediately on landing.  No countdown banner
+   (no trial = nothing to count down).  Grandfathered + Pro tiers
+   bypass entirely; the existing per-sub-tab data-locked system (used
+   by pre-cutoff free users) continues to operate inside the unlocked
+   content. */
+function applyReviewGate(){
+  var page    = document.getElementById('pg-analytics');
+  var paywall = document.getElementById('rev-paywall');
+  if (!page) return;
+  // Paid + grandfathered + anonymous → unlock; only the post-cutoff
+  // free user (the bucket isGrandfathered() returns false for) hits
+  // the paywall.
+  var locked = !isGrandfathered();
+  page.classList.toggle('rev-locked', locked);
+  if (paywall) paywall.style.display = locked ? 'flex' : 'none';
+}
+window.applyReviewGate = applyReviewGate;
+
 // Show/hide the per-page cap banner. Element id pattern: `{page}-cap-banner`.
 function toggleFreeCapBanner(page, isCapped){
   var el = document.getElementById(page + '-cap-banner');
@@ -24230,8 +24320,13 @@ function rvTab(name){
 window.rvTab = rvTab;
 
 // renderAnalytics — called by goTo('analytics') + renderAll. Loads
-// whichever Review tab is active.
+// whichever Review tab is active.  Session 20e — fires the
+// Pro-feature paywall gate first.  Paid + grandfathered users
+// proceed normally; post-cutoff free users see the gated content
+// blur behind the paywall (the tab loaders still fire so the shell
+// under the blur looks real, but the user can't interact).
 function renderAnalytics(){
+  if (typeof applyReviewGate === 'function') applyReviewGate();
   if(_rvState.tab === 'rules') rvLoadRules();
   else if(_rvState.tab === 'community') rvLoadCommunity();
   else rvLoadPersonal();
