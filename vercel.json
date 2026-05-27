@@ -21,7 +21,6 @@
   ],
   "functions": {
     "api/eod/render-card.js": {
-      "memory": 2048,
       "maxDuration": 30
     }
   }
