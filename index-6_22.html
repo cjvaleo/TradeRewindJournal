@@ -14054,25 +14054,11 @@ function _eodRenderPersonalCard(data, reason){
     +   '<span class="ev2-wm" style="white-space:nowrap">traderewindjournal.com</span>'
     +   '<span class="ev2-foot-meta" style="white-space:nowrap">PnL Card &middot; '+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
     + '</div>'
-    // The action row is gone — Dismiss is the static top-right ✕
-    // (#eod-modal-close, modal chrome on the .eod-stage — not part of
-    // this card template).
-    //
-    // TODO: Share/capture parked — foreignObject rasterization bug
-    //       with italic font, see audit findings. Re-enable buttons
-    //       here. The plumbing is intact (_eodCaptureCard,
-    //       _eodLoadHtml2Canvas, eodShareCard, _eodPrebake,
-    //       _eodAuditCapture + audit panel) — all dormant but ready.
-    //       To restore, append an action row before the closing
-    //       div of this template:
-    //         + '<div class="ev2-actions">'
-    //         +   '<button class="ev2-audit" onclick="_eodAuditCapture()">Audit</button>'
-    //         +   (_eodCanShareFiles()
-    //               ? '<button class="ev2-share" onclick="eodShareCard(this)">Share</button>'
-    //               : '')
-    //         + '</div>'
-    //       The ✕ close icon stays as the dismiss affordance regardless.
-    //       Same restoration lives in _eodRenderGroupCard.
+    // Session 20g — Share/Download action row.  One button: Share on
+    // mobile (Web Share API with files), Download on desktop / browsers
+    // without file-share.  .ev2-actions is hidden via .is-capturing
+    // during the render so the exported PNG reads as a clean poster.
+    + _eodActionRowHtml()
     + '</div>';
 }
 
@@ -14176,10 +14162,22 @@ function _eodRenderGroupCard(data, reason){
     +   '<span class="ev2-wm" style="white-space:nowrap">traderewindjournal.com</span>'
     +   '<span class="ev2-foot-meta" style="white-space:nowrap">'+memberCount+' member'+(memberCount===1?'':'s')+' &middot; '+data.tradeCount+' trade'+(data.tradeCount===1?'':'s')+'</span>'
     + '</div>'
-    // Action row removed — see ✕ close icon at top of card. TODO
-    // restoration recipe for Share/Audit lives in
-    // _eodRenderPersonalCard.
+    // Session 20g — Share/Download action row.  See _eodRenderPersonalCard.
+    + _eodActionRowHtml()
     + '</div>';
+}
+
+/* Action-row HTML for both PnL card variants (Session 20g).  Shows a
+   single button whose label + handler depend on Web Share file
+   support: "Share" on mobile / file-share-capable browsers, "Download"
+   on desktop / browsers without it.  Hidden during capture via the
+   .is-capturing class on the card so the exported PNG stays clean. */
+function _eodActionRowHtml(){
+  var canShare = (typeof _eodCanShareFiles === 'function') && _eodCanShareFiles();
+  var btn = canShare
+    ? '<button class="ev2-share" onclick="eodShareCard(this)">Share</button>'
+    : '<button class="ev2-share" onclick="eodDownloadCard(this)">Download</button>';
+  return '<div class="ev2-actions">' + btn + '</div>';
 }
 
 /* Sequenced-mode index — used when 3+ cards force the Next-button flow. */
@@ -14919,6 +14917,69 @@ async function eodShareCard(btn){
   }
 }
 
+/* Download path — capture → File → anchor download.  Session 20g —
+   parallel to eodShareCard, used on desktop / browsers without
+   Web Share file support.  Filename follows spec: rewind-trade-{date}
+   for personal, rewind-{communityname}-{period} for community. */
+async function eodDownloadCard(btn){
+  console.log('[eod download] click — btn:', btn);
+  var card = _eodResolveCard(btn);
+  if(!card){
+    if(typeof toast === 'function') toast('Download failed — no PnL Card open');
+    return;
+  }
+  var origText = btn && btn.textContent;
+  if(btn){ btn.disabled = true; btn.textContent = '…'; }
+  try {
+    // Same pre-bake path Share uses — capture is idempotent + cheap to
+    // skip when a File is already in hand.
+    var file = _eodPrebakedFile;
+    if(!file) file = await _eodCaptureCard(card);
+    // Derive a human-friendly filename from the card kind.  Personal
+    // cards carry data-eod-date; group cards add a community id we can
+    // sniff for a human name.  Falls back to today's date if both
+    // are missing.
+    var fname = (file && file.name) || _eodDownloadFilename(card);
+    var url = URL.createObjectURL(file);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    // Revoke after a tick so the browser has time to start the download.
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+    console.log('[eod download] saved as', fname);
+  } catch(err){
+    console.warn('[eod download] failed:', err && err.message, err);
+    if(typeof toast === 'function') toast('Download failed — ' + ((err && err.message) || 'try again'));
+  } finally {
+    if(btn){ btn.disabled = false; btn.textContent = origText || 'Download'; }
+  }
+}
+window.eodDownloadCard = eodDownloadCard;
+
+/* Build a download filename for the open card.  Mirrors the spec:
+     personal → rewind-trade-{date}.png
+     group    → rewind-{communityname}-{period}.png
+   Slugs (community name + period) are sanitized to [a-z0-9-]. */
+function _eodDownloadFilename(card){
+  var today = (typeof _localDate === 'function') ? _localDate(new Date()) : new Date().toISOString().slice(0,10);
+  var date  = (card && card.dataset && card.dataset.eodDate) || today;
+  var slug  = function(s){
+    return String(s||'').toLowerCase()
+      .replace(/[^a-z0-9]+/g,'-')
+      .replace(/^-+|-+$/g,'') || 'rewind';
+  };
+  if (card && card.classList && card.classList.contains('eod-card-group')) {
+    // Find the community name from _comm (the active community context)
+    // — the card only carries an id, not the name, but _comm tracks it.
+    var name = (typeof _comm !== 'undefined' && _comm && _comm.name) ? _comm.name : 'community';
+    return 'rewind-' + slug(name) + '-' + date + '.png';
+  }
+  return 'rewind-trade-' + date + '.png';
+}
+
 /* ── EOD WIDGETS — persistent dashboard bar + community sidebar card
    ──────────────────────────────────────────────────────────────────
    Both surfaces share a 3-state machine (Pending / Ready / Yesterday)
@@ -15274,14 +15335,20 @@ function _eodShowModal(cards){
   }
   modal.style.display = 'flex';
 
-  // NOTE: the modern-screenshot pre-warm + _eodPrebake() call that used
-  // to run here (250ms after open) were REMOVED. Share/Audit are parked
-  // (see the TODOs in the renderers), so the pre-bake captured nothing
-  // anyone could use — and worse, _eodCaptureCard toggles .is-capturing
-  // on the card + flips the backdrop blur off/on for the capture's
-  // duration, which produced a visible flicker ~250ms after every open.
-  // When Share is un-parked, restore the pre-bake here (and re-add the
-  // _eodPrebakedFile/_eodPrebakedFor null-resets).
+  // Session 20g — Share/Audit re-enabled.  Pre-warm modern-screenshot
+  // + pre-bake the card to a File on modal open so the navigator.share
+  // call on click stays inside the user-gesture window (iOS Safari's
+  // strict requirement).  Delayed 250ms so the opening transition
+  // settles before the capture toggles .is-capturing on the card.
+  // Fire-and-forget: failure inside _eodPrebake just falls back to a
+  // live capture on the actual Share click, with a clearer toast on
+  // expiry.  Null-resets on dismiss are at eodDismiss above.
+  if (typeof _eodLoadHtml2Canvas === 'function') {
+    _eodLoadHtml2Canvas().catch(function(){ /* live click will retry */ });
+  }
+  setTimeout(function(){
+    if (typeof _eodPrebake === 'function') _eodPrebake();
+  }, 250);
 }
 
 /* Both personal AND group cards are now LIVE/today views — neither
