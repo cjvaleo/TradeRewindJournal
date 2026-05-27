@@ -14405,10 +14405,16 @@ function _eodCanShareFiles(){
 // style, so the captured PNG shows Georgia / Menlo / Helvetica fallbacks
 // instead of Instrument Serif / Geist Mono / Geist.  Puppeteer renders
 // in a real Chromium with real font loading so the fonts come through.
+// Session 20i diagnostic — last server response's header summary, so
+// the dispatcher can toast "Shared via server (rid=XXXX, is=y, gm=y)"
+// after a successful render.  Populated by _eodCaptureCardServer.
+var _eodLastServerDiag = null;
 async function _eodCaptureCardServer(card){
+  _eodLastServerDiag = null;  // reset for this attempt
   if(!card) return null;
   if(!_eodActivePayload){
     console.warn('[eod render-server] no active payload — falling back to client capture');
+    _eodLastServerDiag = { ok:false, reason:'no-payload' };
     return null;
   }
   // Auth — same Bearer pattern as every other /api/* call in the SPA.
@@ -14423,6 +14429,7 @@ async function _eodCaptureCardServer(card){
   }
   if(!token){
     console.warn('[eod render-server] no session — falling back to client capture');
+    _eodLastServerDiag = { ok:false, reason:'no-token' };
     return null;
   }
   console.log('[eod render-server] POSTing payload', { type: _eodActivePayload.type });
@@ -14443,23 +14450,30 @@ async function _eodCaptureCardServer(card){
       signal: ctrl ? ctrl.signal : undefined
     });
     clearTimeout(timer);
+    var rid   = r.headers.get('X-Eod-Render-Id') || '?';
+    var fonts = r.headers.get('X-Eod-Fonts')     || '?';
     if(!r.ok){
-      console.warn('[eod render-server] HTTP', r.status, '— falling back to client capture');
+      console.warn('[eod render-server] HTTP', r.status, 'rid=' + rid, '— falling back to client capture');
+      _eodLastServerDiag = { ok:false, reason:'http-'+r.status, rid:rid };
       return null;
     }
     var blob = await r.blob();
     if(!blob || !blob.size){
-      console.warn('[eod render-server] empty blob — falling back to client capture');
+      console.warn('[eod render-server] empty blob rid=' + rid, '— falling back to client capture');
+      _eodLastServerDiag = { ok:false, reason:'empty-blob', rid:rid };
       return null;
     }
     var dateStr = card.dataset.eodDate || _localDate(new Date());
     var filename = 'rewind-pnl-' + dateStr + '.png';
     var file = new File([blob], filename, { type: 'image/png' });
     var t1 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-    console.log('[eod render-server] ok —', file.size, 'bytes in', Math.round(t1 - t0), 'ms');
+    console.log('[eod render-server] ok —', file.size, 'bytes in', Math.round(t1 - t0), 'ms',
+      '| rid=' + rid, '| fonts:', fonts);
+    _eodLastServerDiag = { ok:true, rid:rid, fonts:fonts, ms:Math.round(t1 - t0), bytes:file.size };
     return file;
   } catch(e){
     console.warn('[eod render-server] fetch failed — falling back to client capture:', e && e.message);
+    _eodLastServerDiag = { ok:false, reason:'throw:'+(e && e.message) };
     return null;
   }
 }
@@ -14484,12 +14498,29 @@ async function _eodCaptureCard(card){
   card.__eodCapturing = true;
   try {
     var serverFile = await _eodCaptureCardServer(card);
-    if(serverFile) return serverFile;
+    if(serverFile){
+      // Session 20i diagnostic — surface a short toast so the user can
+      // tell us which path won without devtools.  Includes the server's
+      // request id + font-loaded flags from the X-Eod-Fonts header.
+      try {
+        var d = _eodLastServerDiag || {};
+        if(typeof toast === 'function'){
+          toast('Shared via server · rid=' + (d.rid || '?') + ' · ' + (d.fonts || '?'));
+        }
+      } catch(_) {}
+      return serverFile;
+    }
     // Fall through.  Drop the JS flag so the client function's own
     // .is-capturing class guard can run normally (it sets the class
     // itself, then removes it in its finally).
     card.__eodCapturing = false;
     console.log('[eod capture] server path returned null — using client fallback');
+    try {
+      var d2 = _eodLastServerDiag || {};
+      if(typeof toast === 'function'){
+        toast('Shared via fallback · server: ' + (d2.reason || 'unknown') + (d2.rid ? ' (rid=' + d2.rid + ')' : ''));
+      }
+    } catch(_) {}
     return await _eodCaptureCardClient(card);
   } finally {
     card.__eodCapturing = false;
