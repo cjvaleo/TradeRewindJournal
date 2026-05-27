@@ -14094,10 +14094,18 @@ function _eodRenderGroupCard(data, reason){
         : '';
       var pnlTone = tr.pnl > 0 ? 'pos' : tr.pnl < 0 ? 'neg' : 'zero';
       var meCls = tr.isMe ? ' is-me' : '';
-      return '<div class="ev2-lb-row rank-'+rank+'">'
+      // Session 20g follow-up #2 — inline the grid layout + overflow
+      // containment so the row's auto-sized pnl can never spill past
+      // the rank-1 gold border in captured PNGs.  modern-screenshot
+      // has a documented history of dropping class-based grid specs
+      // during clone (see inline-style strategy comment at line ~14001),
+      // and the row's auto-sized pnl column makes that a visible
+      // regression at moderate pnl values + longer handles.
+      return '<div class="ev2-lb-row rank-'+rank+'"'
+        +     ' style="grid-template-columns:24px 28px minmax(0,1fr) auto;overflow:hidden">'
         + '<span class="ev2-lb-rank">'+rank+'</span>'
         + avHtml
-        + '<span class="ev2-lb-handle'+meCls+'">@'+_eodSafe(tr.username||'trader')+'</span>'
+        + '<span class="ev2-lb-handle'+meCls+'" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">@'+_eodSafe(tr.username||'trader')+'</span>'
         + '<span class="ev2-lb-pnl '+pnlTone+'">'+_eodMoneyHtml(tr.pnl)+'</span>'
         + '</div>';
     }).join('');
@@ -30920,11 +30928,16 @@ function cookieDecline(){
    RIGHT: stacked date + time, mono caps.
    Stacks to a single column on mobile so the avatar stays prominent. */
 .ev2-head{
-  display:flex;align-items:center;gap:14px;
+  display:flex;align-items:center;gap:24px;
   /* Reserve a horizontal lane on the right for the modal's static
      #eod-modal-close button, which sits over the card's top-right
-     corner. Without this the right-edge .ev2-head-meta (date label
-     + "LIVE · TODAY") slides under the close icon. */
+     corner. Without this the right-edge .ev2-head-meta date label
+     slides under the close icon. */
+  /* Session 20g follow-up #2 — gap bumped 14 → 24 so the date in
+     .ev2-head-meta breathes from the avatar + head-text block.
+     The previous 14px was tight enough that long usernames could
+     visually collide with the date even though flex layout
+     technically gave them their own track. */
   padding-right:36px;
 }
 
@@ -31189,7 +31202,11 @@ function cookieDecline(){
   font-family:var(--n-font-display);font-style:italic;
   font-size:15px;line-height:1;text-align:right;letter-spacing:-0.01em;
 }
-.ev2-lb-row.rank-1 .ev2-lb-pnl{font-size:17px}
+/* Session 20g follow-up #2 — pnl size matches ranks 2/3.  The
+   gold border + gold-tinted bg + gold rank number's text-shadow
+   already carry the rank-1 hierarchy; the prior 17px bump was
+   redundant and pushed the auto-sized pnl track past the row's
+   right edge for values like "+$2,640.00" + above. */
 .ev2-lb-pnl.pos{color:var(--n-profit)}
 .ev2-lb-pnl.neg{color:var(--n-loss)}
 
