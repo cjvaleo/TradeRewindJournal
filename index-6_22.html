@@ -14094,17 +14094,27 @@ function _eodRenderGroupCard(data, reason){
         : '';
       var pnlTone = tr.pnl > 0 ? 'pos' : tr.pnl < 0 ? 'neg' : 'zero';
       var meCls = tr.isMe ? ' is-me' : '';
-      // Session 20g follow-up #2/#3 — inline the row's full geometry
-      // so the capture pass can't drop any of it.  Padding got
-      // dropped along with the grid spec by modern-screenshot's
-      // clone in #2 (only grid was inlined then), which made
-      // overflow:hidden start clipping the pnl's last 1-2 chars on
-      // every row — the inline padding here restores the breathing
-      // room.  Bumped right padding 10 → 14 so italic glyphs (which
-      // can overshoot their advance widths by ~1-2px) have a guaranteed
-      // safe zone before the row's clip edge.
+      // Session 20g follow-up #4 — pnl track is now fixed at 100px
+      // (was `auto`).  The previous attempts (#2 inlined the grid,
+      // #3 inlined padding) both kept the auto track that sizes to
+      // text content — but modern-screenshot's canvas rasterizer
+      // doesn't honor the embedded Instrument Serif italic font,
+      // falling back to Georgia italic which renders ~21% wider
+      // ("+$2,640.00" measures 58px live but 70.5px in capture).
+      // The wider text overran the auto track and overflow:hidden
+      // clipped the last 1-2 chars in every row.
+      //
+      // Measured: live pnl = 58px Instrument Serif, capture pnl =
+      // 70.5px Georgia for "+$2,640.00".  Worst-case "+$25,640.00"
+      // in Georgia ≈ 85-90px.  100px gives ~10px safety margin and
+      // keeps the layout deterministic regardless of which font
+      // the rasterizer ends up using.
+      //
+      // text-align:right on .ev2-lb-pnl (class CSS) handles the
+      // right-anchoring inside the wider track — same visual
+      // anchoring as the prior auto path.
       return '<div class="ev2-lb-row rank-'+rank+'"'
-        +     ' style="grid-template-columns:24px 28px minmax(0,1fr) auto;'
+        +     ' style="grid-template-columns:24px 28px minmax(0,1fr) 100px;'
         +     'padding:8px 14px 8px 10px;gap:10px;overflow:hidden">'
         + '<span class="ev2-lb-rank">'+rank+'</span>'
         + avHtml
