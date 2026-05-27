@@ -14019,7 +14019,6 @@ function _eodRenderPersonalCard(data, reason){
     +   '</div>'
     +   '<div class="ev2-head-meta">'
     +     '<span class="ev2-head-date" style="white-space:nowrap">'+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
-    +     '<span class="ev2-head-time" style="white-space:nowrap">Live &middot; Today</span>'
     +   '</div>'
     + '</div>'
     // (2) Body — 2 cols + vertical divider
@@ -14134,7 +14133,6 @@ function _eodRenderGroupCard(data, reason){
     +   '</div>'
     +   '<div class="ev2-head-meta">'
     +     '<span class="ev2-head-date" style="white-space:nowrap">'+_eodSafe(_eodDateLabel(data.etDate))+'</span>'
-    +     '<span class="ev2-head-time" style="white-space:nowrap">Live &middot; Today</span>'
     +   '</div>'
     + '</div>'
     // (2) Body
@@ -31156,7 +31154,14 @@ function cookieDecline(){
 .ev2-lb{display:flex;flex-direction:column;gap:6px}
 .ev2-lb-row{
   display:grid;
-  grid-template-columns:24px 28px 1fr auto;
+  /* Session 20g follow-up — handle column was `1fr` (= minmax(auto,1fr)),
+     which respects content's intrinsic min-width and pushed the
+     auto-sized pnl past the row's right edge when the handle was long
+     enough.  minmax(0,1fr) lets the handle shrink to zero so the
+     existing overflow:hidden+text-overflow:ellipsis on .ev2-lb-handle
+     finally activates, leaving full room for the pnl inside the
+     rank-1 gold border. */
+  grid-template-columns:24px 28px minmax(0,1fr) auto;
   align-items:center;gap:10px;
   padding:8px 10px;border-radius:6px;
   border:1px solid transparent;background:var(--n-surface-2);
