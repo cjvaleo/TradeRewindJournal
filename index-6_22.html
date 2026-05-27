@@ -14094,15 +14094,18 @@ function _eodRenderGroupCard(data, reason){
         : '';
       var pnlTone = tr.pnl > 0 ? 'pos' : tr.pnl < 0 ? 'neg' : 'zero';
       var meCls = tr.isMe ? ' is-me' : '';
-      // Session 20g follow-up #2 — inline the grid layout + overflow
-      // containment so the row's auto-sized pnl can never spill past
-      // the rank-1 gold border in captured PNGs.  modern-screenshot
-      // has a documented history of dropping class-based grid specs
-      // during clone (see inline-style strategy comment at line ~14001),
-      // and the row's auto-sized pnl column makes that a visible
-      // regression at moderate pnl values + longer handles.
+      // Session 20g follow-up #2/#3 — inline the row's full geometry
+      // so the capture pass can't drop any of it.  Padding got
+      // dropped along with the grid spec by modern-screenshot's
+      // clone in #2 (only grid was inlined then), which made
+      // overflow:hidden start clipping the pnl's last 1-2 chars on
+      // every row — the inline padding here restores the breathing
+      // room.  Bumped right padding 10 → 14 so italic glyphs (which
+      // can overshoot their advance widths by ~1-2px) have a guaranteed
+      // safe zone before the row's clip edge.
       return '<div class="ev2-lb-row rank-'+rank+'"'
-        +     ' style="grid-template-columns:24px 28px minmax(0,1fr) auto;overflow:hidden">'
+        +     ' style="grid-template-columns:24px 28px minmax(0,1fr) auto;'
+        +     'padding:8px 14px 8px 10px;gap:10px;overflow:hidden">'
         + '<span class="ev2-lb-rank">'+rank+'</span>'
         + avHtml
         + '<span class="ev2-lb-handle'+meCls+'" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">@'+_eodSafe(tr.username||'trader')+'</span>'
@@ -31304,6 +31307,13 @@ function cookieDecline(){
 /* During PNG capture we hide the action row so the export reads
    like a finished poster, not a dialog. */
 .eod-card.is-capturing .ev2-actions{display:none}
+/* Session 20g follow-up #3 — during capture the close button
+   (#eod-modal-close on .eod-stage) isn't part of the captured DOM,
+   so the 36px right padding on .ev2-head leaves the date label
+   floating with empty space to its right.  Drop the lane during
+   capture so the date anchors to the card's natural 26px padding
+   instead.  Live render keeps the lane (close button needs it). */
+.eod-card.is-capturing .ev2-head{padding-right:0}
 
 /* Sequenced-mode nav — dot indicator + Next (unchanged from v1) */
 .eod-nav{
