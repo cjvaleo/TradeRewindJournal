@@ -9,7 +9,9 @@
     "dev": "./dev.sh"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^131.0.1",
     "@supabase/supabase-js": "^2.49.0",
+    "puppeteer-core": "^23.11.1",
     "resend": "^6.12.3",
     "stripe": "^17.5.0"
   }

@@ -14319,6 +14319,49 @@ function _eodLoadHtml2Canvas(){
 // → share chain synchronous.
 var _eodPrebakedFile = null;
 var _eodPrebakedFor  = null;  // tracks which card the file was baked for
+
+// Session 20i — structured share payload stashed when a card is rendered
+// so the (server) capture path has access to the original data without
+// re-parsing the DOM.  Updated by every inflate / refresh path.  Shape:
+//   { type: 'personal'|'group', data: <renderer payload>, handle, initials }
+// _eodCaptureCardServer reads this; _eodCaptureCardClient ignores it.
+var _eodActivePayload = null;
+function _eodSetActivePayload(type, data){
+  if(!type || !data){ _eodActivePayload = null; return; }
+  // Compose the server-friendly payload.  For personal we pre-format the
+  // per-trade time string in the BROWSER's TZ (server is UTC and would
+  // otherwise print the wrong clock face) and inject the handle/initials
+  // the renderer derives from globals.  For group the data structure is
+  // already self-sufficient — only need memberCount.
+  if(type === 'personal'){
+    var handle = (typeof currentUser !== 'undefined' && currentUser && typeof acct !== 'undefined' && acct && acct.username)
+        ? acct.username
+        : (typeof currentUser !== 'undefined' && currentUser && currentUser.email
+            ? currentUser.email.split('@')[0]
+            : 'you');
+    var initials = (typeof _eodInitialsFor === 'function') ? _eodInitialsFor(handle) : 'YO';
+    var trades = (data.trades || []).map(function(t){
+      // _eodTimeOf formats in the browser's local TZ.  Frozen at payload-
+      // build time so the server-side render shows the user's clock face.
+      var time = (typeof _eodTimeOf === 'function') ? _eodTimeOf(t) : '—';
+      return Object.assign({}, t, { time: time });
+    });
+    _eodActivePayload = {
+      type: 'personal',
+      data: Object.assign({}, data, { handle: handle, initials: initials, trades: trades })
+    };
+  } else if(type === 'group'){
+    var community = Object.assign({}, data.community || {});
+    if(community.memberCount == null && Array.isArray(community.members)){
+      community.memberCount = community.members.length;
+    }
+    _eodActivePayload = {
+      type: 'group',
+      data: Object.assign({}, data, { community: community })
+    };
+  }
+}
+
 async function _eodPrebake(){
   var card = _eodResolveCard();
   if(!card) return;
@@ -14352,9 +14395,111 @@ function _eodCanShareFiles(){
   }
 }
 
-// Pure capture — returns Promise<File>. Caller wraps the resulting
-// File in a download anchor OR hands it to navigator.share. Toggles
-// .is-capturing on the card so the action row vanishes in the PNG.
+// Server-side capture (Session 20i).  POSTs the stashed share payload
+// to /api/eod/render-card and resolves to a File built from the PNG
+// response.  Returns null on any failure — caller falls back to the
+// client-side modern-screenshot path.
+//
+// Why server-side at all: client-side dom-to-image rasterizes via SVG
+// foreignObject → drawImage which silently drops @font-face inside SVG
+// style, so the captured PNG shows Georgia / Menlo / Helvetica fallbacks
+// instead of Instrument Serif / Geist Mono / Geist.  Puppeteer renders
+// in a real Chromium with real font loading so the fonts come through.
+async function _eodCaptureCardServer(card){
+  if(!card) return null;
+  if(!_eodActivePayload){
+    console.warn('[eod render-server] no active payload — falling back to client capture');
+    return null;
+  }
+  // Auth — same Bearer pattern as every other /api/* call in the SPA.
+  var token = null;
+  try {
+    if(window._sb && _sb.auth && _sb.auth.getSession){
+      var s = await _sb.auth.getSession();
+      token = s && s.data && s.data.session && s.data.session.access_token;
+    }
+  } catch(e){
+    console.warn('[eod render-server] auth read failed:', e && e.message);
+  }
+  if(!token){
+    console.warn('[eod render-server] no session — falling back to client capture');
+    return null;
+  }
+  console.log('[eod render-server] POSTing payload', { type: _eodActivePayload.type });
+  var t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+  try {
+    // 10s ceiling on the fetch.  Typical render lands under 4s once warm;
+    // a hard timeout keeps a wedged server from blocking the click chain
+    // longer than the client-side fallback would have taken.
+    var ctrl = (typeof AbortController === 'function') ? new AbortController() : null;
+    var timer = setTimeout(function(){ if(ctrl) ctrl.abort(); }, 10000);
+    var r = await fetch('/api/eod/render-card', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(_eodActivePayload),
+      signal: ctrl ? ctrl.signal : undefined
+    });
+    clearTimeout(timer);
+    if(!r.ok){
+      console.warn('[eod render-server] HTTP', r.status, '— falling back to client capture');
+      return null;
+    }
+    var blob = await r.blob();
+    if(!blob || !blob.size){
+      console.warn('[eod render-server] empty blob — falling back to client capture');
+      return null;
+    }
+    var dateStr = card.dataset.eodDate || _localDate(new Date());
+    var filename = 'rewind-pnl-' + dateStr + '.png';
+    var file = new File([blob], filename, { type: 'image/png' });
+    var t1 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    console.log('[eod render-server] ok —', file.size, 'bytes in', Math.round(t1 - t0), 'ms');
+    return file;
+  } catch(e){
+    console.warn('[eod render-server] fetch failed — falling back to client capture:', e && e.message);
+    return null;
+  }
+}
+
+// Capture dispatcher (Session 20i).  Tries the server-side Puppeteer
+// pipeline first because it's the only path that reliably renders our
+// custom fonts in the captured PNG.  Falls back to the client-side
+// modern-screenshot path on any server failure so a degraded share is
+// still preferable to a blocked one.
+//
+// Concurrency guard uses a JS-only flag (card.__eodCapturing) instead
+// of the .is-capturing CSS class so the live card's action row stays
+// visible to the user during the server fetch (which can take 3-5s).
+// _eodCaptureCardClient still manages the .is-capturing class on the
+// fallback path because that path actually rasterizes the live DOM.
+async function _eodCaptureCard(card){
+  if(!card) throw new Error('no card');
+  if(card.__eodCapturing){
+    console.warn('[eod capture] bail — card is already capturing (concurrent call)');
+    throw new Error('capture already in progress');
+  }
+  card.__eodCapturing = true;
+  try {
+    var serverFile = await _eodCaptureCardServer(card);
+    if(serverFile) return serverFile;
+    // Fall through.  Drop the JS flag so the client function's own
+    // .is-capturing class guard can run normally (it sets the class
+    // itself, then removes it in its finally).
+    card.__eodCapturing = false;
+    console.log('[eod capture] server path returned null — using client fallback');
+    return await _eodCaptureCardClient(card);
+  } finally {
+    card.__eodCapturing = false;
+  }
+}
+
+// Client-side capture (legacy modern-screenshot path) — kept as a
+// fallback for when the server endpoint is unavailable or times out.
+// Renamed from _eodCaptureCard in Session 20i; the dispatcher above
+// calls into it after the server attempt fails.
 //
 // Hardening layered in after a prod hang at the html2canvas step
 // reported on the empty-state card:
@@ -14370,7 +14515,7 @@ function _eodCanShareFiles(){
 //      "capture timeout" so the chain doesn't hang forever.
 //   4. Per-step logs at EVERY substep so the next failure pinpoints
 //      itself in the console.
-async function _eodCaptureCard(card){
+async function _eodCaptureCardClient(card){
   if(!card) throw new Error('no card');
   if(card.classList.contains('is-capturing')){
     console.warn('[eod capture] bail — card is already capturing (concurrent call)');
@@ -15423,6 +15568,11 @@ function _eodMaybeRefreshOpenPersonal(){
   // wipe sibling cards if any existed; outerHTML on the personal
   // element preserves order.
   personal.outerHTML = html;
+  // Stash payload for the server-render share path (Session 20i).  The
+  // prebaked File was generated from the OLD data, so invalidate it
+  // alongside the swap so the next Share click re-captures fresh.
+  _eodSetActivePayload('personal', data);
+  _eodPrebakedFile = null; _eodPrebakedFor = null;
 }
 
 async function eodInflatePersonalFromWidget(){
@@ -15445,6 +15595,8 @@ async function eodInflatePersonalFromWidget(){
   }
   var html = _eodRenderPersonalCard(data, 'open (dash-bar click)');
   if(html) _eodShowModal([{ flavor:'personal', html:html }]);
+  // Stash the data for the server-render share path (Session 20i).
+  _eodSetActivePayload('personal', data);
 }
 async function eodInflateGroupFromWidget(community){
   if(!community || !community.id) return;
@@ -15462,6 +15614,7 @@ async function eodInflateGroupFromWidget(community){
   }
   var html = _eodRenderGroupCard(data, 'open (community badge)');
   if(html) _eodShowModal([{ flavor:'group', html:html, communityId:community.id }]);
+  _eodSetActivePayload('group', data);
 }
 
 /* Live re-render of the open GROUP PnL Card — async because it needs
@@ -15504,6 +15657,8 @@ async function _eodMaybeRefreshOpenGroup(){
   var html = _eodRenderGroupCard(data, 'refresh (trade mutation)');
   if(!html) return;
   stillOpen.outerHTML = html;
+  _eodSetActivePayload('group', data);
+  _eodPrebakedFile = null; _eodPrebakedFor = null;
 }
 
 window.eodInflatePersonalFromWidget  = eodInflatePersonalFromWidget;
