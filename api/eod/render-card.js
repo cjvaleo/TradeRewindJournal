@@ -268,35 +268,14 @@ function drawCard(payload) {
   const moneyParts = fmtMoneyParts(total);
   const heroColor  = moneyColor(total);
 
-  // (1) Card surface — fills the ENTIRE canvas edge-to-edge.  Session
-  // 20n removed the outer dark frame; the PNG's outer edge IS the card
-  // edge now.
-  ctx.fillStyle = C.surface;
+  // (1) Flat background — pure #0a0a0a edge-to-edge.  Session 20o
+  // stripped the radial glow AND the gold perimeter hairline; the hero
+  // number now carries the card purely through scale, no decoration.
+  ctx.fillStyle = C.bg;
   ctx.fillRect(0, 0, W, H);
-
-  // (2) Subtle radial sage/gold glow behind the hero on the LEFT zone.
-  // Sage on profit/zero days, rose on loss days — keeps the poster
-  // feeling on-brand without overpowering the text.  Drawn on top of the
-  // surface so it survives the edge-to-edge fill.
-  const glowCx = 380, glowCy = 460;
-  const glowColor = total >= 0 ? 'rgba(95, 179, 137, 0.18)' : 'rgba(201, 95, 95, 0.16)';
-  const glow = ctx.createRadialGradient(glowCx, glowCy, 60, glowCx, glowCy, 720);
-  glow.addColorStop(0,    glowColor);
-  glow.addColorStop(0.55, glowColor.replace(/, 0\.\d+\)/, ', 0.04)'));
-  glow.addColorStop(1,    glowColor.replace(/, 0\.\d+\)/, ', 0)'));
-  ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, W, H);
-
-  // (3) Perimeter hairline — sharp 90° corners (Session 20n), drawn
-  // 0.5px inside the canvas edge so the full 1px line renders instead of
-  // being half-clipped at x/y=0.
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = 'rgba(245,215,124,0.18)';
-  ctx.strokeRect(0.5, 0.5, W - 1, H - 1);
 
   // Card spans the whole canvas — no outer pad.  Internal content
-  // padding (INNER) stays as-is so content keeps breathing room from the
-  // (now canvas) edge.
+  // padding (INNER) keeps content off the edge.
   const cardX = 0, cardY = 0;
   const cardW = W, cardH = H;
   const INNER = 40;
@@ -361,11 +340,12 @@ function drawCard(payload) {
   const labelY = bodyY + 18;
   drawMonoCaps(ctx, leftLabel, x0, labelY, 13, C.text3, 0.18);
 
-  // Hero PnL — Instrument Serif italic at 190px, the dominant element.
-  // Dynamic shrink keeps long values (e.g. "+$25,640.00") inside the
-  // left column: step down 4px at a time until the measured width fits
-  // leftW, floor 84px so even an extreme value stays legible-big.
-  let heroSize = 190;
+  // Hero PnL — Instrument Serif italic at 235px (Session 20o bumped it
+  // ~24% from 190).  It's THE dominant element — the first thing the eye
+  // hits.  Dynamic shrink keeps long values (e.g. "+$25,640.00") inside
+  // the left column: step down 4px at a time until the measured width
+  // fits leftW, floor 84px so even an extreme value stays legible-big.
+  let heroSize = 235;
   let heroW = measureMoneyHero(ctx, moneyParts, heroSize, 'InstrumentSerifItalic');
   while (heroW > leftW - 6 && heroSize > 84) {
     heroSize -= 4;
