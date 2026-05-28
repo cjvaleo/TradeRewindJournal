@@ -236,7 +236,14 @@ function monoCapsWidth(ctx, text, size, tracking = 0.16) {
 // stack, RIGHT carries the top-traders/trades rail + stat strip.
 
 function drawCard(payload) {
-  const W = 1200, H = 900;
+  // Session 20k — canvas tightened from 1200×900 to 1200×700 (≈12:7).
+  // The old 4:3 frame left ~30% dead space below the stats row + rank-3
+  // leaderboard row.  Footer is bottom-anchored (cardY + cardH - 30) so
+  // reducing H pulls the brand stack + meta line up automatically; body
+  // bodyH derives from innerH so the leaderboard rail naturally shrinks
+  // to match.  Verified locally that the 3 leaderboard rows still fit
+  // with breathing room and the hero PnL doesn't clip.
+  const W = 1200, H = 700;
   const canvas = createCanvas(W, H);
   const ctx = canvas.getContext('2d');
 
