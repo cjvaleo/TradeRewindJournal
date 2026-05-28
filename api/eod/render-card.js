@@ -268,13 +268,16 @@ function drawCard(payload) {
   const moneyParts = fmtMoneyParts(total);
   const heroColor  = moneyColor(total);
 
-  // (1) Page background — flat black.
-  ctx.fillStyle = C.bg;
+  // (1) Card surface — fills the ENTIRE canvas edge-to-edge.  Session
+  // 20n removed the outer dark frame; the PNG's outer edge IS the card
+  // edge now.
+  ctx.fillStyle = C.surface;
   ctx.fillRect(0, 0, W, H);
 
-  // (2) Subtle radial sage/gold glow centered behind the hero on the
-  // LEFT zone.  Sage on profit/zero days, rose on loss days — keeps the
-  // poster feeling on-brand without overpowering the text.
+  // (2) Subtle radial sage/gold glow behind the hero on the LEFT zone.
+  // Sage on profit/zero days, rose on loss days — keeps the poster
+  // feeling on-brand without overpowering the text.  Drawn on top of the
+  // surface so it survives the edge-to-edge fill.
   const glowCx = 380, glowCy = 460;
   const glowColor = total >= 0 ? 'rgba(95, 179, 137, 0.18)' : 'rgba(201, 95, 95, 0.16)';
   const glow = ctx.createRadialGradient(glowCx, glowCy, 60, glowCx, glowCy, 720);
@@ -284,14 +287,18 @@ function drawCard(payload) {
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
 
-  // (3) Card frame — rounded rect with gold-tinted hairline.
-  const PAD = 50;
-  const cardX = PAD, cardY = PAD;
-  const cardW = W - 2 * PAD, cardH = H - 2 * PAD;
-  fillRoundRect(ctx, cardX, cardY, cardW, cardH, 24, C.surface);
-  strokeRoundRect(ctx, cardX, cardY, cardW, cardH, 24, 'rgba(245,215,124,0.18)', 1);
+  // (3) Perimeter hairline — sharp 90° corners (Session 20n), drawn
+  // 0.5px inside the canvas edge so the full 1px line renders instead of
+  // being half-clipped at x/y=0.
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(245,215,124,0.18)';
+  ctx.strokeRect(0.5, 0.5, W - 1, H - 1);
 
-  // Inner content frame — 40px breathing on every side.
+  // Card spans the whole canvas — no outer pad.  Internal content
+  // padding (INNER) stays as-is so content keeps breathing room from the
+  // (now canvas) edge.
+  const cardX = 0, cardY = 0;
+  const cardW = W, cardH = H;
   const INNER = 40;
   const x0 = cardX + INNER, y0 = cardY + INNER;
   const innerW = cardW - 2 * INNER, innerH = cardH - 2 * INNER;
@@ -415,8 +422,8 @@ function drawCard(payload) {
 
   // (5b) RIGHT — top traders / top trades rail.
   // Subtle bg tint for the rail (slightly elevated surface).
-  fillRoundRect(ctx, rightX, bodyY, rightW, bodyH, 14, 'rgba(255,255,255,0.025)');
-  strokeRoundRect(ctx, rightX, bodyY, rightW, bodyH, 14, 'rgba(255,255,255,0.05)', 1);
+  fillRoundRect(ctx, rightX, bodyY, rightW, bodyH, 0, 'rgba(255,255,255,0.025)');
+  strokeRoundRect(ctx, rightX, bodyY, rightW, bodyH, 0, 'rgba(255,255,255,0.05)', 1);
 
   // Right header — trophy + "TOP TRADERS/TRADES".
   const rightHeaderY = bodyY + 28;
@@ -437,10 +444,10 @@ function drawCard(payload) {
         const isRank1 = i === 0;
         // Row chrome — rank-1 gets a soft gold tint + gold hairline.
         if (isRank1) {
-          fillRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 8, 'rgba(245,215,124,0.10)');
-          strokeRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 8, 'rgba(245,215,124,0.32)', 1);
+          fillRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 0, 'rgba(245,215,124,0.10)');
+          strokeRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 0, 'rgba(245,215,124,0.32)', 1);
         } else {
-          fillRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 8, C.surface2);
+          fillRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 0, C.surface2);
         }
         // Rank number (Instrument Serif italic, gold on rank 1).
         ctx.font = '26px "InstrumentSerifItalic"';
@@ -452,30 +459,39 @@ function drawCard(payload) {
         const finish = normFinish(tr.avatar_finish || tr.color);
         const init   = (tr.initials || tr.avatar_initials || initialsFor(tr.username));
         drawAvatar(ctx, rightX + 64, ry + rowH / 2, 18, finish, init, 11);
-        // Handle.
-        ctx.font = '14px "GeistMono"';
+        // PnL — measured FIRST so the handle can be clipped against its
+        // actual left edge (the handle font grew in 20n, so a static
+        // reserve would over- or under-shoot).
+        const pnlParts = fmtMoneyParts(tr.pnl);
+        ctx.font = '20px "InstrumentSerifItalic"';
+        const pnlText = pnlParts.sign + '$' + pnlParts.int;
+        const pnlW = ctx.measureText(pnlText).width;
+
+        // Handle — Session 20n bumped 14px → 20px GeistMonoMedium so the
+        // names are the prominent element in each row (visibly larger
+        // than the 26px condensed-serif rank).  Clipped against the pnl's
+        // left edge with a 16px gutter; ellipsis on overflow.
+        const handleX = rightX + 92;
+        const pnlLeftEdge = rightX + rightW - 22 - pnlW;
+        const maxHandleW = pnlLeftEdge - 16 - handleX;
+        ctx.font = '20px "GeistMonoMedium"';
         ctx.fillStyle = tr.isMe ? C.accentCool : C.text;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
-        const handleStr = '@' + String(tr.username || 'trader');
-        // Truncate if too wide.
-        const maxHandleW = rightW - 230;
-        let drawnHandle = handleStr;
+        let drawnHandle = '@' + String(tr.username || 'trader');
         if (ctx.measureText(drawnHandle).width > maxHandleW) {
           while (drawnHandle.length > 4 && ctx.measureText(drawnHandle + '…').width > maxHandleW) {
             drawnHandle = drawnHandle.slice(0, -1);
           }
           drawnHandle += '…';
         }
-        ctx.fillText(drawnHandle, rightX + 92, ry + rowH / 2);
-        // PnL.
-        const pnlParts = fmtMoneyParts(tr.pnl);
-        const pnlColor = moneyColor(tr.pnl);
+        ctx.fillText(drawnHandle, handleX, ry + rowH / 2);
+
+        // PnL (measured above).
+        ctx.fillStyle = moneyColor(tr.pnl);
         ctx.font = '20px "InstrumentSerifItalic"';
-        ctx.fillStyle = pnlColor;
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
-        const pnlText = pnlParts.sign + '$' + pnlParts.int;
         ctx.fillText(pnlText, rightX + rightW - 22, ry + rowH / 2);
       });
     }
@@ -493,13 +509,13 @@ function drawCard(payload) {
         const pnlVal = Number(t.pnl) || 0;
         const bestPos = isBest && pnlVal > 0;
         if (bestPos) {
-          fillRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 8, 'rgba(95,179,137,0.10)');
-          strokeRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 8, 'rgba(95,179,137,0.28)', 1);
+          fillRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 0, 'rgba(95,179,137,0.10)');
+          strokeRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 0, 'rgba(95,179,137,0.28)', 1);
         } else if (isBest) {
-          fillRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 8, C.surface);
-          strokeRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 8, 'rgba(255,255,255,0.10)', 1);
+          fillRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 0, C.surface);
+          strokeRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 0, 'rgba(255,255,255,0.10)', 1);
         } else {
-          fillRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 8, C.surface2);
+          fillRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 0, C.surface2);
         }
         // Time.
         ctx.font = '11px "GeistMono"';
@@ -610,8 +626,8 @@ function drawSideChip(ctx, x, y, dir) {
   for (const ch of label) w += ctx.measureText(ch).width + trackPx;
   w = w - trackPx + 14;
   const h = 22;
-  fillRoundRect(ctx, x, y, w, h, 4, bg);
-  strokeRoundRect(ctx, x, y, w, h, 4, bd, 1);
+  fillRoundRect(ctx, x, y, w, h, 0, bg);
+  strokeRoundRect(ctx, x, y, w, h, 0, bd, 1);
   ctx.fillStyle = fg;
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'left';
@@ -629,7 +645,7 @@ function drawEmptyState(ctx, x, y, w, title, hint) {
   ctx.setLineDash([6, 6]);
   ctx.lineWidth = 1;
   ctx.strokeStyle = 'rgba(255,255,255,0.14)';
-  roundRectPath(ctx, x, y, w, h, 8);
+  roundRectPath(ctx, x, y, w, h, 0);
   ctx.stroke();
   ctx.restore();
   // Title — Instrument Serif italic 18px.
