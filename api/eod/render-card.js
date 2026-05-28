@@ -329,26 +329,41 @@ function drawCard(payload) {
   const rightX = x0 + leftW + gapW;
 
   // (5a) LEFT — "Today's P&L" or "Collective P&L" label + huge hero PnL.
+  // Session 20l — the hero is the flex.  Bumped to 190px (was 128) so it
+  // dominates the left column.  Vertical rhythm is now anchored at three
+  // fixed points instead of stacking with fixed gaps: label near the top
+  // of the body, hero in the upper-middle, stat strip anchored to the
+  // lower portion (a fixed offset above the footer hairline) so the
+  // enlarged hero + the comfortable gap below it collapse the old dead
+  // band without leaving a new one.
   const leftLabel = isGroup ? 'Collective P&L' : "Today's P&L";
-  drawMonoCaps(ctx, leftLabel, x0, bodyY + 14, 13, C.text3, 0.18);
+  const labelY = bodyY + 18;
+  drawMonoCaps(ctx, leftLabel, x0, labelY, 13, C.text3, 0.18);
 
-  // Hero PnL — Instrument Serif italic at 128px (within the 72px+ spec,
-  // sized to fill the left column visually).  Auto-shrink if measured
-  // width exceeds the left column.
-  let heroSize = 128;
+  // Hero PnL — Instrument Serif italic at 190px, the dominant element.
+  // Dynamic shrink keeps long values (e.g. "+$25,640.00") inside the
+  // left column: step down 4px at a time until the measured width fits
+  // leftW, floor 84px so even an extreme value stays legible-big.
+  let heroSize = 190;
   let heroW = measureMoneyHero(ctx, moneyParts, heroSize, 'InstrumentSerifItalic');
-  while (heroW > leftW - 6 && heroSize > 64) {
+  while (heroW > leftW - 6 && heroSize > 84) {
     heroSize -= 4;
     heroW = measureMoneyHero(ctx, moneyParts, heroSize, 'InstrumentSerifItalic');
   }
-  const heroBaseline = bodyY + 14 + 24 + heroSize * 0.88;
+  // Hero baseline sits in the upper-middle — ~46px below the label, then
+  // down by the cap height of the (possibly shrunk) face.
+  const heroBaseline = labelY + 46 + heroSize * 0.74;
   drawMoneyHero(ctx, moneyParts, x0, heroBaseline, heroSize, 'InstrumentSerifItalic', heroColor);
 
-  // Stat strip — 3 stats horizontally below the hero (Trades / WR / Avg).
-  const stripY = heroBaseline + 60;
+  // Stat strip — anchored to the lower portion of the left column,
+  // independent of the hero size, so the rhythm is stable whether the
+  // hero is full 190px or shrunk for a long value.  Values land ~56px
+  // above the footer hairline; labels 36px above the values.
+  const footerHairlineY = cardY + cardH - 30 - 14;
+  const stripY = footerHairlineY - 74;
   // Hairline divider above the strip.
   ctx.fillStyle = C.border;
-  ctx.fillRect(x0, stripY - 18, leftW, 1);
+  ctx.fillRect(x0, stripY - 20, leftW, 1);
 
   let stats;
   if (isGroup) {
