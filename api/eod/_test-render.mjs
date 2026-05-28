@@ -18,6 +18,7 @@ const samplePersonal = {
     winRate: 67,
     avgR: 1.4,
     avgRCount: 3,
+    totalPoints: 478.3,
     handle: 'cjvaleo',
     initials: 'CJ',
     trades: [
@@ -36,6 +37,7 @@ const sampleGroup = {
     tradeCount: 7,
     winRate: 43,
     avgPerTrade: -30.49,
+    totalPoints: 478.3,
     community: { id:'c1', name:'Trading Ark', memberCount: 128 },
     traders: [
       { user_id:'u1', username:'kingrat',  pnl:  2640.00, isMe: false, avatar_finish:'gold',     initials:'KR' },

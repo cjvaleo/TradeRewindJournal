@@ -111,6 +111,20 @@ function moneyColor(v) {
   const n = Number(v) || 0;
   return n > 0 ? C.profit : n < 0 ? C.loss : C.text4;
 }
+// Points — gross price-move total, NOT a dollar value.  Signed, 1
+// decimal, no $.  Colored blue (informational metric) when ≥0, rose
+// when negative — distinguishes it from the sage/rose dollar stats.
+function fmtPoints(v) {
+  const n = Number(v) || 0;
+  const sign = n > 0 ? '+' : n < 0 ? '−' : '';
+  // 1 decimal, thousands-grouped integer part (e.g. "+1,250.5").
+  const parts = Math.abs(n).toFixed(1).split('.');
+  const grouped = Number(parts[0]).toLocaleString('en-US');
+  return sign + grouped + '.' + parts[1];
+}
+function pointsColor(v) {
+  return (Number(v) || 0) < 0 ? C.loss : C.accentCool;
+}
 function fmtDate(etDate) {
   if (!etDate) return '';
   const d = new Date(etDate + 'T12:00:00Z');
@@ -373,6 +387,7 @@ function drawCard(payload) {
       { lbl: 'Trades',    val: String(data.tradeCount || 0),                    color: C.text },
       { lbl: 'Group WR',  val: String(data.winRate || 0) + '%',                  color: C.text },
       { lbl: 'Avg / trade', val: avgParts.sign + '$' + avgParts.int + '.' + avgParts.cents.slice(1), color: moneyColor(avgPer) },
+      { lbl: 'Total Points', val: fmtPoints(data.totalPoints), color: pointsColor(data.totalPoints) },
     ];
   } else {
     const avgR = Number(data.avgR) || 0;
@@ -383,9 +398,11 @@ function drawCard(payload) {
       { lbl: 'Trades',   val: String(data.tradeCount || 0),                  color: C.text },
       { lbl: 'Win Rate', val: String(data.winRate || 0) + '%',                color: C.text },
       { lbl: 'Avg R',    val: avgRTxt,                                        color: avgR > 0 ? C.profit : avgR < 0 ? C.loss : C.text },
+      { lbl: 'Total Points', val: fmtPoints(data.totalPoints), color: pointsColor(data.totalPoints) },
     ];
   }
-  const colW = leftW / 3;
+  // 4-across single row (Session 20m added Total Points as the 4th).
+  const colW = leftW / 4;
   stats.forEach((s, i) => {
     const cx = x0 + colW * i;
     drawMonoCaps(ctx, s.lbl, cx, stripY, 10, C.text3, 0.18);

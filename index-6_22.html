@@ -13723,6 +13723,13 @@ function _eodPersonalData(etToday){
     }, 0);
     avgR = sum / rrTrades.length;
   }
+  // Total points — gross sum of trade_data.points (raw price move per
+  // trade; reflects setup quality, not size).  Same metric the dashboard
+  // hero shows as "X pts".  Feeds the share card's 4th stat (Session 20m).
+  var totalPoints = todays.reduce(function(s,t){
+    var p = Number(t.points);
+    return s + (Number.isFinite(p) ? p : 0);
+  }, 0);
   return {
     flavor: 'personal',
     etDate: etToday,
@@ -13731,6 +13738,7 @@ function _eodPersonalData(etToday){
     winRate: wr,
     avgR: avgR,
     avgRCount: rrTrades.length,
+    totalPoints: totalPoints,
     trades: todays
   };
 }
@@ -13809,6 +13817,18 @@ async function _eodGroupData(community, todayLocal){
       byUser[uid].pnl += Number(p.pnl_today) || 0;
       byUser[uid].tradeCount += 1;
     });
+    // Total points — gross sum of metadata.points across every post
+    // (each shared trade carries its raw price move in metadata.points;
+    // see the share-to-community insert).  metadata is jsonb (object),
+    // but tolerate a stringified row defensively.  Feeds the share
+    // card's 4th stat (Session 20m).
+    var totalPoints = posts.reduce(function(s, p){
+      var m = p.metadata;
+      if(typeof m === 'string'){ try { m = JSON.parse(m); } catch(_){ m = null; } }
+      var v = m && m.points;
+      var n = Number(v);
+      return s + (Number.isFinite(n) ? n : 0);
+    }, 0);
     var traders = Object.keys(byUser).map(function(k){ return byUser[k]; });
     traders.sort(function(a,b){ return b.pnl - a.pnl; });
     var totalPnl = traders.reduce(function(s,t){ return s + t.pnl; }, 0);
@@ -13831,6 +13851,7 @@ async function _eodGroupData(community, todayLocal){
       tradeCount: totalTrades,
       winRate: wr,
       avgPerTrade: avgPerTrade,
+      totalPoints: totalPoints,
       traders: traders.slice(0, 3)
     };
   } catch(e){
