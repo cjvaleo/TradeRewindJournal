@@ -340,12 +340,12 @@ function drawCard(payload) {
   const labelY = bodyY + 18;
   drawMonoCaps(ctx, leftLabel, x0, labelY, 13, C.text3, 0.18);
 
-  // Hero PnL — Instrument Serif italic at 235px (Session 20o bumped it
-  // ~24% from 190).  It's THE dominant element — the first thing the eye
+  // Hero PnL — Instrument Serif italic at 275px (Session 20p bumped it
+  // ~17% from 235).  It's THE dominant element — the first thing the eye
   // hits.  Dynamic shrink keeps long values (e.g. "+$25,640.00") inside
   // the left column: step down 4px at a time until the measured width
   // fits leftW, floor 84px so even an extreme value stays legible-big.
-  let heroSize = 235;
+  let heroSize = 275;
   let heroW = measureMoneyHero(ctx, moneyParts, heroSize, 'InstrumentSerifItalic');
   while (heroW > leftW - 6 && heroSize > 84) {
     heroSize -= 4;
@@ -362,10 +362,9 @@ function drawCard(payload) {
   // above the footer hairline; labels 36px above the values.
   const footerHairlineY = cardY + cardH - 30 - 14;
   const stripY = footerHairlineY - 74;
-  // Hairline divider above the strip.
-  ctx.fillStyle = C.border;
-  ctx.fillRect(x0, stripY - 20, leftW, 1);
 
+  // Stats array first — needed to measure the group width before we can
+  // center it + size the divider (Session 20p).
   let stats;
   if (isGroup) {
     const avgPer = Number(data.avgPerTrade) || 0;
@@ -388,16 +387,35 @@ function drawCard(payload) {
       { lbl: 'Total Points', val: fmtPoints(data.totalPoints), color: pointsColor(data.totalPoints) },
     ];
   }
-  // 4-across single row (Session 20m added Total Points as the 4th).
-  const colW = leftW / 4;
-  stats.forEach((s, i) => {
-    const cx = x0 + colW * i;
-    drawMonoCaps(ctx, s.lbl, cx, stripY, 10, C.text3, 0.18);
-    ctx.font = '32px "InstrumentSerifItalic"';
+
+  // Session 20p — center the 4-stat group horizontally in the left
+  // column.  Each cell sizes to its widest line (label vs value), a
+  // fixed gap separates them, the group is centered with equal L/R
+  // padding, and the divider spans exactly the group width (not the
+  // full column edge-to-edge).
+  const STAT_GAP = 40;
+  const STAT_LABEL = 10, STAT_VALUE = 32;
+  const cellW = stats.map(function (s) {
+    const lw = monoCapsWidth(ctx, s.lbl, STAT_LABEL, 0.18);
+    ctx.font = STAT_VALUE + 'px "InstrumentSerifItalic"';
+    const vw = ctx.measureText(s.val).width;
+    return Math.max(lw, vw);
+  });
+  const statsGroupW = cellW.reduce(function (a, b) { return a + b; }, 0) + STAT_GAP * (stats.length - 1);
+  const statsX = x0 + Math.max(0, (leftW - statsGroupW) / 2);
+  // Divider — spans the centered group width only.
+  ctx.fillStyle = C.border;
+  ctx.fillRect(statsX, stripY - 20, Math.min(statsGroupW, leftW), 1);
+  // Cells — label + value, left-aligned within each content-sized cell.
+  let statCursor = statsX;
+  stats.forEach(function (s, i) {
+    drawMonoCaps(ctx, s.lbl, statCursor, stripY, STAT_LABEL, C.text3, 0.18);
+    ctx.font = STAT_VALUE + 'px "InstrumentSerifItalic"';
     ctx.fillStyle = s.color;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillText(s.val, cx, stripY + 36);
+    ctx.fillText(s.val, statCursor, stripY + 36);
+    statCursor += cellW[i] + STAT_GAP;
   });
 
   // (5b) RIGHT — top traders / top trades rail.
@@ -443,7 +461,11 @@ function drawCard(payload) {
         // actual left edge (the handle font grew in 20n, so a static
         // reserve would over- or under-shoot).
         const pnlParts = fmtMoneyParts(tr.pnl);
-        ctx.font = '20px "InstrumentSerifItalic"';
+        // Session 20p — pnl bumped 20px → 24px Instrument Serif italic so
+        // it reads confident, paired with the 20px mono handle rather
+        // than overshadowed by it.  Measured here so the handle can clip
+        // against its (now wider) left edge.
+        ctx.font = '24px "InstrumentSerifItalic"';
         const pnlText = pnlParts.sign + '$' + pnlParts.int;
         const pnlW = ctx.measureText(pnlText).width;
 
@@ -467,9 +489,10 @@ function drawCard(payload) {
         }
         ctx.fillText(drawnHandle, handleX, ry + rowH / 2);
 
-        // PnL (measured above).
+        // PnL (measured above) — 24px, right-aligned, always shown in
+        // full (handle truncates, never the pnl).
         ctx.fillStyle = moneyColor(tr.pnl);
-        ctx.font = '20px "InstrumentSerifItalic"';
+        ctx.font = '24px "InstrumentSerifItalic"';
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
         ctx.fillText(pnlText, rightX + rightW - 22, ry + rowH / 2);
