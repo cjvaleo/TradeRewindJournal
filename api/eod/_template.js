@@ -11,6 +11,94 @@
 // to system fonts in the PNG.  Puppeteer renders in a real Chromium with
 // real font loading — no rasterization tricks — so Instrument Serif,
 // Geist, and Geist Mono come through correctly in the captured screenshot.
+//
+// Session 20i follow-up — fonts are now INLINED as base64 data: URLs
+// rather than fetched from Google Fonts.  @sparticuz/chromium strips
+// system fonts to keep the Lambda layer small, so a Google Fonts CDN
+// blip = Georgia fallback in the PNG (which is exactly what we observed
+// in the first deploy).  Embedding eliminates the network dependency
+// entirely — the @font-face source resolves instantly to in-memory
+// bytes, and document.fonts.load() can wait on it deterministically.
+
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const _fontsDir = join(__dirname, 'fonts');
+// Read once at module load — Vercel Fluid Compute keeps the process warm
+// across invocations so this is paid once per cold-start, not per request.
+function _embedFont(filename) {
+  try {
+    const buf = readFileSync(join(_fontsDir, filename));
+    return 'data:font/woff2;base64,' + buf.toString('base64');
+  } catch (e) {
+    console.error('[eod template] font read failed for', filename, ':', e && e.message);
+    return null;
+  }
+}
+const _FONT_INSTRUMENT_SERIF_ITALIC  = _embedFont('instrument-serif-italic-latin.woff2');
+const _FONT_INSTRUMENT_SERIF_REGULAR = _embedFont('instrument-serif-regular-latin.woff2');
+const _FONT_GEIST                    = _embedFont('geist-latin.woff2');
+const _FONT_GEIST_MONO               = _embedFont('geist-mono-latin.woff2');
+
+// Latin-only unicode-range — matches what Google Fonts ships for /latin.
+// Our cards only show $-amounts + English copy, so this subset covers
+// every glyph we render.  The narrow range also means the browser won't
+// try to fall back to a system font for the basic latin chars.
+const LATIN_UNICODE_RANGE =
+  'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, ' +
+  'U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, ' +
+  'U+2212, U+2215, U+FEFF, U+FFFD';
+
+// @font-face declarations — emitted into the page's <style>.  font-display:
+// block keeps text invisible until the font face loads (which for data:
+// URLs is immediate), so a flash-of-fallback can't leak into the screenshot
+// even on a slow Chromium cold-start.  font-weight ranges cover the 400/
+// 500/600 variants the SPA uses without needing three separate @font-face
+// blocks per family.
+function _fontFaceCss() {
+  if (!_FONT_INSTRUMENT_SERIF_ITALIC || !_FONT_INSTRUMENT_SERIF_REGULAR ||
+      !_FONT_GEIST || !_FONT_GEIST_MONO) {
+    // If the woff2 files didn't load we leave @font-face out entirely
+    // and let render-card.js's font-check trip — that surfaces a clean
+    // 502 so the client falls back instead of rendering Georgia.
+    return '/* font embed failed — see template error logs */';
+  }
+  return `
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url(${_FONT_INSTRUMENT_SERIF_ITALIC}) format('woff2');
+  unicode-range: ${LATIN_UNICODE_RANGE};
+}
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url(${_FONT_INSTRUMENT_SERIF_REGULAR}) format('woff2');
+  unicode-range: ${LATIN_UNICODE_RANGE};
+}
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: block;
+  src: url(${_FONT_GEIST}) format('woff2');
+  unicode-range: ${LATIN_UNICODE_RANGE};
+}
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: block;
+  src: url(${_FONT_GEIST_MONO}) format('woff2');
+  unicode-range: ${LATIN_UNICODE_RANGE};
+}`;
+}
 
 // ── CSS variable palette (mirrors :root in index-6_22.html L37-L64) ────
 const ROOT_CSS = `
@@ -587,9 +675,14 @@ function renderGroup(data) {
 }
 
 // ── Page wrapper ──────────────────────────────────────────────────────
-// Google Fonts <link> loads the three families.  A tiny boot script
-// resolves a Promise once document.fonts.ready settles AND sets the
-// data-fonts-ready attribute so Puppeteer can wait on it deterministically.
+// Fonts are now inlined as base64 data: URLs via _fontFaceCss() so the
+// page is fully self-contained — no Google Fonts CDN dependency.  The
+// boot script explicitly awaits document.fonts.load() for every face we
+// actually paint, then stamps data-fonts-ready="1" on <html>.  Puppeteer
+// waits for that selector; if the script didn't reach it (or one of the
+// loads rejected), render-card.js's font check catches it and returns
+// 502 so the client falls back to the legacy modern-screenshot path
+// instead of producing a Georgia-fallback PNG.
 //
 // The .stage wrapper centres the card horizontally on a #0a0a0a backdrop
 // so the screenshot of the body crops cleanly without baking dead pixels
@@ -608,24 +701,36 @@ function buildHtml(payload) {
     + '<html lang="en"><head>'
     + '<meta charset="utf-8">'
     + '<title>Rewind PnL Card</title>'
-    // Preconnect first → keep paint blocked on the stylesheet → load the
-    // family blob via a single CSS file that includes italic + the
-    // weights we actually use (display 400 italic, sans 400/500/600,
-    // mono 400/500).
-    + '<link rel="preconnect" href="https://fonts.googleapis.com">'
-    + '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-    + '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">'
-    + '<style>' + ROOT_CSS + CARD_CSS
+    + '<style>' + _fontFaceCss() + '\n' + ROOT_CSS + CARD_CSS
     + '.stage { padding: 30px; display: inline-block; background: var(--n-bg); }'
     + '</style>'
     + '</head><body>'
     + '<div class="stage">' + bodyHtml + '</div>'
     + '<script>'
-    + '(function(){'
-    +   'function ready(){document.documentElement.setAttribute("data-fonts-ready","1");}'
-    +   'if(document.fonts&&document.fonts.ready){'
-    +     'document.fonts.ready.then(ready, ready);'
-    +   '}else{setTimeout(ready, 250);}'
+    + '(async function(){'
+    +   'function fail(why){'
+    +     'document.documentElement.setAttribute("data-fonts-error", String(why||"unknown"));'
+    +   '}'
+    +   'try{'
+    +     'if(!document.fonts||!document.fonts.load){fail("no-fonts-api");return;}'
+    // Force-load every face the card paints, with the actual font specs
+    // we use in CSS (size doesn't matter for load, family + weight +
+    // style do).  Each load() resolves with the loaded FontFace[] set;
+    // we await all of them in parallel so a slow one doesn't gate the
+    // others, then await document.fonts.ready for any leftover faces
+    // discovered via in-document <style> rules.
+    +     'await Promise.all(['
+    +       'document.fonts.load("italic 100px \\"Instrument Serif\\""),'
+    +       'document.fonts.load("400 100px \\"Instrument Serif\\""),'
+    +       'document.fonts.load("400 100px \\"Geist\\""),'
+    +       'document.fonts.load("500 100px \\"Geist\\""),'
+    +       'document.fonts.load("600 100px \\"Geist\\""),'
+    +       'document.fonts.load("400 100px \\"Geist Mono\\""),'
+    +       'document.fonts.load("500 100px \\"Geist Mono\\"")'
+    +     ']);'
+    +     'await document.fonts.ready;'
+    +     'document.documentElement.setAttribute("data-fonts-ready","1");'
+    +   '}catch(e){fail(e&&e.message);}'
     + '})();'
     + '</script>'
     + '</body></html>';

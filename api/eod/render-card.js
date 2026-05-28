@@ -143,19 +143,46 @@ export default async function handler(req, res) {
     // via element.screenshot below.
     await page.setViewport({ width: 1280, height: 1200, deviceScaleFactor: 2 });
     await page.setContent(html, { waitUntil: 'networkidle0', timeout: 15000 });
-    // Belt + suspenders — the inline boot script flips
-    // <html data-fonts-ready="1"> once document.fonts.ready settles.
-    // networkidle0 alone doesn't guarantee font shaping is done.
+    // Layered font wait — covers the ways font loading can fall through
+    // the cracks in @sparticuz/chromium:
+    //   (1) data-fonts-ready="1" selector — set by the template boot
+    //       script after Promise.all([...document.fonts.load(...)]) AND
+    //       document.fonts.ready resolve.
+    //   (2) Explicit document.fonts.ready await — belt-and-suspenders in
+    //       case the inline script hit an error and didn't stamp (1).
+    //   (3) document.fonts.check() guard — verifies the rasterizer sees
+    //       Instrument Serif italic + Geist Mono + Geist as loaded.  If
+    //       not, throw before screenshot so the client falls back to
+    //       modern-screenshot instead of getting a Georgia PNG.
     let fontsReadyFired = false;
     try {
-      await page.waitForSelector('html[data-fonts-ready="1"]', { timeout: 5000 });
+      await page.waitForSelector('html[data-fonts-ready="1"]', { timeout: 6000 });
       fontsReadyFired = true;
     } catch (_) {
-      console.warn('[eod render rid=' + rid + '] data-fonts-ready never fired (5s timeout) — proceeding anyway');
+      console.warn('[eod render rid=' + rid + '] data-fonts-ready never fired (6s timeout)');
     }
-    // Tiny tick to let layout settle after fonts swap.  Without this the
-    // first paint occasionally measures the fallback metrics.
-    await new Promise(r => setTimeout(r, 100));
+    // Explicit document.fonts.ready — drains any leftover faces.
+    const fontsReadyResult = await page.evaluate(async () => {
+      try {
+        if (document.fonts && document.fonts.ready) {
+          await document.fonts.ready;
+          return { ok: true, status: document.fonts.status, size: document.fonts.size };
+        }
+        return { ok: false, reason: 'no-fonts-api' };
+      } catch (e) {
+        return { ok: false, reason: e && e.message };
+      }
+    });
+    console.log('[eod render rid=' + rid + '] document.fonts.ready:', JSON.stringify(fontsReadyResult));
+    // Read any data-fonts-error the template boot script may have stamped.
+    const bootError = await page.evaluate(() =>
+      document.documentElement.getAttribute('data-fonts-error') || null
+    );
+    if (bootError) {
+      console.warn('[eod render rid=' + rid + '] template boot reported font error:', bootError);
+    }
+    // Tiny tick so layout settles after the fonts complete.
+    await new Promise(r => setTimeout(r, 50));
 
     // ── FONT DIAGNOSTIC — Session 20i debug.  Dumps document.fonts state
     // and probes whether Instrument Serif italic / Geist Mono / Geist
@@ -170,6 +197,7 @@ export default async function handler(req, res) {
         readyAttr: document.documentElement.getAttribute('data-fonts-ready'),
         families: [],
         measurements: {},
+        check: {},
       };
       if (document.fonts && document.fonts.forEach) {
         document.fonts.forEach(f => {
@@ -177,6 +205,17 @@ export default async function handler(req, res) {
             f.family + '/' + (f.style || 'normal') + '/' + (f.weight || '400') + ':' + f.status
           );
         });
+      }
+      // FontFaceSet.check() — authoritative "is this exact face loaded
+      // and usable right now?" probe.  Returns false if the browser
+      // would substitute a fallback for this CSS font shorthand.
+      try {
+        out.check.isItalic   = !!(document.fonts && document.fonts.check && document.fonts.check('italic 16px "Instrument Serif"'));
+        out.check.isRegular  = !!(document.fonts && document.fonts.check && document.fonts.check('16px "Instrument Serif"'));
+        out.check.geist      = !!(document.fonts && document.fonts.check && document.fonts.check('500 16px "Geist"'));
+        out.check.geistMono  = !!(document.fonts && document.fonts.check && document.fonts.check('400 16px "Geist Mono"'));
+      } catch (e) {
+        out.check.error = e && e.message;
       }
       // Ground-truth measurement — does the rasterizer actually shape
       // text in the expected face?  We measure a known glyph at 100px
@@ -209,6 +248,11 @@ export default async function handler(req, res) {
       'data-fonts-ready=' + (fontsReadyFired ? '1' : 'timeout'),
       '| document.fonts.status=' + fontDiag.status,
       '| families.size=' + fontDiag.size,
+      '| boot-error=' + (bootError || 'none'),
+      '| check.is-italic=' + fontDiag.check.isItalic,
+      '| check.is-regular=' + fontDiag.check.isRegular,
+      '| check.geist=' + fontDiag.check.geist,
+      '| check.geist-mono=' + fontDiag.check.geistMono,
       '| families=' + JSON.stringify(fontDiag.families),
       '| measurements=' + JSON.stringify(fontDiag.measurements));
 
@@ -226,6 +270,22 @@ export default async function handler(req, res) {
       'X-Eod-Fonts',
       'is=' + isLoaded + ',gm=' + gmLoaded + ',count=' + fontDiag.size + ',ready=' + (fontsReadyFired ? '1' : '0')
     );
+
+    // ── HARD FONT GUARD ──────────────────────────────────────────────
+    // If document.fonts.check() says Instrument Serif italic is NOT
+    // loaded, refuse to screenshot.  A 502 lets the client fall back to
+    // the legacy modern-screenshot path — which produces a Georgia PNG
+    // too, but at least we don't ship a confidently-wrong "server-
+    // rendered" output.  Same for Geist Mono since that's the other
+    // family the eye notices in the captured cards.
+    if (!fontDiag.check.isItalic || !fontDiag.check.geistMono) {
+      throw new Error(
+        'fonts not loaded: instrument-italic=' + fontDiag.check.isItalic +
+        ' geist-mono=' + fontDiag.check.geistMono +
+        ' boot-error=' + (bootError || 'none') +
+        ' families.size=' + fontDiag.size
+      );
+    }
 
     const card = await page.$('.eod-card');
     if (!card) throw new Error('card element not found in rendered page');

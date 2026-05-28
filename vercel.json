@@ -21,7 +21,8 @@
   ],
   "functions": {
     "api/eod/render-card.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "includeFiles": "api/eod/fonts/**"
     }
   }
 }
