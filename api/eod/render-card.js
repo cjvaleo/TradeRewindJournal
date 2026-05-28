@@ -244,335 +244,309 @@ function monoCapsWidth(ctx, text, size, tracking = 0.16) {
   return w - trackPx;
 }
 
-// ── Card drawing ────────────────────────────────────────────────────────
-// 1200x900 canvas, outer pad 50, card 1100x800.  65/35 horizontal split
-// with a 30px gap; LEFT carries the hero PnL + identity + date+brand
-// stack, RIGHT carries the top-traders/trades rail + stat strip.
+// ── Card drawing (Session 20q full redesign) ───────────────────────────
+// 16:9 landscape, 1600×900 (logical 800×450 @ 2× DPR — every spec px is
+// doubled here).  Flat #0a0a0a, sharp corners, no glow / outline.  Two
+// purpose-built layouts:
+//   personal  — top strip + centered hero + sub-stats (no leaderboard)
+//   community — top strip + centered group hero + sub-stats + bottom
+//               strip with a 3-column Top Traders grid
+
+// Centered money hero — measures (big + dimmed cents) and draws centered
+// on centerX.  Returns total width.
+function drawMoneyCentered(ctx, parts, centerX, baselineY, size, family, color) {
+  const big = parts.sign + '$' + parts.int;
+  ctx.font = size + 'px "' + family + '"';
+  const bigW = ctx.measureText(big).width;
+  const centsSize = Math.round(size * 0.42);
+  ctx.font = centsSize + 'px "' + family + '"';
+  const centsW = ctx.measureText(parts.cents).width;
+  const gap = Math.round(size * 0.04);
+  const totalW = bigW + gap + centsW;
+  const startX = centerX - totalW / 2;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = color;
+  ctx.font = size + 'px "' + family + '"';
+  ctx.fillText(big, startX, baselineY);
+  ctx.globalAlpha = 0.55;
+  ctx.font = centsSize + 'px "' + family + '"';
+  ctx.fillText(parts.cents, startX + bigW + gap, baselineY - Math.round(size * 0.20));
+  ctx.globalAlpha = 1;
+  return totalW;
+}
+function measureMoneyCenteredW(ctx, parts, size, family) {
+  const big = parts.sign + '$' + parts.int;
+  ctx.font = size + 'px "' + family + '"';
+  const bigW = ctx.measureText(big).width;
+  const centsSize = Math.round(size * 0.42);
+  ctx.font = centsSize + 'px "' + family + '"';
+  const centsW = ctx.measureText(parts.cents).width;
+  return bigW + Math.round(size * 0.04) + centsW;
+}
+// Draw a sequence of colored mono-caps tokens as one centered line.
+function drawTokensCentered(ctx, tokens, centerX, y, size, ls) {
+  const widths = tokens.map(function (t) { return monoCapsWidth(ctx, t.t, size, ls); });
+  const total = widths.reduce(function (a, b) { return a + b; }, 0);
+  let x = centerX - total / 2;
+  tokens.forEach(function (t, i) {
+    drawMonoCaps(ctx, t.t, x, y, size, t.c, ls);
+    x += widths[i];
+  });
+}
 
 function drawCard(payload) {
-  // Session 20k — canvas tightened from 1200×900 to 1200×700 (≈12:7).
-  // The old 4:3 frame left ~30% dead space below the stats row + rank-3
-  // leaderboard row.  Footer is bottom-anchored (cardY + cardH - 30) so
-  // reducing H pulls the brand stack + meta line up automatically; body
-  // bodyH derives from innerH so the leaderboard rail naturally shrinks
-  // to match.  Verified locally that the 3 leaderboard rows still fit
-  // with breathing room and the hero PnL doesn't clip.
-  const W = 1200, H = 700;
+  const W = 1600, H = 900;
   const canvas = createCanvas(W, H);
   const ctx = canvas.getContext('2d');
 
-  const type = payload.type;
-  const data = payload.data || {};
-  const isGroup = type === 'group';
-  const total  = Number(data.totalPnl) || 0;
-  const moneyParts = fmtMoneyParts(total);
-  const heroColor  = moneyColor(total);
-
-  // (1) Flat background — pure #0a0a0a edge-to-edge.  Session 20o
-  // stripped the radial glow AND the gold perimeter hairline; the hero
-  // number now carries the card purely through scale, no decoration.
+  // Flat background, edge-to-edge, no glow / outline.
   ctx.fillStyle = C.bg;
   ctx.fillRect(0, 0, W, H);
 
-  // Card spans the whole canvas — no outer pad.  Internal content
-  // padding (INNER) keeps content off the edge.
-  const cardX = 0, cardY = 0;
-  const cardW = W, cardH = H;
-  const INNER = 40;
-  const x0 = cardX + INNER, y0 = cardY + INNER;
-  const innerW = cardW - 2 * INNER, innerH = cardH - 2 * INNER;
-
-  // (4) Header band — identity + date.
-  const headerY = y0;
-  const headerH = 64;
-  if (isGroup) {
-    // Pulsing gold dot in place of the avatar circle.
-    const dotCx = x0 + 10, dotCy = headerY + headerH / 2;
-    // Faint outer glow
-    const ringGrad = ctx.createRadialGradient(dotCx, dotCy, 4, dotCx, dotCy, 22);
-    ringGrad.addColorStop(0, 'rgba(245,215,124,0.55)');
-    ringGrad.addColorStop(1, 'rgba(245,215,124,0)');
-    ctx.beginPath(); ctx.arc(dotCx, dotCy, 22, 0, Math.PI * 2); ctx.fillStyle = ringGrad; ctx.fill();
-    // Solid gold dot
-    ctx.beginPath(); ctx.arc(dotCx, dotCy, 7, 0, Math.PI * 2); ctx.fillStyle = C.gold; ctx.fill();
+  if (payload.type === 'group') {
+    drawCommunityCard(ctx, W, H, payload.data || {});
   } else {
-    // Personal — avatar with handle initials, sapphire→sage gradient.
-    drawAvatar(ctx, x0 + 22, headerY + headerH / 2, 22, 'gold', data.initials || initialsFor(data.handle), 14);
+    drawPersonalCard(ctx, W, H, payload.data || {});
   }
-
-  const headerTextX = x0 + 56;
-  // Name / handle (Instrument Serif italic, 30px)
-  ctx.font = '30px "InstrumentSerifItalic"';
-  ctx.fillStyle = C.text;
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'alphabetic';
-  const handleText = isGroup
-    ? String((data.community && data.community.name) || 'Community')
-    : '@' + String(data.handle || 'you');
-  ctx.fillText(handleText, headerTextX, headerY + 26);
-
-  // Subtitle (Geist Mono caps, 11px)
-  const subtitle = isGroup ? 'Trading community · Today' : 'Trading journal · Today';
-  drawMonoCaps(ctx, subtitle, headerTextX, headerY + 52, 11, C.text3, 0.18);
-
-  // Date label on the right.
-  const dateStr = fmtDate(data.etDate);
-  const dateW = monoCapsWidth(ctx, dateStr, 13, 0.16);
-  drawMonoCaps(ctx, dateStr, x0 + innerW - dateW, headerY + 30, 13, C.text2, 0.16);
-
-  // (5) Body — 65/35 split with a 30px gap.
-  const bodyY = headerY + headerH + 28;
-  const bodyH = innerH - headerH - 28 - 60; // 60 reserved for the footer
-  const leftW  = Math.round(innerW * 0.62);
-  const gapW   = 30;
-  const rightW = innerW - leftW - gapW;
-  const rightX = x0 + leftW + gapW;
-
-  // (5a) LEFT — "Today's P&L" or "Collective P&L" label + huge hero PnL.
-  // Session 20l — the hero is the flex.  Bumped to 190px (was 128) so it
-  // dominates the left column.  Vertical rhythm is now anchored at three
-  // fixed points instead of stacking with fixed gaps: label near the top
-  // of the body, hero in the upper-middle, stat strip anchored to the
-  // lower portion (a fixed offset above the footer hairline) so the
-  // enlarged hero + the comfortable gap below it collapse the old dead
-  // band without leaving a new one.
-  const leftLabel = isGroup ? 'Collective P&L' : "Today's P&L";
-  const labelY = bodyY + 18;
-  drawMonoCaps(ctx, leftLabel, x0, labelY, 13, C.text3, 0.18);
-
-  // Hero PnL — Instrument Serif italic at 275px (Session 20p bumped it
-  // ~17% from 235).  It's THE dominant element — the first thing the eye
-  // hits.  Dynamic shrink keeps long values (e.g. "+$25,640.00") inside
-  // the left column: step down 4px at a time until the measured width
-  // fits leftW, floor 84px so even an extreme value stays legible-big.
-  let heroSize = 275;
-  let heroW = measureMoneyHero(ctx, moneyParts, heroSize, 'InstrumentSerifItalic');
-  while (heroW > leftW - 6 && heroSize > 84) {
-    heroSize -= 4;
-    heroW = measureMoneyHero(ctx, moneyParts, heroSize, 'InstrumentSerifItalic');
-  }
-  // Hero baseline sits in the upper-middle — ~46px below the label, then
-  // down by the cap height of the (possibly shrunk) face.
-  const heroBaseline = labelY + 46 + heroSize * 0.74;
-  drawMoneyHero(ctx, moneyParts, x0, heroBaseline, heroSize, 'InstrumentSerifItalic', heroColor);
-
-  // Stat strip — anchored to the lower portion of the left column,
-  // independent of the hero size, so the rhythm is stable whether the
-  // hero is full 190px or shrunk for a long value.  Values land ~56px
-  // above the footer hairline; labels 36px above the values.
-  const footerHairlineY = cardY + cardH - 30 - 14;
-  const stripY = footerHairlineY - 74;
-
-  // Stats array first — needed to measure the group width before we can
-  // center it + size the divider (Session 20p).
-  let stats;
-  if (isGroup) {
-    const avgPer = Number(data.avgPerTrade) || 0;
-    const avgParts = fmtMoneyParts(avgPer);
-    stats = [
-      { lbl: 'Trades',    val: String(data.tradeCount || 0),                    color: C.text },
-      { lbl: 'Group WR',  val: String(data.winRate || 0) + '%',                  color: C.text },
-      { lbl: 'Avg / trade', val: avgParts.sign + '$' + avgParts.int + '.' + avgParts.cents.slice(1), color: moneyColor(avgPer) },
-      { lbl: 'Total Points', val: fmtPoints(data.totalPoints), color: pointsColor(data.totalPoints) },
-    ];
-  } else {
-    const avgR = Number(data.avgR) || 0;
-    const avgRTxt = data.avgRCount
-      ? ((avgR > 0 ? '+' : avgR < 0 ? '−' : '') + Math.abs(avgR).toFixed(1) + 'R')
-      : '—';
-    stats = [
-      { lbl: 'Trades',   val: String(data.tradeCount || 0),                  color: C.text },
-      { lbl: 'Win Rate', val: String(data.winRate || 0) + '%',                color: C.text },
-      { lbl: 'Avg R',    val: avgRTxt,                                        color: avgR > 0 ? C.profit : avgR < 0 ? C.loss : C.text },
-      { lbl: 'Total Points', val: fmtPoints(data.totalPoints), color: pointsColor(data.totalPoints) },
-    ];
-  }
-
-  // Session 20p — center the 4-stat group horizontally in the left
-  // column.  Each cell sizes to its widest line (label vs value), a
-  // fixed gap separates them, the group is centered with equal L/R
-  // padding, and the divider spans exactly the group width (not the
-  // full column edge-to-edge).
-  const STAT_GAP = 40;
-  const STAT_LABEL = 10, STAT_VALUE = 32;
-  const cellW = stats.map(function (s) {
-    const lw = monoCapsWidth(ctx, s.lbl, STAT_LABEL, 0.18);
-    ctx.font = STAT_VALUE + 'px "InstrumentSerifItalic"';
-    const vw = ctx.measureText(s.val).width;
-    return Math.max(lw, vw);
-  });
-  const statsGroupW = cellW.reduce(function (a, b) { return a + b; }, 0) + STAT_GAP * (stats.length - 1);
-  const statsX = x0 + Math.max(0, (leftW - statsGroupW) / 2);
-  // Divider — spans the centered group width only.
-  ctx.fillStyle = C.border;
-  ctx.fillRect(statsX, stripY - 20, Math.min(statsGroupW, leftW), 1);
-  // Cells — label + value, left-aligned within each content-sized cell.
-  let statCursor = statsX;
-  stats.forEach(function (s, i) {
-    drawMonoCaps(ctx, s.lbl, statCursor, stripY, STAT_LABEL, C.text3, 0.18);
-    ctx.font = STAT_VALUE + 'px "InstrumentSerifItalic"';
-    ctx.fillStyle = s.color;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillText(s.val, statCursor, stripY + 36);
-    statCursor += cellW[i] + STAT_GAP;
-  });
-
-  // (5b) RIGHT — top traders / top trades rail.
-  // Subtle bg tint for the rail (slightly elevated surface).
-  fillRoundRect(ctx, rightX, bodyY, rightW, bodyH, 0, 'rgba(255,255,255,0.025)');
-  strokeRoundRect(ctx, rightX, bodyY, rightW, bodyH, 0, 'rgba(255,255,255,0.05)', 1);
-
-  // Right header — trophy + "TOP TRADERS/TRADES".
-  const rightHeaderY = bodyY + 28;
-  drawTrophy(ctx, rightX + 22, rightHeaderY - 8, 14, C.gold);
-  drawMonoCaps(ctx, isGroup ? 'Top traders' : 'Top trades', rightX + 44, rightHeaderY, 12, C.gold, 0.18);
-
-  // Rows — 3 max.  For group: rank + avatar + handle + pnl.  For
-  // personal: time + sym + side chip + RR + pnl.
-  if (isGroup) {
-    const traders = (data.traders || []).slice(0, 3);
-    const rowH = 64;
-    const rowsStartY = rightHeaderY + 24;
-    if (!traders.length) {
-      drawEmptyState(ctx, rightX + 16, rowsStartY, rightW - 32, 'No traders yet', 'Be the first to share a trade today');
-    } else {
-      traders.forEach((tr, i) => {
-        const ry = rowsStartY + i * (rowH + 8);
-        const isRank1 = i === 0;
-        // Row chrome — rank-1 gets a soft gold tint + gold hairline.
-        if (isRank1) {
-          fillRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 0, 'rgba(245,215,124,0.10)');
-          strokeRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 0, 'rgba(245,215,124,0.32)', 1);
-        } else {
-          fillRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 0, C.surface2);
-        }
-        // Rank number (Instrument Serif italic, gold on rank 1).
-        ctx.font = '26px "InstrumentSerifItalic"';
-        ctx.fillStyle = isRank1 ? C.gold : C.text2;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(String(i + 1), rightX + 30, ry + rowH / 2);
-        // Avatar.
-        const finish = normFinish(tr.avatar_finish || tr.color);
-        const init   = (tr.initials || tr.avatar_initials || initialsFor(tr.username));
-        drawAvatar(ctx, rightX + 64, ry + rowH / 2, 18, finish, init, 11);
-        // PnL — measured FIRST so the handle can be clipped against its
-        // actual left edge (the handle font grew in 20n, so a static
-        // reserve would over- or under-shoot).
-        const pnlParts = fmtMoneyParts(tr.pnl);
-        // Session 20p — pnl bumped 20px → 24px Instrument Serif italic so
-        // it reads confident, paired with the 20px mono handle rather
-        // than overshadowed by it.  Measured here so the handle can clip
-        // against its (now wider) left edge.
-        ctx.font = '24px "InstrumentSerifItalic"';
-        const pnlText = pnlParts.sign + '$' + pnlParts.int;
-        const pnlW = ctx.measureText(pnlText).width;
-
-        // Handle — Session 20n bumped 14px → 20px GeistMonoMedium so the
-        // names are the prominent element in each row (visibly larger
-        // than the 26px condensed-serif rank).  Clipped against the pnl's
-        // left edge with a 16px gutter; ellipsis on overflow.
-        const handleX = rightX + 92;
-        const pnlLeftEdge = rightX + rightW - 22 - pnlW;
-        const maxHandleW = pnlLeftEdge - 16 - handleX;
-        ctx.font = '20px "GeistMonoMedium"';
-        ctx.fillStyle = tr.isMe ? C.accentCool : C.text;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        let drawnHandle = '@' + String(tr.username || 'trader');
-        if (ctx.measureText(drawnHandle).width > maxHandleW) {
-          while (drawnHandle.length > 4 && ctx.measureText(drawnHandle + '…').width > maxHandleW) {
-            drawnHandle = drawnHandle.slice(0, -1);
-          }
-          drawnHandle += '…';
-        }
-        ctx.fillText(drawnHandle, handleX, ry + rowH / 2);
-
-        // PnL (measured above) — 24px, right-aligned, always shown in
-        // full (handle truncates, never the pnl).
-        ctx.fillStyle = moneyColor(tr.pnl);
-        ctx.font = '24px "InstrumentSerifItalic"';
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(pnlText, rightX + rightW - 22, ry + rowH / 2);
-      });
-    }
-  } else {
-    // Personal — sort by signed pnl desc; top 3.
-    const trades = (data.trades || []).slice().sort((a, b) => (Number(b.pnl) || 0) - (Number(a.pnl) || 0)).slice(0, 3);
-    const rowH = 64;
-    const rowsStartY = rightHeaderY + 24;
-    if (!trades.length) {
-      drawEmptyState(ctx, rightX + 16, rowsStartY, rightW - 32, 'No trades yet today', "Log a trade and it'll show up here live");
-    } else {
-      trades.forEach((t, i) => {
-        const ry = rowsStartY + i * (rowH + 8);
-        const isBest = i === 0;
-        const pnlVal = Number(t.pnl) || 0;
-        const bestPos = isBest && pnlVal > 0;
-        if (bestPos) {
-          fillRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 0, 'rgba(95,179,137,0.10)');
-          strokeRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 0, 'rgba(95,179,137,0.28)', 1);
-        } else if (isBest) {
-          fillRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 0, C.surface);
-          strokeRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 0, 'rgba(255,255,255,0.10)', 1);
-        } else {
-          fillRoundRect(ctx, rightX + 10, ry, rightW - 20, rowH, 0, C.surface2);
-        }
-        // Time.
-        ctx.font = '11px "GeistMono"';
-        ctx.fillStyle = C.text3;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(String(t.time || '—'), rightX + 22, ry + rowH / 2);
-        // Symbol.
-        ctx.font = '13px "GeistMonoMedium"';
-        ctx.fillStyle = C.text;
-        ctx.fillText(String(t.sym || '—'), rightX + 76, ry + rowH / 2);
-        // Side chip.
-        const dir = String(t.type || '').toLowerCase() === 'short' ? 'short' : 'long';
-        drawSideChip(ctx, rightX + 124, ry + rowH / 2 - 11, dir);
-        // PnL.
-        const pnlParts = fmtMoneyParts(pnlVal);
-        ctx.font = (isBest ? '22px' : '18px') + ' "InstrumentSerifItalic"';
-        ctx.fillStyle = moneyColor(pnlVal);
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(pnlParts.sign + '$' + pnlParts.int, rightX + rightW - 22, ry + rowH / 2);
-      });
-    }
-  }
-
-  // (6) Footer band — Rewind brand + watermark left, meta right.
-  const footerY = cardY + cardH - 30;
-  ctx.fillStyle = C.border;
-  ctx.fillRect(x0, footerY - 14, innerW, 1);
-  // Rewind brand mark (Instrument Serif italic 20px).
-  ctx.font = '20px "InstrumentSerifItalic"';
-  ctx.fillStyle = C.text2;
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText('Rewind', x0, footerY);
-  const brandW = ctx.measureText('Rewind').width;
-  // Watermark.
-  drawMonoCaps(ctx, 'traderewindjournal.com', x0 + brandW + 14, footerY - 4, 10, C.text4, 0.16);
-  // Right-edge meta.
-  let metaStr;
-  if (isGroup) {
-    const memberCount = (data.community && data.community.memberCount != null)
-      ? data.community.memberCount
-      : ((data.community && Array.isArray(data.community.members)) ? data.community.members.length : (data.traders || []).length);
-    const tradeCount = data.tradeCount || 0;
-    metaStr = memberCount + ' member' + (memberCount === 1 ? '' : 's') + ' · ' + tradeCount + ' trade' + (tradeCount === 1 ? '' : 's');
-  } else {
-    metaStr = 'PnL Card · ' + fmtDate(data.etDate);
-  }
-  const metaW = monoCapsWidth(ctx, metaStr, 10, 0.16);
-  drawMonoCaps(ctx, metaStr, x0 + innerW - metaW, footerY - 4, 10, C.text3, 0.16);
-
   return canvas.toBuffer('image/png');
 }
+
+// Shared top-left brand mark.  Returns the baseline Y used so callers
+// can derive the strip bottom.
+function drawBrandMark(ctx, padX, padTop) {
+  ctx.font = '44px "InstrumentSerifItalic"';
+  ctx.fillStyle = C.gold;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  const brandBaseY = padTop + 34;
+  ctx.fillText('Rewind', padX, brandBaseY);
+  drawMonoCaps(ctx, 'traderewindjournal.com', padX, brandBaseY + 22, 14, 'rgba(255,255,255,0.30)', 0.20);
+  return brandBaseY;
+}
+
+function drawPersonalCard(ctx, W, H, data) {
+  const padX = 64, padTop = 48;
+  const sub = 'rgba(255,255,255,0.55)';
+  const sep = 'rgba(255,255,255,0.30)';
+
+  const total = Number(data.totalPnl) || 0;
+  const parts = fmtMoneyParts(total);
+  const heroCol = moneyColor(total);
+  const handle = String(data.handle || 'you');
+
+  // ── Top strip ──
+  const brandBaseY = drawBrandMark(ctx, padX, padTop);
+  // Right: date + handle, right-aligned.
+  const dateStr = fmtDate(data.etDate);
+  const dW = monoCapsWidth(ctx, dateStr, 16, 0.18);
+  drawMonoCaps(ctx, dateStr, W - padX - dW, padTop + 18, 16, 'rgba(255,255,255,0.45)', 0.18);
+  const hStr = '@' + handle;
+  const hW = monoCapsWidth(ctx, hStr, 15, 0.16);
+  drawMonoCaps(ctx, hStr, W - padX - hW, padTop + 40, 15, 'rgba(255,255,255,0.32)', 0.16);
+
+  const topStripBottom = brandBaseY + 30;
+
+  // ── Centered hero block ──
+  let heroSize = 200;
+  const maxHeroW = W - 2 * padX - 40;
+  while (measureMoneyCenteredW(ctx, parts, heroSize, 'InstrumentSerifItalic') > maxHeroW && heroSize > 110) {
+    heroSize -= 4;
+  }
+  const labelSize = 18, subSize = 20;
+  const labelCap = Math.round(labelSize * 0.72);
+  const heroCap  = Math.round(heroSize * 0.70);
+  const subCap   = Math.round(subSize * 0.72);
+  const gLH = 20, gHS = 44;
+  const blockH = labelCap + gLH + heroCap + gHS + subCap;
+  const blockTop = topStripBottom + (H - topStripBottom - blockH) / 2;
+  const centerX = W / 2;
+
+  const labelBase = blockTop + labelCap;
+  const lbl = "Today's P&L";
+  const lblW = monoCapsWidth(ctx, lbl, labelSize, 0.24);
+  drawMonoCaps(ctx, lbl, centerX - lblW / 2, labelBase, labelSize, 'rgba(255,255,255,0.50)', 0.24);
+
+  const heroBase = labelBase + gLH + heroCap;
+  drawMoneyCentered(ctx, parts, centerX, heroBase, heroSize, 'InstrumentSerifItalic', heroCol);
+
+  const subBase = heroBase + gHS + subCap;
+  const wr = Number(data.winRate) || 0;
+  const avgR = Number(data.avgR) || 0;
+  const avgRTxt = data.avgRCount
+    ? ((avgR > 0 ? '+' : avgR < 0 ? '−' : '') + Math.abs(avgR).toFixed(1) + 'R')
+    : '—';
+  const tokens = [
+    { t: (data.tradeCount || 0) + ' trades', c: sub },
+    { t: ' · ', c: sep },
+    { t: wr + '%', c: wr > 0 ? C.profit : sub },
+    { t: ' win rate', c: sub },
+    { t: ' · ', c: sep },
+    { t: avgRTxt, c: sub },
+    { t: ' avg', c: sub },
+  ];
+  drawTokensCentered(ctx, tokens, centerX, subBase, subSize, 0.22);
+}
+
+function drawCommunityCard(ctx, W, H, data) {
+  const padX = 64, padTop = 48, padBottom = 48;
+  const sub = 'rgba(255,255,255,0.55)';
+  const sep = 'rgba(255,255,255,0.30)';
+  const community = data.community || {};
+
+  const total = Number(data.totalPnl) || 0;
+  const parts = fmtMoneyParts(total);
+  const heroCol = moneyColor(total);
+
+  // ── Top strip ──
+  const brandBaseY = drawBrandMark(ctx, padX, padTop);
+
+  // Right: community badge — logo + (name / N members · today), the
+  // text block right-aligned to the edge with the logo to its left.
+  const name = String(community.name || 'Community');
+  const initials = String(community.icon_initials || name.slice(0, 2)).slice(0, 2).toUpperCase();
+  const memberCount = (community.memberCount != null)
+    ? community.memberCount
+    : (Array.isArray(community.members) ? community.members.length : (data.traders || []).length);
+  const membersStr = memberCount + ' members · today';
+
+  ctx.font = '30px "InstrumentSerifItalic"';
+  const nameW = ctx.measureText(name).width;
+  const memW = monoCapsWidth(ctx, membersStr, 14, 0.16);
+  const textBlockW = Math.max(nameW, memW);
+  const rightEdge = W - padX;
+  const logoR = 24, logoGap = 14;
+  const logoCx = rightEdge - textBlockW - logoGap - logoR;
+  const logoCy = padTop + 24;
+  drawAvatar(ctx, logoCx, logoCy, logoR, 'gold', initials, 14);
+  ctx.font = '30px "InstrumentSerifItalic"';
+  ctx.fillStyle = C.text;
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(name, rightEdge, padTop + 20);
+  drawMonoCaps(ctx, membersStr, rightEdge - memW, padTop + 40, 14, 'rgba(255,255,255,0.40)', 0.16);
+
+  const topStripBottom = brandBaseY + 30;
+
+  // ── Bottom strip geometry (compute first so the hero centers above) ──
+  const traders = (data.traders || []).slice(0, 3);
+  const cellH = 120;
+  const gridBottom = H - padBottom;
+  const gridTop = gridBottom - cellH;
+  const headerSize = 16;
+  const headerBase = gridTop - 20;
+  const dividerY = headerBase - headerSize - 28;
+
+  // ── Centered hero block (between top strip and the divider) ──
+  let heroSize = 136;
+  const maxHeroW = W - 2 * padX - 40;
+  while (measureMoneyCenteredW(ctx, parts, heroSize, 'InstrumentSerifItalic') > maxHeroW && heroSize > 80) {
+    heroSize -= 4;
+  }
+  const labelSize = 16, subSize = 18;
+  const labelCap = Math.round(labelSize * 0.72);
+  const heroCap  = Math.round(heroSize * 0.70);
+  const subCap   = Math.round(subSize * 0.72);
+  const gLH = 20, gHS = 28;
+  const blockH = labelCap + gLH + heroCap + gHS + subCap;
+  const blockTop = topStripBottom + (dividerY - topStripBottom - blockH) / 2;
+  const centerX = W / 2;
+
+  const labelBase = blockTop + labelCap;
+  const lbl = 'Collective P&L · Today';
+  const lblW = monoCapsWidth(ctx, lbl, labelSize, 0.28);
+  drawMonoCaps(ctx, lbl, centerX - lblW / 2, labelBase, labelSize, 'rgba(255,255,255,0.50)', 0.28);
+
+  const heroBase = labelBase + gLH + heroCap;
+  drawMoneyCentered(ctx, parts, centerX, heroBase, heroSize, 'InstrumentSerifItalic', heroCol);
+
+  const subBase = heroBase + gHS + subCap;
+  const wr = Number(data.winRate) || 0;
+  const avgPer = Number(data.avgPerTrade) || 0;
+  const ap = fmtMoneyParts(avgPer);
+  const avgStr = ap.sign + '$' + ap.int + ap.cents;
+  const ptsStr = fmtPoints(data.totalPoints);
+  const tokens = [
+    { t: (data.tradeCount || 0) + ' trades', c: sub },
+    { t: ' · ', c: sep },
+    { t: wr + '%', c: sub },
+    { t: ' group wr', c: sub },
+    { t: ' · ', c: sep },
+    { t: avgStr, c: moneyColor(avgPer) },
+    { t: ' avg', c: sub },
+    { t: ' · ', c: sep },
+    { t: ptsStr, c: pointsColor(data.totalPoints) },
+    { t: ' pts', c: sub },
+  ];
+  drawTokensCentered(ctx, tokens, centerX, subBase, subSize, 0.22);
+
+  // ── Bottom strip ──
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(padX, dividerY + 0.5);
+  ctx.lineTo(W - padX, dividerY + 0.5);
+  ctx.stroke();
+
+  drawTrophy(ctx, padX, headerBase - 12, 16, 'rgba(245,215,124,0.78)');
+  drawMonoCaps(ctx, 'Top traders', padX + 28, headerBase, headerSize, 'rgba(245,215,124,0.78)', 0.24);
+  const dateStr = fmtDate(data.etDate);
+  const dW = monoCapsWidth(ctx, dateStr, 14, 0.18);
+  drawMonoCaps(ctx, dateStr, W - padX - dW, headerBase, 14, 'rgba(255,255,255,0.32)', 0.18);
+
+  // 3-column grid — only render the cells that exist.
+  const gap = 20;
+  const gridW = W - 2 * padX;
+  const colW = (gridW - gap * 2) / 3;
+  traders.forEach(function (tr, i) {
+    const cx = padX + i * (colW + gap);
+    const isRank1 = i === 0;
+    if (isRank1) {
+      ctx.fillStyle = 'rgba(245,215,124,0.05)';
+      ctx.fillRect(cx, gridTop, colW, cellH);
+    }
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = isRank1 ? 'rgba(245,215,124,0.32)' : 'rgba(255,255,255,0.08)';
+    ctx.strokeRect(cx + 0.5, gridTop + 0.5, colW - 1, cellH - 1);
+
+    const ix = cx + 24, iy = gridTop + 20;
+    const rowCy = iy + 18;
+    // Rank.
+    ctx.font = '36px "InstrumentSerifItalic"';
+    ctx.fillStyle = isRank1 ? C.gold : 'rgba(255,255,255,0.5)';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    const rankStr = String(i + 1);
+    ctx.fillText(rankStr, ix, rowCy + 1);
+    const rankW = ctx.measureText(rankStr).width;
+    // Avatar.
+    const avCx = ix + rankW + 12 + 18;
+    const finish = normFinish(tr.avatar_finish || tr.color);
+    const tinit = (tr.initials || tr.avatar_initials || initialsFor(tr.username));
+    drawAvatar(ctx, avCx, rowCy, 18, finish, tinit, 14);
+    // Handle (ellipsis on overflow).
+    const handleX = avCx + 18 + 12;
+    ctx.font = '20px "GeistMono"';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    let hh = '@' + String(tr.username || 'trader');
+    const maxHW = (cx + colW - 24) - handleX;
+    if (ctx.measureText(hh).width > maxHW) {
+      while (hh.length > 4 && ctx.measureText(hh + '…').width > maxHW) hh = hh.slice(0, -1);
+      hh += '…';
+    }
+    ctx.fillText(hh, handleX, rowCy);
+    // PnL (bottom row).
+    const pp = fmtMoneyParts(tr.pnl);
+    ctx.font = '40px "InstrumentSerifItalic"';
+    ctx.fillStyle = moneyColor(tr.pnl);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(pp.sign + '$' + pp.int, ix, iy + 36 + 8 + 30);
+  });
+}
+
 
 // ── Small drawables ────────────────────────────────────────────────────
 function drawTrophy(ctx, x, y, size, color) {
