@@ -22,7 +22,7 @@
   "functions": {
     "api/eod/render-card.js": {
       "maxDuration": 30,
-      "includeFiles": "api/eod/fonts/**"
+      "includeFiles": "{api/eod/fonts/**,node_modules/@sparticuz/chromium/bin/**}"
     }
   }
 }
