@@ -1,0 +1,135 @@
+//@version=6
+indicator("Stdev Projections", overlay=true, max_lines_count=500, max_labels_count=500, max_boxes_count=100)
+
+// =============================================================================
+// Stdev Projections (15m, Pivot-Anchored)
+// Measurement / annotation tool. Two anchored deviation ladders + leg boxes per
+// qualifying swing-low pivot. Negative deviations project UP for both legs.
+// Repaint-safe: confirmed pivots only (rightBars lag), no request.security.
+// Spec: StdevProjections_handoff_v1.md  |  Build plan: execution plan v1
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// INPUTS
+// ---------------------------------------------------------------------------
+
+// --- Group: Pivots --------------------------------------------------------
+string gPivots = "Pivots"
+int   pivotLookback = input.int(5, "Pivot lookback (left = right bars)", minval=1, group=gPivots, tooltip="Bars on each side for ta.pivotlow / ta.pivothigh. Confirmation lags by this many bars.")
+int   maxShown      = input.int(3, "Max qualified pivots shown", minval=1, group=gPivots, tooltip="Oldest pivot's objects are deleted when a new qualified pivot exceeds this cap.")
+
+// --- Group: Gate ----------------------------------------------------------
+string gGate = "Gate"
+float  gateLevel  = input.float(-4.5, "Gate level (L)", step=0.25, group=gGate, tooltip="A pivot qualifies only if the rally stays below this projected level. Default -4.5 = the manipulation-ladder cutoff.")
+string gateSource = input.string("Manipulation", "Gate source ladder", options=["Manipulation", "Distribution"], group=gGate, tooltip="Which ladder's anchors price the gate. Default: Manipulation (priorHigh -> pivotLow).")
+
+// --- Group: Manipulation Ladder -------------------------------------------
+string gManip = "Manipulation Ladder"
+bool showManipBox    = input.bool(true, "Show manipulation box",    group=gManip)
+bool showManipLadder = input.bool(true, "Show manipulation ladder", group=gManip)
+
+// --- Group: Distribution Ladder -------------------------------------------
+string gDist = "Distribution Ladder"
+bool showDistBox    = input.bool(true, "Show distribution box",    group=gDist)
+bool showDistLadder = input.bool(true, "Show distribution ladder", group=gDist)
+
+// --- Group: Levels (per-level toggles) ------------------------------------
+string gLevels = "Levels"
+bool keyLevelsOnly = input.bool(false, "Key levels only (overrides individual toggles)", group=gLevels, tooltip="When on, draws only the colored key levels plus 0 and 1.")
+int  levelExtendBars = input.int(20, "Level extend bars", minval=1, group=gLevels, tooltip="How many bars each level line extends to the right of its leg's left anchor.")
+// individual level toggles (order matches the `levels` array below)
+bool lvl_1    = input.bool(true, "1.0",    group=gLevels, inline="L1")
+bool lvl_943  = input.bool(true, "0.943",  group=gLevels, inline="L1")
+bool lvl_79   = input.bool(true, "0.79",   group=gLevels, inline="L1")
+bool lvl_705  = input.bool(true, "0.705",  group=gLevels, inline="L2")
+bool lvl_618  = input.bool(true, "0.618",  group=gLevels, inline="L2")
+bool lvl_5    = input.bool(true, "0.5",    group=gLevels, inline="L2")
+bool lvl_0    = input.bool(true, "0.0",    group=gLevels, inline="L3")
+bool lvl_n1   = input.bool(true, "-1.0",   group=gLevels, inline="L3")
+bool lvl_n15  = input.bool(true, "-1.5",   group=gLevels, inline="L3")
+bool lvl_n2   = input.bool(true, "-2.0",   group=gLevels, inline="L4")
+bool lvl_n225 = input.bool(true, "-2.25",  group=gLevels, inline="L4")
+bool lvl_n25  = input.bool(true, "-2.5",   group=gLevels, inline="L4")
+bool lvl_n4   = input.bool(true, "-4.0",   group=gLevels, inline="L5")
+bool lvl_n425 = input.bool(true, "-4.25",  group=gLevels, inline="L5")
+bool lvl_n45  = input.bool(true, "-4.5",   group=gLevels, inline="L5")
+
+// --- Group: Colors & Style ------------------------------------------------
+string gColors = "Colors & Style"
+bool  showLabels      = input.bool(true, "Show level labels", group=gColors)
+color manipBoxColor   = input.color(color.new(color.purple, 85), "Manipulation box", group=gColors)
+color distBoxColor    = input.color(color.new(color.teal,   85), "Distribution box", group=gColors)
+color stdLevelColor   = input.color(color.new(color.gray,    0), "Standard level",   group=gColors)
+color keyLevelColor   = input.color(color.orange,                "Key level (0.618/0.705/0.79/-2.25/-2.5)", group=gColors)
+color level4Color     = input.color(color.red,                   "Level -4",         group=gColors)
+color level45Color    = input.color(color.new(color.maroon, 0),  "Level -4.5 (gate cutoff)", group=gColors)
+
+// --- Group: Alerts --------------------------------------------------------
+string gAlerts = "Alerts"
+bool enableAlert = input.bool(false, "Alert on new qualifying pivot", group=gAlerts)
+
+// ---------------------------------------------------------------------------
+// TYPES
+// ---------------------------------------------------------------------------
+type Pivot
+    int   barIndex          // pivot low bar
+    float price             // pivot low (wick: low at pivot bar)
+    int   priorHighBar      // most recent confirmed pivot high before the low
+    float priorHigh         // wick: high at that bar
+    int   nextHighBar       // first confirmed pivot high after the low
+    float nextHigh          // wick: high at that bar
+    bool  hasNextHigh       // true once the distribution endpoint confirms
+    bool  evaluated         // gate evaluated exactly once
+    bool  qualified         // passed the gate -> drawable
+    array<line>  lines      // handles for cleanup
+    array<box>   boxes
+    array<label> labels
+
+// ---------------------------------------------------------------------------
+// LEVELS + SHARED HELPERS
+// ---------------------------------------------------------------------------
+// Master ladder levels (negative L projects UP — above anchor0).
+var array<float> levels = array.from(1.0, 0.943, 0.79, 0.705, 0.618, 0.5, 0.0, -1.0, -1.5, -2.0, -2.25, -2.5, -4.0, -4.25, -4.5)
+// Per-level enable flags, aligned 1:1 with `levels`.
+var array<bool>  levelEnabled = array.from(lvl_1, lvl_943, lvl_79, lvl_705, lvl_618, lvl_5, lvl_0, lvl_n1, lvl_n15, lvl_n2, lvl_n225, lvl_n25, lvl_n4, lvl_n425, lvl_n45)
+
+// Level price: L=0 -> anchor0, L=1 -> anchor1, negative L -> above anchor0 (up).
+levelPrice(float anchor0, float anchor1, float L) => anchor0 + L * (anchor1 - anchor0)
+
+// Persistent store of pending + qualified pivots.
+var array<Pivot> pivots = array.new<Pivot>()
+
+// ---------------------------------------------------------------------------
+// TIMEFRAME GUARD (15m only) + non-15m note
+// ---------------------------------------------------------------------------
+bool is15m = timeframe.in_seconds() == 900
+
+var label tfNote = na
+if barstate.islast
+    if not is15m
+        if na(tfNote)
+            tfNote := label.new(bar_index, high, "Stdev Projections — switch to 15m", xloc=xloc.bar_index, style=label.style_label_left, color=color.new(color.gray, 20), textcolor=color.white, size=size.normal)
+        else
+            label.set_xy(tfNote, bar_index, high)
+    else if not na(tfNote)
+        label.delete(tfNote)
+        tfNote := na
+
+// All detection / gate / render logic below is gated on `is15m` and is added
+// stage-by-stage. Each module opens its own `if is15m` block as it lands.
+//
+// =============================================================================
+// MODULE A — Pivot & Anchor Detection                [Stage 1 — to build]
+//   Detect confirmed pivot lows; resolve priorHigh + nextHigh; append as
+//   pending Pivot records. Confirmed only (rightBars lag), never developing.
+//
+// MODULE B — Qualification Gate (-4.5)               [Stage 2 — to build]
+//   When nextHigh confirms, compute gate price and set `qualified` once.
+//
+// MODULE C — Rendering + Pruning                     [Stage 3 — to build]
+//   Draw boxes + both ladders + labels for qualified pivots; maintain
+//   maxShown with full handle cleanup.
+//
+// ALERTS                                             [Stage 4 — to build]
+//   Optional "New qualifying pivot" alert on the qualifying transition.
+// =============================================================================
