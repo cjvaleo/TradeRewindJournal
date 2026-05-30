@@ -68,6 +68,10 @@ color level45Color    = input.color(color.new(color.maroon, 0),  "Level -4.5 (ga
 string gAlerts = "Alerts"
 bool enableAlert = input.bool(false, "Alert on new qualifying pivot", group=gAlerts)
 
+// --- Group: Debug (temporary — removed at Stage 3) ------------------------
+string gDebug = "Debug"
+bool debugMode = input.bool(true, "DEBUG: show pivot detection + pairing", group=gDebug, tooltip="Triangles on confirmed pivots; purple/teal connector lines proving priorHigh->low->nextHigh pairing. Turn off (and this group is removed) once detection is verified.")
+
 // ---------------------------------------------------------------------------
 // TYPES
 // ---------------------------------------------------------------------------
@@ -99,6 +103,9 @@ levelPrice(float anchor0, float anchor1, float L) => anchor0 + L * (anchor1 - an
 // Persistent store of pending + qualified pivots.
 var array<Pivot> pivots = array.new<Pivot>()
 
+// DEBUG connector lines (Stage 1 verification only).
+var array<line> dbgLines = array.new<line>()
+
 // ---------------------------------------------------------------------------
 // TIMEFRAME GUARD (15m only) + non-15m note
 // ---------------------------------------------------------------------------
@@ -115,20 +122,78 @@ if barstate.islast
         label.delete(tfNote)
         tfNote := na
 
-// All detection / gate / render logic below is gated on `is15m` and is added
-// stage-by-stage. Each module opens its own `if is15m` block as it lands.
-//
+// ---------------------------------------------------------------------------
+// PIVOT STATE (rolling) + confirmed pivot detection
+// ---------------------------------------------------------------------------
+var int   lastPHBar   = na   // most recent confirmed pivot-high bar (the prior swing high)
+var float lastPHPrice = na   // its wick high
+
+// ta.* are computed every bar at top level — never gated on data-dependent branches.
+int   pivotBar = bar_index - pivotLookback
+float ph = ta.pivothigh(pivotLookback, pivotLookback)
+float pl = ta.pivotlow(pivotLookback, pivotLookback)
+
 // =============================================================================
-// MODULE A — Pivot & Anchor Detection                [Stage 1 — to build]
-//   Detect confirmed pivot lows; resolve priorHigh + nextHigh; append as
-//   pending Pivot records. Confirmed only (rightBars lag), never developing.
-//
+// MODULE A — Pivot & Anchor Detection                          [Stage 1]
+//   Confirmed pivots only (pivotLookback-bar lag). For each pivot low resolve
+//   priorHigh (latest confirmed high before it) and nextHigh (first confirmed
+//   high after it). Records stay pending until nextHigh confirms.
+// =============================================================================
+if is15m
+    // --- a new confirmed pivot HIGH ----------------------------------------
+    if not na(ph)
+        // Becomes the nextHigh (distribution endpoint) for every pending low
+        // that still lacks one — the first high after that low by construction.
+        if array.size(pivots) > 0
+            for i = 0 to array.size(pivots) - 1
+                Pivot p = array.get(pivots, i)
+                if (not p.hasNextHigh) and p.barIndex < pivotBar
+                    p.nextHighBar := pivotBar
+                    p.nextHigh    := ph
+                    p.hasNextHigh := true
+                    if debugMode
+                        l1 = line.new(p.priorHighBar, p.priorHigh, p.barIndex, p.price, xloc=xloc.bar_index, color=color.new(color.purple, 0), width=1)   // manip leg (down)
+                        l2 = line.new(p.barIndex, p.price, p.nextHighBar, p.nextHigh, xloc=xloc.bar_index, color=color.new(color.teal, 0), width=1)        // dist  leg (up)
+                        array.push(dbgLines, l1)
+                        array.push(dbgLines, l2)
+        // Record as the most recent prior high for future lows.
+        lastPHBar   := pivotBar
+        lastPHPrice := ph
+
+    // --- a new confirmed pivot LOW -----------------------------------------
+    if not na(pl)
+        // Anchor to the most recent prior confirmed high. Skip if none exists
+        // yet (start of history) — never create a half-anchored pivot.
+        if not na(lastPHBar)
+            Pivot p = Pivot.new(barIndex = pivotBar, price = pl, priorHighBar = lastPHBar, priorHigh = lastPHPrice, nextHighBar = na, nextHigh = na, hasNextHigh = false, evaluated = false, qualified = false, lines = array.new<line>(), boxes = array.new<box>(), labels = array.new<label>())
+            array.push(pivots, p)
+
+    // --- safety cap on the registry (Stage 3 adds maxShown handle pruning) --
+    while array.size(pivots) > 50
+        Pivot old = array.shift(pivots)
+        for ln in old.lines
+            line.delete(ln)
+        for bx in old.boxes
+            box.delete(bx)
+        for lb in old.labels
+            label.delete(lb)
+
+    // --- DEBUG: keep connector lines bounded -------------------------------
+    if debugMode
+        while array.size(dbgLines) > 40
+            line.delete(array.shift(dbgLines))
+
+// --- DEBUG markers: triangles on confirmed pivots (offset back to pivot bar) -
+plotshape(is15m and debugMode and not na(ph) ? ph : na, title="DBG Pivot High", style=shape.triangledown, location=location.absolute, color=color.new(color.red, 0), offset=-pivotLookback, size=size.tiny)
+plotshape(is15m and debugMode and not na(pl) ? pl : na, title="DBG Pivot Low",  style=shape.triangleup,   location=location.absolute, color=color.new(color.lime, 0), offset=-pivotLookback, size=size.tiny)
+
+// =============================================================================
 // MODULE B — Qualification Gate (-4.5)               [Stage 2 — to build]
 //   When nextHigh confirms, compute gate price and set `qualified` once.
 //
 // MODULE C — Rendering + Pruning                     [Stage 3 — to build]
 //   Draw boxes + both ladders + labels for qualified pivots; maintain
-//   maxShown with full handle cleanup.
+//   maxShown with full handle cleanup (replaces the DEBUG views above).
 //
 // ALERTS                                             [Stage 4 — to build]
 //   Optional "New qualifying pivot" alert on the qualifying transition.
