@@ -2,11 +2,16 @@
 indicator("Stdev Projections", overlay=true, max_lines_count=500, max_labels_count=500, max_boxes_count=100)
 
 // =============================================================================
-// Stdev Projections (15m, Pivot-Anchored)
-// Measurement / annotation tool. Two anchored deviation ladders + leg boxes per
-// qualifying swing-low pivot. Negative deviations project UP for both legs.
-// Repaint-safe: confirmed pivots only (rightBars lag), no request.security.
-// Spec: StdevProjections_handoff_v1.md  |  Build plan: execution plan v1
+// Stdev Projections (15m, Pivot-Anchored) — bullish + bearish distribution legs
+//
+// Bullish: anchor a swing LOW; distribution leg = low -> next high (rally);
+//   negative deviations project UP. Draws the lowest-valid + most-recent-valid.
+// Bearish: anchor a swing HIGH; distribution leg = high -> next low (selloff);
+//   negative deviations project DOWN. Draws the highest-valid + most-recent-valid.
+//
+// A pivot QUALIFIES if its distribution endpoint stayed inside the gate (-4.5),
+// and stays VALID until a later wick crosses its distribution -4.5 level.
+// Repaint-safe: confirmed pivots only (lookback lag), no request.security.
 // =============================================================================
 
 // ---------------------------------------------------------------------------
@@ -16,28 +21,33 @@ indicator("Stdev Projections", overlay=true, max_lines_count=500, max_labels_cou
 // --- Group: Pivots --------------------------------------------------------
 string gPivots = "Pivots"
 int pivotLookback = input.int(5, "Pivot lookback (left = right bars)", minval=1, group=gPivots, tooltip="Bars on each side for ta.pivotlow / ta.pivothigh. Confirmation lags by this many bars.")
-int recentN       = input.int(10, "Recent window (last N qualifying pivots)", minval=1, group=gPivots, tooltip="The lowest still-valid pivot is chosen from the last N qualifying pivots. A pivot leaves the pool when its wick high crosses its distribution -4 level (see Gate > Invalidation level).")
+int recentN       = input.int(10, "Recent window (last N qualifying pivots)", minval=1, group=gPivots, tooltip="Per direction, the extreme (lowest/highest) still-valid pivot is chosen from the last N qualifying pivots.")
 
 // --- Group: Gate ----------------------------------------------------------
 string gGate = "Gate"
-float  gateLevel  = input.float(-4.5, "Gate level (L)", step=0.25, group=gGate, tooltip="A pivot qualifies only if the rally stays below this projected level. Default -4.5 = the manipulation-ladder cutoff.")
-string gateSource = input.string("Manipulation", "Gate source ladder", options=["Manipulation", "Distribution"], group=gGate, tooltip="Which ladder's anchors price the gate. Default: Manipulation (priorHigh -> pivotLow).")
-float  breakLevel = input.float(-4.5, "Invalidation level (L)", step=0.25, group=gGate, tooltip="A qualified pivot is dropped once a bar's wick HIGH crosses this level of its DISTRIBUTION ladder (nextHigh -> pivotLow). Only still-valid pivots are drawn.")
+float  gateLevel  = input.float(-4.5, "Gate level (L)", step=0.25, group=gGate, tooltip="A pivot qualifies only if its distribution endpoint stayed inside this projected level.")
+string gateSource = input.string("Manipulation", "Gate source ladder", options=["Manipulation", "Distribution"], group=gGate, tooltip="Which ladder's anchors price the gate. Default: Manipulation.")
+float  breakLevel = input.float(-4.5, "Invalidation level (L)", step=0.25, group=gGate, tooltip="A qualified pivot is dropped once a wick crosses this level of its DISTRIBUTION ladder (high for bull, low for bear).")
 
-// --- Group: Manipulation Ladder -------------------------------------------
-string gManip = "Manipulation Ladder"
-bool showManipBox    = input.bool(false, "Show manipulation box",    group=gManip, tooltip="Off for now — only the distribution leg is marked.")
-bool showManipLadder = input.bool(false, "Show manipulation ladder", group=gManip, tooltip="Off for now — only the distribution leg is marked.")
+// --- Group: Bullish (up projections) --------------------------------------
+string gBull = "Bullish (up projections)"
+bool showBullDistBox    = input.bool(true, "Show bullish box",    group=gBull)
+bool showBullDistLadder = input.bool(true, "Show bullish ladder", group=gBull)
 
-// --- Group: Distribution Ladder -------------------------------------------
-string gDist = "Distribution Ladder"
-bool showDistBox    = input.bool(true, "Show distribution box",    group=gDist)
-bool showDistLadder = input.bool(true, "Show distribution ladder", group=gDist)
+// --- Group: Bearish (down projections) ------------------------------------
+string gBear = "Bearish (down projections)"
+bool showBearDistBox    = input.bool(true, "Show bearish box",    group=gBear)
+bool showBearDistLadder = input.bool(true, "Show bearish ladder", group=gBear)
+
+// --- Group: Manipulation Ladder (advanced) --------------------------------
+string gManip = "Manipulation Ladder (advanced)"
+bool showManipBox    = input.bool(false, "Show manipulation box",    group=gManip, tooltip="Off by default — only distribution legs are marked.")
+bool showManipLadder = input.bool(false, "Show manipulation ladder", group=gManip, tooltip="Off by default — only distribution legs are marked.")
 
 // --- Group: Levels (per-level toggles) ------------------------------------
 string gLevels = "Levels"
 bool keyLevelsOnly   = input.bool(false, "Key levels only (overrides individual toggles)", group=gLevels, tooltip="When on, draws only the colored key levels plus 0 and 1.")
-int  levelExtendBars = input.int(0, "Level extend bars (past leg end)", minval=0, group=gLevels, tooltip="Each ladder spans only its own leg (start bar -> last bar of that leg). This optionally extends every level line/label this many bars further right. 0 = hug the leg exactly.")
+int  levelExtendBars = input.int(0, "Level extend bars (past current bar)", minval=0, group=gLevels, tooltip="Each ladder live-extends to the current bar; this adds extra bars past it. 0 = stop at the current bar.")
 bool lvl_1    = input.bool(true, "1.0",    group=gLevels, inline="L1")
 bool lvl_943  = input.bool(true, "0.943",  group=gLevels, inline="L1")
 bool lvl_79   = input.bool(true, "0.79",   group=gLevels, inline="L1")
@@ -57,8 +67,9 @@ bool lvl_n45  = input.bool(true, "-4.5",   group=gLevels, inline="L5")
 // --- Group: Colors & Style ------------------------------------------------
 string gColors = "Colors & Style"
 bool  showLabels    = input.bool(true, "Show level labels", group=gColors)
+color distBoxColor  = input.color(color.new(color.teal,   85), "Bullish distribution box", group=gColors)
+color bearBoxColor  = input.color(color.new(color.red,    85), "Bearish distribution box", group=gColors)
 color manipBoxColor = input.color(color.new(color.purple, 85), "Manipulation box", group=gColors)
-color distBoxColor  = input.color(color.new(color.teal,   85), "Distribution box", group=gColors)
 color stdLevelColor = input.color(color.new(color.gray,    0), "Standard level",   group=gColors)
 color keyLevelColor = input.color(color.orange,                "Key level (0.618/0.705/0.79/-2.25/-2.5)", group=gColors)
 color level4Color   = input.color(color.red,                   "Level -4",         group=gColors)
@@ -68,55 +79,44 @@ color level45Color  = input.color(color.new(color.maroon, 0),  "Level -4.5 (gate
 string gAlerts = "Alerts"
 bool enableAlert = input.bool(false, "Alert on new qualifying pivot", group=gAlerts)
 
-// --- Group: Debug ---------------------------------------------------------
-string gDebug = "Debug"
-bool debugMode = input.bool(false, "DEBUG: show pivot pairing connectors", group=gDebug, tooltip="Purple manip leg + teal/gray dist leg + dashed gate line, proving priorHigh->low->nextHigh pairing and the gate verdict. Diagnostic only.")
-
 // ---------------------------------------------------------------------------
-// TYPES
+// TYPES  (direction-neutral: same fields serve bull & bear)
 // ---------------------------------------------------------------------------
 type Pivot
-    int   barIndex          // pivot low bar
-    float price             // pivot low (wick: low at pivot bar)
-    int   priorHighBar      // most recent confirmed pivot high before the low
-    float priorHigh         // wick: high at that bar
-    int   nextHighBar       // first confirmed pivot high after the low
-    float nextHigh          // wick: high at that bar
-    bool  hasNextHigh       // true once the distribution endpoint confirms
-    bool  evaluated         // gate evaluated exactly once
-    bool  qualified         // passed the gate -> drawable
-    array<line>  lines      // handles for cleanup
+    bool  bear
+    int   barIndex
+    float price
+    int   mBar
+    float mPrice
+    int   dBar
+    float dPrice
+    bool  hasDist
+    bool  evaluated
+    bool  qualified
+    array<line>  lines
     array<box>   boxes
     array<label> labels
 
 // ---------------------------------------------------------------------------
 // LEVELS + SHARED HELPERS
 // ---------------------------------------------------------------------------
-// Master ladder levels (negative L projects UP — above anchor0).
 var array<float> levels = array.from(1.0, 0.943, 0.79, 0.705, 0.618, 0.5, 0.0, -1.0, -1.5, -2.0, -2.25, -2.5, -4.0, -4.25, -4.5)
-// Per-level enable flags, aligned 1:1 with `levels`.
 var array<bool>  levelEnabled = array.from(lvl_1, lvl_943, lvl_79, lvl_705, lvl_618, lvl_5, lvl_0, lvl_n1, lvl_n15, lvl_n2, lvl_n225, lvl_n25, lvl_n4, lvl_n425, lvl_n45)
 
-// Level price: L=0 -> anchor0, L=1 -> anchor1, negative L -> above anchor0 (up).
 levelPrice(float anchor0, float anchor1, float L) => anchor0 + L * (anchor1 - anchor0)
 
-// Key (orange) levels echo the user's fib config.
 isKeyOrange(float L) => L == 0.618 or L == 0.705 or L == 0.79 or L == -2.25 or L == -2.5
 
-// Draw one ladder for pivot `p`: a line per enabled level priced off (a0,a1),
-// from leftBar to rightBar, with a right-edge label. Handles pushed into
-// p.lines / p.labels for group cleanup. Respects keyLevelsOnly + per-level toggles.
 drawLadder(Pivot p, float a0, float a1, int leftBar, int rightBar) =>
     for li = 0 to array.size(levels) - 1
-        float L     = array.get(levels, li)
-        bool  keyO  = isKeyOrange(L)
-        bool  isRed = L == -4.0
-        bool  is45  = L == -4.5
-        bool  colored = keyO or isRed or is45
-        // keyLevelsOnly overrides individual toggles: colored levels + 0/1 only.
-        bool  enabled = keyLevelsOnly ? (colored or L == 0.0 or L == 1.0) : array.get(levelEnabled, li)
+        float L = array.get(levels, li)
+        bool keyO = isKeyOrange(L)
+        bool isRed = L == -4.0
+        bool is45 = L == -4.5
+        bool colored = keyO or isRed or is45
+        bool enabled = keyLevelsOnly ? (colored or L == 0.0 or L == 1.0) : array.get(levelEnabled, li)
         if enabled
-            float pr   = levelPrice(a0, a1, L)
+            float pr = levelPrice(a0, a1, L)
             color lcol = is45 ? level45Color : isRed ? level4Color : keyO ? keyLevelColor : stdLevelColor
             ls = is45 ? line.style_dashed : line.style_solid
             ln = line.new(leftBar, pr, rightBar, pr, xloc=xloc.bar_index, color=lcol, width=1, style=ls)
@@ -126,7 +126,6 @@ drawLadder(Pivot p, float a0, float a1, int leftBar, int rightBar) =>
                 array.push(p.labels, lb)
     array.size(p.lines)
 
-// Delete all drawn objects of `p` and clear its handle arrays (safe to re-render after).
 clearPivot(Pivot p) =>
     for ln in p.lines
         line.delete(ln)
@@ -138,34 +137,104 @@ clearPivot(Pivot p) =>
     p.labels.clear()
     p.boxes.clear()
 
-// Draw the two boxes + both ladders for a qualified pivot; handles stored on `p`.
-// Each ladder spans only its own leg (start bar -> last bar of that leg),
-// optionally extended right by levelExtendBars (default 0).
 renderPivot(Pivot p) =>
+    bool showBox = p.bear ? showBearDistBox : showBullDistBox
+    bool showLad = p.bear ? showBearDistLadder : showBullDistLadder
+    color boxBg = p.bear ? bearBoxColor : distBoxColor
+    color boxBd = p.bear ? color.new(color.red, 40) : color.new(color.teal, 40)
     if showManipBox
-        array.push(p.boxes, box.new(p.priorHighBar, p.priorHigh, p.barIndex, p.price, xloc=xloc.bar_index, border_color=color.new(color.purple, 40), border_width=1, bgcolor=manipBoxColor))
-    if showDistBox
-        array.push(p.boxes, box.new(p.barIndex, p.nextHigh, p.nextHighBar, p.price, xloc=xloc.bar_index, border_color=color.new(color.teal, 40), border_width=1, bgcolor=distBoxColor))
+        array.push(p.boxes, box.new(p.mBar, math.max(p.mPrice, p.price), p.barIndex, math.min(p.mPrice, p.price), xloc=xloc.bar_index, border_color=color.new(color.purple, 40), border_width=1, bgcolor=manipBoxColor))
     if showManipLadder
-        drawLadder(p, p.priorHigh, p.price, p.priorHighBar, p.barIndex + levelExtendBars)      // manip leg: priorHigh -> low
-    if showDistLadder
-        drawLadder(p, p.nextHigh, p.price, p.barIndex, p.nextHighBar + levelExtendBars)        // dist  leg: low -> nextHigh
+        drawLadder(p, p.mPrice, p.price, p.mBar, p.barIndex + levelExtendBars)
+    if showBox
+        array.push(p.boxes, box.new(p.barIndex, math.max(p.dPrice, p.price), p.dBar, math.min(p.dPrice, p.price), xloc=xloc.bar_index, border_color=boxBd, border_width=1, bgcolor=boxBg))
+    if showLad
+        drawLadder(p, p.dPrice, p.price, p.barIndex, p.dBar + levelExtendBars)
     array.size(p.boxes)
+
+completePending(array<Pivot> pending, array<Pivot> validArr, int endBar, float endPrice, bool bear) =>
+    if array.size(pending) > 0
+        for i = array.size(pending) - 1 to 0
+            Pivot p = array.get(pending, i)
+            if (not p.hasDist) and p.barIndex < endBar
+                p.dBar = endBar
+                p.dPrice = endPrice
+                p.hasDist = true
+                float gA0 = gateSource == "Manipulation" ? p.mPrice : p.dPrice
+                float gP = levelPrice(gA0, p.price, gateLevel)
+                p.qualified := bear ? (p.dPrice > gP) : (p.dPrice < gP)
+                p.evaluated := true
+                if p.qualified
+                    array.push(validArr, p)
+                    if enableAlert
+                        alert("Stdev Projections: new qualifying " + (bear ? "bearish" : "bullish") + " pivot @ " + str.tostring(p.price), alert.freq_once_per_bar_close)
+                array.remove(pending, i)
+    array.size(validArr)
+
+invalidate(array<Pivot> pool, bool bear) =>
+    if array.size(pool) > 0
+        for i = array.size(pool) - 1 to 0
+            Pivot p = array.get(pool, i)
+            float breakPx = levelPrice(p.dPrice, p.price, breakLevel)
+            bool broken = bear ? (low < breakPx) : (high > breakPx)
+            if broken
+                array.remove(pool, i)
+    while array.size(pool) > recentN
+        array.shift(pool)
+    array.size(pool)
+
+updateDrawn(array<Pivot> pool, array<Pivot> drawnArr, array<int> st, bool bear) =>
+    int n = array.size(pool)
+    int tRecentBar = -1
+    int tExtBar = -1
+    if n > 0
+        tRecentBar := array.get(pool, n - 1).barIndex
+        Pivot ext = array.get(pool, 0)
+        for p in pool
+            if (bear ? (p.price > ext.price) : (p.price < ext.price))
+                ext := p
+        tExtBar := ext.barIndex
+    if tRecentBar != array.get(st, 0) or tExtBar != array.get(st, 1)
+        for d in drawnArr
+            clearPivot(d)
+        drawnArr.clear()
+        if n > 0
+            Pivot pRecent = array.get(pool, n - 1)
+            Pivot pExt = array.get(pool, 0)
+            for p in pool
+                if (bear ? (p.price > pExt.price) : (p.price < pExt.price))
+                    pExt := p
+            renderPivot(pExt)
+            array.push(drawnArr, pExt)
+            if pRecent.barIndex != pExt.barIndex
+                renderPivot(pRecent)
+                array.push(drawnArr, pRecent)
+        array.set(st, 0, tRecentBar)
+        array.set(st, 1, tExtBar)
+    for d in drawnArr
+        for ln in d.lines
+            line.set_x2(ln, bar_index + levelExtendBars)
+        for lb in d.labels
+            label.set_x(lb, bar_index + levelExtendBars)
+    array.size(drawnArr)
 
 // ---------------------------------------------------------------------------
 // STATE
 // ---------------------------------------------------------------------------
-var array<Pivot> pivots = array.new<Pivot>()   // PENDING lows only (removed once evaluated)
-var array<Pivot> valid  = array.new<Pivot>()   // qualified & not-yet-invalidated candidates (selection pool)
-var array<Pivot> drawn  = array.new<Pivot>()   // currently rendered pivots (1-2): most-recent-valid + lowest-valid
-var int          drawnRecentBar = -1           // barIndex of the drawn most-recent pivot (-1 = none)
-var int          drawnLowBar    = -1           // barIndex of the drawn lowest pivot (-1 = none)
-var array<line>  dbgLines = array.new<line>()   // debug connectors
+var array<Pivot> bullPending = array.new<Pivot>()
+var array<Pivot> bearPending = array.new<Pivot>()
+var array<Pivot> bullValid   = array.new<Pivot>()
+var array<Pivot> bearValid   = array.new<Pivot>()
+var array<Pivot> bullDrawn   = array.new<Pivot>()
+var array<Pivot> bearDrawn   = array.new<Pivot>()
+var array<int>   bullSt = array.from(-1, -1)
+var array<int>   bearSt = array.from(-1, -1)
 
-var int   lastPHBar   = na   // most recent confirmed pivot-high bar (the prior swing high)
-var float lastPHPrice = na   // its wick high
+var int   lastPHBar   = na
+var float lastPHPrice = na
+var int   lastPLBar   = na
+var float lastPLPrice = na
 
-// ta.* computed every bar at top level — never gated on data-dependent branches.
 int   pivotBar = bar_index - pivotLookback
 float ph = ta.pivothigh(pivotLookback, pivotLookback)
 float pl = ta.pivotlow(pivotLookback, pivotLookback)
@@ -190,133 +259,31 @@ if barstate.islast
 // MAIN — runs only on the 15m chart
 // =============================================================================
 if is15m
-    // Per-bar flags for the qualifying alert (Module B owns the alert).
-    bool  newQualify = false
-    float qLowPx     = na
-    float qNextPx    = na
-
-    // -------------------------------------------------------------------------
-    // MODULE A (high) + MODULE B (gate) + MODULE C (render)
-    // A confirmed pivot HIGH is the only event that can complete a pending low
-    // (set its nextHigh), so gate evaluation + rendering are guarded under it —
-    // O(pending) work, only on high-confirm bars. Iterate backwards so we can
-    // remove completed records in-place.
-    // -------------------------------------------------------------------------
+    // confirmed pivot HIGH: completes pending BULL lows (their nextHigh);
+    // starts a new pending BEAR high anchored to the prior low.
     if not na(ph)
-        if array.size(pivots) > 0
-            for i = array.size(pivots) - 1 to 0
-                Pivot p = array.get(pivots, i)
-                if (not p.hasNextHigh) and p.barIndex < pivotBar
-                    // -- Module A: distribution endpoint (first high after the low)
-                    p.nextHighBar := pivotBar
-                    p.nextHigh    := ph
-                    p.hasNextHigh := true
-
-                    // -- Module B: one-shot gate evaluation
-                    float gA0    = gateSource == "Manipulation" ? p.priorHigh : p.nextHigh
-                    float gPrice = levelPrice(gA0, p.price, gateLevel)
-                    p.qualified := p.nextHigh < gPrice   // rally stayed below the gate -> contained reversal
-                    p.evaluated := true
-
-                    // -- Debug connectors (manip leg, dist leg colored by verdict, gate line)
-                    if debugMode
-                        color dcol = p.qualified ? color.new(color.teal, 0) : color.new(color.gray, 40)
-                        array.push(dbgLines, line.new(p.priorHighBar, p.priorHigh, p.barIndex, p.price, xloc=xloc.bar_index, color=color.new(color.purple, 0), width=1))
-                        array.push(dbgLines, line.new(p.barIndex, p.price, p.nextHighBar, p.nextHigh, xloc=xloc.bar_index, color=dcol, width=1))
-                        int gLeft = gateSource == "Manipulation" ? p.priorHighBar : p.barIndex
-                        array.push(dbgLines, line.new(gLeft, gPrice, p.nextHighBar, gPrice, xloc=xloc.bar_index, color=color.new(color.maroon, 0), width=1, style=line.style_dashed))
-
-                    // -- Module C (1/3): qualified pivots enter the live candidate pool
-                    if p.qualified
-                        newQualify := true
-                        qLowPx     := p.price
-                        qNextPx    := p.nextHigh
-                        array.push(valid, p)
-
-                    // -- evaluated -> no longer pending; drop from the pending list
-                    array.remove(pivots, i)
-        // record this high as the prior swing high for future lows
-        lastPHBar   := pivotBar
+        completePending(bullPending, bullValid, pivotBar, ph, false)
+        if not na(lastPLBar)
+            array.push(bearPending, Pivot.new(bear = true, barIndex = pivotBar, price = ph, mBar = lastPLBar, mPrice = lastPLPrice, dBar = na, dPrice = na, hasDist = false, evaluated = false, qualified = false, lines = array.new<line>(), boxes = array.new<box>(), labels = array.new<label>()))
+        lastPHBar := pivotBar
         lastPHPrice := ph
 
-    // -------------------------------------------------------------------------
-    // MODULE C (2/3): invalidation sweep + pool bound (runs every bar).
-    //   Drop any candidate whose wick HIGH has crossed its distribution -4 level
-    //   (anchor0 = nextHigh, anchor1 = pivotLow). Then bound the pool to the last
-    //   recentN qualifiers so 'lowest' is chosen from a recent set.
-    // -------------------------------------------------------------------------
-    if array.size(valid) > 0
-        for i = array.size(valid) - 1 to 0
-            Pivot p = array.get(valid, i)
-            float breakPx = levelPrice(p.nextHigh, p.price, breakLevel)   // distribution-ladder break level
-            if high > breakPx
-                array.remove(valid, i)
-    while array.size(valid) > recentN
-        array.shift(valid)
-
-    // -------------------------------------------------------------------------
-    // MODULE C (3/3): draw the most-recent-valid + lowest-valid candidates
-    //   (distribution leg only). Both come from `valid`, so both are unbroken.
-    //   Redraw only when the chosen pair changes; otherwise keep their lines
-    //   extended to the current bar so the levels stay actionable live.
-    // -------------------------------------------------------------------------
-    // Target pair, identified by barIndex (-1 = none). valid is chronological,
-    // so the last element is the most-recent-valid pivot.
-    int tRecentBar = -1
-    int tLowBar    = -1
-    if array.size(valid) > 0
-        tRecentBar := array.get(valid, array.size(valid) - 1).barIndex
-        Pivot lo = array.get(valid, 0)
-        for p in valid
-            if p.price < lo.price
-                lo := p
-        tLowBar := lo.barIndex
-
-    if tRecentBar != drawnRecentBar or tLowBar != drawnLowBar
-        // wipe current draw set, then render the new pair (dedup if identical)
-        for d in drawn
-            clearPivot(d)
-        drawn.clear()
-        if array.size(valid) > 0
-            Pivot pRecent = array.get(valid, array.size(valid) - 1)
-            Pivot pLow    = array.get(valid, 0)
-            for p in valid
-                if p.price < pLow.price
-                    pLow := p
-            renderPivot(pLow)
-            array.push(drawn, pLow)
-            if pRecent.barIndex != pLow.barIndex
-                renderPivot(pRecent)
-                array.push(drawn, pRecent)
-        drawnRecentBar := tRecentBar
-        drawnLowBar    := tLowBar
-
-    // keep drawn ladders live: extend lines/labels to the current bar
-    for d in drawn
-        for ln in d.lines
-            line.set_x2(ln, bar_index)
-        for lb in d.labels
-            label.set_x(lb, bar_index)
-
-    // -------------------------------------------------------------------------
-    // MODULE A (low): create a pending record anchored to the prior swing high.
-    // Skip if no prior high exists yet (start of history) — never half-anchored.
-    // -------------------------------------------------------------------------
+    // confirmed pivot LOW: completes pending BEAR highs (their nextLow);
+    // starts a new pending BULL low anchored to the prior high.
     if not na(pl)
+        completePending(bearPending, bearValid, pivotBar, pl, true)
         if not na(lastPHBar)
-            array.push(pivots, Pivot.new(barIndex = pivotBar, price = pl, priorHighBar = lastPHBar, priorHigh = lastPHPrice, nextHighBar = na, nextHigh = na, hasNextHigh = false, evaluated = false, qualified = false, lines = array.new<line>(), boxes = array.new<box>(), labels = array.new<label>()))
+            array.push(bullPending, Pivot.new(bear = false, barIndex = pivotBar, price = pl, mBar = lastPHBar, mPrice = lastPHPrice, dBar = na, dPrice = na, hasDist = false, evaluated = false, qualified = false, lines = array.new<line>(), boxes = array.new<box>(), labels = array.new<label>()))
+        lastPLBar := pivotBar
+        lastPLPrice := pl
 
-    // Safety cap on pending records (no handles to free — pending = undrawn).
-    while array.size(pivots) > 100
-        array.shift(pivots)
+    while array.size(bullPending) > 100
+        array.shift(bullPending)
+    while array.size(bearPending) > 100
+        array.shift(bearPending)
 
-    // Keep debug connectors bounded.
-    if debugMode
-        while array.size(dbgLines) > 60
-            line.delete(array.shift(dbgLines))
+    invalidate(bullValid, false)
+    invalidate(bearValid, true)
 
-    // -------------------------------------------------------------------------
-    // ALERTS — fires once per pivot on the qualifying transition (off by default)
-    // -------------------------------------------------------------------------
-    if enableAlert and newQualify
-        alert("Stdev Projections: new qualifying pivot — low " + str.tostring(qLowPx) + ", reversal high " + str.tostring(qNextPx), alert.freq_once_per_bar_close)
+    updateDrawn(bullValid, bullDrawn, bullSt, false)
+    updateDrawn(bearValid, bearDrawn, bearSt, true)
