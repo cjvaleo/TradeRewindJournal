@@ -157,9 +157,9 @@ completePending(array<Pivot> pending, array<Pivot> validArr, int endBar, float e
         for i = array.size(pending) - 1 to 0
             Pivot p = array.get(pending, i)
             if (not p.hasDist) and p.barIndex < endBar
-                p.dBar = endBar
-                p.dPrice = endPrice
-                p.hasDist = true
+                p.dBar    := endBar
+                p.dPrice  := endPrice
+                p.hasDist := true
                 float gA0 = gateSource == "Manipulation" ? p.mPrice : p.dPrice
                 float gP = levelPrice(gA0, p.price, gateLevel)
                 p.qualified := bear ? (p.dPrice > gP) : (p.dPrice < gP)
