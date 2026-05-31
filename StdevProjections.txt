@@ -16,17 +16,18 @@ indicator("Stdev Projections", overlay=true, max_lines_count=500, max_labels_cou
 // --- Group: Pivots --------------------------------------------------------
 string gPivots = "Pivots"
 int pivotLookback = input.int(5, "Pivot lookback (left = right bars)", minval=1, group=gPivots, tooltip="Bars on each side for ta.pivotlow / ta.pivothigh. Confirmation lags by this many bars.")
-int recentN       = input.int(10, "Recent window (last N qualifying pivots)", minval=1, group=gPivots, tooltip="The 'lowest' anchor is chosen among the last N qualifying pivots. The tool always draws two ladders: the most recent qualifying pivot and the lowest one in this window (one ladder if they're the same pivot).")
+int recentN       = input.int(10, "Recent window (last N qualifying pivots)", minval=1, group=gPivots, tooltip="The lowest still-valid pivot is chosen from the last N qualifying pivots. A pivot leaves the pool when its wick high crosses its distribution -4 level (see Gate > Invalidation level).")
 
 // --- Group: Gate ----------------------------------------------------------
 string gGate = "Gate"
 float  gateLevel  = input.float(-4.5, "Gate level (L)", step=0.25, group=gGate, tooltip="A pivot qualifies only if the rally stays below this projected level. Default -4.5 = the manipulation-ladder cutoff.")
 string gateSource = input.string("Manipulation", "Gate source ladder", options=["Manipulation", "Distribution"], group=gGate, tooltip="Which ladder's anchors price the gate. Default: Manipulation (priorHigh -> pivotLow).")
+float  breakLevel = input.float(-4.5, "Invalidation level (L)", step=0.25, group=gGate, tooltip="A qualified pivot is dropped once a bar's wick HIGH crosses this level of its DISTRIBUTION ladder (nextHigh -> pivotLow). Only still-valid pivots are drawn.")
 
 // --- Group: Manipulation Ladder -------------------------------------------
 string gManip = "Manipulation Ladder"
-bool showManipBox    = input.bool(true, "Show manipulation box",    group=gManip)
-bool showManipLadder = input.bool(true, "Show manipulation ladder", group=gManip)
+bool showManipBox    = input.bool(false, "Show manipulation box",    group=gManip, tooltip="Off for now — only the distribution leg is marked.")
+bool showManipLadder = input.bool(false, "Show manipulation ladder", group=gManip, tooltip="Off for now — only the distribution leg is marked.")
 
 // --- Group: Distribution Ladder -------------------------------------------
 string gDist = "Distribution Ladder"
@@ -155,8 +156,10 @@ renderPivot(Pivot p) =>
 // STATE
 // ---------------------------------------------------------------------------
 var array<Pivot> pivots = array.new<Pivot>()   // PENDING lows only (removed once evaluated)
-var array<Pivot> recent = array.new<Pivot>()   // last N QUALIFYING pivots, oldest-first (the selection window)
-var array<Pivot> drawn  = array.new<Pivot>()   // currently RENDERED pivots (1-2): most-recent + lowest
+var array<Pivot> valid  = array.new<Pivot>()   // qualified & not-yet-invalidated candidates (selection pool)
+var array<Pivot> drawn  = array.new<Pivot>()   // currently rendered pivots (1-2): most-recent-valid + lowest-valid
+var int          drawnRecentBar = -1           // barIndex of the drawn most-recent pivot (-1 = none)
+var int          drawnLowBar    = -1           // barIndex of the drawn lowest pivot (-1 = none)
 var array<line>  dbgLines = array.new<line>()   // debug connectors
 
 var int   lastPHBar   = na   // most recent confirmed pivot-high bar (the prior swing high)
@@ -223,12 +226,12 @@ if is15m
                         int gLeft = gateSource == "Manipulation" ? p.priorHighBar : p.barIndex
                         array.push(dbgLines, line.new(gLeft, gPrice, p.nextHighBar, gPrice, xloc=xloc.bar_index, color=color.new(color.maroon, 0), width=1, style=line.style_dashed))
 
-                    // -- Module C (1/2): add qualifying pivots to the selection window
+                    // -- Module C (1/3): qualified pivots enter the live candidate pool
                     if p.qualified
                         newQualify := true
                         qLowPx     := p.price
                         qNextPx    := p.nextHigh
-                        array.push(recent, p)
+                        array.push(valid, p)
 
                     // -- evaluated -> no longer pending; drop from the pending list
                     array.remove(pivots, i)
@@ -237,41 +240,63 @@ if is15m
         lastPHPrice := ph
 
     // -------------------------------------------------------------------------
-    // MODULE C (2/2): selection + redraw.  Always show TWO ladders — the most
-    // recent qualifying pivot and the lowest one within the last N qualifying
-    // pivots (one ladder if they are the same pivot). Recomputed only when a new
-    // qualifying pivot arrives, since that is the only time the set can change.
+    // MODULE C (2/3): invalidation sweep + pool bound (runs every bar).
+    //   Drop any candidate whose wick HIGH has crossed its distribution -4 level
+    //   (anchor0 = nextHigh, anchor1 = pivotLow). Then bound the pool to the last
+    //   recentN qualifiers so 'lowest' is chosen from a recent set.
     // -------------------------------------------------------------------------
-    if newQualify
-        // Trim the window to the last N qualifying pivots.
-        while array.size(recent) > recentN
-            array.shift(recent)
+    if array.size(valid) > 0
+        for i = array.size(valid) - 1 to 0
+            Pivot p = array.get(valid, i)
+            float breakPx = levelPrice(p.nextHigh, p.price, breakLevel)   // distribution-ladder break level
+            if high > breakPx
+                array.remove(valid, i)
+    while array.size(valid) > recentN
+        array.shift(valid)
 
-        // Wipe whatever is currently drawn (handles freed + arrays cleared).
+    // -------------------------------------------------------------------------
+    // MODULE C (3/3): draw the most-recent-valid + lowest-valid candidates
+    //   (distribution leg only). Both come from `valid`, so both are unbroken.
+    //   Redraw only when the chosen pair changes; otherwise keep their lines
+    //   extended to the current bar so the levels stay actionable live.
+    // -------------------------------------------------------------------------
+    // Target pair, identified by barIndex (-1 = none). valid is chronological,
+    // so the last element is the most-recent-valid pivot.
+    int tRecentBar = -1
+    int tLowBar    = -1
+    if array.size(valid) > 0
+        tRecentBar := array.get(valid, array.size(valid) - 1).barIndex
+        Pivot lo = array.get(valid, 0)
+        for p in valid
+            if p.price < lo.price
+                lo := p
+        tLowBar := lo.barIndex
+
+    if tRecentBar != drawnRecentBar or tLowBar != drawnLowBar
+        // wipe current draw set, then render the new pair (dedup if identical)
         for d in drawn
             clearPivot(d)
         drawn.clear()
-
-        // Pick most-recent (last) and lowest-priced within the window, by index.
-        int n       = array.size(recent)
-        int lastIdx = n - 1
-        int lowIdx  = lastIdx
-        float lowPx = array.get(recent, lastIdx).price
-        if lastIdx > 0
-            for k = 0 to lastIdx - 1
-                float pk = array.get(recent, k).price
-                if pk < lowPx
-                    lowPx  := pk
-                    lowIdx := k
-
-        // Render the most-recent pivot; render the lowest too if it's a different one.
-        Pivot pRecent = array.get(recent, lastIdx)
-        renderPivot(pRecent)
-        array.push(drawn, pRecent)
-        if lowIdx != lastIdx
-            Pivot pLow = array.get(recent, lowIdx)
+        if array.size(valid) > 0
+            Pivot pRecent = array.get(valid, array.size(valid) - 1)
+            Pivot pLow    = array.get(valid, 0)
+            for p in valid
+                if p.price < pLow.price
+                    pLow := p
             renderPivot(pLow)
             array.push(drawn, pLow)
+            if pRecent.barIndex != pLow.barIndex
+                renderPivot(pRecent)
+                array.push(drawn, pRecent)
+        drawnRecentBar := tRecentBar
+        drawnLowBar    := tLowBar
+
+    // keep drawn ladders live: extend lines/labels to the current bar
+    for d in drawn
+        for ln in d.lines
+            line.set_x2(ln, bar_index)
+        for lb in d.labels
+            label.set_x(lb, bar_index)
 
     // -------------------------------------------------------------------------
     // MODULE A (low): create a pending record anchored to the prior swing high.
