@@ -36,7 +36,7 @@ bool showDistLadder = input.bool(true, "Show distribution ladder", group=gDist)
 // --- Group: Levels (per-level toggles) ------------------------------------
 string gLevels = "Levels"
 bool keyLevelsOnly   = input.bool(false, "Key levels only (overrides individual toggles)", group=gLevels, tooltip="When on, draws only the colored key levels plus 0 and 1.")
-int  levelExtendBars = input.int(10, "Level extend bars (right of nextHigh)", minval=0, group=gLevels, tooltip="How many bars each level line / label extends to the right of the distribution-leg high.")
+int  levelExtendBars = input.int(0, "Level extend bars (past leg end)", minval=0, group=gLevels, tooltip="Each ladder spans only its own leg (start bar -> last bar of that leg). This optionally extends every level line/label this many bars further right. 0 = hug the leg exactly.")
 bool lvl_1    = input.bool(true, "1.0",    group=gLevels, inline="L1")
 bool lvl_943  = input.bool(true, "0.943",  group=gLevels, inline="L1")
 bool lvl_79   = input.bool(true, "0.79",   group=gLevels, inline="L1")
@@ -138,16 +138,17 @@ clearPivot(Pivot p) =>
     p.boxes.clear()
 
 // Draw the two boxes + both ladders for a qualified pivot; handles stored on `p`.
+// Each ladder spans only its own leg (start bar -> last bar of that leg),
+// optionally extended right by levelExtendBars (default 0).
 renderPivot(Pivot p) =>
-    int rightEdge = p.nextHighBar + levelExtendBars
     if showManipBox
         array.push(p.boxes, box.new(p.priorHighBar, p.priorHigh, p.barIndex, p.price, xloc=xloc.bar_index, border_color=color.new(color.purple, 40), border_width=1, bgcolor=manipBoxColor))
     if showDistBox
         array.push(p.boxes, box.new(p.barIndex, p.nextHigh, p.nextHighBar, p.price, xloc=xloc.bar_index, border_color=color.new(color.teal, 40), border_width=1, bgcolor=distBoxColor))
     if showManipLadder
-        drawLadder(p, p.priorHigh, p.price, p.priorHighBar, rightEdge)
+        drawLadder(p, p.priorHigh, p.price, p.priorHighBar, p.barIndex + levelExtendBars)      // manip leg: priorHigh -> low
     if showDistLadder
-        drawLadder(p, p.nextHigh, p.price, p.barIndex, rightEdge)
+        drawLadder(p, p.nextHigh, p.price, p.barIndex, p.nextHighBar + levelExtendBars)        // dist  leg: low -> nextHigh
     array.size(p.boxes)
 
 // ---------------------------------------------------------------------------
