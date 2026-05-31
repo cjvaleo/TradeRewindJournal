@@ -47,7 +47,7 @@ bool showManipLadder = input.bool(false, "Show manipulation ladder", group=gMani
 // --- Group: Levels (per-level toggles) ------------------------------------
 string gLevels = "Levels"
 bool keyLevelsOnly   = input.bool(false, "Key levels only (overrides individual toggles)", group=gLevels, tooltip="When on, draws only the colored key levels plus 0 and 1.")
-int  levelExtendBars = input.int(0, "Level extend bars (past current bar)", minval=0, group=gLevels, tooltip="Each ladder live-extends to the current bar; this adds extra bars past it. 0 = stop at the current bar.")
+int  levelExtendBars = input.int(0, "Level extend bars (past leg end)", minval=0, group=gLevels, tooltip="Each ladder spans only its marked leg (first marked candle -> last marked candle). This optionally extends every line/label this many bars further right. 0 = hug the leg exactly.")
 bool lvl_1    = input.bool(true, "1.0",    group=gLevels, inline="L1")
 bool lvl_943  = input.bool(true, "0.943",  group=gLevels, inline="L1")
 bool lvl_79   = input.bool(true, "0.79",   group=gLevels, inline="L1")
@@ -211,11 +211,8 @@ updateDrawn(array<Pivot> pool, array<Pivot> drawnArr, array<int> st, bool bear) 
                 array.push(drawnArr, pRecent)
         array.set(st, 0, tRecentBar)
         array.set(st, 1, tExtBar)
-    for d in drawnArr
-        for ln in d.lines
-            line.set_x2(ln, bar_index + levelExtendBars)
-        for lb in d.labels
-            label.set_x(lb, bar_index + levelExtendBars)
+    // NOTE: no live-extend — each ladder spans only its marked leg (first
+    // marked candle -> last marked candle), set once in renderPivot.
     array.size(drawnArr)
 
 // ---------------------------------------------------------------------------
