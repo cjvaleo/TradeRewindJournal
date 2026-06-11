@@ -792,6 +792,26 @@
   color:#FFF3B0;font-family:'Geist',sans-serif;font-size:16px;
 }
 .v7-field::placeholder{color:rgba(233,178,60,.28)}
+/* Chrome autofill — kill the pale-yellow box, force gold-on-black */
+.v7-field:-webkit-autofill,
+.v7-field:-webkit-autofill:hover,
+.v7-field:-webkit-autofill:focus,
+.v7-field:-webkit-autofill:active{
+  -webkit-box-shadow:0 0 0 1000px #060606 inset !important;
+  -webkit-text-fill-color:#FFF3B0 !important;
+  caret-color:#FFF3B0;
+  transition:background-color 9999s ease-in-out 0s;
+  border-radius:0;
+}
+/* suppress Chrome's injected credential/password-manager decoration buttons */
+.v7-field::-webkit-credentials-auto-fill-button,
+.v7-field::-webkit-strong-password-auto-fill-button,
+.v7-field::-webkit-contacts-auto-fill-button{
+  visibility:hidden;
+  pointer-events:none;
+  position:absolute;
+  right:0;
+}
 .v7-go{
   border:none;background:transparent;cursor:pointer;
   font-family:'Geist Mono',monospace;font-size:12px;letter-spacing:.22em;
@@ -9822,14 +9842,14 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
           <input class="v7-field" type="email" id="login-email"
             placeholder="you@email.com" autocomplete="email"
             onkeydown="if(event.key==='Enter')v7Continue()"/>
-          <button class="v7-go" id="v7-continue-btn" onclick="v7Continue()">CONTINUE&nbsp;&rarr;</button>
+          <button class="v7-go" id="v7-continue-btn" type="button" onclick="v7Continue()">CONTINUE&nbsp;&rarr;</button>
         </div>
         <!-- step 2: password (revealed after email validates) -->
         <div class="v7-field-row" id="v7-pass-row" style="display:none">
           <input class="v7-field" type="password" id="login-pass"
             placeholder="password" autocomplete="current-password"
             onkeydown="if(event.key==='Enter')doLogin()"/>
-          <button class="v7-go" id="login-btn" onclick="doLogin()">SIGN&nbsp;IN&nbsp;&rarr;</button>
+          <button class="v7-go" id="login-btn" type="button" onclick="doLogin()">SIGN&nbsp;IN&nbsp;&rarr;</button>
         </div>
         <!-- inline validation error -->
         <p class="v7-err" id="v7-inline-err" style="display:none" aria-live="polite"></p>
