@@ -9851,75 +9851,86 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             onkeydown="if(event.key==='Enter')doLogin()"/>
           <button class="v7-go" id="login-btn" type="button" onclick="doLogin()">SIGN&nbsp;IN&nbsp;&rarr;</button>
         </div>
+        <!-- forgot password — visible after password step revealed -->
+        <p class="v7-alt" id="v7-forgot-wrap" style="display:none;margin-top:14px">
+          <a onclick="v7DoForgotPassword()" tabindex="0">Forgot password?</a>
+        </p>
+        <p id="v7-forgot-sent" style="display:none;margin-top:8px;font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:.2em;color:#E9B23C">RESET LINK SENT</p>
         <!-- inline validation error -->
         <p class="v7-err" id="v7-inline-err" style="display:none" aria-live="polite"></p>
+        <!-- mode switch -->
+        <p class="v7-alt" style="margin-top:28px">New here? <a onclick="switchAuthTab('signup')">Create an account</a></p>
       </div>
     </div>
   </div>
 
   <!-- ── SIGNUP STEP 1 ── -->
   <div id="auth-signup-form" style="display:none;width:100%">
-    <div class="v7-signup-scene">
-      <div class="v7-card">
-        <div class="n-step-meta" style="margin-bottom:20px">Step 1 of 2 — credentials</div>
-        <div class="n-field">
-          <label class="n-label" for="signup-email">Email</label>
-          <input id="signup-email" class="n-input" type="email" placeholder="you@domain.com"/>
+    <div class="v7-login-wrap">
+      <h1 class="v7-lockup" aria-label="Rewind trade journal">
+        <span class="v7-caps"><span class="v7-rw" aria-hidden="true">&laquo;</span>Rewind</span>
+        <span class="v7-script">trade journal</span>
+      </h1>
+      <div class="v7-form">
+        <div class="v7-field-row">
+          <input class="v7-field" type="email" id="signup-email"
+            placeholder="you@email.com" autocomplete="email"
+            onkeydown="if(event.key==='Enter')v7SignupContinue()"/>
+          <button class="v7-go" id="v7s-continue-btn" type="button" onclick="v7SignupContinue()">CONTINUE&nbsp;&rarr;</button>
         </div>
-        <div class="n-field">
-          <label class="n-label" for="signup-pass">Password</label>
-          <input id="signup-pass" class="n-input" type="password" placeholder="Minimum 8 characters"
+        <div class="v7-field-row" id="v7s-pass-row" style="display:none">
+          <input class="v7-field" type="password" id="signup-pass"
+            placeholder="min 8 characters" autocomplete="new-password"
             onkeydown="if(event.key==='Enter')doSignupStep1()"/>
+          <button class="v7-go" id="signup-btn1" type="button" onclick="doSignupStep1()">CREATE&nbsp;ACCOUNT&nbsp;&rarr;</button>
         </div>
-        <button id="signup-btn1" class="n-btn-primary" onclick="doSignupStep1()">Continue</button>
-        <div class="n-foot" style="margin-top:18px">
-          Already have one? <button onclick="switchAuthTab('login')">Sign in</button>
-        </div>
+        <p class="v7-err" id="v7s-inline-err" style="display:none" aria-live="polite"></p>
+        <p class="v7-alt" style="margin-top:28px">Already have an account? <a onclick="switchAuthTab('login')">Sign in</a></p>
       </div>
     </div>
   </div>
 
   <!-- ── SIGNUP STEP 2 ── -->
   <div id="auth-signup-step2" style="display:none;width:100%">
-    <div class="v7-signup-scene">
-      <div class="v7-card">
-        <div class="n-step-meta" style="margin-bottom:20px">Step 2 of 2 — your name</div>
-        <div class="n-field">
-          <label class="n-label" for="signup-name">Display name</label>
-          <input id="signup-name" class="n-input" type="text" placeholder="What people see"/>
+    <div class="v7-login-wrap">
+      <div class="v7-form" style="margin-top:0">
+        <p style="font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:.2em;color:rgba(233,178,60,.35);text-align:left;margin-bottom:28px">STEP 2 OF 2</p>
+        <div class="v7-field-row">
+          <input class="v7-field" type="text" id="signup-name"
+            placeholder="display name" autocomplete="name"/>
         </div>
-        <div class="n-field">
-          <label class="n-label" for="signup-username">Username</label>
-          <div class="n-input-group">
-            <span class="at">@</span>
-            <input id="signup-username" type="text" placeholder="username"
-              onkeydown="if(event.key==='Enter')doSignupStep2()"/>
-          </div>
+        <div class="v7-field-row" style="margin-top:20px">
+          <span style="font-family:'Geist Mono',monospace;font-size:14px;color:rgba(233,178,60,.4);padding-right:3px;flex-shrink:0">@</span>
+          <input class="v7-field" type="text" id="signup-username"
+            placeholder="username" autocomplete="username"
+            onkeydown="if(event.key==='Enter')doSignupStep2()"/>
         </div>
-        <div class="n-auth-tos">
-          <label class="n-auth-tos-row">
-            <input type="checkbox" id="signup-tos-check" onchange="_updateSignupTosState()"/>
-            <span>I agree to the
-              <a href="/terms" target="_blank" rel="noopener">Terms of Service</a>
-              and
-              <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>.
-            </span>
-          </label>
+        <label style="display:flex;align-items:flex-start;gap:10px;margin-top:24px;cursor:pointer">
+          <input type="checkbox" id="signup-tos-check" onchange="_updateSignupTosState()"
+            style="width:14px;height:14px;margin-top:3px;accent-color:#E9B23C;cursor:pointer;flex-shrink:0"/>
+          <span style="font-family:'Geist',sans-serif;font-size:12px;color:rgba(233,178,60,.4);line-height:1.6">
+            I agree to the
+            <a href="/terms" target="_blank" rel="noopener" style="color:#E9B23C;text-decoration:none;border-bottom:1px solid rgba(233,178,60,.2)">Terms of Service</a>
+            and
+            <a href="/privacy" target="_blank" rel="noopener" style="color:#E9B23C;text-decoration:none;border-bottom:1px solid rgba(233,178,60,.2)">Privacy Policy</a>
+          </span>
+        </label>
+        <div style="margin-top:28px;text-align:right">
+          <button class="v7-go" id="signup-btn2" type="button" onclick="doSignupStep2()" disabled>CREATE&nbsp;ACCOUNT&nbsp;&rarr;</button>
         </div>
-        <button id="signup-btn2" class="n-btn-primary" onclick="doSignupStep2()" disabled style="margin-bottom:8px">Create account</button>
-        <button class="n-btn-ghost" onclick="switchAuthTab('signup')">Back</button>
+        <p class="v7-alt" style="margin-top:22px"><a onclick="switchAuthTab('signup')">&larr;&nbsp;Back</a></p>
       </div>
     </div>
   </div>
 
   <!-- ── EMAIL CONFIRM ── -->
   <div id="auth-confirm-msg" style="display:none;width:100%">
-    <div class="v7-signup-scene" style="text-align:center">
-      <div class="v7-card" style="text-align:center">
-        <div class="v7-confirm-title">CHECK YOUR EMAIL</div>
-        <div class="v7-confirm-sub">We sent a confirmation link to</div>
-        <div class="v7-confirm-email" id="auth-confirm-email"></div>
-        <button class="n-btn-ghost" onclick="switchAuthTab('login')">Back to sign in</button>
+    <div class="v7-login-wrap" style="text-align:center">
+      <div style="width:min(360px,88vw);opacity:0;animation:v7FadeIn .9s ease both .2s">
+        <p style="font-family:'Geist Mono',monospace;font-size:13px;letter-spacing:.22em;color:#E9B23C;text-transform:uppercase;margin-bottom:20px">Check your email</p>
+        <p style="font-family:'Geist',sans-serif;font-size:14px;color:rgba(233,178,60,.5);margin-bottom:10px">We sent a confirmation link to</p>
+        <p id="auth-confirm-email" style="font-family:'Geist Mono',monospace;font-size:12px;color:rgba(233,178,60,.4);margin-bottom:36px"></p>
+        <p class="v7-alt"><a onclick="switchAuthTab('login')">Use a different email</a></p>
       </div>
     </div>
   </div>
@@ -27859,7 +27870,7 @@ function setBtnLoading(btnId, loading, label) {
   btn.style.opacity = loading ? '.6' : '1';
 }
 
-/* ── v7 email-first step ── */
+/* ── v7 login: email-first step ── */
 function v7Continue() {
   var emailEl = document.getElementById('login-email');
   var errEl   = document.getElementById('v7-inline-err');
@@ -27879,26 +27890,90 @@ function v7Continue() {
   }
   if (errEl) errEl.style.display = 'none';
   if (passRow) passRow.style.display = 'flex';
-  if (contBtn) { contBtn.style.display = 'none'; }
+  if (contBtn) contBtn.style.display = 'none';
+  var forgotWrap = document.getElementById('v7-forgot-wrap');
+  if (forgotWrap) forgotWrap.style.display = '';
   var passField = document.getElementById('login-pass');
   if (passField) passField.focus();
 }
 
-/* ── v7: reset two-step state when returning to login tab ── */
+/* ── v7 signup: email-first step ── */
+function v7SignupContinue() {
+  var emailEl = document.getElementById('signup-email');
+  var errEl   = document.getElementById('v7s-inline-err');
+  var passRow = document.getElementById('v7s-pass-row');
+  var contBtn = document.getElementById('v7s-continue-btn');
+  if (!emailEl) return;
+  var email = emailEl.value.trim();
+  if (!email) {
+    if (errEl) { errEl.textContent = 'Please enter your email.'; errEl.style.display = 'block'; }
+    emailEl.focus();
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (errEl) { errEl.textContent = 'Please enter a valid email address.'; errEl.style.display = 'block'; }
+    emailEl.focus();
+    return;
+  }
+  if (errEl) errEl.style.display = 'none';
+  if (passRow) passRow.style.display = 'flex';
+  if (contBtn) contBtn.style.display = 'none';
+  var passField = document.getElementById('signup-pass');
+  if (passField) passField.focus();
+}
+
+/* ── v7 forgot password: inline success ── */
+async function v7DoForgotPassword() {
+  var email    = document.getElementById('login-email').value.trim();
+  var errEl    = document.getElementById('v7-inline-err');
+  var sentEl   = document.getElementById('v7-forgot-sent');
+  var forgotWrap = document.getElementById('v7-forgot-wrap');
+  if (!email) {
+    if (errEl) { errEl.textContent = 'Enter your email above first.'; errEl.style.display = 'block'; }
+    return;
+  }
+  try {
+    await _sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+    if (forgotWrap) forgotWrap.style.display = 'none';
+    if (sentEl) sentEl.style.display = 'block';
+  } catch(e) {
+    if (errEl) { errEl.textContent = 'Could not send reset email. Try again.'; errEl.style.display = 'block'; }
+  }
+}
+
+/* ── v7: reset tab state on mode switch ── */
 document.addEventListener('DOMContentLoaded', function(){
   var origSwitch = window.switchAuthTab;
   if(typeof origSwitch !== 'function') return;
   var _patchedSwitch = function(tab) {
     origSwitch(tab);
     if(tab === 'login') {
-      var passRow = document.getElementById('v7-pass-row');
-      var contBtn = document.getElementById('v7-continue-btn');
-      var passEl  = document.getElementById('login-pass');
-      var errEl   = document.getElementById('v7-inline-err');
-      if(passRow)  passRow.style.display = 'none';
-      if(contBtn)  contBtn.style.display = '';
-      if(passEl)   passEl.value = '';
-      if(errEl)    errEl.style.display = 'none';
+      // reset login two-step
+      var passRow    = document.getElementById('v7-pass-row');
+      var contBtn    = document.getElementById('v7-continue-btn');
+      var passEl     = document.getElementById('login-pass');
+      var errEl      = document.getElementById('v7-inline-err');
+      var forgotWrap = document.getElementById('v7-forgot-wrap');
+      var forgotSent = document.getElementById('v7-forgot-sent');
+      if(passRow)    passRow.style.display    = 'none';
+      if(contBtn)    contBtn.style.display    = '';
+      if(passEl)     passEl.value             = '';
+      if(errEl)      errEl.style.display      = 'none';
+      if(forgotWrap) forgotWrap.style.display = 'none';
+      if(forgotSent) forgotSent.style.display = 'none';
+    }
+    if(tab === 'signup') {
+      // reset signup two-step
+      var sPassRow  = document.getElementById('v7s-pass-row');
+      var sContBtn  = document.getElementById('v7s-continue-btn');
+      var sEmailEl  = document.getElementById('signup-email');
+      var sPassEl   = document.getElementById('signup-pass');
+      var sErrEl    = document.getElementById('v7s-inline-err');
+      if(sPassRow)  sPassRow.style.display  = 'none';
+      if(sContBtn)  sContBtn.style.display  = '';
+      if(sEmailEl)  sEmailEl.value          = '';
+      if(sPassEl)   sPassEl.value           = '';
+      if(sErrEl)    sErrEl.style.display    = 'none';
     }
   };
   window.switchAuthTab = _patchedSwitch;
