@@ -13,6 +13,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Bebas+Neue&family=Orbitron:wght@400;700;900&family=Chakra+Petch:wght@300;400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@1,125,900&family=Pinyon+Script&display=swap" rel="stylesheet">
 <style>
 @font-face {
   font-family: 'FreeLine';
@@ -732,6 +733,174 @@
 @keyframes status-pulse{
   0%,100%{ opacity:0.55; transform:scale(1)   }
   50%   { opacity:1.00; transform:scale(1.15) }
+}
+
+/* ── v7 "Pure Gold" auth skin ─────────────────────────── */
+#auth-screen{background:#060606}
+.v7-login-wrap{
+  width:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:24px;min-height:100vh;
+}
+.v7-lockup{
+  position:relative;line-height:.92;user-select:none;
+  opacity:0;animation:v7FadeIn 1s ease both .1s;
+  pointer-events:none;
+}
+.v7-caps{
+  display:flex;align-items:baseline;justify-content:center;
+  font-family:'Archivo',sans-serif;
+  font-weight:900;font-style:italic;font-stretch:125%;
+  font-size:clamp(64px,13vw,136px);
+  letter-spacing:-.045em;text-transform:uppercase;
+  color:#E9B23C;padding-right:.06em;
+}
+.v7-rw{
+  font-size:.62em;letter-spacing:-.12em;margin-right:.1em;color:#A87E22;
+}
+.v7-script{
+  position:absolute;left:50%;bottom:-0.52em;
+  transform:translateX(-50%) rotate(-4deg);
+  font-family:'Pinyon Script',cursive;
+  font-size:clamp(48px,9vw,92px);
+  color:#FFF3B0;
+  text-shadow:0 2px 0 rgba(0,0,0,.9),0 0 18px rgba(0,0,0,.8);
+  white-space:nowrap;pointer-events:none;
+  opacity:0;animation:v7ScriptIn 1s ease both .6s;
+}
+@keyframes v7FadeIn{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes v7ScriptIn{
+  from{opacity:0;transform:translateX(-50%) rotate(-4deg) translateY(10px)}
+  to{opacity:1;transform:translateX(-50%) rotate(-4deg) translateY(0)}
+}
+.v7-form{
+  margin-top:110px;width:min(360px,88vw);
+  opacity:0;animation:v7FadeIn .9s ease both 1s;
+}
+.v7-field-row{
+  display:flex;align-items:center;
+  border-bottom:1px solid rgba(233,178,60,.18);
+  transition:border-color .25s;
+}
+.v7-field-row+.v7-field-row{margin-top:0;border-top:none}
+.v7-field-row:focus-within{border-color:#E9B23C}
+.v7-field{
+  flex:1;height:52px;border:none;background:transparent;outline:none;
+  color:#FFF3B0;font-family:'Geist',sans-serif;font-size:16px;
+}
+.v7-field::placeholder{color:rgba(233,178,60,.28)}
+.v7-go{
+  border:none;background:transparent;cursor:pointer;
+  font-family:'Geist Mono',monospace;font-size:12px;letter-spacing:.22em;
+  color:#E9B23C;padding:8px 0 8px 16px;white-space:nowrap;
+  transition:color .2s;
+}
+.v7-go:hover{color:#FFF3B0}
+.v7-go:focus-visible{outline:1px solid #E9B23C;outline-offset:4px}
+.v7-go:disabled{opacity:.45;cursor:default;color:#E9B23C}
+.v7-err{
+  margin-top:10px;font-family:'Geist',sans-serif;
+  font-size:13px;color:#A87E22;text-align:left;
+  min-height:0;
+}
+.v7-alt{margin-top:22px;font-size:13px;color:rgba(233,178,60,.28)}
+.v7-alt a{
+  color:#E9B23C;text-decoration:none;
+  border-bottom:1px solid rgba(233,178,60,.18);padding-bottom:1px;cursor:pointer;
+  transition:color .2s,border-color .2s;
+}
+.v7-alt a:hover{color:#FFF3B0;border-color:#E9B23C}
+.v7-ark{
+  position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:3;
+  display:block;opacity:0;animation:v7ArkIn .8s ease both 1.4s;
+}
+.v7-ark svg{width:22px;height:22px;display:block}
+.v7-ark svg path{fill:#E9B23C}
+@keyframes v7ArkIn{
+  from{opacity:0;transform:translateX(-50%) translateY(6px)}
+  to{opacity:1;transform:translateX(-50%) translateY(0)}
+}
+/* signup/confirm cards inside v7 screen */
+#auth-screen .v7-card{
+  width:min(360px,88vw);padding:0;
+  opacity:0;animation:v7FadeIn .9s ease both .3s;
+}
+#auth-screen .v7-card .n-step-meta{color:rgba(233,178,60,.4)}
+#auth-screen .v7-card .n-label{color:rgba(233,178,60,.6);font-size:11px}
+#auth-screen .v7-card .n-input,
+#auth-screen .v7-card .n-input-group{
+  background:transparent;border:none;
+  border-bottom:1px solid rgba(233,178,60,.18);
+  border-radius:0;padding:10px 0;
+  color:#FFF3B0;font-size:15px;
+}
+#auth-screen .v7-card .n-input:focus,
+#auth-screen .v7-card .n-input-group:focus-within{
+  border-bottom-color:#E9B23C;background:transparent;
+}
+#auth-screen .v7-card .n-input::placeholder{color:rgba(233,178,60,.28)}
+#auth-screen .v7-card .n-input-group input{
+  padding:10px 0 10px 4px;color:#FFF3B0;background:transparent;border:0;outline:none;
+  font-family:'Geist',sans-serif;font-size:15px;flex:1;
+}
+#auth-screen .v7-card .n-input-group .at{color:rgba(233,178,60,.4);padding:0}
+#auth-screen .v7-card .n-btn-primary{
+  background:transparent;
+  border:1px solid rgba(233,178,60,.35);border-radius:4px;
+  color:#E9B23C;font-family:'Geist Mono',monospace;
+  font-size:12px;letter-spacing:.22em;
+  box-shadow:none;transition:color .2s,border-color .2s;
+}
+#auth-screen .v7-card .n-btn-primary:hover{
+  color:#FFF3B0;border-color:#E9B23C;transform:none;
+}
+#auth-screen .v7-card .n-btn-primary:disabled{opacity:.4;cursor:default}
+#auth-screen .v7-card .n-btn-ghost{
+  background:transparent;border:1px solid rgba(233,178,60,.2);
+  color:#A87E22;border-radius:4px;transition:border-color .2s,color .2s;
+}
+#auth-screen .v7-card .n-btn-ghost:hover{border-color:rgba(233,178,60,.4);color:#E9B23C}
+#auth-screen .v7-card .n-link{color:rgba(233,178,60,.4)}
+#auth-screen .v7-card .n-link:hover{color:#E9B23C}
+#auth-screen .v7-card .n-row{margin-bottom:7px}
+#auth-screen .v7-card .n-foot{color:rgba(233,178,60,.35)}
+#auth-screen .v7-card .n-foot button{color:#E9B23C;background:none;border:0;cursor:pointer;font-family:inherit;font-size:inherit;padding:0}
+#auth-screen .v7-card .n-auth-tos-row a{color:#E9B23C;border-bottom-color:rgba(233,178,60,.3)}
+#auth-screen .v7-card .n-auth-tos-row a:hover{color:#FFF3B0;border-bottom-color:#E9B23C}
+#auth-screen .v7-card .n-auth-tos-row{color:rgba(233,178,60,.5)}
+/* global auth-msg as inline toast */
+#auth-screen #auth-msg{
+  position:fixed;top:22px;left:50%;transform:translateX(-50%);
+  z-index:200;white-space:nowrap;
+  padding:8px 18px;border-radius:4px;font-size:13px;
+  font-family:'Geist',sans-serif;
+}
+/* v7 confirm view */
+.v7-confirm-title{
+  font-family:'Geist Mono',monospace;font-size:14px;letter-spacing:.2em;
+  color:#E9B23C;text-transform:uppercase;margin-bottom:14px;
+}
+.v7-confirm-sub{
+  font-family:'Geist',sans-serif;font-size:13px;
+  color:rgba(233,178,60,.55);line-height:1.6;margin-bottom:6px;
+}
+.v7-confirm-email{
+  font-family:'Geist Mono',monospace;font-size:12px;
+  color:rgba(233,178,60,.4);margin-bottom:24px;
+}
+/* v7 signup scene wrapper */
+.v7-signup-scene{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:left;padding:24px;min-height:100vh;width:100%;
+}
+@media (prefers-reduced-motion:reduce){
+  #auth-screen *{
+    animation-duration:.01ms !important;animation-delay:0s !important;
+    transition:none !important;
+  }
 }
 
 /* ── DASHBOARD COMPONENTS ─────────────────────────────── */
@@ -9629,112 +9798,54 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
-<div id="auth-screen" class="n-auth-screen" style="position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;overflow:hidden">
-  <div class="n-auth-bg"></div>
-  <div class="n-auth-ambient"></div>
-  <div class="n-auth-pattern"></div>
-  <div class="n-auth-grain"></div>
+<!-- AUTH SCREEN — v7 "Pure Gold" -->
+<div id="auth-screen" class="n-auth-screen" style="position:fixed;inset:0;z-index:99999;display:none;align-items:flex-start;justify-content:flex-start;overflow:hidden">
 
-  <div style="position:relative;z-index:10;width:100%;padding:20px;display:flex;align-items:center;justify-content:center">
+  <!-- Global error/success toast (used by setAuthMsg / clearAuthError) -->
+  <div id="auth-msg" style="display:none;position:fixed;top:22px;left:50%;transform:translateX(-50%);z-index:200;white-space:nowrap;padding:8px 18px;border-radius:4px;font-size:13px;font-family:'Geist',sans-serif"></div>
 
-    <div class="n-auth-card n-glass n-fade-up d1">
+  <!-- Hidden tab stubs (preserve IDs for switchAuthTab compatibility) -->
+  <button id="auth-tab-login" style="display:none" aria-hidden="true"></button>
+  <button id="auth-tab-signup" style="display:none" aria-hidden="true"></button>
 
-      <!-- BRAND -->
-      <div class="n-brand n-fade-up d2">
-        <div class="n-mark-stage">
-          <svg class="n-mark-rewind" viewBox="0 0 100 72" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-            <defs>
-              <!-- Path geometry for the rewind shape — two left-pointing triangles -->
-              <path id="rwShape" d="M 38 14 L 14 36 L 38 58 Z M 70 14 L 46 36 L 70 58 Z"/>
+  <!-- ── v7 LOGIN ── -->
+  <div id="auth-login-form" style="width:100%">
+    <div class="v7-login-wrap">
+      <h1 class="v7-lockup" aria-label="Rewind trade journal">
+        <span class="v7-caps"><span class="v7-rw" aria-hidden="true">&laquo;</span>Rewind</span>
+        <span class="v7-script">trade journal</span>
+      </h1>
 
-              <!-- Glass body — very transparent, slight vertical gradient (top catches light) -->
-              <linearGradient id="glassBody" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"  stop-color="rgba(255,255,255,0.32)"/>
-                <stop offset="50%" stop-color="rgba(255,255,255,0.06)"/>
-                <stop offset="100%" stop-color="rgba(255,255,255,0.18)"/>
-              </linearGradient>
-
-              <!-- Bright top-edge gleam — strongest highlight on upper portion -->
-              <linearGradient id="topGleam" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"  stop-color="rgba(255,255,255,1)"/>
-                <stop offset="35%" stop-color="rgba(255,255,255,0)"/>
-              </linearGradient>
-
-              <!-- Soft ambient "light catching" highlight inside the glass -->
-              <radialGradient id="ambientLight" cx="58" cy="22" r="30" gradientUnits="userSpaceOnUse">
-                <stop offset="0%"  stop-color="rgba(255,255,255,0.55)"/>
-                <stop offset="60%" stop-color="rgba(255,255,255,0.10)"/>
-                <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
-              </radialGradient>
-            </defs>
-
-            <!-- OUTER cast glow — soft white halo, no color -->
-            <g style="filter:blur(10px)">
-              <ellipse cx="50" cy="38" rx="34" ry="14" fill="#ffffff" opacity="0.18"/>
-            </g>
-
-            <!-- Glass body fill -->
-            <use href="#rwShape" fill="url(#glassBody)"/>
-
-            <!-- Ambient light bouncing inside the glass (clipped to shape) -->
-            <use href="#rwShape" fill="url(#ambientLight)" style="mix-blend-mode:screen"/>
-
-            <!-- Top edge highlight band -->
-            <use href="#rwShape" fill="url(#topGleam)" opacity="0.55" style="mix-blend-mode:screen"/>
-
-            <!-- Bright lit edges — the brilliant white outline -->
-            <use href="#rwShape" fill="none"
-                 stroke="#ffffff" stroke-width="1.3" stroke-linejoin="round" opacity="0.95"/>
-
-            <!-- Soft echo of the stroke for that "edge bloom" -->
-            <use href="#rwShape" fill="none"
-                 stroke="#ffffff" stroke-width="2.6" stroke-linejoin="round"
-                 opacity="0.28" style="filter:blur(1.2px)"/>
-
-            <!-- Apex bright spots — where light catches the leftmost corners -->
-            <circle cx="14" cy="36" r="2.6" fill="#ffffff" opacity="1" style="filter:blur(0.5px)"/>
-            <circle cx="46" cy="36" r="2.6" fill="#ffffff" opacity="1" style="filter:blur(0.5px)"/>
-          </svg>
+      <div class="v7-form">
+        <!-- step 1: email -->
+        <div class="v7-field-row" id="v7-email-row">
+          <input class="v7-field" type="email" id="login-email"
+            placeholder="you@email.com" autocomplete="email"
+            onkeydown="if(event.key==='Enter')v7Continue()"/>
+          <button class="v7-go" id="v7-continue-btn" onclick="v7Continue()">CONTINUE&nbsp;&rarr;</button>
         </div>
-        <div class="n-brand-name n-shimmer">Rewind</div>
-        <div class="n-brand-tag">Trading Journal</div>
-        <div class="n-brand-divider"></div>
-      </div>
-
-      <!-- TABS -->
-      <div class="n-tabs n-fade-up d3">
-        <button id="auth-tab-login" class="n-tab active" onclick="switchAuthTab('login')">Sign in</button>
-        <button id="auth-tab-signup" class="n-tab" onclick="switchAuthTab('signup')">Create account</button>
-      </div>
-
-      <!-- ERROR/SUCCESS MSG -->
-      <div id="auth-msg" class="n-msg error" style="display:none"></div>
-
-      <!-- ── LOGIN ── -->
-      <div id="auth-login-form" class="n-fade-up d4">
-        <div class="n-field">
-          <label class="n-label" for="login-email">Email</label>
-          <input id="login-email" class="n-input" type="email" placeholder="you@domain.com"
+        <!-- step 2: password (revealed after email validates) -->
+        <div class="v7-field-row" id="v7-pass-row" style="display:none">
+          <input class="v7-field" type="password" id="login-pass"
+            placeholder="password" autocomplete="current-password"
             onkeydown="if(event.key==='Enter')doLogin()"/>
+          <button class="v7-go" id="login-btn" onclick="doLogin()">SIGN&nbsp;IN&nbsp;&rarr;</button>
         </div>
-        <div class="n-field">
-          <div class="n-row">
-            <label class="n-label" for="login-pass" style="margin-bottom:0">Password</label>
-            <button class="n-link" onclick="doForgotPassword()">Forgot?</button>
-          </div>
-          <input id="login-pass" class="n-input" type="password" placeholder="••••••••"
-            onkeydown="if(event.key==='Enter')doLogin()"/>
-        </div>
-        <button id="login-btn" class="n-btn-primary" onclick="doLogin()">Sign in</button>
-        <div class="n-foot">
-          New to Rewind? <button onclick="switchAuthTab('signup')">Create an account</button>
-        </div>
+        <!-- inline validation error -->
+        <p class="v7-err" id="v7-inline-err" style="display:none" aria-live="polite"></p>
+        <!-- discord -->
+        <p class="v7-alt">or <a tabindex="0"
+          onclick="tierUpgradeFlow('premium')"
+          onkeydown="if(event.key==='Enter'||event.key===' ')tierUpgradeFlow('premium')">continue with Discord</a></p>
       </div>
+    </div>
+  </div>
 
-      <!-- ── SIGNUP STEP 1 ── -->
-      <div id="auth-signup-form" style="display:none">
-        <div class="n-step-meta">Step 1 of 2 — credentials</div>
+  <!-- ── SIGNUP STEP 1 ── -->
+  <div id="auth-signup-form" style="display:none;width:100%">
+    <div class="v7-signup-scene">
+      <div class="v7-card">
+        <div class="n-step-meta" style="margin-bottom:20px">Step 1 of 2 — credentials</div>
         <div class="n-field">
           <label class="n-label" for="signup-email">Email</label>
           <input id="signup-email" class="n-input" type="email" placeholder="you@domain.com"/>
@@ -9745,14 +9856,18 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
             onkeydown="if(event.key==='Enter')doSignupStep1()"/>
         </div>
         <button id="signup-btn1" class="n-btn-primary" onclick="doSignupStep1()">Continue</button>
-        <div class="n-foot">
+        <div class="n-foot" style="margin-top:18px">
           Already have one? <button onclick="switchAuthTab('login')">Sign in</button>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- ── SIGNUP STEP 2 ── -->
-      <div id="auth-signup-step2" style="display:none">
-        <div class="n-step-meta">Step 2 of 2 — your name</div>
+  <!-- ── SIGNUP STEP 2 ── -->
+  <div id="auth-signup-step2" style="display:none;width:100%">
+    <div class="v7-signup-scene">
+      <div class="v7-card">
+        <div class="n-step-meta" style="margin-bottom:20px">Step 2 of 2 — your name</div>
         <div class="n-field">
           <label class="n-label" for="signup-name">Display name</label>
           <input id="signup-name" class="n-input" type="text" placeholder="What people see"/>
@@ -9768,8 +9883,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         <div class="n-auth-tos">
           <label class="n-auth-tos-row">
             <input type="checkbox" id="signup-tos-check" onchange="_updateSignupTosState()"/>
-            <span>
-              I agree to the
+            <span>I agree to the
               <a href="/terms" target="_blank" rel="noopener">Terms of Service</a>
               and
               <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>.
@@ -9779,26 +9893,28 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
         <button id="signup-btn2" class="n-btn-primary" onclick="doSignupStep2()" disabled style="margin-bottom:8px">Create account</button>
         <button class="n-btn-ghost" onclick="switchAuthTab('signup')">Back</button>
       </div>
-
-      <!-- ── EMAIL CONFIRM ── -->
-      <div id="auth-confirm-msg" class="n-confirm" style="display:none">
-        <div class="n-confirm-icon">✉</div>
-        <div class="n-confirm-title">Check your inbox</div>
-        <div class="n-confirm-text">
-          We sent a confirmation link to<br>
-          <strong id="auth-confirm-email"></strong>
-        </div>
-        <button class="n-btn-ghost" onclick="switchAuthTab('login')">Back to sign in</button>
-      </div>
-
-      <!-- subtle status footer -->
-      <div class="n-card-foot">
-        <span class="n-status-dot"></span>
-        <span>Encrypted · Private</span>
-      </div>
-
     </div>
   </div>
+
+  <!-- ── EMAIL CONFIRM ── -->
+  <div id="auth-confirm-msg" style="display:none;width:100%">
+    <div class="v7-signup-scene" style="text-align:center">
+      <div class="v7-card" style="text-align:center">
+        <div class="v7-confirm-title">CHECK YOUR EMAIL</div>
+        <div class="v7-confirm-sub">We sent a confirmation link to</div>
+        <div class="v7-confirm-email" id="auth-confirm-email"></div>
+        <button class="n-btn-ghost" onclick="switchAuthTab('login')">Back to sign in</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ark mark — bottom center -->
+  <a class="v7-ark" aria-label="Ark" tabindex="-1">
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M50 2 L94 98 L72 92 L50 46 L28 92 L6 98 Z"/>
+    </svg>
+  </a>
+
 </div>
 
 
@@ -27726,6 +27842,51 @@ function setBtnLoading(btnId, loading, label) {
   btn.textContent = loading ? '...' : label;
   btn.style.opacity = loading ? '.6' : '1';
 }
+
+/* ── v7 email-first step ── */
+function v7Continue() {
+  var emailEl = document.getElementById('login-email');
+  var errEl   = document.getElementById('v7-inline-err');
+  var passRow = document.getElementById('v7-pass-row');
+  var contBtn = document.getElementById('v7-continue-btn');
+  if (!emailEl) return;
+  var email = emailEl.value.trim();
+  if (!email) {
+    if (errEl) { errEl.textContent = 'Please enter your email.'; errEl.style.display = 'block'; }
+    emailEl.focus();
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (errEl) { errEl.textContent = 'Please enter a valid email address.'; errEl.style.display = 'block'; }
+    emailEl.focus();
+    return;
+  }
+  if (errEl) errEl.style.display = 'none';
+  if (passRow) passRow.style.display = 'flex';
+  if (contBtn) { contBtn.style.display = 'none'; }
+  var passField = document.getElementById('login-pass');
+  if (passField) passField.focus();
+}
+
+/* ── v7: reset two-step state when returning to login tab ── */
+document.addEventListener('DOMContentLoaded', function(){
+  var origSwitch = window.switchAuthTab;
+  if(typeof origSwitch !== 'function') return;
+  var _patchedSwitch = function(tab) {
+    origSwitch(tab);
+    if(tab === 'login') {
+      var passRow = document.getElementById('v7-pass-row');
+      var contBtn = document.getElementById('v7-continue-btn');
+      var passEl  = document.getElementById('login-pass');
+      var errEl   = document.getElementById('v7-inline-err');
+      if(passRow)  passRow.style.display = 'none';
+      if(contBtn)  contBtn.style.display = '';
+      if(passEl)   passEl.value = '';
+      if(errEl)    errEl.style.display = 'none';
+    }
+  };
+  window.switchAuthTab = _patchedSwitch;
+});
 
 /* ── LOG IN ── */
 async function doLogin() {
