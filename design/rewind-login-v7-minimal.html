@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Rewind — Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@1,125,900&family=Pinyon+Script&family=Geist:wght@400;500&family=Geist+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#060606;
+    --gold:#E9B23C;
+    --gold-hi:#FFF3B0;
+    --gold-deep:#A87E22;
+    --gold-faint:rgba(233,178,60,.28);
+    --line:rgba(233,178,60,.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--gold);
+    font-family:'Geist',system-ui,sans-serif;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .scene{
+    min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:24px;
+  }
+
+  /* ---------- tiny Ark mark, bottom center ---------- */
+  .ark{
+    position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:3;
+    display:block;
+    opacity:0;animation:arkIn .8s ease both 1.4s;
+  }
+  .ark svg{width:22px;height:22px;display:block}
+  .ark svg path{fill:var(--gold)}
+  @keyframes arkIn{
+    from{opacity:0;transform:translateX(-50%) translateY(6px)}
+    to{opacity:1;transform:translateX(-50%) translateY(0)}
+  }
+
+  /* ---------- lockup ---------- */
+  .lockup{
+    position:relative;
+    line-height:.92;
+    user-select:none;
+    opacity:0;animation:fadeIn 1s ease both .1s;
+  }
+  .caps{
+    display:flex;align-items:baseline;justify-content:center;
+    font-family:'Archivo',sans-serif;
+    font-weight:900;font-style:italic;
+    font-stretch:125%;
+    font-size:clamp(64px,13vw,136px);
+    letter-spacing:-.045em;
+    text-transform:uppercase;
+    color:var(--gold);
+    padding-right:.06em; /* italic overhang */
+  }
+  /* rewind-back chevron — same font, same slant, leading into the name */
+  .caps .rw{
+    font-size:.62em;
+    letter-spacing:-.12em;
+    margin-right:.1em;
+    color:#A87E22; /* deep gold so it reads as a mark, not a letter */
+  }
+
+  .script{
+    position:absolute;
+    left:50%;bottom:-0.52em;
+    transform:translateX(-50%) rotate(-4deg);
+    font-family:'Pinyon Script',cursive;
+    font-size:clamp(48px,9vw,92px);
+    color:var(--gold-hi);
+    text-shadow:
+      0 2px 0 rgba(0,0,0,.9),
+      0 0 18px rgba(0,0,0,.8);
+    white-space:nowrap;
+    pointer-events:none;
+    opacity:0;animation:fadeIn 1s ease both .6s;
+  }
+
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .script{animation-name:scriptIn}
+  @keyframes scriptIn{
+    from{opacity:0;transform:translateX(-50%) rotate(-4deg) translateY(10px)}
+    to{opacity:1;transform:translateX(-50%) rotate(-4deg) translateY(0)}
+  }
+
+  /* ---------- form ---------- */
+  .form{
+    margin-top:110px;width:min(360px,88vw);
+    opacity:0;animation:fadeIn .9s ease both 1s;
+  }
+  .field-row{
+    display:flex;align-items:center;
+    border-bottom:1px solid var(--line);
+    transition:border-color .25s;
+  }
+  .field-row:focus-within{border-color:var(--gold)}
+  .field{
+    flex:1;height:52px;border:none;background:transparent;outline:none;
+    color:var(--gold-hi);font-family:'Geist',sans-serif;font-size:16px;
+  }
+  .field::placeholder{color:var(--gold-faint)}
+  .go{
+    border:none;background:transparent;cursor:pointer;
+    font-family:'Geist Mono',monospace;font-size:12px;letter-spacing:.22em;
+    color:var(--gold);padding:8px 0 8px 16px;white-space:nowrap;
+    transition:color .2s;
+  }
+  .go:hover{color:var(--gold-hi)}
+  .go:focus-visible{outline:1px solid var(--gold);outline-offset:4px}
+
+  .alt{margin-top:22px;font-size:13px;color:var(--gold-faint)}
+  .alt a{
+    color:var(--gold);text-decoration:none;
+    border-bottom:1px solid var(--line);padding-bottom:1px;cursor:pointer;
+    transition:color .2s,border-color .2s;
+  }
+  .alt a:hover{color:var(--gold-hi);border-color:var(--gold)}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.01ms !important;animation-delay:0s !important;transition:none !important}
+  }
+</style>
+</head>
+<body>
+
+<div class="scene" id="scene">
+
+  <h1 class="lockup" aria-label="Rewind trade journal">
+    <span class="caps"><span class="rw" aria-hidden="true">&laquo;</span>Rewind</span>
+    <span class="script">trade journal</span>
+  </h1>
+
+  <div class="form">
+    <div class="field-row">
+      <input class="field" type="email" placeholder="you@email.com" autocomplete="email" id="emailField" />
+      <button class="go" id="continueBtn">CONTINUE&nbsp;&rarr;</button>
+    </div>
+    <p class="alt">or <a id="discordBtn" tabindex="0">continue with Discord</a></p>
+  </div>
+
+</div>
+
+<a class="ark" aria-label="Ark">
+  <svg viewBox="0 0 100 100" aria-hidden="true">
+    <path d="M50 2 L94 98 L72 92 L50 46 L28 92 L6 98 Z"/>
+  </svg>
+</a>
+
+</body>
+</html>
