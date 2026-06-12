@@ -13,7 +13,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Bebas+Neue&family=Orbitron:wght@400;700;900&family=Chakra+Petch:wght@300;400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@1,125,900&family=Pinyon+Script&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@1,125,900&family=Pinyon+Script&family=Space+Grotesk:wght@600&display=swap" rel="stylesheet">
 <style>
 @font-face {
   font-family: 'FreeLine';
@@ -9822,27 +9822,56 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
      ============================================================ -->
 <style>
 /* ---- Design tokens ---- */
-:root {
-  --stark-bg: #070708;
-  --stark-cream: #F4F4F2;
-  --stark-cream70: rgba(244,244,242,.72);
-  --stark-cream45: rgba(244,244,242,.48);
-  --stark-hair: rgba(244,244,242,.10);
-  --stark-hair2: rgba(244,244,242,.20);
-  --stark-gold: #D9A92F;
-  --stark-gold55: rgba(217,169,47,.55);
-  --stark-panel: rgba(244,244,242,.018);
-  --stark-win: #3FA577;
-  --stark-loss: #C96A6A;
+[data-theme="dark"], :root {
+  --bg:#070708; --ink:#F4F4F2; --ink70:rgba(244,244,242,.72); --ink45:rgba(244,244,242,.48);
+  --hair:rgba(244,244,242,.1); --hair2:rgba(244,244,242,.2);
+  --gold:#D9A92F; --gold-soft:rgba(217,169,47,.55);
+  --panel:rgba(255,255,255,.028); --panel-border:rgba(255,255,255,.13);
+  --grid-line:rgba(244,244,242,.022);
+  --win:#3FA577; --win-text:#5ED1A0; --loss:#C96A6A; --loss-text:#DE8C8C;
+  --glass-bright:1.14; --spec:rgba(255,255,255,.16); --btn-ink:#0A0A0A;
+}
+[data-theme="grey"] {
+  --bg:#1C1D20; --ink:#F2F2F0; --ink70:rgba(242,242,240,.74); --ink45:rgba(242,242,240,.5);
+  --hair:rgba(242,242,240,.12); --hair2:rgba(242,242,240,.22);
+  --gold:#D9A92F; --gold-soft:rgba(217,169,47,.55);
+  --panel:rgba(255,255,255,.04); --panel-border:rgba(255,255,255,.16);
+  --grid-line:rgba(242,242,240,.03);
+  --win:#3FA577; --win-text:#67D6A6; --loss:#C96A6A; --loss-text:#E29595;
+  --glass-bright:1.1; --spec:rgba(255,255,255,.18); --btn-ink:#101010;
+}
+[data-theme="light"] {
+  --bg:#F7F6F3; --ink:#141414; --ink70:rgba(20,20,20,.74); --ink45:rgba(20,20,20,.48);
+  --hair:rgba(20,20,20,.1); --hair2:rgba(20,20,20,.2);
+  --gold:#B8860B; --gold-soft:rgba(184,134,11,.55);
+  --panel:rgba(20,20,20,.025); --panel-border:rgba(20,20,20,.12);
+  --grid-line:rgba(20,20,20,.035);
+  --win:#1E7A52; --win-text:#1E7A52; --loss:#B04A4A; --loss-text:#B04A4A;
+  --glass-bright:1.0; --spec:rgba(255,255,255,.65); --btn-ink:#FFFFFF;
+}
+/* Legacy aliases — map old --stark-* names to new tokens */
+:root, [data-theme="dark"], [data-theme="grey"], [data-theme="light"] {
+  --stark-bg: var(--bg);
+  --stark-cream: var(--ink);
+  --stark-cream70: var(--ink70);
+  --stark-cream45: var(--ink45);
+  --stark-hair: var(--hair);
+  --stark-hair2: var(--hair2);
+  --stark-gold: var(--gold);
+  --stark-gold55: var(--gold-soft);
+  --stark-panel: var(--panel);
+  --stark-win: var(--win);
+  --stark-loss: var(--loss);
   --stark-win-tint: rgba(63,165,119,.05);
   --stark-loss-tint: rgba(201,106,106,.05);
-  --stark-win-amt: #5ED1A0;
+  --stark-win-amt: var(--win-text);
+  --stark-loss-text: var(--loss-text);
   --stark-gold-tint: rgba(217,169,47,.06);
 }
 
 /* ---- Blueprint ground ---- */
 #pg-dashboard {
-  background-color: var(--stark-bg);
+  background-color: var(--bg);
   background-image:
     repeating-linear-gradient(0deg, rgba(244,244,242,.016) 0px, rgba(244,244,242,.016) 1px, transparent 1px, transparent 44px),
     repeating-linear-gradient(90deg, rgba(244,244,242,.016) 0px, rgba(244,244,242,.016) 1px, transparent 1px, transparent 44px);
@@ -10077,19 +10106,15 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
   font-size: 10px;
   color: var(--stark-cream45);
 }
-.stark-stop-bar {
-  width: 80px; height: 3px;
-  background: var(--stark-hair2);
-  border-radius: 2px;
-  overflow: hidden;
+.stark-streak-mini-bars { display: flex; gap: 3px; margin-top: 5px; }
+.stark-streak-mini-bar {
+  width: 8px; height: 22px; border-radius: 2px;
+  background: var(--hair);
+  transition: background .2s;
 }
-.stark-stop-bar > div {
-  height: 100%;
-  background: var(--stark-loss);
-  border-radius: 2px;
-  width: 0%;
-  transition: width 0.4s;
-}
+.stark-streak-mini-bar.win { background: var(--win); }
+.stark-streak-mini-bar.loss { background: var(--loss); }
+.stark-streak-mini-bar.today { background: var(--win); box-shadow: 0 0 6px var(--win); }
 
 /* ---- Session dot ---- */
 .stark-session-dot {
@@ -10208,49 +10233,125 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
   overflow: hidden;
 }
 
+/* ---- Background light blobs ---- */
+#stark-blobs {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;
+}
+.stark-blob {
+  position: absolute; border-radius: 50%;
+  filter: blur(80px);
+  opacity: .045;
+}
+.stark-blob-gold {
+  width: 420px; height: 280px; background: var(--gold);
+  top: 8%; left: 15%;
+}
+.stark-blob-win {
+  width: 360px; height: 240px; background: var(--win);
+  top: 40%; left: 55%;
+}
+.stark-blob-gold2 {
+  width: 300px; height: 200px; background: var(--gold);
+  top: 70%; left: 10%;
+}
+/* ensure grid content sits above blobs */
+#stark-topbar, #stark-grid { position: relative; z-index: 1; }
+
 /* ---- Calendar cells ---- */
 .stark-cal-cell {
-  border-radius: 9px;
-  border: 1px solid var(--stark-hair);
-  background: rgba(244,244,242,.012);
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 13px;
+  /* Static liquid glass — NEVER animate or transition these properties */
+  backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
+  -webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
+  box-shadow:
+    inset 0 1px 0 var(--spec),
+    inset 0 -1px 0 rgba(0,0,0,.12),
+    0 4px 16px -8px rgba(0,0,0,.32);
+  min-height: 72px;
+  padding: 6px 7px 5px;
+  cursor: pointer;
+  /* Hover: border + tint + transform only — no filter change */
+  transition: border-color .18s, background .18s, transform .12s;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 5px 7px;
-  cursor: pointer;
-  transition: border-color 0.12s, background 0.12s;
   min-height: 0;
   overflow: hidden;
 }
-.stark-cal-cell:hover:not(.empty):not(.future):not(.weekend) {
-  border-color: var(--stark-hair2);
+.stark-cal-cell:hover {
+  border-color: var(--hair2);
+  transform: translateY(-1px);
 }
-.stark-cal-cell.win {
-  background: var(--stark-win-tint);
-  border-color: rgba(63,165,119,.18);
+.stark-cal-cell.win-day {
+  background: rgba(63,165,119,.10);
+  border-color: rgba(63,165,119,.22);
 }
-.stark-cal-cell.loss {
-  background: var(--stark-loss-tint);
-  border-color: rgba(201,106,106,.18);
+.stark-cal-cell.win-day:hover { background: rgba(63,165,119,.16); border-color: rgba(63,165,119,.38); }
+.stark-cal-cell.loss-day {
+  background: rgba(201,106,106,.10);
+  border-color: rgba(201,106,106,.22);
 }
-.stark-cal-cell.today {
-  border: 1.5px solid var(--stark-gold);
-  background: var(--stark-gold-tint);
+.stark-cal-cell.loss-day:hover { background: rgba(201,106,106,.16); border-color: rgba(201,106,106,.38); }
+.stark-cal-cell.today-cell {
+  border: 1.5px solid var(--gold);
+  background: rgba(217,169,47,.10);
 }
-.stark-cal-cell.future {
-  opacity: 0.25;
-  cursor: default;
-}
-.stark-cal-cell.weekend {
-  border-color: transparent;
+.stark-cal-cell.future-cell, .stark-cal-cell.weekend-cell {
+  /* No backdrop-filter on non-traded cells — performance + visual clarity */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   background: transparent;
+  border: 1px solid var(--hair);
+  box-shadow: none;
   cursor: default;
-  opacity: 0.12;
+  opacity: .35;
 }
+.stark-cal-cell.future-cell:hover, .stark-cal-cell.weekend-cell:hover { transform: none; }
 .stark-cal-cell.empty {
   background: transparent;
   border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   cursor: default;
+  opacity: 0;
+}
+/* spec highlight overlay on traded cells */
+.stark-cal-cell .spec-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 20% 15%, var(--spec) 0%, transparent 55%),
+    linear-gradient(135deg, var(--spec) 0%, transparent 60%);
+  opacity: .5;
+}
+/* Calendar money amounts: Space Grotesk 600 */
+.stark-cal-amount {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.2;
+}
+.stark-cal-amount.win-day { color: var(--win-text); }
+.stark-cal-amount.loss-day { color: var(--loss-text); }
+/* Week rail tiles also use Space Grotesk */
+.stark-wk-amount {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 17px;
+}
+@supports (backdrop-filter: blur(1px)) {
+  .stark-cal-cell.win-day,
+  .stark-cal-cell.loss-day,
+  .stark-cal-cell.today-cell {
+    backdrop-filter: blur(2.5px) url(#liquidLens) saturate(1.7) brightness(var(--glass-bright));
+    -webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
+  }
 }
 .stark-cal-date {
   font-family: 'Geist Mono', monospace;
@@ -10258,14 +10359,14 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
   color: var(--stark-cream45);
   line-height: 1;
 }
-.stark-cal-cell.today .stark-cal-date { color: var(--stark-gold); }
-.stark-cal-cell.win .stark-cal-date { color: var(--stark-cream70); }
-.stark-cal-cell.loss .stark-cal-date { color: var(--stark-cream70); }
+.stark-cal-cell.today-cell .stark-cal-date { color: var(--gold); }
+.stark-cal-cell.win-day .stark-cal-date { color: var(--ink70); }
+.stark-cal-cell.loss-day .stark-cal-date { color: var(--ink70); }
 .stark-cal-today-tag {
   font-family: 'Geist Mono', monospace;
   font-size: 7px;
   letter-spacing: 0.1em;
-  color: var(--stark-gold);
+  color: var(--gold);
   text-transform: uppercase;
 }
 .stark-cal-pnl {
@@ -10273,8 +10374,8 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
   font-size: 11px;
   font-weight: 600;
 }
-.stark-cal-cell.win .stark-cal-pnl { color: var(--stark-win-amt); }
-.stark-cal-cell.loss .stark-cal-pnl { color: var(--stark-loss); }
+.stark-cal-cell.win-day .stark-cal-pnl { color: var(--win-text); }
+.stark-cal-cell.loss-day .stark-cal-pnl { color: var(--loss); }
 .stark-cal-ntrades {
   font-family: 'Geist Mono', monospace;
   font-size: 9px;
@@ -10309,14 +10410,14 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
   color: var(--stark-cream45);
   letter-spacing: 0.1em;
 }
-.stark-wk-amount {
-  font-family: 'Geist Mono', monospace;
-  font-size: 12px;
-  font-weight: 600;
-}
-.stark-wk-tile.win .stark-wk-amount { color: var(--stark-win); }
-.stark-wk-tile.loss .stark-wk-amount { color: var(--stark-loss); }
-.stark-wk-tile.future .stark-wk-amount { color: var(--stark-cream45); }
+/* .stark-wk-amount font/size set in calendar cells block above */
+.stark-wk-tile.win .stark-wk-amount { color: var(--win-text); }
+.stark-wk-tile.loss .stark-wk-amount { color: var(--loss-text); }
+.stark-wk-tile.future .stark-wk-amount { color: var(--ink45); }
+.stark-wk-daystrip { display:flex; gap:2px; margin-top:4px; }
+.stark-wk-day { width:6px; height:14px; border-radius:1.5px; background:var(--hair); }
+.stark-wk-day.win { background:var(--win); }
+.stark-wk-day.loss { background:var(--loss); }
 
 /* ---- Recent trades strip ---- */
 #stark-recent {
@@ -11111,6 +11212,24 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
     <div id="session-badge"><span id="session-dot"></span><span id="session-name"></span><span id="session-detail"></span></div>
   </div>
 
+  <!-- SVG lens filter for liquid glass (hidden, referenced by CSS) -->
+  <svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+    <defs>
+      <filter id="liquidLens" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.009 0.014" numOctaves="2" seed="7" result="noise"/>
+        <feGaussianBlur stdDeviation="1.4" in="noise" result="blur"/>
+        <feDisplacementMap in="SourceGraphic" in2="blur" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Background light blobs for glass refraction -->
+  <div id="stark-blobs" aria-hidden="true">
+    <div class="stark-blob stark-blob-gold"></div>
+    <div class="stark-blob stark-blob-win"></div>
+    <div class="stark-blob stark-blob-gold2"></div>
+  </div>
+
   <!-- Top bar -->
   <header id="stark-topbar">
     <span class="stark-brand"><span class="stark-brand-chevron">&laquo;</span>REWIND</span>
@@ -11146,10 +11265,12 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
             <span class="stark-cell-value" id="stark-session-name"><span class="stark-session-dot"></span>&mdash;</span>
             <span class="stark-cell-detail" id="stark-session-next">&mdash;</span>
           </div>
-          <div class="stark-pnl-cell" id="stark-stop-cell">
-            <span class="stark-cell-label">DAILY STOP</span>
-            <span class="stark-cell-value" id="stark-stop-used">$0 / &mdash;</span>
-            <div class="stark-stop-bar"><div id="stark-stop-fill"></div></div>
+          <div class="stark-pnl-cell" id="stark-green-streak-cell">
+            <span class="stark-cell-label">GREEN STREAK</span>
+            <span class="stark-cell-value" id="stark-green-streak-val" style="color:var(--win-text)">0 DAYS</span>
+            <div class="stark-streak-mini-bars" id="stark-streak-mini-bars">
+              <!-- 5 mini bars for last 5 trading days, injected by JS -->
+            </div>
           </div>
           <div class="stark-pnl-cell" id="stark-avg-cell">
             <span class="stark-cell-label">VS 30D AVG</span>
@@ -31754,6 +31875,54 @@ function renderStarkDashboard() {
       }
     }
 
+    // --- Green Streak cell ---
+    (function() {
+      var streakEl = document.getElementById('stark-green-streak-val');
+      var barsEl = document.getElementById('stark-streak-mini-bars');
+      if (!streakEl && !barsEl) return;
+
+      // Build sorted list of trading days (weekdays only) up to and including today
+      var byDayAll = _starkAggByDay(trades || []);
+      var tradedDays = Object.keys(byDayAll).filter(function(k) {
+        var d = new Date(k + 'T12:00:00'); var dow = d.getDay();
+        return dow >= 1 && dow <= 5 && k <= todayKey;
+      }).sort();
+
+      // Compute consecutive green streak (count back from most recent)
+      var streak = 0;
+      for (var si = tradedDays.length - 1; si >= 0; si--) {
+        if (byDayAll[tradedDays[si]].pnl > 0) { streak++; } else { break; }
+      }
+      if (streakEl) {
+        streakEl.textContent = streak + ' DAY' + (streak !== 1 ? 'S' : '');
+      }
+
+      // Last 5 trading days mini bars
+      if (barsEl) {
+        // Get last 5 weekday dates up to today
+        var last5 = [];
+        var cur = new Date(todayKey + 'T12:00:00');
+        while (last5.length < 5) {
+          var dow2 = cur.getDay();
+          if (dow2 >= 1 && dow2 <= 5) {
+            last5.unshift(_localDate(cur));
+          }
+          cur.setDate(cur.getDate() - 1);
+          if (last5.length === 5) break;
+        }
+        var barsHtml = '';
+        for (var bi = 0; bi < last5.length; bi++) {
+          var dk2 = last5[bi];
+          var dayInfo = byDayAll[dk2];
+          var barCls = 'stark-streak-mini-bar';
+          if (dk2 === todayKey && dayInfo && dayInfo.pnl > 0) barCls += ' today';
+          else if (dayInfo && dayInfo.count > 0) barCls += dayInfo.pnl > 0 ? ' win' : ' loss';
+          barsHtml += '<span class="' + barCls + '"></span>';
+        }
+        barsEl.innerHTML = barsHtml;
+      }
+    })();
+
     // --- Calendar ---
     _starkCalYear = new Date().getFullYear();
     _starkCalMonth = new Date().getMonth();
@@ -31839,10 +32008,11 @@ function renderStarkCal(year, month) {
 
   // Build cells HTML
   var cellsHtml = '';
-  var weekData = []; // array of {weekPnl, hasTrades, isFuture}
+  var weekData = []; // array of {weekPnl, hasTrades, isFuture, days:[{key,pnl,traded,isFuture}]}
   var currentWeekPnl = 0;
   var currentWeekHasTrades = false;
   var currentWeekIsFuture = true;
+  var currentWeekDays = []; // Mon-Fri day entries
 
   // Leading empty cells
   for (var e = 0; e < firstDow; e++) {
@@ -31858,27 +32028,32 @@ function renderStarkCal(year, month) {
     var dayData = byDay[cellKey];
 
     var cls = 'stark-cal-cell';
+    var isTraded = !isWeekend && !isFuture && dayData && dayData.count > 0;
     if (isWeekend) {
-      cls += ' weekend';
+      cls += ' weekend-cell';
     } else if (isFuture) {
-      cls += ' future';
-    } else if (dayData && dayData.count > 0) {
-      cls += dayData.pnl >= 0 ? ' win' : ' loss';
+      cls += ' future-cell';
+    } else if (isTraded) {
+      cls += dayData.pnl >= 0 ? ' win-day' : ' loss-day';
     }
-    if (isToday) cls += ' today';
+    if (isToday) cls += ' today-cell';
 
     var dateHtml = '<span class="stark-cal-date">' + d + '</span>';
     var todayTag = isToday ? '<span class="stark-cal-today-tag">TODAY</span>' : '';
     var pnlHtml = '';
     var nTradesHtml = '';
-    if (dayData && dayData.count > 0 && !isWeekend) {
-      pnlHtml = '<span class="stark-cal-pnl">' + _starkFmtPnl(dayData.pnl) + '</span>';
+    var sheenHtml = '';
+    if (isTraded) {
+      var amtCls = 'stark-cal-amount ' + (dayData.pnl >= 0 ? 'win-day' : 'loss-day');
+      pnlHtml = '<span class="stark-cal-pnl"><span class="' + amtCls + '">' + _starkFmtPnl(dayData.pnl) + '</span></span>';
       nTradesHtml = '<span class="stark-cal-ntrades">' + dayData.count + ' trade' + (dayData.count !== 1 ? 's' : '') + '</span>';
+      sheenHtml = '<span class="spec-sheen"></span>';
     }
 
     var clickAttr = (!isWeekend && !isFuture) ? ' onclick="goTo(\'history\')"' : '';
 
     cellsHtml += '<div class="' + cls + '"' + clickAttr + '>';
+    cellsHtml += sheenHtml;
     cellsHtml += '<div style="display:flex;justify-content:space-between;align-items:flex-start">' + dateHtml + todayTag + '</div>';
     if (pnlHtml) cellsHtml += pnlHtml;
     if (nTradesHtml) cellsHtml += nTradesHtml;
@@ -31889,14 +32064,16 @@ function renderStarkCal(year, month) {
       currentWeekPnl += (dayData && dayData.count > 0) ? dayData.pnl : 0;
       if (dayData && dayData.count > 0) currentWeekHasTrades = true;
       if (!isFuture) currentWeekIsFuture = false;
+      currentWeekDays.push({ key: cellKey, pnl: (dayData && dayData.count > 0) ? dayData.pnl : null, traded: !!(dayData && dayData.count > 0), isFuture: isFuture });
     }
 
     // Saturday = end of week row
     if (dow === 6 || d === daysInMonth) {
-      weekData.push({ pnl: currentWeekPnl, hasTrades: currentWeekHasTrades, isFuture: currentWeekIsFuture });
+      weekData.push({ pnl: currentWeekPnl, hasTrades: currentWeekHasTrades, isFuture: currentWeekIsFuture, days: currentWeekDays.slice() });
       currentWeekPnl = 0;
       currentWeekHasTrades = false;
       currentWeekIsFuture = true;
+      currentWeekDays = [];
     }
   }
 
@@ -31917,15 +32094,32 @@ function renderStarkCal(year, month) {
     var wk = weekData[w];
     var wkCls = 'stark-wk-tile';
     var wkAmt = '—';
+    var wkAmtCls = '';
     if (wk.isFuture || !wk.hasTrades) {
       wkCls += ' future';
     } else {
       wkCls += wk.pnl >= 0 ? ' win' : ' loss';
+      wkAmtCls = wk.pnl >= 0 ? ' win-day' : ' loss-day';
       wkAmt = (wk.pnl >= 0 ? '+' : '-') + '$' + Math.round(Math.abs(wk.pnl)).toLocaleString();
     }
+    // Build Mon-Fri daystrip (pad to 5 slots)
+    var days = wk.days || [];
+    // pad to 5 slots from Monday
+    var stripHtml = '<div class="stark-wk-daystrip">';
+    for (var sd = 0; sd < 5; sd++) {
+      var dayEntry = days[sd];
+      var dayCls = 'stark-wk-day';
+      if (dayEntry) {
+        if (dayEntry.isFuture || dayEntry.pnl === null) { /* empty */ }
+        else if (dayEntry.traded) dayCls += dayEntry.pnl >= 0 ? ' win' : ' loss';
+      }
+      stripHtml += '<span class="' + dayCls + '"></span>';
+    }
+    stripHtml += '</div>';
     railHtml += '<div class="' + wkCls + '">';
     railHtml += '<span class="stark-wk-label">WK ' + (w + 1) + '</span>';
-    railHtml += '<span class="stark-wk-amount">' + wkAmt + '</span>';
+    railHtml += '<span class="stark-wk-amount' + wkAmtCls + '">' + wkAmt + '</span>';
+    railHtml += stripHtml;
     railHtml += '</div>';
   }
   rail.innerHTML = railHtml;
