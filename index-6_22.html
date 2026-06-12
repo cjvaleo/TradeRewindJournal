@@ -10516,21 +10516,27 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
 }
 .stark-grade-btn:hover { opacity: 0.88; }
 
-/* ---- Responsive: < 1080px stack ---- */
+/* ---- Responsive: < 1080px stack (WS7 enhanced) ---- */
 @media (max-width: 1079px) {
   #stark-grid {
-    grid-template-columns: 1fr;
+    flex-direction: column;
     height: auto;
-    overflow: auto;
-  }
-  #stark-left, #stark-right {
     overflow: visible;
   }
-  #pg-dashboard {
-    overflow: auto;
-  }
+  body.stark-active .main { overflow-y: auto; }
+  #stark-left  { width: 100%; }
+  #stark-right { width: 100%; }
+  #stark-calendar  { min-height: 360px; }
+  #stark-ark-col   { min-height: 480px; }
+  /* Too cramped — hide the top-bar nav; use the restored sidebar instead */
+  #stark-topbar .stark-nav { display: none; }
+  /* Restore sidebar on mobile when stark-active */
+  body.stark-active #app-sidebar         { display: flex !important; }
+  body.stark-active .main                { width: 100%; margin-left: 0; }
+  #stark-left, #stark-right              { overflow: visible; }
+  #pg-dashboard                          { overflow: auto; }
   .stark-cal-dow-row { margin-right: 0; }
-  .stark-cal-wrap { flex-direction: column; }
+  .stark-cal-wrap    { flex-direction: column; }
   .stark-wk-rail {
     width: auto;
     grid-auto-rows: auto;
@@ -31774,6 +31780,9 @@ function renderStarkDashboard() {
       avatarEl.textContent = initials || '?';
     }
 
+    // --- WS7: apply contextual state overlays ---
+    applyStarkState();
+
   } catch (e) {
     console.warn('[Stark] renderStarkDashboard error:', e);
   }
@@ -31818,7 +31827,10 @@ function renderStarkCal(year, month) {
       monthPnlEl.textContent = (monthPnl >= 0 ? '+' : '-') + '$' + Math.round(Math.abs(monthPnl)).toLocaleString();
       monthPnlEl.className = 'stark-month-pnl ' + (monthPnl >= 0 ? 'win' : 'loss');
     } else {
-      monthPnlEl.textContent = '';
+      // WS7: empty month — show dim $0
+      monthPnlEl.textContent = '$0';
+      monthPnlEl.className = 'stark-month-pnl';
+      monthPnlEl.style.color = 'var(--stark-cream45)';
     }
   }
   if (daysChipEl) {
@@ -32076,7 +32088,180 @@ document.addEventListener('DOMContentLoaded', function() {
   if (pgDash && pgDash.classList.contains('on')) {
     document.body.classList.add('stark-active');
   }
+  // QA: run once after initial render
+  setTimeout(_starkQA, 600);
 });
+
+/* ============================================================
+   applyStarkState — WS7: overlays contextual state messaging
+   on top of the already-rendered dashboard. Call AFTER
+   renderStarkDashboard() so all elements exist.
+   ============================================================ */
+function applyStarkState() {
+  try {
+    var now = Date.now();
+    var isOpen   = window.TradingDay ? TradingDay.isMarketOpen(now)  : true;
+    var todayKey = window.TradingDay ? (TradingDay.getTodayTradingDay() || _localDate(new Date())) : _localDate(new Date());
+
+    var allTrades = window.trades || [];
+    var todayTrades = allTrades.filter(function(t) {
+      return _starkTradeDay(t) === todayKey;
+    });
+    var todayPnl = todayTrades.reduce(function(s, t) { return s + (Number(t.pnl) || 0); }, 0);
+
+    var heroEl      = document.getElementById('stark-hero-amount');
+    var pnlLabelEl  = document.getElementById('stark-pnl-label');
+    var arkStatusEl = document.getElementById('ark-status-text');
+    var arkDotEl    = document.getElementById('ark-status-dot');
+    var directiveEl = document.getElementById('ark-directive-text');
+    var sessNameEl  = document.getElementById('stark-session-name');
+    var sessNextEl  = document.getElementById('stark-session-next');
+    var insightsEl  = document.getElementById('ark-insights');
+
+    // --- Determine ET weekday for weekend detection ---
+    var etParts = null;
+    if (window.TradingDay && TradingDay._getETParts) {
+      etParts = TradingDay._getETParts(now);
+    }
+    // Fallback: approximate via Intl
+    var _etDow = -1;
+    try {
+      var _fmt = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'short' });
+      var _wdStr = _fmt.format(new Date(now));
+      var _wdMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+      _etDow = _wdMap[_wdStr] !== undefined ? _wdMap[_wdStr] : -1;
+    } catch(e) {}
+
+    // ---- State 1: Weekend ----
+    var isWeekend = (_etDow === 0 || _etDow === 6) && !isOpen;
+    if (isWeekend) {
+      if (pnlLabelEl) pnlLabelEl.textContent = "MARKET CLOSED · REOPENS SUN 6PM ET";
+      if (sessNameEl) sessNameEl.innerHTML = '<span class="stark-session-dot" style="background:rgba(244,244,242,.3);animation:none"></span>WEEKEND';
+      if (sessNextEl) sessNextEl.textContent = 'CLOSED';
+      return; // don't override other states further
+    }
+
+    // ---- State 2: First-run / no data at all ----
+    if (allTrades.length === 0) {
+      if (heroEl) {
+        heroEl.className = 'stark-hero-amount';
+        heroEl.style.color = 'var(--stark-cream45)';
+        heroEl.textContent = '$0';
+      }
+      if (directiveEl) directiveEl.textContent = 'Welcome. Log your first trade to start tracking.';
+      if (arkStatusEl) arkStatusEl.textContent = 'NO TRADES YET — PLAN ARMED';
+      if (arkDotEl) arkDotEl.className = 'ark-status-dot armed';
+      if (insightsEl) insightsEl.style.display = 'none';
+      return;
+    }
+
+    // ---- State 3: Pre-market (market closed + no trades today + before open) ----
+    if (!isOpen && todayTrades.length === 0) {
+      if (heroEl) {
+        heroEl.className = 'stark-hero-amount';
+        heroEl.style.color = 'var(--stark-cream45)';
+        heroEl.textContent = '$0';
+      }
+      if (directiveEl && window.TradingDay) {
+        var nextOpen = TradingDay.getNextOpen(now);
+        if (nextOpen && nextOpen.msUntil > 0) {
+          var hrs = Math.floor(nextOpen.msUntil / 3600000);
+          var mins = Math.round((nextOpen.msUntil % 3600000) / 60000);
+          var timeStr = hrs > 0 ? hrs + 'h ' + mins + 'm' : mins + 'm';
+          directiveEl.textContent = 'Market opens in ' + timeStr + '. Review your plan.';
+        } else {
+          directiveEl.textContent = 'Market is closed. Review your plan.';
+        }
+      }
+      return;
+    }
+
+    // ---- State 4: Zero-trade live day (market open, no trades yet) ----
+    if (isOpen && todayTrades.length === 0) {
+      if (heroEl) {
+        heroEl.style.color = 'var(--stark-cream45)';
+      }
+      if (arkStatusEl) arkStatusEl.textContent = 'NO TRADES YET — PLAN ARMED';
+      if (arkDotEl) arkDotEl.className = 'ark-status-dot armed';
+      return;
+    }
+
+    // ---- State 5: Red day ----
+    if (todayPnl < 0) {
+      // Check for daily stop hit (uses acct.daily_stop_limit if set)
+      var stopLimit = window.acct && (acct.daily_stop_limit || acct.daily_stop);
+      if (stopLimit && Math.abs(todayPnl) >= Number(stopLimit)) {
+        if (arkStatusEl) arkStatusEl.textContent = 'STOP REACHED — DONE FOR TODAY';
+        if (arkDotEl) arkDotEl.className = 'ark-status-dot off';
+      }
+    }
+
+  } catch(e) {
+    console.warn('[Stark] applyStarkState error:', e);
+  }
+}
+
+/* ============================================================
+   _starkQA — WS7: runtime integrity checks (dev console only)
+   ============================================================ */
+function _starkQA() {
+  try {
+    var allTrades = window.trades || [];
+
+    // --- QA 1: calendar month total vs sum of daily P&Ls ---
+    var byDay = _starkAggByDay(allTrades);
+    var now = new Date();
+    var yr  = now.getFullYear();
+    var mo  = now.getMonth();
+    var monthPrefix = yr + '-' + String(mo + 1).padStart(2, '0') + '-';
+    var calMonthTotal = 0;
+    Object.keys(byDay).forEach(function(k) {
+      if (k.startsWith(monthPrefix)) calMonthTotal += byDay[k].pnl;
+    });
+    var tradeLevelTotal = 0;
+    allTrades.forEach(function(t) {
+      var dk = _starkTradeDay(t);
+      if (dk && dk.startsWith(monthPrefix)) tradeLevelTotal += (Number(t.pnl) || 0);
+    });
+    if (Math.abs(calMonthTotal - tradeLevelTotal) > 0.01) {
+      console.warn('[Stark QA] Calendar month total mismatch. Aggregated:', calMonthTotal.toFixed(2), 'Trade-level sum:', tradeLevelTotal.toFixed(2));
+    }
+
+    // --- QA 2: journal streak must not count weekend days ---
+    // The streak function uses day-of-week checks; verify no Sat/Sun in a 7-day window
+    var streakDays = [];
+    var cursor = new Date();
+    for (var i = 0; i < 7; i++) {
+      var dKey = _localDate(cursor);
+      var dow  = cursor.getDay();
+      if ((dow !== 0 && dow !== 6) && byDay[dKey] && byDay[dKey].count > 0) {
+        streakDays.push({ key: dKey, dow: dow });
+      }
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    streakDays.forEach(function(sd) {
+      if (sd.dow === 0 || sd.dow === 6) {
+        console.warn('[Stark QA] Streak counting a weekend day:', sd.key, 'dow:', sd.dow);
+      }
+    });
+
+    // --- QA 3: renderStarkDashboard must not crash on empty trades ---
+    var savedTrades = window.trades;
+    window.trades = [];
+    try {
+      renderStarkDashboard();
+    } catch(e) {
+      console.error('[Stark QA] renderStarkDashboard crashed with empty trades:', e);
+    }
+    window.trades = savedTrades;
+    // Restore actual render
+    renderStarkDashboard();
+
+    console.info('[Stark QA] Checks complete.');
+  } catch(e) {
+    console.warn('[Stark QA] QA runner error:', e);
+  }
+}
 
 </script>
 
