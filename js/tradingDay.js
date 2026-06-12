@@ -224,4 +224,51 @@
   };
 
   window.TradingDay = TradingDay;
+
+  // --- display_tz support (affects clock display only, never grouping) ---
+  // User-controlled display timezone (affects clock display only, never grouping)
+  window.TradingDay.displayTz = 'America/New_York'; // default
+  window.TradingDay.setDisplayTz = function(tz) {
+    window.TradingDay.displayTz = tz || 'America/New_York';
+    try { localStorage.setItem('tr1_display_tz', tz); } catch(e) {}
+  };
+  window.TradingDay.getDisplayTz = function() { return window.TradingDay.displayTz; };
+  // Format a UTC timestamp for display in the user's display timezone
+  window.TradingDay.formatDisplay = function(utcMs, opts) {
+    return new Intl.DateTimeFormat('en-US', Object.assign(
+      {timeZone: window.TradingDay.displayTz || 'America/New_York'},
+      opts || {hour:'2-digit', minute:'2-digit', hour12: true}
+    )).format(new Date(utcMs));
+  };
+  // Returns 'ET' badge when displayTz is America/New_York, else the tz abbreviation
+  window.TradingDay.displayTzBadge = function() {
+    var tz = window.TradingDay.displayTz || 'America/New_York';
+    if (tz === 'America/New_York') return 'ET';
+    try {
+      return new Intl.DateTimeFormat('en-US',{timeZone:tz,timeZoneName:'short'}).formatToParts(Date.now())
+        .find(function(p){return p.type==='timeZoneName';}).value;
+    } catch(e) { return tz; }
+  };
+  // Common timezone options for the Settings dropdown
+  window.TradingDay.TZ_OPTIONS = [
+    {value:'America/New_York',    label:'New York (ET)'},
+    {value:'America/Chicago',     label:'Chicago (CT)'},
+    {value:'America/Denver',      label:'Denver (MT)'},
+    {value:'America/Los_Angeles', label:'Los Angeles (PT)'},
+    {value:'America/Toronto',     label:'Toronto (ET)'},
+    {value:'Europe/London',       label:'London (GMT/BST)'},
+    {value:'Europe/Berlin',       label:'Frankfurt/Berlin (CET)'},
+    {value:'Asia/Singapore',      label:'Singapore (SGT)'},
+    {value:'Asia/Tokyo',          label:'Tokyo (JST)'},
+    {value:'Australia/Sydney',    label:'Sydney (AEDT)'},
+    {value:'device',              label:'Device local time'},
+  ];
+})();
+
+// Restore saved display_tz on initialization
+(function(){
+  try {
+    var saved = localStorage.getItem('tr1_display_tz');
+    if(saved) window.TradingDay.displayTz = saved;
+  } catch(e) {}
 })();
