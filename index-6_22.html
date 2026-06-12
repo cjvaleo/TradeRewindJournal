@@ -8,9 +8,13 @@
     var t = localStorage.getItem('tr1_theme');
     if(t === 'grey' || t === 'light' || t === 'dark') {
       document.documentElement.setAttribute('data-theme', t);
+    } else {
+      // No saved theme — default to grey
+      document.documentElement.setAttribute('data-theme', 'grey');
     }
-    // default dark needs no setAttribute (CSS :root handles it)
-  } catch(e) {}
+  } catch(e) {
+    document.documentElement.setAttribute('data-theme', 'grey');
+  }
 })();
 </script>
 <meta charset="UTF-8">
@@ -9854,29 +9858,26 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 <style>
 /* ---- Design tokens ---- */
 [data-theme="dark"], :root {
-  --bg:#070708; --ink:#F4F4F2; --ink70:rgba(244,244,242,.72); --ink45:rgba(244,244,242,.48);
+  --bg:#070708; --ink:#F4F4F2; --ink70:rgba(244,244,242,.88); --ink45:rgba(244,244,242,.66);
   --hair:rgba(244,244,242,.1); --hair2:rgba(244,244,242,.2);
   --gold:#D9A92F; --gold-soft:rgba(217,169,47,.55);
   --panel:rgba(255,255,255,.028); --panel-border:rgba(255,255,255,.13);
-  --grid-line:rgba(244,244,242,.022);
   --win:#3FA577; --win-text:#5ED1A0; --loss:#C96A6A; --loss-text:#DE8C8C;
   --glass-bright:1.14; --spec:rgba(255,255,255,.16); --btn-ink:#0A0A0A;
 }
 [data-theme="grey"] {
-  --bg:#1C1D20; --ink:#F2F2F0; --ink70:rgba(242,242,240,.74); --ink45:rgba(242,242,240,.5);
+  --bg:#1C1D20; --ink:#F2F2F0; --ink70:rgba(242,242,240,.9); --ink45:rgba(242,242,240,.68);
   --hair:rgba(242,242,240,.12); --hair2:rgba(242,242,240,.22);
   --gold:#D9A92F; --gold-soft:rgba(217,169,47,.55);
   --panel:rgba(255,255,255,.04); --panel-border:rgba(255,255,255,.16);
-  --grid-line:rgba(242,242,240,.03);
   --win:#3FA577; --win-text:#67D6A6; --loss:#C96A6A; --loss-text:#E29595;
   --glass-bright:1.1; --spec:rgba(255,255,255,.18); --btn-ink:#101010;
 }
 [data-theme="light"] {
-  --bg:#F7F6F3; --ink:#141414; --ink70:rgba(20,20,20,.74); --ink45:rgba(20,20,20,.48);
+  --bg:#F7F6F3; --ink:#141414; --ink70:rgba(20,20,20,.88); --ink45:rgba(20,20,20,.66);
   --hair:rgba(20,20,20,.1); --hair2:rgba(20,20,20,.2);
   --gold:#B8860B; --gold-soft:rgba(184,134,11,.55);
   --panel:rgba(20,20,20,.025); --panel-border:rgba(20,20,20,.12);
-  --grid-line:rgba(20,20,20,.035);
   --win:#1E7A52; --win-text:#1E7A52; --loss:#B04A4A; --loss-text:#B04A4A;
   --glass-bright:1.0; --spec:rgba(255,255,255,.65); --btn-ink:#FFFFFF;
 }
@@ -9903,10 +9904,6 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 /* ---- Blueprint ground ---- */
 #pg-dashboard {
   background-color: var(--bg);
-  background-image:
-    repeating-linear-gradient(0deg, rgba(244,244,242,.016) 0px, rgba(244,244,242,.016) 1px, transparent 1px, transparent 44px),
-    repeating-linear-gradient(90deg, rgba(244,244,242,.016) 0px, rgba(244,244,242,.016) 1px, transparent 1px, transparent 44px);
-  background-size: 44px 44px;
   min-height: 100vh;
   overflow: hidden;
   display: flex;
@@ -13630,14 +13627,14 @@ body.stark-active .main { overflow: hidden; height: 100vh; }
           <div style="margin-bottom:24px">
             <div class="n-label" style="margin-bottom:12px">THEME</div>
             <div style="display:flex;gap:12px;flex-wrap:wrap">
-              <button class="appearance-swatch active" data-theme="dark" onclick="setTheme('dark')">
+              <button class="appearance-swatch" data-theme="dark" onclick="setTheme('dark')">
                 <div class="swatch-preview swatch-dark">
                   <div class="swatch-topbar"></div>
                   <div class="swatch-grid"><div class="swatch-cell"></div><div class="swatch-cell"></div></div>
                 </div>
                 <span>Dark</span>
               </button>
-              <button class="appearance-swatch" data-theme="grey" onclick="setTheme('grey')">
+              <button class="appearance-swatch active" data-theme="grey" onclick="setTheme('grey')">
                 <div class="swatch-preview swatch-grey">
                   <div class="swatch-topbar"></div>
                   <div class="swatch-grid"><div class="swatch-cell"></div><div class="swatch-cell"></div></div>
@@ -25798,7 +25795,7 @@ var _lightStyleEl=null;
 function setTheme(mode) {
   // Supported: 'dark' | 'grey' | 'light'
   var valid = ['dark','grey','light'];
-  if (valid.indexOf(mode) < 0) mode = 'dark';
+  if (valid.indexOf(mode) < 0) mode = 'grey';
   document.documentElement.setAttribute('data-theme', mode);
   try { localStorage.setItem('tr1_theme', mode); } catch(e) {}
   // Persist to Supabase user_settings
@@ -25811,8 +25808,8 @@ function setTheme(mode) {
   });
 }
 
-// Restore theme on load
-try{var _savedTheme=localStorage.getItem('tr1_theme');if(_savedTheme==='grey'||_savedTheme==='light'||_savedTheme==='dark')setTheme(_savedTheme);}catch(e){}
+// Restore theme on load — default to grey if nothing saved
+try{var _savedTheme=localStorage.getItem('tr1_theme');if(_savedTheme==='grey'||_savedTheme==='light'||_savedTheme==='dark'){setTheme(_savedTheme);}else{setTheme('grey');}}catch(e){setTheme('grey');}
 
 // ── EXPORT TRADES CSV ─────────────────────────────────────
 function exportTradesCSV(){
@@ -29091,6 +29088,7 @@ async function loadUserSettings(){
       if(tzRow && tzRow.value) window.TradingDay.setDisplayTz(tzRow.value);
       var themeRow = (r.data || []).find(function(row){ return row.key === 'theme'; });
       if(themeRow && themeRow.value) setTheme(themeRow.value);
+      else if(!localStorage.getItem('tr1_theme')) setTheme('grey');
     }
   } catch(e) {
     console.warn('User settings load failed:', e && e.message);
