@@ -10037,9 +10037,13 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
 }
 
 /* ---- Two-column grid ---- */
+/* QA: desktop must NEVER scroll — body and .main are locked, only inner cols scroll */
+body.stark-active { overflow: hidden; }
+body.stark-active .main { overflow: hidden; height: 100vh; }
+
 #stark-grid {
-  display: grid;
-  grid-template-columns: 2.45fr minmax(310px, 1fr);
+  display: flex;
+  flex-direction: row;
   height: calc(100vh - 56px);
   overflow: hidden;
 }
@@ -10047,9 +10051,10 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--stark-hair);
-  overflow: hidden;
+  overflow-y: auto;
   padding: 16px 16px 16px 20px;
   gap: 12px;
+  flex: 2.45;
 }
 #stark-right {
   display: flex;
@@ -10057,6 +10062,9 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
   overflow-y: auto;
   padding: 16px 20px 16px 16px;
   gap: 12px;
+  flex: 0 0 auto;
+  width: minmax(310px, 1fr);
+  min-width: 310px;
 }
 
 /* ---- P&L block ---- */
@@ -10384,6 +10392,22 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
     -webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
   }
 }
+
+/* Task 5: Safari fallback — Safari supports backdrop-filter but NOT url() in it */
+@supports not (backdrop-filter: blur(1px) url(#liquidLens)) {
+  .stark-cal-cell.win-day,
+  .stark-cal-cell.loss-day,
+  .stark-cal-cell.today-cell {
+    backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
+    -webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
+  }
+}
+
+/* Task 4: Constitution — backdrop-filter must NEVER be animated */
+/* Explicitly list ONLY safe properties; backdrop-filter/-webkit-backdrop-filter intentionally omitted */
+.stark-cal-cell { transition: border-color .18s, background .18s, transform .12s !important; }
+/* backdrop-filter, -webkit-backdrop-filter are intentionally NOT in any transition */
+
 .stark-cal-date {
   font-family: 'Geist Mono', monospace;
   font-size: 11px;
@@ -10648,24 +10672,26 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
 }
 .stark-grade-btn:hover { opacity: 0.88; }
 
-/* ---- Responsive: < 1080px stack (WS7 enhanced) ---- */
+/* ---- Responsive: < 1080px stack ---- */
 @media (max-width: 1079px) {
+  /* Restore sidebar on mobile — overrides body.stark-active hide rule */
+  body.stark-active #app-sidebar { display: flex !important; }
+  body.stark-active .main { width: 100%; overflow-y: auto; height: auto; }
+
   #stark-grid {
+    display: flex;
     flex-direction: column;
     height: auto;
     overflow: visible;
   }
-  body.stark-active .main { overflow-y: auto; }
-  #stark-left  { width: 100%; }
-  #stark-right { width: 100%; }
-  #stark-calendar  { min-height: 360px; }
-  #stark-ark-col   { min-height: 480px; }
-  /* Too cramped — hide the top-bar nav; use the restored sidebar instead */
+  #stark-left  { width: 100%; overflow: visible; }
+  #stark-right { width: 100%; overflow: visible; }
+  #stark-calendar  { min-height: 380px; }
+  #stark-ark-col   { min-height: 440px; }
+  /* Too cramped — hide the top-bar nav; sidebar used on mobile */
   #stark-topbar .stark-nav { display: none; }
-  /* Restore sidebar on mobile when stark-active */
-  body.stark-active #app-sidebar         { display: flex !important; }
-  body.stark-active .main                { width: 100%; margin-left: 0; }
-  #stark-left, #stark-right              { overflow: visible; }
+  /* Hide blobs for perf on mobile */
+  #stark-blobs { display: none; }
   #pg-dashboard                          { overflow: auto; }
   .stark-cal-dow-row { margin-right: 0; }
   .stark-cal-wrap    { flex-direction: column; }
@@ -10761,6 +10787,7 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
   position: relative;
   width: 150px;
   height: 128px;
+  max-height: 110px; /* QA: ensure ark-col fits at 1280×800 */
   margin: 0 auto 4px;
   overflow: hidden;
 }
@@ -32177,11 +32204,12 @@ function renderStarkCal(year, month) {
     if (daysTraded > 0) {
       monthPnlEl.textContent = (monthPnl >= 0 ? '+' : '-') + '$' + Math.round(Math.abs(monthPnl)).toLocaleString();
       monthPnlEl.className = 'stark-month-pnl ' + (monthPnl >= 0 ? 'win' : 'loss');
+      monthPnlEl.style.color = '';
     } else {
-      // WS7: empty month — show dim $0
-      monthPnlEl.textContent = '$0';
+      // WS8: empty month nav — show dim $0.00 in ink45
+      monthPnlEl.textContent = '$0.00';
       monthPnlEl.className = 'stark-month-pnl';
-      monthPnlEl.style.color = 'var(--stark-cream45)';
+      monthPnlEl.style.color = 'var(--ink45)';
     }
   }
   if (daysChipEl) {
@@ -32469,9 +32497,16 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /* ============================================================
-   applyStarkState — WS7: overlays contextual state messaging
-   on top of the already-rendered dashboard. Call AFTER
-   renderStarkDashboard() so all elements exist.
+   applyStarkState — WS8: all contextual dashboard states.
+   Call AFTER renderStarkDashboard() so all elements exist.
+   States (in priority order):
+     1. Weekend
+     2. First-run (0 total trades)
+     3. Pre-market (closed + no trades today)
+     4. Zero-trade live day (open + no trades)
+     5. Stop reached (red day, daily limit breached)
+     6. Regular red day
+     7. Empty month nav (handled in renderStarkCalendar, noted here)
    ============================================================ */
 function applyStarkState() {
   try {
@@ -32495,59 +32530,66 @@ function applyStarkState() {
     var insightsEl  = document.getElementById('ark-insights');
 
     // --- Determine ET weekday for weekend detection ---
-    var etParts = null;
-    if (window.TradingDay && TradingDay._getETParts) {
-      etParts = TradingDay._getETParts(now);
-    }
-    // Fallback: approximate via Intl
     var _etDow = -1;
     try {
       var _fmt = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'short' });
       var _wdStr = _fmt.format(new Date(now));
       var _wdMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
       _etDow = _wdMap[_wdStr] !== undefined ? _wdMap[_wdStr] : -1;
-    } catch(e) {}
+    } catch(e2) {}
 
     // ---- State 1: Weekend ----
     var isWeekend = (_etDow === 0 || _etDow === 6) && !isOpen;
     if (isWeekend) {
-      if (pnlLabelEl) pnlLabelEl.textContent = "MARKET CLOSED · REOPENS SUN 6PM ET";
+      // Find last trading day label from trades
+      var lastTradedLabel = '';
+      if (allTrades.length > 0) {
+        var sortedKeys = Object.keys(_starkAggByDay(allTrades)).sort();
+        if (sortedKeys.length) {
+          var lk = sortedKeys[sortedKeys.length - 1];
+          var lkDate = new Date(lk + 'T12:00:00');
+          lastTradedLabel = lkDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase() + ' · ';
+        }
+      }
+      if (pnlLabelEl) pnlLabelEl.textContent = lastTradedLabel + "MARKET CLOSED · REOPENS SUN 6PM ET";
       if (sessNameEl) sessNameEl.innerHTML = '<span class="stark-session-dot" style="background:rgba(244,244,242,.3);animation:none"></span>WEEKEND';
       if (sessNextEl) sessNextEl.textContent = 'CLOSED';
-      return; // don't override other states further
+      return;
     }
 
     // ---- State 2: First-run / no data at all ----
     if (allTrades.length === 0) {
       if (heroEl) {
         heroEl.className = 'stark-hero-amount';
-        heroEl.style.color = 'var(--stark-cream45)';
+        heroEl.style.color = 'var(--ink45)';
         heroEl.textContent = '$0';
       }
-      if (directiveEl) directiveEl.textContent = 'Welcome. Log your first trade to start tracking.';
+      if (directiveEl) directiveEl.textContent = 'Welcome. Log your first trade to get started.';
       if (arkStatusEl) arkStatusEl.textContent = 'NO TRADES YET — PLAN ARMED';
       if (arkDotEl) arkDotEl.className = 'ark-status-dot armed';
       if (insightsEl) insightsEl.style.display = 'none';
       return;
     }
 
-    // ---- State 3: Pre-market (market closed + no trades today + before open) ----
+    // ---- State 3: Pre-market (market closed + no trades today + before session open) ----
     if (!isOpen && todayTrades.length === 0) {
       if (heroEl) {
         heroEl.className = 'stark-hero-amount';
-        heroEl.style.color = 'var(--stark-cream45)';
+        heroEl.style.color = 'var(--ink45)';
         heroEl.textContent = '$0';
       }
-      if (directiveEl && window.TradingDay) {
-        var nextOpen = TradingDay.getNextOpen(now);
-        if (nextOpen && nextOpen.msUntil > 0) {
-          var hrs = Math.floor(nextOpen.msUntil / 3600000);
-          var mins = Math.round((nextOpen.msUntil % 3600000) / 60000);
-          var timeStr = hrs > 0 ? hrs + 'h ' + mins + 'm' : mins + 'm';
-          directiveEl.textContent = 'Market opens in ' + timeStr + '. Review your plan.';
-        } else {
-          directiveEl.textContent = 'Market is closed. Review your plan.';
+      if (directiveEl) {
+        var preDirective = 'Market is closed. Review your plan.';
+        if (window.TradingDay) {
+          var nextOpen = TradingDay.getNextOpen(now);
+          if (nextOpen && nextOpen.msUntil > 0) {
+            var hrs = Math.floor(nextOpen.msUntil / 3600000);
+            var mins = Math.round((nextOpen.msUntil % 3600000) / 60000);
+            var timeStr = hrs > 0 ? hrs + 'h ' + mins + 'm' : mins + 'm';
+            preDirective = 'Market opens in ' + timeStr + '. Review your plan.';
+          }
         }
+        directiveEl.textContent = preDirective;
       }
       return;
     }
@@ -32555,22 +32597,47 @@ function applyStarkState() {
     // ---- State 4: Zero-trade live day (market open, no trades yet) ----
     if (isOpen && todayTrades.length === 0) {
       if (heroEl) {
-        heroEl.style.color = 'var(--stark-cream45)';
+        heroEl.style.color = 'var(--ink45)';
       }
-      if (arkStatusEl) arkStatusEl.textContent = 'NO TRADES YET — PLAN ARMED';
-      if (arkDotEl) arkDotEl.className = 'ark-status-dot armed';
+      if (arkStatusEl) {
+        arkStatusEl.textContent = 'NO TRADES YET — PLAN ARMED';
+        arkStatusEl.style.color = 'var(--gold)';
+      }
+      if (arkDotEl) {
+        arkDotEl.className = 'ark-status-dot armed';
+        arkDotEl.style.background = 'var(--gold)';
+      }
       return;
     }
 
-    // ---- State 5: Red day ----
+    // ---- State 5 & 6: Red day ----
     if (todayPnl < 0) {
-      // Check for daily stop hit (uses acct.daily_stop_limit if set)
-      var stopLimit = window.acct && (acct.daily_stop_limit || acct.daily_stop);
-      if (stopLimit && Math.abs(todayPnl) >= Number(stopLimit)) {
-        if (arkStatusEl) arkStatusEl.textContent = 'STOP REACHED — DONE FOR TODAY';
-        if (arkDotEl) arkDotEl.className = 'ark-status-dot off';
+      if (heroEl) {
+        heroEl.classList.remove('win');
+        heroEl.classList.add('loss');
+        heroEl.style.color = ''; // let class handle color
+      }
+
+      // State 5: Stop reached
+      var stopLimit = window.acct && (Number(acct.daily_stop_limit) || Number(acct.daily_stop) || 500);
+      if (stopLimit && Math.abs(todayPnl) >= stopLimit) {
+        if (arkStatusEl) {
+          arkStatusEl.textContent = 'STOP REACHED — DONE FOR TODAY';
+          arkStatusEl.style.color = 'var(--loss-text)';
+        }
+        if (arkDotEl) {
+          arkDotEl.className = 'ark-status-dot off';
+          arkDotEl.style.background = 'var(--loss)';
+        }
+      } else {
+        // State 6: Regular red day — hero already colored loss via class; no status override needed
+        if (heroEl) heroEl.style.color = 'var(--loss-text)';
       }
     }
+
+    // ---- State 7 note: Empty month P&L ----
+    // Handled inline in renderStarkCalendar(): when daysTraded === 0,
+    // monthPnlEl shows "$0.00" in var(--ink45) with "0 DAYS TRADED" chip.
 
   } catch(e) {
     console.warn('[Stark] applyStarkState error:', e);

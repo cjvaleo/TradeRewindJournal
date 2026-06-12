@@ -33,51 +33,166 @@
 
 ---
 
-## Stark Dashboard System
+## Stark Dashboard System — v2
 
-Added in WS2–7. Applied only when `body.stark-active` is set (dashboard page).
+Added in WS2–8. Applied only when `body.stark-active` is set (dashboard page).
 
-### Color tokens (CSS custom properties on `body.stark-active`)
-```
---stark-bg:      #070708          /* near-black page background */
---stark-cream:   #F4F4F2          /* primary text */
---stark-cream70: rgba(244,244,242,.72)   /* secondary text */
---stark-cream45: rgba(244,244,242,.48)   /* dim / disabled text */
---stark-hair:    rgba(244,244,242,.10)   /* subtle borders */
---stark-hair2:   rgba(244,244,242,.20)   /* slightly stronger border */
---stark-gold:    #D9A92F          /* brand gold — use sparingly */
---stark-gold55:  rgba(217,169,47,.55)    /* HUD corner brackets */
---stark-panel:   rgba(244,244,242,.018)  /* glass panel background */
---stark-win:     #3FA577          /* profit green */
---stark-loss:    #C96A6A          /* loss red */
---stark-win-tint:  rgba(63,165,119,.05)  /* win cell background tint */
---stark-loss-tint: rgba(201,106,106,.05) /* loss cell background tint */
---stark-win-amt: #5ED1A0          /* winning P&L amount text */
---stark-gold-tint: rgba(217,169,47,.06)  /* today cell background tint */
-```
+### Three-theme token scheme
 
-### Blueprint grid
-Two `repeating-linear-gradient` layers at `rgba(244,244,242,.016)` 1px lines, 44px cells, over `--stark-bg`.
+All colors are set via `[data-theme]` attribute on `<html>`. The three supported themes are `dark` (default), `grey`, and `light`. Theme is persisted to `localStorage` key `tr1_theme` AND to Supabase `user_settings` table (`{user_id, key:'theme', value}`) via `setTheme(mode)`.
 
-### Panel component
+#### [data-theme="dark"] (default / :root)
 ```css
-background: var(--stark-panel);
-border: 1px solid var(--stark-hair);
-border-radius: 12px;
+--bg:#070708; --ink:#F4F4F2; --ink70:rgba(244,244,242,.72); --ink45:rgba(244,244,242,.48);
+--hair:rgba(244,244,242,.1); --hair2:rgba(244,244,242,.2);
+--gold:#D9A92F; --gold-soft:rgba(217,169,47,.55);
+--panel:rgba(255,255,255,.028); --panel-border:rgba(255,255,255,.13);
+--grid-line:rgba(244,244,242,.022);
+--win:#3FA577; --win-text:#5ED1A0; --loss:#C96A6A; --loss-text:#DE8C8C;
+--glass-bright:1.14; --spec:rgba(255,255,255,.16); --btn-ink:#0A0A0A;
 ```
 
-### HUD corner brackets (`.stark-brackets`)
-`::before` + `::after` pseudo-elements. 14px gold L-marks (top-left + bottom-right).  
-Color: `rgba(217,169,47,.55)`.  
-Applied ONLY to: hero P&L panel (`#stark-pnl-block`) and Ark card (`#stark-ark-col`).
+#### [data-theme="grey"]
+```css
+--bg:#1C1D20; --ink:#F2F2F0; --ink70:rgba(242,242,240,.74); --ink45:rgba(242,242,240,.5);
+--hair:rgba(242,242,240,.12); --hair2:rgba(242,242,240,.22);
+--gold:#D9A92F; --gold-soft:rgba(217,169,47,.55);
+--panel:rgba(255,255,255,.04); --panel-border:rgba(255,255,255,.16);
+--grid-line:rgba(242,242,240,.03);
+--win:#3FA577; --win-text:#67D6A6; --loss:#C96A6A; --loss-text:#E29595;
+--glass-bright:1.1; --spec:rgba(255,255,255,.18); --btn-ink:#101010;
+```
 
-### Typography rules
-- **Archivo 900 italic stretch-125%** — brand moments: hero P&L amount, month title, month P&L, directive, grade letter, streak value, «REWIND lockup.
-- **Geist Mono** — ALL data numbers, labels, nav items, stat lines, insight rows.
+#### [data-theme="light"]
+```css
+--bg:#F7F6F3; --ink:#141414; --ink70:rgba(20,20,20,.74); --ink45:rgba(20,20,20,.48);
+--hair:rgba(20,20,20,.1); --hair2:rgba(20,20,20,.2);
+--gold:#B8860B; --gold-soft:rgba(184,134,11,.55);
+--panel:rgba(20,20,20,.025); --panel-border:rgba(20,20,20,.12);
+--grid-line:rgba(20,20,20,.035);
+--win:#1E7A52; --win-text:#1E7A52; --loss:#B04A4A; --loss-text:#B04A4A;
+--glass-bright:1.0; --spec:rgba(255,255,255,.65); --btn-ink:#FFFFFF;
+```
+
+### Legacy aliases (migration shim)
+`:root` also defines `--stark-*` aliases that map old names to new semantic tokens, e.g. `--stark-bg: var(--bg)`, `--stark-cream: var(--ink)`, etc. These exist purely for backward compatibility with older sections of the codebase not yet migrated. New code MUST use the `--bg`, `--ink`, `--hair`, etc. token names directly.
+
+### Theme persistence
+1. `setTheme(mode)` — sets `data-theme` on `<html>`, writes `localStorage.setItem('tr1_theme', mode)`, upserts `user_settings {user_id, key:'theme', value:mode}` in Supabase.
+2. On page load, `localStorage.getItem('tr1_theme')` is read and `setTheme()` called before first paint (inline script, line ~25788).
+3. On login, the `user_settings` row for `key:'theme'` is fetched and applied (line ~29066).
+
+### Migration notes (--stark-* → [data-theme] semantic tokens)
+| Old token | New token |
+|---|---|
+| `--stark-bg` | `--bg` |
+| `--stark-cream` | `--ink` |
+| `--stark-cream70` | `--ink70` |
+| `--stark-cream45` | `--ink45` |
+| `--stark-hair` | `--hair` |
+| `--stark-hair2` | `--hair2` |
+| `--stark-gold` | `--gold` |
+| `--stark-gold55` | `--gold-soft` |
+| `--stark-panel` | `--panel` |
+| `--stark-win` | `--win` |
+| `--stark-loss` | `--loss` |
+| `--stark-win-amt` | `--win-text` |
+| `--stark-loss-text` | `--loss-text` |
+
+Rule: NO hardcoded hex/rgba colors in dashboard CSS. Every color must reference a CSS custom property from the scheme above.
+
+---
+
+### Glass cell spec
+
+Calendar cells (`.stark-cal-cell`) use a layered liquid-glass effect:
+
+1. **Base layer**: `background: var(--panel)` — theme-relative translucent fill
+2. **Backdrop filter stack** (traded cells only):
+   - Default (fallback): `backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright))`
+   - Progressive enhancement: `backdrop-filter: blur(2.5px) url(#liquidLens) saturate(1.7) brightness(var(--glass-bright))` — adds SVG displacement lens
+   - Safari fallback (via `@supports not (backdrop-filter: blur(1px) url(...))`): plain `blur(6px) saturate(1.6) brightness(var(--glass-bright))`
+3. **SVG liquid lens**: `<filter id="liquidLens">` inline in the page — `feTurbulence` + `feDisplacementMap` creates the liquid warp. Defined once in the dashboard HTML.
+4. **Specular sheen overlay** (`.spec-sheen`): radial + linear gradient using `var(--spec)` at 50% opacity, `pointer-events:none`, sits above glass layer.
+5. **Box shadow**: `inset 0 1px 0 var(--spec)` (top edge highlight) + `inset 0 -1px 0 rgba(0,0,0,.12)` (bottom edge shadow) + `0 4px 16px -8px rgba(0,0,0,.32)` (ambient drop).
+
+Non-traded cells (future, weekend, empty): `backdrop-filter: none`, transparent background, 35% opacity.
+
+**Constitution**: `backdrop-filter` and `-webkit-backdrop-filter` MUST NEVER appear in any `transition:` value or `@keyframes` rule. Only `border-color`, `background`, and `transform` transitions are permitted on `.stark-cal-cell`.
+
+---
+
+### Typography
+
+- **Archivo 900 italic stretch-125%** — hero P&L amount, month title, month P&L, directive, grade letter, streak value, brand lockup.
+- **Space Grotesk 600** — calendar cell money amounts (`.stark-cal-amount`), week rail tile amounts (`.stark-wk-amount`). These are the only uses of Space Grotesk.
+- **Geist Mono** — ALL data numbers, labels, nav items, stat lines, insight rows, countdown text, status text.
 - **Geist** — body copy (directive paragraph text, pattern detail).
 
+---
+
+### Green streak vs journal streak
+
+These are two distinct concepts:
+
+- **Green streak** (`#stark-streak-val`, `.stark-streak-mini-bars`): consecutive *winning trading days* (days with positive P&L). Rendered as mini-bars in the P&L panel. Uses `--win` / `--loss` colors. Computed from `window.trades`.
+- **Journal streak** (future feature, separate element): consecutive days with a completed debrief/reflection entry. Would use a different element ID and source (debrief table). Currently not rendered on the dashboard.
+
+---
+
+### Ark card tab structure
+
+The Ark card (`#stark-ark-col`) has three tabs selectable via `.ark-tab-btn`:
+
+| Tab | ID | Content |
+|---|---|---|
+| `LIVE` | `ark-tab-live` | Today's coaching / real-time status + directive |
+| `YDA` | `ark-tab-yda` | Yesterday's summary + debrief prompt |
+| `WK` | `ark-tab-wk` | Rolling 5-day performance snapshot |
+
+Tab state is stored in `window._arkActiveTab`. Tab switching calls `switchArkTab(tabId)` which shows/hides the relevant panel div. The Ark status dot (`#ark-status-dot`) and status text (`#ark-status-text`) are always visible regardless of tab.
+
+---
+
+### Dashboard states (WS8)
+
+Handled by `applyStarkState()`, called at the end of `renderStarkDashboard()`:
+
+1. **Weekend** — `pnlLabelEl` shows last trading day + "MARKET CLOSED · REOPENS SUN 6PM ET"; session element shows "WEEKEND" with dim static dot.
+2. **First-run (0 total trades)** — hero shows `$0` in `var(--ink45)`. Directive: "Welcome. Log your first trade to get started." Insights section hidden. Ark status: "NO TRADES YET — PLAN ARMED" (gold dot).
+3. **Pre-market** — market closed, no trades today. Hero `$0` in `var(--ink45)`. Directive: countdown to next open from `TradingDay.getNextOpen()` or fallback text.
+4. **Zero-trade live day** — market open, 0 trades. Ark status: "NO TRADES YET — PLAN ARMED" (gold dot). Hero dim.
+5. **Stop reached** — today P&L negative AND `Math.abs(pnl) >= stopLimit` (from `acct.daily_stop_limit` || `acct.daily_stop` || 500 fallback). Ark status: "STOP REACHED — DONE FOR TODAY" in `var(--loss-text)` with loss-colored dot.
+6. **Regular red day** — today P&L negative, stop not reached. Hero in `var(--loss-text)`.
+7. **Empty month nav** — handled inline in `renderStarkCalendar()`: when `daysTraded === 0`, `monthPnlEl` shows `"$0.00"` in `var(--ink45)` and days chip shows "0 DAYS TRADED".
+
+---
+
+### Layout
+
+- Topbar: `56px` height, `1px var(--hair)` bottom border, `background: var(--bg)`.
+- Grid: `display:flex; flex-direction:row`, left `flex:2.45`, right `min-width:310px`, hairline divider. Height: `calc(100vh - 56px)`, `overflow:hidden`.
+- Left column: `overflow-y:auto` (scrolls internally). Right column: `overflow-y:auto`.
+- Desktop scroll lock: `body.stark-active { overflow:hidden }` + `body.stark-active .main { overflow:hidden; height:100vh }` — the page body NEVER scrolls on desktop.
+- `< 1080px`: columns stack (`flex-direction:column`), sidebar restored, blobs hidden for perf, `body.stark-active .main` gets `overflow-y:auto`.
+
+### Ark hologram
+
+- Three.js canvas `#ark-hologram-canvas` inside `.ark-hologram-wrap` (150×110px max, `overflow:hidden`).
+- Animation: rotateY + gentle float Y on `requestAnimationFrame`. Pauses via `visibilitychange` + `IntersectionObserver`.
+- The canvas MUST NOT be wrapped in any CSS `filter` rule. It is the ONLY sanctioned WebGL element.
+
+### Blueprint grid background
+
+Two `repeating-linear-gradient` layers at `var(--grid-line)` (1px lines, 44px cells) layered over `var(--bg)`, applied to `#pg-dashboard`.
+
+### HUD corner brackets (`.stark-brackets`)
+
+`::before` + `::after` pseudo-elements. 14×14px gold L-marks (top-left + bottom-right). Color: `var(--gold-soft)`. Applied to `#stark-pnl-block` and `#stark-ark-col`.
+
 ### Gold scarcity rule
-Gold (`--stark-gold`) used only for:
+
+`var(--gold)` used only for:
 - Brand «REWIND chevron
 - Active nav item underline
 - Link arrows (→)
@@ -88,28 +203,6 @@ Gold (`--stark-gold`) used only for:
 - HUD corner brackets
 
 ### Button variants
-- **LOG TRADE**: ghost gold — `transparent` bg, `1px solid --stark-gold` border, gold Geist Mono text, `7px radius`.
-- **GRADE TODAY**: solid gold pill — `--stark-gold` bg, `#070708` text, `999px radius`.
+- **LOG TRADE**: ghost gold — `transparent` bg, `1px solid var(--gold)` border, gold Geist Mono text, `7px` radius.
+- **GRADE TODAY**: solid gold pill — `var(--gold)` bg, `var(--btn-ink)` text, `999px` radius.
 - **HISTORY →** / **YDA REPORT →**: `.stark-link` — no border, gold color, Geist Mono.
-
-### Motion rules (hard constraints)
-- Permitted: `transform`, `opacity` transitions only.
-- Prohibited: `blur()`, animated `filter`, `conic-gradient`, particles, mousemove parallax.
-- Three.js canvas (`#ark-hologram-canvas`) must NOT be wrapped in any CSS `filter` rule.
-- Hologram: `rotate Y` + gentle float Y on `requestAnimationFrame`. Pauses on `visibilitychange` + IntersectionObserver.
-
-### Layout
-- Topbar: 56px height, `1px --stark-hair` bottom border, `background: --stark-bg`.
-- Grid: `display:flex`, left `2.45fr`, right `minmax(310px,1fr)`, hairline divider.  
-  Height: `calc(100vh - 56px)`.
-- Left column overflow: `auto` (scrollable). Right column overflow: `auto`.
-- `< 1080px`: columns stack (`flex-direction: column`), sidebar restored.
-
-### Dashboard states (WS7)
-Handled by `applyStarkState()`, called at end of `renderStarkDashboard()`:
-1. **Weekend** — label shows "MARKET CLOSED · REOPENS SUN 6PM ET"; session shows "WEEKEND".
-2. **First-run / no data** — hero `$0` dim, directive "Welcome. Log your first trade…", insights hidden.
-3. **Pre-market** — hero `$0` dim, directive shows countdown to next open.
-4. **Zero-trade live day** — hero dim, Ark status "NO TRADES YET — PLAN ARMED".
-5. **Red day / stop hit** — hero in `--stark-loss`; if daily stop breached: Ark status "STOP REACHED — DONE FOR TODAY".
-6. **Empty month (nav)** — calendar month P&L shows "$0" in `--stark-cream45`.
