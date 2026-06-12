@@ -10607,6 +10607,17 @@ body.stark-active .main { overflow: hidden; height: 100vh; }
   color: var(--stark-gold);
   text-transform: uppercase;
 }
+.stark-auto-badge {
+  font-family: 'Geist Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .14em;
+  color: var(--gold);
+  border: 1px solid var(--gold-soft);
+  border-radius: 3px;
+  padding: 1px 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
 
 /* ---- Closeout row ---- */
 #stark-closeout {
@@ -11496,6 +11507,23 @@ body.stark-active .main { overflow: hidden; height: 100vh; }
           <button class="stark-link" onclick="(typeof openRulesModal === 'function' ? openRulesModal() : goTo('rules'))">EDIT</button>
         </div>
         <div id="stark-rules-list"><!-- injected by JS --></div>
+      </div>
+
+      <!-- Share Card Module -->
+      <div id="stark-share-module" class="stark-panel" style="margin-top:10px;padding:14px 16px">
+        <div class="stark-rules-head">
+          <span class="stark-section-label">TODAY'S CARD</span>
+          <a class="stark-link" onclick="openShareCardFlow()" style="font-size:11px">SHARE P&amp;L CARD &rarr;</a>
+        </div>
+        <!-- Mini 16:9 share card preview, ~220px wide -->
+        <div id="stark-share-preview-wrap" style="margin-top:10px;border-radius:8px;overflow:hidden;cursor:pointer" onclick="openShareCardFlow()">
+          <canvas id="stark-share-preview" style="width:100%;height:auto;border-radius:8px;display:block"></canvas>
+          <div id="stark-share-preview-fallback" style="display:none;aspect-ratio:16/9;background:var(--panel);border:1px solid var(--hair);border-radius:8px;align-items:center;justify-content:center;flex-direction:column;gap:6px">
+            <span style="font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.2em;color:var(--ink45)">«REWIND</span>
+            <span id="stark-share-pnl-preview" style="font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-size:22px;color:var(--win-text)">$0.00</span>
+            <span id="stark-share-date-preview" style="font-family:'Geist Mono',monospace;font-size:9px;color:var(--ink45)">TODAY</span>
+          </div>
+        </div>
       </div>
 
       <!-- Closeout -->
@@ -31964,6 +31992,53 @@ function _starkAggByDay(tradesArr) {
   return byDay;
 }
 
+/* openShareCardFlow — launches share card generator if available, else fallback */
+function openShareCardFlow() {
+  if (typeof generateShareCard === 'function') generateShareCard();
+  else if (typeof openShareCard === 'function') openShareCard();
+  else goTo('history');
+}
+
+/* renderStarkSharePreview — paints a mini 16:9 P&L card onto the canvas */
+function renderStarkSharePreview() {
+  var canvas = document.getElementById('stark-share-preview');
+  var fallback = document.getElementById('stark-share-preview-fallback');
+  if (!canvas) return;
+  var todayKey = window.TradingDay ? (TradingDay.getTodayTradingDay ? TradingDay.getTodayTradingDay() : _localDate(new Date())) : _localDate(new Date());
+  var today = window.trades ? window.trades.filter(function(t) { return t.trading_day === todayKey || t.date === todayKey; }) : [];
+  var pnl = today.reduce(function(s, t) { return s + (parseFloat(t.pnl) || 0); }, 0);
+  var w = canvas.parentElement ? canvas.parentElement.offsetWidth : 220;
+  if (w < 1) w = 220;
+  var h = Math.round(w * 9 / 16);
+  canvas.width = w;
+  canvas.height = h;
+  var ctx = canvas.getContext('2d');
+  if (!ctx) {
+    canvas.style.display = 'none';
+    if (fallback) { fallback.style.display = 'flex'; }
+    return;
+  }
+  canvas.style.display = 'block';
+  if (fallback) fallback.style.display = 'none';
+  // Background
+  var curTheme = document.documentElement.getAttribute('data-theme') || 'grey';
+  ctx.fillStyle = curTheme === 'light' ? '#F7F6F3' : curTheme === 'dark' ? '#070708' : '#1C1D20';
+  ctx.fillRect(0, 0, w, h);
+  // Brand
+  ctx.font = 'italic 900 ' + Math.round(w * 0.052) + 'px Archivo, serif';
+  ctx.fillStyle = '#D9A92F';
+  ctx.fillText('«REWIND', w * .06, h * .3);
+  // P&L
+  ctx.font = 'italic 900 ' + Math.round(w * 0.12) + 'px Archivo, serif';
+  ctx.fillStyle = pnl >= 0 ? '#5ED1A0' : '#DE8C8C';
+  ctx.fillText((pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(2), w * .06, h * .62);
+  // Date
+  var dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  ctx.font = '500 ' + Math.round(w * 0.038) + 'px "Geist Mono", monospace';
+  ctx.fillStyle = 'rgba(244,244,242,.55)';
+  ctx.fillText(dateStr + ' · ' + today.length + ' TRADES', w * .06, h * .8);
+}
+
 /* renderStarkDashboard — main entry point */
 function renderStarkDashboard() {
   try {
@@ -32158,6 +32233,9 @@ function renderStarkDashboard() {
 
     // --- WS7: apply contextual state overlays ---
     applyStarkState();
+
+    // --- Share card preview ---
+    renderStarkSharePreview();
 
   } catch (e) {
     console.warn('[Stark] renderStarkDashboard error:', e);
@@ -32396,11 +32474,12 @@ function renderStarkRules() {
   for (var i = 0; i < rules.length; i++) {
     var r = rules[i];
     var text = typeof r === 'string' ? r : (r.text || r.rule || JSON.stringify(r));
-    var isAuto = typeof r === 'object' && r.auto;
+    var isAuto = (typeof r === 'object' && r.auto) ||
+      /max trade|max loss|loss limit|stop|killzone|session|flat by|no trading after|max daily/i.test(text);
     html += '<label class="stark-rule-item">';
     html += '<input type="checkbox" onchange="this.closest(\'.stark-rule-item\').classList.toggle(\'checked\',this.checked);_starkUpdateRuleCount()">';
     html += '<span>' + text + '</span>';
-    if (isAuto) html += '<span class="stark-rule-auto-badge">AUTO</span>';
+    if (isAuto) html += '<span class="stark-auto-badge">AUTO</span>';
     html += '</label>';
   }
   listEl.innerHTML = html;
