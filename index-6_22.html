@@ -10712,6 +10712,181 @@ body.stark-active .main { overflow: hidden; height: 100vh; }
     display: grid;
   }
 }
+
+/* === STARK CALENDAR PAGE === */
+#pg-calendar.page.on {
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.scal-shell {
+  display: flex;
+  flex-direction: row;
+  height: calc(100vh - 56px);
+  gap: 0;
+  overflow: hidden;
+}
+.scal-left {
+  flex: 2.5;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid var(--hair);
+  padding: 16px 20px;
+}
+.scal-right {
+  flex: 0 0 330px;
+  min-width: 330px;
+  max-width: 400px;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+/* Calendar header */
+.scal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+.scal-arrow-btn {
+  background: var(--panel);
+  border: 1px solid var(--hair);
+  border-radius: 6px;
+  color: var(--ink70);
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 14px;
+  transition: border-color .15s, color .15s;
+}
+.scal-arrow-btn:hover { border-color: var(--hair2); color: var(--ink); }
+.scal-month-title {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900; font-style: italic; font-stretch: 125%;
+  font-size: 22px; letter-spacing: -.03em;
+  color: var(--ink); text-transform: uppercase;
+}
+.scal-month-pnl {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900; font-style: italic;
+  font-size: 18px;
+}
+.scal-chip {
+  font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: .14em;
+  background: var(--panel); border: 1px solid var(--hair); border-radius: 12px;
+  padding: 3px 9px; color: var(--ink45);
+}
+/* View toggle: MONTH / GRID / YEAR */
+.scal-view-toggle {
+  display: flex; gap: 0;
+  background: var(--panel); border: 1px solid var(--hair); border-radius: 7px;
+  overflow: hidden; margin-left: auto;
+}
+.scal-view-btn {
+  font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: .14em;
+  background: none; border: none; color: var(--ink45);
+  padding: 6px 13px; cursor: pointer;
+  transition: color .15s, background .15s;
+}
+.scal-view-btn.active { background: var(--panel-border); color: var(--ink); }
+/* Calendar grid */
+.scal-grid-header {
+  display: grid; grid-template-columns: repeat(7,1fr);
+  gap: 6px; margin-bottom: 6px; flex-shrink: 0;
+}
+.scal-dow { font-family:'Geist Mono',monospace; font-size:9px; letter-spacing:.14em; color:var(--ink45); text-align:center; }
+.scal-grid {
+  display: grid; grid-template-columns: repeat(7,1fr);
+  gap: 6px; flex: 1; overflow: hidden;
+  min-height: 0;
+}
+/* Liquid glass cells */
+.scal-cell {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 13px;
+  backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
+  -webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
+  box-shadow: inset 0 1px 0 var(--spec), inset 0 -1px 0 rgba(0,0,0,.12), 0 4px 16px -8px rgba(0,0,0,.32);
+  padding: 6px 7px 5px;
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  position: relative;
+  transition: border-color .18s, background .18s, transform .12s;
+}
+.scal-cell:hover { border-color: var(--hair2); transform: translateY(-1px); }
+.scal-cell.win { background: rgba(63,165,119,.10); border-color: rgba(63,165,119,.22); }
+.scal-cell.win:hover { background: rgba(63,165,119,.16); border-color: rgba(63,165,119,.38); }
+.scal-cell.loss { background: rgba(201,106,106,.10); border-color: rgba(201,106,106,.22); }
+.scal-cell.loss:hover { background: rgba(201,106,106,.16); border-color: rgba(201,106,106,.38); }
+.scal-cell.today { border: 1.5px solid var(--gold); background: rgba(217,169,47,.10); }
+.scal-cell.inactive { backdrop-filter:none; -webkit-backdrop-filter:none; background:transparent; border:1px solid var(--hair); opacity:.35; cursor:default; pointer-events:none; }
+.scal-cell.selected { box-shadow: 0 0 0 1.5px var(--ink), inset 0 1px 0 var(--spec); }
+.scal-day-num { font-family:'Geist Mono',monospace; font-size:10px; color:var(--ink45); }
+.scal-cell.today .scal-day-num { color:var(--gold); }
+.scal-cell-amt { font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12px; margin-top:auto; }
+.scal-cell-amt.win { color:var(--win-text); }
+.scal-cell-amt.loss { color:var(--loss-text); }
+.scal-cell-trades { font-family:'Geist Mono',monospace; font-size:9px; color:var(--ink45); }
+.scal-today-tag { font-family:'Geist Mono',monospace; font-size:7px; letter-spacing:.18em; color:var(--gold); margin-top:2px; }
+/* Week rail column */
+.scal-week-tile {
+  background: var(--panel); border: 1px solid var(--panel-border);
+  border-radius: 13px; padding: 6px 8px;
+  display: flex; flex-direction: column; gap: 3px;
+  backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
+  -webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
+}
+.scal-wk-label { font-family:'Geist Mono',monospace; font-size:8px; letter-spacing:.14em; color:var(--ink45); }
+.scal-wk-amt { font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; }
+.scal-wk-daystrip { display:flex; gap:2px; margin-top:auto; }
+.scal-wk-bar { width:7px; height:16px; border-radius:2px; background:var(--hair); }
+.scal-wk-bar.win { background:var(--win); }
+.scal-wk-bar.loss { background:var(--loss); }
+/* Day Detail panel */
+.scal-day-detail {
+  background: var(--panel); border: 1px solid var(--panel-border); border-radius: 13px;
+  padding: 14px 16px; position: relative;
+}
+.scal-day-detail::before, .scal-day-detail::after {
+  content:''; position:absolute; width:14px; height:14px;
+  border-color:var(--gold-soft); border-style:solid;
+}
+.scal-day-detail::before { top:6px; left:6px; border-width:1.5px 0 0 1.5px; }
+.scal-day-detail::after  { bottom:6px; right:6px; border-width:0 1.5px 1.5px 0; }
+.scal-dd-label { font-family:'Geist Mono',monospace; font-size:9px; letter-spacing:.16em; color:var(--ink45); margin-bottom:4px; }
+.scal-dd-grade { font-family:'Archivo',sans-serif; font-weight:900; font-style:italic; font-size:32px; color:var(--gold); }
+.scal-dd-pnl { font-family:'Archivo',sans-serif; font-weight:900; font-style:italic; font-size:26px; }
+.scal-dd-statrow { font-family:'Geist Mono',monospace; font-size:10px; color:var(--ink45); letter-spacing:.1em; margin:6px 0; }
+.scal-trade-row {
+  display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid var(--hair);
+  font-family:'Geist Mono',monospace; font-size:10px;
+}
+.scal-trade-row:last-child { border-bottom:none; }
+.scal-ark-quote { border-left:2px solid var(--gold); padding-left:10px; margin:10px 0 6px; font-size:11px; color:var(--ink70); font-family:'Geist',sans-serif; line-height:1.5; }
+/* Month stats panel */
+.scal-month-stats {
+  background: var(--panel); border: 1px solid var(--panel-border); border-radius: 13px;
+  padding: 14px 16px;
+}
+.scal-ms-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; margin-top:10px; }
+.scal-ms-cell { display:flex; flex-direction:column; gap:2px; }
+.scal-ms-label { font-family:'Geist Mono',monospace; font-size:8px; letter-spacing:.14em; color:var(--ink45); }
+.scal-ms-val { font-family:'Geist Mono',monospace; font-size:13px; color:var(--ink); }
+.scal-ms-delta { font-family:'Geist Mono',monospace; font-size:9px; color:var(--ink45); }
+/* Mobile */
+@media (max-width:1079px) {
+  .scal-shell { flex-direction:column; height:auto; overflow:visible; }
+  .scal-left { border-right:none; border-bottom:1px solid var(--hair); padding:12px; }
+  .scal-right { flex:none; min-width:0; padding:12px; }
+  .scal-grid { grid-template-columns:repeat(7,1fr); }
+  #scal-week-col { display:none; }
+}
 </style>
 
 <script src="js/tradingDay.js"></script>
@@ -12419,151 +12594,86 @@ body.stark-active .main { overflow: hidden; height: 100vh; }
 
 <!-- CALENDAR -->
 <div id="pg-calendar" class="page">
-  <div class="desktop-rec-banner" data-banner-page="calendar"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span><b>Best on desktop.</b> This view is designed for a wider screen — some panels are hidden or simplified on mobile.</span><button class="drb-dismiss" onclick="dismissDesktopBanner()">Got it</button></div>
+  <!-- Liquid lens filter (shared with dashboard, safe to have twice) -->
+  <svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+    <defs>
+      <filter id="calLiquidLens" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.009 0.014" numOctaves="2" seed="7" result="noise"/>
+        <feGaussianBlur stdDeviation="1.4" in="noise" result="blur"/>
+        <feDisplacementMap in="SourceGraphic" in2="blur" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </defs>
+  </svg>
 
-  <!-- HEADER -->
-  <div class="cal-head">
-    <div class="cal-head-left">
-      <div class="h-title">Calendar</div>
-      <div class="h-sub">Daily P&amp;L heatmap</div>
-    </div>
-    <div class="cal-nav" id="cal-nav-month">
-      <button class="cal-nav-btn" onclick="calPrev()">&#8592;</button>
-      <span class="cal-nav-lbl" id="cal-lbl"></span>
-      <button class="cal-nav-btn" onclick="calNext()">&#8594;</button>
-    </div>
-  </div>
-
-  <!-- TRIAL COUNTDOWN BANNER — Session 20b.  Shown only in the last 3
-       days of an active free trial; tone shifts soft→amber→urgent as
-       days run down.  Populated + toggled by applyCalendarGate().
-       Replaces the old free-cap banner (the 30-day data cap no longer
-       applies to the Calendar — the trial paywall is the gate now). -->
-  <div id="cal-trial-banner" class="cal-trial-banner" style="display:none"></div>
-
-  <!-- GATED CONTENT — blurred + non-interactive once the free trial
-       expires (.cal-locked on #pg-calendar). The header above stays
-       crisp; only the calendar surface goes behind the paywall. -->
-  <div id="cal-gated-content">
-
-  <!-- VIEW TABS — Month grid vs Heatmap -->
-  <div class="cal-view-tabs">
-    <button class="cal-view-tab on" data-cal-view="month" onclick="setCalView('month')">Month</button>
-    <button class="cal-view-tab" data-cal-view="heatmap" onclick="setCalView('heatmap')">Heatmap</button>
-  </div>
-
-  <!-- STATS ROW -->
-  <div class="cal-stats">
-    <div class="n-stat-card">
-      <div class="stat-label">Monthly P&amp;L</div>
-      <div class="stat-value" id="cm-pnl">&mdash;</div>
-    </div>
-    <div class="n-stat-card">
-      <div class="stat-label">Green Days</div>
-      <div class="stat-value" id="cm-green">&mdash;</div>
-    </div>
-    <div class="n-stat-card">
-      <div class="stat-label">Red Days</div>
-      <div class="stat-value" id="cm-red">&mdash;</div>
-    </div>
-    <div class="n-stat-card">
-      <div class="stat-label">Avg Daily P&amp;L</div>
-      <div class="stat-value" id="cm-avg">&mdash;</div>
-    </div>
-    <div class="n-stat-card">
-      <div class="stat-label">Current Streak</div>
-      <div class="stat-value" id="cm-streak">&mdash;</div>
-    </div>
-  </div>
-
-  <!-- CALENDAR + DAY PANEL -->
-  <div class="cal-grid-wrap" id="cal-month-view">
-    <!-- CALENDAR GRID -->
-    <div class="cal-card">
-      <div class="cal-dow-row">
-        <div></div>
-        <div class="cal-dow">Sun</div>
-        <div class="cal-dow">Mon</div>
-        <div class="cal-dow">Tue</div>
-        <div class="cal-dow">Wed</div>
-        <div class="cal-dow">Thu</div>
-        <div class="cal-dow">Fri</div>
-        <div class="cal-dow">Sat</div>
-      </div>
-      <div id="big-cal"></div>
-    </div>
-
-    <!-- DAY REVIEW PANEL -->
-    <div class="cal-card" id="day-panel">
-      <div class="day-panel-title" id="cal-day-title">Select a day</div>
-      <div id="cal-day-body">
-        <div class="day-empty">Click any trading day to see full breakdown</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- HEATMAP VIEW -->
-  <div id="cal-heatmap-view" style="display:none">
-    <div class="heatmap-h">
-      <div class="heatmap-title">Activity Heatmap</div>
-      <div class="view-toggle">
-        <button class="view-tab" data-hm-range="3M" onclick="setCalHmRange('3M')">3M</button>
-        <button class="view-tab on" data-hm-range="6M" onclick="setCalHmRange('6M')">6M</button>
-        <button class="view-tab" data-hm-range="1Y" onclick="setCalHmRange('1Y')">1Y</button>
-      </div>
-    </div>
-    <div class="heatmap-card">
-      <div class="month-row">
-        <div></div>
-        <div class="month-labels" id="hm-month-labels"></div>
-      </div>
-      <div class="cal-hm-grid">
-        <div class="day-labels">
-          <div class="day-label">Mon</div>
-          <div class="day-label hide">Tue</div>
-          <div class="day-label">Wed</div>
-          <div class="day-label hide">Thu</div>
-          <div class="day-label">Fri</div>
-          <div class="day-label hide">Sat</div>
-          <div class="day-label hide">Sun</div>
-        </div>
-        <div class="weeks-grid" id="hm-weeks-grid"></div>
-      </div>
-      <div class="legend">
-        <span>Less</span>
-        <div class="legend-scale">
-          <span class="legend-cell" style="background:rgba(201,95,95,0.85)"></span>
-          <span class="legend-cell" style="background:rgba(201,95,95,0.55)"></span>
-          <span class="legend-cell" style="background:rgba(201,95,95,0.32)"></span>
-          <span class="legend-cell" style="background:rgba(255,255,255,0.03)"></span>
-          <span class="legend-cell" style="background:rgba(95,179,137,0.32)"></span>
-          <span class="legend-cell" style="background:rgba(95,179,137,0.55)"></span>
-          <span class="legend-cell" style="background:rgba(95,179,137,0.85)"></span>
-        </div>
-        <span>More</span>
-        <div class="legend-streak">
-          <span class="legend-streak-dot"></span>
-          <span>Win Streak</span>
+  <div class="scal-shell">
+    <!-- LEFT: Header + View panels -->
+    <div class="scal-left">
+      <!-- Header -->
+      <div class="scal-header">
+        <button class="scal-arrow-btn" id="scal-prev-btn" onclick="scalPrev()">&#8592;</button>
+        <button class="scal-arrow-btn" id="scal-next-btn" onclick="scalNext()">&#8594;</button>
+        <span class="scal-month-title" id="scal-month-title">JANUARY 2026</span>
+        <span class="scal-month-pnl" id="scal-month-pnl"></span>
+        <span class="scal-chip" id="scal-days-chip">0 days</span>
+        <div class="scal-view-toggle">
+          <button class="scal-view-btn active" data-view="month" onclick="scalSetView('month')">MONTH</button>
+          <button class="scal-view-btn" data-view="grid" onclick="scalSetView('grid')">GRID</button>
+          <button class="scal-view-btn" data-view="year" onclick="scalSetView('year')">YEAR</button>
         </div>
       </div>
+
+      <!-- MONTH VIEW -->
+      <div id="scal-month-panel" style="flex:1;display:flex;flex-direction:column;min-height:0">
+        <div class="scal-grid-header">
+          <div class="scal-dow">SUN</div>
+          <div class="scal-dow">MON</div>
+          <div class="scal-dow">TUE</div>
+          <div class="scal-dow">WED</div>
+          <div class="scal-dow">THU</div>
+          <div class="scal-dow">FRI</div>
+          <div class="scal-dow">SAT</div>
+        </div>
+        <div style="flex:1;display:flex;gap:6px;min-height:0">
+          <!-- Calendar grid 7 cols -->
+          <div class="scal-grid" id="scal-grid" style="flex:1"></div>
+          <!-- Week rail -->
+          <div id="scal-week-col" style="width:100px;display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+      </div>
+
+      <!-- GRID VIEW (screenshot gallery) -->
+      <div id="scal-grid-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
+        <div id="scal-grid-filters" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;flex-shrink:0"></div>
+        <div id="scal-grid-gallery" style="overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(218px,1fr));gap:14px;flex:1"></div>
+      </div>
+
+      <!-- YEAR VIEW (heatmap cards) -->
+      <div id="scal-year-panel" style="display:none;flex:1;overflow-y:auto">
+        <div id="scal-year-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:14px"></div>
+      </div>
     </div>
 
-    <!-- Heatmap day detail uses the same #cal-day-title / #cal-day-body
-         that the month view uses. Clicking a cell flips back to Month
-         and scrolls the day panel into view. -->
-  </div>
+    <!-- RIGHT: Day Detail + Month Stats -->
+    <div class="scal-right">
+      <!-- Day Detail -->
+      <div class="scal-day-detail" id="scal-day-detail">
+        <div class="scal-dd-label" id="scal-dd-label">SELECT A DAY</div>
+        <div id="scal-dd-grade" class="scal-dd-grade" style="display:none"></div>
+        <div class="scal-dd-pnl" id="scal-dd-pnl" style="color:var(--ink45)">&#8212;</div>
+        <div class="scal-dd-statrow" id="scal-dd-statrow"></div>
+        <div id="scal-dd-trades" style="margin:10px 0"></div>
+        <div class="scal-ark-quote" id="scal-dd-ark" style="display:none"></div>
+        <a class="stark-link" id="scal-dd-open" onclick="" style="display:none;font-size:11px;margin-top:8px">OPEN FULL DAY &rarr;</a>
+        <div id="scal-dd-empty" style="padding:20px 0;text-align:center;font-family:'Geist Mono',monospace;font-size:10px;color:var(--ink45)">No trades &mdash; market day untraded</div>
+      </div>
 
-  </div><!-- /#cal-gated-content -->
-
-  <!-- TRIAL-EXPIRED PAYWALL — Session 20b.  Overlaid on the blurred
-       calendar shell when a non-grandfathered free user is past day
-       30. applyCalendarGate() toggles display + the .cal-locked class. -->
-  <div id="cal-paywall" class="cal-paywall" style="display:none">
-    <div class="cal-paywall-card">
-      <div class="cal-paywall-title">Calendar trial ended.</div>
-      <div class="cal-paywall-sub">Upgrade to Pro to keep tracking your trades visually.</div>
-      <button class="cal-paywall-cta" onclick="goTo('upgrade')">Subscribe to Pro &rarr;</button>
-      <div class="cal-paywall-secondary">or <a onclick="goTo('log')">Continue with Log Trade</a></div>
+      <!-- Month Stats -->
+      <div class="scal-month-stats" id="scal-month-stats">
+        <span class="stark-section-label">MONTH STATS</span>
+        <div class="scal-ms-grid" id="scal-ms-grid">
+          <!-- Injected by JS -->
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -18961,14 +19071,17 @@ function goTo(pg){
     showTab(validTabs.indexOf(hashTab) >= 0 ? hashTab : 'profile');
     return;
   }
-  // Stark mode: show top bar / hide sidebar on dashboard
-  document.body.classList.toggle('stark-active', pg === 'dashboard');
+  // Stark mode: show top bar / hide sidebar on dashboard and calendar
+  document.body.classList.toggle('stark-active', pg === 'dashboard' || pg === 'calendar');
   // Sync stark-nav active underline
   document.querySelectorAll('.stark-nav-item').forEach(function(btn){
     btn.classList.toggle('active', btn.dataset.pg === pg);
   });
   if(pg==='dashboard'){renderDashboard();renderStarkDashboard();setTimeout(drawMiniChart,80);}
-  if(pg==='history')renderHistory();if(pg==='propfirms')pfRender();if(pg==='calendar')renderCalPage();if(pg==='analytics')renderAnalytics();if(pg==='community')renderCommunity();if(pg==='rules')renderRules();if(pg==='goals')renderGoals();
+  if(pg==='calendar'){
+    if(!window._scalInitDone){ window._scalInitDone=true; scalInit(); } else { scalRenderMonth(); scalRenderMonthStats(); }
+  }
+  if(pg==='history')renderHistory();if(pg==='propfirms')pfRender();if(pg==='analytics')renderAnalytics();if(pg==='community')renderCommunity();if(pg==='rules')renderRules();if(pg==='goals')renderGoals();
   if(pg==='log' && typeof applyLogTradeTier === 'function') applyLogTradeTier();
   // Confluences picker: warm the library cache + render the (possibly
   // empty) pill row when the user lands on Log Trade. Lazy-load is also
@@ -32572,6 +32685,334 @@ document.addEventListener('DOMContentLoaded', function() {
   // QA: run once after initial render
   setTimeout(_starkQA, 600);
 });
+
+// ── STARK CALENDAR PAGE ──────────────────────────────────────────────────────
+
+window._scalState = {
+  year: new Date().getFullYear(),
+  month: new Date().getMonth(), // 0-indexed
+  view: 'month',
+  selectedDay: null, // 'YYYY-MM-DD'
+};
+
+function scalInit() {
+  // Set to current month
+  var now = new Date();
+  window._scalState.year = now.getFullYear();
+  window._scalState.month = now.getMonth();
+  // Default select: today or last traded day
+  var today = window.TradingDay ? window.TradingDay.getTodayTradingDay() : _localDate(now);
+  window._scalState.selectedDay = today;
+  scalRenderMonth();
+  scalRenderMonthStats();
+  scalRenderDayDetail(window._scalState.selectedDay);
+}
+
+function scalPrev() {
+  if(window._scalState.view === 'year') {
+    window._scalState.year--;
+    scalRenderYear();
+    return;
+  }
+  window._scalState.month--;
+  if(window._scalState.month < 0){ window._scalState.month=11; window._scalState.year--; }
+  scalRenderMonth(); scalRenderMonthStats();
+}
+
+function scalNext() {
+  if(window._scalState.view === 'year') {
+    window._scalState.year++;
+    scalRenderYear();
+    return;
+  }
+  window._scalState.month++;
+  if(window._scalState.month > 11){ window._scalState.month=0; window._scalState.year++; }
+  scalRenderMonth(); scalRenderMonthStats();
+}
+
+function scalSetView(v) {
+  window._scalState.view = v;
+  document.querySelectorAll('.scal-view-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.view===v); });
+  document.getElementById('scal-month-panel').style.display = v==='month' ? 'flex' : 'none';
+  document.getElementById('scal-grid-panel').style.display  = v==='grid'  ? 'flex' : 'none';
+  document.getElementById('scal-year-panel').style.display  = v==='year'  ? 'block' : 'none';
+  if(v==='month')  scalRenderMonth();
+  if(v==='grid')   scalRenderGrid();
+  if(v==='year')   scalRenderYear();
+}
+
+// Helper: trades for a given month {year, month 0-indexed}
+function _scalMonthTrades(year, month) {
+  if(!window.trades) return [];
+  var prefix = year + '-' + String(month+1).padStart(2,'0');
+  return window.trades.filter(function(t){ return (t.trading_day||'').startsWith(prefix); });
+}
+
+// Helper: trades for a given trading_day string
+function _scalDayTrades(day) {
+  if(!window.trades || !day) return [];
+  return window.trades.filter(function(t){ return t.trading_day === day; });
+}
+
+// Helper: day P&L sum
+function _scalDayPnl(day) {
+  return _scalDayTrades(day).reduce(function(s,t){ return s+(parseFloat(t.pnl)||0); }, 0);
+}
+
+// Helper: all trading days in a month, keyed by date string -> pnl
+function _scalMonthMap(year, month) {
+  var map = {};
+  _scalMonthTrades(year, month).forEach(function(t){
+    if(!t.trading_day) return;
+    map[t.trading_day] = (map[t.trading_day]||0) + (parseFloat(t.pnl)||0);
+  });
+  return map;
+}
+
+function scalRenderMonth() {
+  var y = window._scalState.year, m = window._scalState.month;
+  var monthNames = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+  var dayMap = _scalMonthMap(y, m);
+  var tradedDays = Object.keys(dayMap).length;
+  var monthPnl = Object.values(dayMap).reduce(function(s,v){ return s+v; }, 0);
+  // Header
+  document.getElementById('scal-month-title').textContent = monthNames[m] + ' ' + y;
+  var pnlEl = document.getElementById('scal-month-pnl');
+  pnlEl.textContent = (monthPnl>=0?'+':'') + '$' + Math.abs(monthPnl).toFixed(2);
+  pnlEl.style.color = monthPnl>0?'var(--win-text)':monthPnl<0?'var(--loss-text)':'var(--ink45)';
+  document.getElementById('scal-days-chip').textContent = tradedDays + ' day' + (tradedDays!==1?'s':'') + ' traded';
+
+  // Build calendar grid
+  var today = window.TradingDay ? window.TradingDay.getTodayTradingDay() : _localDate(new Date());
+  var firstDay = new Date(y, m, 1).getDay(); // 0=Sun
+  var daysInMonth = new Date(y, m+1, 0).getDate();
+
+  var grid = document.getElementById('scal-grid');
+  grid.innerHTML = '';
+
+  // Fill blank leading cells
+  for(var i=0; i<firstDay; i++){
+    var blank = document.createElement('div');
+    blank.className = 'scal-cell inactive';
+    grid.appendChild(blank);
+  }
+
+  // Day cells
+  for(var d=1; d<=daysInMonth; d++){
+    var dateStr = y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var dow = new Date(y,m,d).getDay();
+    var isWeekend = (dow===0||dow===6);
+    var isFuture = dateStr > today;
+    var pnl = dayMap[dateStr];
+    var traded = pnl !== undefined;
+    var isToday = (dateStr === today);
+    var isSelected = (dateStr === window._scalState.selectedDay);
+
+    var cell = document.createElement('div');
+    cell.className = 'scal-cell';
+    if(isWeekend || isFuture) cell.className += ' inactive';
+    else if(isToday) cell.className += ' today';
+    else if(traded && pnl>0) cell.className += ' win';
+    else if(traded && pnl<0) cell.className += ' loss';
+    if(isSelected) cell.className += ' selected';
+
+    var content = '<span class="scal-day-num">' + d + '</span>';
+    if(isToday) content += '<span class="scal-today-tag">TODAY</span>';
+    if(traded){
+      var cls = pnl>=0?'win':'loss';
+      content += '<span class="scal-cell-amt '+cls+'">'+(pnl>=0?'+':'')+'$'+Math.abs(pnl).toFixed(0)+'</span>';
+      var dayTrades = _scalDayTrades(dateStr);
+      content += '<span class="scal-cell-trades">'+dayTrades.length+'T</span>';
+      content += '<span class="spec-sheen" style="position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(ellipse at 20% 15%,var(--spec) 0%,transparent 55%),linear-gradient(135deg,var(--spec) 0%,transparent 60%);opacity:.5"></span>';
+    }
+    cell.innerHTML = content;
+    if(!isWeekend && !isFuture){
+      (function(ds){ cell.addEventListener('click', function(){ scalSelectDay(ds); }); })(dateStr);
+    }
+    grid.appendChild(cell);
+  }
+
+  // Week rail
+  scalRenderWeekRail(y, m, dayMap, today);
+}
+
+function scalRenderWeekRail(y, m, dayMap, today) {
+  var weekCol = document.getElementById('scal-week-col');
+  weekCol.innerHTML = '';
+  var firstDay = new Date(y, m, 1).getDay();
+  var daysInMonth = new Date(y, m+1, 0).getDate();
+  // Build weeks
+  var weeks = [];
+  var currentWeek = [];
+  // Pad start
+  for(var i=0;i<firstDay;i++) currentWeek.push(null);
+  for(var d=1;d<=daysInMonth;d++){
+    currentWeek.push(d);
+    if(currentWeek.length===7){ weeks.push(currentWeek); currentWeek=[]; }
+  }
+  if(currentWeek.length>0){ while(currentWeek.length<7) currentWeek.push(null); weeks.push(currentWeek); }
+
+  weeks.forEach(function(week, wi){
+    var tile = document.createElement('div');
+    tile.className = 'scal-week-tile';
+    var weekPnl = 0;
+    var bars = '';
+    [1,2,3,4,5].forEach(function(di){
+      var dayNum = week[di];
+      if(!dayNum){ bars += '<div class="scal-wk-bar"></div>'; return; }
+      var ds = y+'-'+String(m+1).padStart(2,'0')+'-'+String(dayNum).padStart(2,'0');
+      var p = dayMap[ds];
+      if(p===undefined){ bars += '<div class="scal-wk-bar"></div>'; return; }
+      weekPnl += p;
+      bars += '<div class="scal-wk-bar '+(p>=0?'win':'loss')+'"></div>';
+    });
+    var isFutureWeek = week.every(function(d){ if(!d) return true; var ds=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'); return ds>today; });
+    tile.innerHTML = '<span class="scal-wk-label">WK '+(wi+1)+'</span>'
+      + '<span class="scal-wk-amt" style="color:'+(isFutureWeek?'var(--ink45)':weekPnl>=0?'var(--win-text)':'var(--loss-text)')+';">'
+      + (isFutureWeek ? '—' : (weekPnl>=0?'+':'')+'$'+Math.abs(weekPnl).toFixed(0)) + '</span>'
+      + '<div class="scal-wk-daystrip">'+bars+'</div>';
+    weekCol.appendChild(tile);
+  });
+}
+
+function scalSelectDay(day) {
+  window._scalState.selectedDay = day;
+  scalRenderMonth();
+  scalRenderDayDetail(day);
+}
+
+function scalRenderDayDetail(day) {
+  var label = document.getElementById('scal-dd-label');
+  var gradeEl = document.getElementById('scal-dd-grade');
+  var pnlEl = document.getElementById('scal-dd-pnl');
+  var statrow = document.getElementById('scal-dd-statrow');
+  var tradesEl = document.getElementById('scal-dd-trades');
+  var arkEl = document.getElementById('scal-dd-ark');
+  var openEl = document.getElementById('scal-dd-open');
+  var emptyEl = document.getElementById('scal-dd-empty');
+  if(!day){ emptyEl.style.display='block'; return; }
+
+  var dayTrades = _scalDayTrades(day);
+  var d = new Date(day+'T12:00:00');
+  var dows = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  var mons = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  var labelStr = dows[d.getDay()] + ' · ' + mons[d.getMonth()] + ' ' + d.getDate();
+  var today = window.TradingDay ? window.TradingDay.getTodayTradingDay() : _localDate(new Date());
+  if(day===today) labelStr += ' · TODAY';
+  label.textContent = labelStr;
+
+  if(dayTrades.length === 0){
+    gradeEl.style.display='none'; pnlEl.style.color='var(--ink45)'; pnlEl.textContent='—';
+    statrow.textContent=''; tradesEl.innerHTML=''; arkEl.style.display='none'; openEl.style.display='none';
+    emptyEl.style.display='block';
+    return;
+  }
+  emptyEl.style.display='none';
+
+  var pnl = dayTrades.reduce(function(s,t){return s+(parseFloat(t.pnl)||0);},0);
+  var wins = dayTrades.filter(function(t){return (parseFloat(t.pnl)||0)>0;}).length;
+  var avgR = dayTrades.reduce(function(s,t){return s+(parseFloat(t.rr||t.r_multiple)||0);},0) / dayTrades.length;
+
+  pnlEl.textContent = (pnl>=0?'+':'') + '$' + Math.abs(pnl).toFixed(2);
+  pnlEl.style.color = pnl>0?'var(--win-text)':pnl<0?'var(--loss-text)':'var(--ink45)';
+
+  // Grade from trades[0].grade or ArkEngine
+  var grade = dayTrades[0] && dayTrades[0].grade;
+  if(!grade && window.ArkEngine && window.ArkEngine.computeGrade) {
+    var res = window.ArkEngine.computeGrade(dayTrades, window.acct);
+    grade = res && res.letter;
+  }
+  if(grade){ gradeEl.style.display='block'; gradeEl.textContent=grade; }
+  else { gradeEl.style.display='none'; }
+
+  statrow.textContent = 'TRADES ' + dayTrades.length + ' · R ' + (avgR>=0?'+':'') + avgR.toFixed(1) + ' · WR ' + Math.round(wins/dayTrades.length*100) + '%';
+
+  // Trade rows
+  tradesEl.innerHTML = dayTrades.slice(0,5).map(function(t){
+    var tp = parseFloat(t.pnl)||0;
+    var side = (t.type||t.side||'').toUpperCase();
+    return '<div class="scal-trade-row">'
+      + '<span style="color:var(--ink)">' + (t.sym||t.symbol||'—') + '</span>'
+      + (side ? '<span style="border:1px solid var(--hair);border-radius:3px;padding:0 4px;color:var(--ink45)">' + side + '</span>' : '')
+      + '<span style="color:' + (tp>=0?'var(--win-text)':'var(--loss-text)') + ';margin-left:auto">' + (tp>=0?'+':'') + '$' + Math.abs(tp).toFixed(2) + '</span>'
+      + '</div>';
+  }).join('');
+
+  // Ark trade read if cached
+  var arkReads = window._arkTradeReads;
+  var standoutTrade = dayTrades.slice().sort(function(a,b){return Math.abs(parseFloat(b.pnl)||0)-Math.abs(parseFloat(a.pnl)||0);})[0];
+  if(arkReads && standoutTrade && arkReads[standoutTrade.id]){
+    var read = arkReads[standoutTrade.id];
+    arkEl.style.display='block';
+    arkEl.textContent = (read.line1||'') + (read.line2?' — '+read.line2:'');
+  } else { arkEl.style.display='none'; }
+
+  openEl.style.display='block';
+  openEl.onclick = function(){ goTo('calendar'); };
+}
+
+function scalRenderMonthStats() {
+  var y = window._scalState.year, m = window._scalState.month;
+  var trades = _scalMonthTrades(y, m);
+  var dayMap = _scalMonthMap(y, m);
+  var days = Object.values(dayMap);
+  var wins = days.filter(function(p){return p>0;}).length;
+  var losses = days.filter(function(p){return p<0;}).length;
+  var wr = days.length ? Math.round(wins/days.length*100) : 0;
+  var avgDay = days.length ? days.reduce(function(s,v){return s+v;},0)/days.length : 0;
+  var bestDay = days.length ? Math.max.apply(null,days) : 0;
+  var worstDay = days.length ? Math.min.apply(null,days) : 0;
+  var bestDate = Object.keys(dayMap).find(function(k){return dayMap[k]===bestDay;});
+  var worstDate = Object.keys(dayMap).find(function(k){return dayMap[k]===worstDay;});
+  // Profit factor
+  var grossWin = trades.filter(function(t){return (parseFloat(t.pnl)||0)>0;}).reduce(function(s,t){return s+(parseFloat(t.pnl)||0);},0);
+  var grossLoss = Math.abs(trades.filter(function(t){return (parseFloat(t.pnl)||0)<0;}).reduce(function(s,t){return s+(parseFloat(t.pnl)||0);},0));
+  var pf = grossLoss > 0 ? (grossWin/grossLoss).toFixed(2) : (grossWin>0?'∞':'0');
+
+  function fmtDate(ds){ if(!ds) return '—'; var d=new Date(ds+'T12:00:00'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]+' '+d.getDate(); }
+
+  var grid = document.getElementById('scal-ms-grid');
+  grid.innerHTML = [
+    {label:'WIN RATE',      val: wr+'%'},
+    {label:'PROFIT FACTOR', val: pf},
+    {label:'BEST DAY',      val: bestDay?'+$'+bestDay.toFixed(0):'—', sub: fmtDate(bestDate)},
+    {label:'WORST DAY',     val: worstDay?'-$'+Math.abs(worstDay).toFixed(0):'—', sub: fmtDate(worstDate)},
+    {label:'AVG DAY',       val: avgDay?(avgDay>=0?'+':'')+'$'+Math.abs(avgDay).toFixed(0):'—'},
+    {label:'GREEN/RED',     val: wins+'/'+losses},
+  ].map(function(s){
+    return '<div class="scal-ms-cell"><span class="scal-ms-label">'+s.label+'</span>'
+      +'<span class="scal-ms-val">'+s.val+'</span>'
+      +(s.sub?'<span class="scal-ms-delta">'+s.sub+'</span>':'')+'</div>';
+  }).join('');
+}
+
+// Stub renderers for GRID and YEAR views (expandable later)
+function scalRenderGrid() {
+  var gallery = document.getElementById('scal-grid-gallery');
+  if(gallery) gallery.innerHTML = '<div style="font-family:\'Geist Mono\',monospace;font-size:10px;color:var(--ink45);padding:20px">Screenshot gallery coming soon.</div>';
+}
+
+function scalRenderYear() {
+  var container = document.getElementById('scal-year-grid');
+  if(!container) return;
+  container.innerHTML = '';
+  var y = window._scalState.year;
+  var monthNames = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  var today = window.TradingDay ? window.TradingDay.getTodayTradingDay() : _localDate(new Date());
+  for(var mi=0; mi<12; mi++){
+    var dayMap = _scalMonthMap(y, mi);
+    var days = Object.values(dayMap);
+    var pnl = days.reduce(function(s,v){return s+v;},0);
+    var wins = days.filter(function(p){return p>0;}).length;
+    var losses = days.filter(function(p){return p<0;}).length;
+    var card = document.createElement('div');
+    card.style.cssText = 'background:var(--panel);border:1px solid var(--panel-border);border-radius:13px;padding:12px 14px;';
+    card.innerHTML = '<div style="font-family:\'Archivo\',sans-serif;font-weight:900;font-style:italic;font-size:16px;color:var(--ink);margin-bottom:6px">' + monthNames[mi] + '</div>'
+      + '<div style="font-family:\'Geist Mono\',monospace;font-size:12px;color:'+(pnl>0?'var(--win-text)':pnl<0?'var(--loss-text)':'var(--ink45)')+'">'+(pnl>=0?'+':'')+'$'+Math.abs(pnl).toFixed(0)+'</div>'
+      + '<div style="font-family:\'Geist Mono\',monospace;font-size:9px;color:var(--ink45);margin-top:4px">'+wins+'W / '+losses+'L</div>';
+    container.appendChild(card);
+  }
+}
 
 /* ============================================================
    applyStarkState — WS8: all contextual dashboard states.
