@@ -33,46 +33,54 @@
 
 ---
 
-## Stark Dashboard System — v2
+## Stark Dashboard System — v3
 
-Added in WS2–8. Applied only when `body.stark-active` is set (dashboard page).
+Added in WS2–8. Applied only when `body.stark-active` is set (dashboard and calendar pages).
 
 ### Three-theme token scheme
 
-All colors are set via `[data-theme]` attribute on `<html>`. The three supported themes are `dark` (default), `grey`, and `light`. Theme is persisted to `localStorage` key `tr1_theme` AND to Supabase `user_settings` table (`{user_id, key:'theme', value}`) via `setTheme(mode)`.
+All colors are set via `[data-theme]` attribute on `<html>`. The three supported themes are `grey` **(DEFAULT)**, `dark`, and `light`. Theme is persisted to `localStorage` key `tr1_theme` AND to Supabase `user_settings` table (`{user_id, key:'theme', value}`) via `setTheme(mode)`.
 
-#### [data-theme="dark"] (default / :root)
-```css
---bg:#070708; --ink:#F4F4F2; --ink70:rgba(244,244,242,.72); --ink45:rgba(244,244,242,.48);
---hair:rgba(244,244,242,.1); --hair2:rgba(244,244,242,.2);
---gold:#D9A92F; --gold-soft:rgba(217,169,47,.55);
---panel:rgba(255,255,255,.028); --panel-border:rgba(255,255,255,.13);
---grid-line:rgba(244,244,242,.022);
---win:#3FA577; --win-text:#5ED1A0; --loss:#C96A6A; --loss-text:#DE8C8C;
---glass-bright:1.14; --spec:rgba(255,255,255,.16); --btn-ink:#0A0A0A;
-```
+**Default theme is `grey`.** When no `tr1_theme` key is present in localStorage, the no-flash inline script and `setTheme()` both fall back to `'grey'`. The `:root` / `[data-theme="dark"]` CSS fallback is for cascade purposes only and does not affect the JS default.
 
-#### [data-theme="grey"]
+#### [data-theme="grey"] — THE DEFAULT
 ```css
---bg:#1C1D20; --ink:#F2F2F0; --ink70:rgba(242,242,240,.74); --ink45:rgba(242,242,240,.5);
+--bg:#1C1D20; --ink:#F2F2F0; --ink70:rgba(242,242,240,.9); --ink45:rgba(242,242,240,.68);
 --hair:rgba(242,242,240,.12); --hair2:rgba(242,242,240,.22);
 --gold:#D9A92F; --gold-soft:rgba(217,169,47,.55);
 --panel:rgba(255,255,255,.04); --panel-border:rgba(255,255,255,.16);
---grid-line:rgba(242,242,240,.03);
 --win:#3FA577; --win-text:#67D6A6; --loss:#C96A6A; --loss-text:#E29595;
 --glass-bright:1.1; --spec:rgba(255,255,255,.18); --btn-ink:#101010;
 ```
 
+#### [data-theme="dark"] (CSS :root fallback — not JS default)
+```css
+--bg:#070708; --ink:#F4F4F2; --ink70:rgba(244,244,242,.88); --ink45:rgba(244,244,242,.66);
+--hair:rgba(244,244,242,.1); --hair2:rgba(244,244,242,.2);
+--gold:#D9A92F; --gold-soft:rgba(217,169,47,.55);
+--panel:rgba(255,255,255,.028); --panel-border:rgba(255,255,255,.13);
+--win:#3FA577; --win-text:#5ED1A0; --loss:#C96A6A; --loss-text:#DE8C8C;
+--glass-bright:1.14; --spec:rgba(255,255,255,.16); --btn-ink:#0A0A0A;
+```
+
 #### [data-theme="light"]
 ```css
---bg:#F7F6F3; --ink:#141414; --ink70:rgba(20,20,20,.74); --ink45:rgba(20,20,20,.48);
+--bg:#F7F6F3; --ink:#141414; --ink70:rgba(20,20,20,.88); --ink45:rgba(20,20,20,.66);
 --hair:rgba(20,20,20,.1); --hair2:rgba(20,20,20,.2);
 --gold:#B8860B; --gold-soft:rgba(184,134,11,.55);
 --panel:rgba(20,20,20,.025); --panel-border:rgba(20,20,20,.12);
---grid-line:rgba(20,20,20,.035);
 --win:#1E7A52; --win-text:#1E7A52; --loss:#B04A4A; --loss-text:#B04A4A;
 --glass-bright:1.0; --spec:rgba(255,255,255,.65); --btn-ink:#FFFFFF;
 ```
+
+#### Ink opacity reference (lifted in v3)
+
+| Token | dark | grey | light |
+|---|---|---|---|
+| `--ink70` | .88 | .9 | .88 |
+| `--ink45` | .66 | .68 | .66 |
+
+Note: `--grid-line` token has been **removed**. Dashboard and calendar backgrounds are flat `var(--bg)` + radial blobs only — no blueprint grid lines on any theme.
 
 ### Legacy aliases (migration shim)
 `:root` also defines `--stark-*` aliases that map old names to new semantic tokens, e.g. `--stark-bg: var(--bg)`, `--stark-cream: var(--ink)`, etc. These exist purely for backward compatibility with older sections of the codebase not yet migrated. New code MUST use the `--bg`, `--ink`, `--hair`, etc. token names directly.
@@ -182,9 +190,9 @@ Handled by `applyStarkState()`, called at the end of `renderStarkDashboard()`:
 - Animation: rotateY + gentle float Y on `requestAnimationFrame`. Pauses via `visibilitychange` + `IntersectionObserver`.
 - The canvas MUST NOT be wrapped in any CSS `filter` rule. It is the ONLY sanctioned WebGL element.
 
-### Blueprint grid background
+### Background
 
-Two `repeating-linear-gradient` layers at `var(--grid-line)` (1px lines, 44px cells) layered over `var(--bg)`, applied to `#pg-dashboard`.
+Flat `var(--bg)` with radial blob overlays. No `repeating-linear-gradient` grid lines on any theme — `--grid-line` token is removed. Applies to both `#pg-dashboard` and `#pg-calendar`.
 
 ### HUD corner brackets (`.stark-brackets`)
 
@@ -206,3 +214,93 @@ Two `repeating-linear-gradient` layers at `var(--grid-line)` (1px lines, 44px ce
 - **LOG TRADE**: ghost gold — `transparent` bg, `1px solid var(--gold)` border, gold Geist Mono text, `7px` radius.
 - **GRADE TODAY**: solid gold pill — `var(--gold)` bg, `var(--btn-ink)` text, `999px` radius.
 - **HISTORY →** / **YDA REPORT →**: `.stark-link` — no border, gold color, Geist Mono.
+
+---
+
+## Stark Calendar Page
+
+Added in WS5. `body.stark-active` is toggled on for both the dashboard page and the calendar page via `goTo()`. The same design tokens, liquid glass cell recipe, and typography rules apply.
+
+### stark-active scope
+
+`body.stark-active` is set when `pg === 'dashboard' || pg === 'calendar'` and cleared for all other pages. This hides the sidebar and locks body scroll on desktop for both pages.
+
+### Layout
+
+- Shell: `.scal-shell` — `display:flex; flex-direction:row; height:calc(100vh - 56px); overflow:hidden` — no scroll on desktop MONTH view.
+- Left pane: `.scal-left` — `flex:2.5; overflow:hidden` — grid rows auto-size to fill available height.
+- Right rail: `.scal-right` — `flex:0 0 330px; overflow-y:auto; padding:16px` — scrolls independently.
+- Desktop scroll lock: same as dashboard — `body.stark-active { overflow:hidden }`.
+- `< 1080px`: `.scal-shell` stacks (`flex-direction:column; height:auto; overflow:visible`), `.scal-right` gets `flex:none; padding:12px`, `body.stark-active .main` gets `overflow-y:auto`.
+
+### View toggle — MONTH / GRID / YEAR
+
+Three views selectable via `.scal-view-btn` (Geist Mono 10px, letter-spacing .14em):
+
+| View | Description |
+|---|---|
+| MONTH | Default. 7-column liquid glass cell grid. Day Detail + Month Stats in right rail. |
+| GRID | Screenshot gallery with multi-select chip filters (symbol / setup / model / win / loss). `#scal-grid-panel`, `#scal-grid-filters`, `#scal-grid-gallery`. |
+| YEAR | 12 month heatmap cards. Cell intensity = day P&L / month best day. Click a card to jump to that month view. `scalRenderYear()`. |
+
+Active view stored in `window._scalState.view`. Switching calls `scalSetView(v)`.
+
+### Liquid glass cells — `.scal-cell`
+
+Same recipe as dashboard `.stark-cal-cell`. SVG filter ID on calendar page: `calLiquidLens` (separate `<filter id="calLiquidLens">` element, same `feTurbulence` + `feDisplacementMap` spec as dashboard `liquidLens`).
+
+```css
+.scal-cell {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 13px;
+  backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
+  -webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
+  box-shadow: inset 0 1px 0 var(--spec), inset 0 -1px 0 rgba(0,0,0,.12), 0 4px 16px -8px rgba(0,0,0,.32);
+  transition: border-color .18s, background .18s, transform .12s;
+}
+.scal-cell:hover { border-color: var(--hair2); transform: translateY(-1px); }
+.scal-cell.inactive { backdrop-filter:none; -webkit-backdrop-filter:none; background:transparent; border:1px solid var(--hair); opacity:.35; cursor:default; pointer-events:none; }
+```
+
+Weekend and future cells use `.inactive` — no backdrop-filter, 35% opacity.
+
+### Typography
+
+- **Archivo 900 italic stretch-125%** — `.scal-month-title` (month name), `.scal-month-pnl` (month P&L), `.scal-dd-pnl` (Day Detail P&L), `.scal-dd-grade` (grade letter).
+- **Space Grotesk 600** — `.scal-cell-amt` (cell money amounts), `.scal-wk-amt` (week rail totals). These are the only uses of Space Grotesk 600 on the calendar page.
+- **Geist Mono** — all labels, day numbers, stat rows, chip text, view toggle buttons.
+
+### Day Detail panel (`.scal-day-detail`)
+
+Right rail, appears when a cell is clicked. Contains:
+- HUD corner brackets (`::before` / `::after`, `var(--gold-soft)`).
+- `.scal-dd-label` — Geist Mono 9px label (e.g. "TUESDAY · JUN 10").
+- `.scal-dd-grade` — Archivo 900 italic 32px grade letter, `var(--gold)`.
+- `.scal-dd-pnl` — Archivo 900 italic 26px P&L amount.
+- `.scal-dd-statrow` — Geist Mono 10px stat rows (trades, win rate, avg R).
+- `.scal-trade-row` — per-trade breakdown rows, Geist Mono 10px.
+- `.scal-ark-quote` — Ark coaching quote, `border-left:2px solid var(--gold)`.
+
+### Month Stats panel (`.scal-month-stats`)
+
+Right rail, always visible (below Day Detail). 2-column stat grid (`.scal-ms-grid`):
+- `.scal-ms-label` — Geist Mono 8px uppercase labels.
+- `.scal-ms-val` — Geist Mono 13px values.
+- `.scal-ms-delta` — Geist Mono 9px delta/context.
+
+### GRID view
+
+`#scal-grid-panel` — chip filter row (`#scal-grid-filters`) + masonry-style screenshot gallery (`#scal-grid-gallery`, `grid-template-columns:repeat(auto-fill,minmax(218px,1fr))`). Multi-select chip filters for symbol, setup, model, win, loss. Active filter chips use `var(--gold)` border + `var(--panel-border)` background.
+
+### YEAR view
+
+`scalRenderYear()` — 12 month heatmap cards, one per calendar month. Each card shows month name + total P&L. Day cells colored by intensity: `intensity = dayPnl / monthBestDay`, mapped to `var(--win)` / `var(--loss)` with opacity. Click a heatmap card calls `scalSetMonth(year, month)` + `scalSetView('month')`.
+
+### Background
+
+Flat `var(--bg)` + radial blobs. No grid lines. Same blob elements as dashboard page (reused via `body.stark-active` CSS scope).
+
+### Week rail (`.scal-week-tile`)
+
+Right of the 7-column grid on desktop (`#scal-week-col`, `width:100px`). Hidden on mobile (`display:none`). Each tile: Geist Mono 8px week label, Space Grotesk 600 14px week total, mini day-bars (`.scal-wk-bar.win` / `.scal-wk-bar.loss`).
