@@ -10544,6 +10544,287 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
 
 <script src="js/tradingDay.js"></script>
 <script src="js/arkEngine.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- Ark Card CSS — WS6 -->
+<style>
+/* ---- Ark card layout ---- */
+#stark-ark-col {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 0;
+  min-height: 0;
+  flex: 1 1 0;
+}
+
+.ark-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.ark-identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--stark-gold);
+}
+
+.ark-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--stark-gold);
+  box-shadow: 0 0 0 2px rgba(217,169,47,.3);
+  animation: arkPulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes arkPulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 1; }
+}
+
+.ark-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.ark-tab {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--stark-cream45);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.ark-tab.active {
+  color: var(--stark-gold);
+  border-bottom-color: var(--stark-gold);
+}
+
+.ark-tab:hover:not(.active) {
+  color: var(--stark-cream70);
+}
+
+/* ---- Hologram ---- */
+.ark-hologram-wrap {
+  position: relative;
+  width: 150px;
+  height: 128px;
+  margin: 0 auto 4px;
+  overflow: hidden;
+}
+
+#ark-hologram-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ark-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(244,244,242,.018) 3px,
+    rgba(244,244,242,.018) 4px
+  );
+}
+
+.ark-sweep {
+  position: absolute;
+  height: 2px;
+  width: 100%;
+  top: 0;
+  left: 0;
+  background: linear-gradient(90deg, transparent, rgba(217,169,47,.6), transparent);
+  animation: arkSweep 4.5s linear infinite;
+}
+
+@keyframes arkSweep {
+  from { top: 0; }
+  to   { top: 128px; }
+}
+
+.ark-chevron-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- Status ---- */
+.ark-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--stark-cream70);
+  margin-top: 12px;
+}
+
+.ark-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ark-status-dot.on  { background: var(--stark-win); }
+.ark-status-dot.off { background: var(--stark-loss); }
+.ark-status-dot.armed { background: var(--stark-cream45); }
+
+/* ---- Directive ---- */
+.ark-directive {
+  margin-top: 12px;
+  padding-left: 10px;
+  border-left: 2px solid var(--stark-gold);
+}
+
+#ark-directive-text {
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  color: var(--stark-cream70);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ---- Insights ---- */
+.ark-insights {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ark-insight-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.ark-insight-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--stark-cream45);
+  flex-shrink: 0;
+}
+
+.ark-insight-value {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  color: var(--stark-cream);
+  flex: 1;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ark-insight-detail {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  color: var(--stark-cream45);
+  white-space: nowrap;
+}
+
+/* ---- Pattern callout ---- */
+.ark-pattern {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: rgba(201,106,106,.08);
+  border: 1px solid rgba(201,106,106,.2);
+  border-radius: 6px;
+}
+
+.ark-pattern-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--stark-loss);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.ark-pattern-detail {
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  color: var(--stark-cream70);
+}
+
+/* ---- Footer ---- */
+.ark-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--stark-hair);
+}
+
+.ark-grade {
+  font-family: 'Archivo', 'Arial Black', sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  font-stretch: 125%;
+  font-size: 28px;
+  color: var(--stark-gold);
+  line-height: 1;
+}
+
+.ark-grade-bars {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.ark-micro-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+
+.ark-bar-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  color: var(--stark-cream45);
+}
+
+.ark-micro-bar {
+  width: 48px;
+  height: 3px;
+  background: rgba(244,244,242,.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.ark-micro-bar > div {
+  height: 100%;
+  background: var(--stark-gold);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.4s ease;
+}
+</style>
 </head>
 <body>
 
@@ -10908,9 +11189,76 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
 
     <!-- RIGHT COLUMN — Ark card + Rules + Closeout (WS6 fills Ark card internals) -->
     <div id="stark-right">
-      <!-- Ark card placeholder — WS6 fills this in -->
+      <!-- Ark card — WS6 -->
       <div id="stark-ark-col" class="stark-panel stark-brackets">
-        <!-- ark-card content added by WS6 -->
+
+        <!-- Header -->
+        <div class="ark-card-header">
+          <span class="ark-identity">
+            <span class="ark-pulse-dot" id="ark-pulse-dot"></span>
+            ARK
+          </span>
+          <div class="ark-tabs">
+            <button class="ark-tab active" data-tab="live" onclick="setArkTab('live')">LIVE</button>
+            <button class="ark-tab" data-tab="yda" onclick="setArkTab('yda')">YDA</button>
+            <button class="ark-tab" data-tab="wk" onclick="setArkTab('wk')">WK</button>
+          </div>
+        </div>
+
+        <!-- Hologram -->
+        <div class="ark-hologram-wrap" id="ark-hologram-wrap">
+          <canvas id="ark-hologram-canvas"></canvas>
+          <div class="ark-scanlines" aria-hidden="true"></div>
+          <div class="ark-sweep" aria-hidden="true"></div>
+          <!-- WebGL unavailable fallback -->
+          <svg id="ark-hologram-fallback" viewBox="0 0 100 100" style="display:none" class="ark-chevron-svg">
+            <path d="M50 2 L94 98 L72 92 L50 46 L28 92 L6 98 Z" fill="none" stroke="#D9A92F" stroke-width="2"/>
+          </svg>
+        </div>
+
+        <!-- Status line -->
+        <div class="ark-status" id="ark-status">
+          <span class="ark-status-dot on" id="ark-status-dot"></span>
+          <span id="ark-status-text">ON PLAN</span>
+        </div>
+
+        <!-- Directive -->
+        <div class="ark-directive" id="ark-directive">
+          <div class="ark-directive-bar"></div>
+          <p id="ark-directive-text">Loading today's directive...</p>
+        </div>
+
+        <!-- Insights rows -->
+        <div class="ark-insights" id="ark-insights">
+          <!-- injected by renderArkCard() -->
+        </div>
+
+        <!-- Pattern callout -->
+        <div class="ark-pattern" id="ark-pattern" style="display:none">
+          <span class="ark-pattern-label" id="ark-pattern-label"></span>
+          <span class="ark-pattern-detail" id="ark-pattern-detail"></span>
+        </div>
+
+        <!-- Footer: grade + micro-bars + report link -->
+        <div class="ark-footer">
+          <span class="ark-grade" id="ark-grade">—</span>
+          <div class="ark-grade-bars">
+            <div class="ark-micro-bar-wrap">
+              <span class="ark-bar-label">RULES</span>
+              <div class="ark-micro-bar"><div id="ark-bar-rules"></div></div>
+            </div>
+            <div class="ark-micro-bar-wrap">
+              <span class="ark-bar-label">KZ</span>
+              <div class="ark-micro-bar"><div id="ark-bar-kz"></div></div>
+            </div>
+            <div class="ark-micro-bar-wrap">
+              <span class="ark-bar-label">RISK</span>
+              <div class="ark-micro-bar"><div id="ark-bar-risk"></div></div>
+            </div>
+          </div>
+          <button class="stark-link" onclick="goTo('calendar')">YDA REPORT &rarr;</button>
+        </div>
+
       </div>
 
       <!-- Daily Rules -->
@@ -35472,6 +35820,270 @@ async function openStripePortal(btn){
   }
 }
 window.openStripePortal = openStripePortal;
+</script>
+
+<!-- Ark Card JS — WS6: hologram init + renderArkCard + setArkTab -->
+<script>
+/* ---- Three.js hologram ---- */
+(function initArkHologram(){
+  var canvas = document.getElementById('ark-hologram-canvas');
+  if(!canvas) return;
+
+  // Check WebGL availability
+  var gl = null;
+  try { gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl'); } catch(e){}
+  if(!gl || typeof THREE === 'undefined'){
+    canvas.style.display = 'none';
+    var fb = document.getElementById('ark-hologram-fallback');
+    if(fb) fb.style.display = 'block';
+    return;
+  }
+
+  canvas.width = 150; canvas.height = 128;
+
+  var renderer = new THREE.WebGLRenderer({canvas: canvas, alpha: true, antialias: true});
+  renderer.setSize(150, 128);
+  renderer.setClearColor(0x000000, 0);
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(45, 150/128, 0.1, 100);
+  camera.position.set(0, 0, 3.5);
+
+  // Ark chevron shape (unit-scaled points)
+  var shape = new THREE.Shape();
+  var rawPts = [[0,50],[44,-46],[22,-40],[0,6],[-22,-40],[-44,-46]];
+  var scale = 1/50;
+  shape.moveTo(rawPts[0][0]*scale, rawPts[0][1]*scale);
+  for(var i=1;i<rawPts.length;i++) shape.lineTo(rawPts[i][0]*scale, rawPts[i][1]*scale);
+  shape.closePath();
+
+  var extSettings = {depth: 0.32, bevelEnabled: false};
+  var geo = new THREE.ExtrudeGeometry(shape, extSettings);
+  geo.center();
+
+  // Face mesh — 5% opacity glass
+  var faceMat = new THREE.MeshBasicMaterial({
+    color: 0xD9A92F, opacity: 0.05, transparent: true, side: THREE.DoubleSide
+  });
+  var faceMesh = new THREE.Mesh(geo, faceMat);
+  scene.add(faceMesh);
+
+  // Wireframe — 28% opacity
+  var wireMat = new THREE.MeshBasicMaterial({
+    color: 0xD9A92F, opacity: 0.28, transparent: true, wireframe: true
+  });
+  var wireMesh = new THREE.Mesh(geo, wireMat);
+  scene.add(wireMesh);
+
+  // Bright edges rim
+  var edgesGeo = new THREE.EdgesGeometry(geo);
+  var edgeMat  = new THREE.LineBasicMaterial({color: 0xF7DF9C, opacity: 0.95, transparent: true});
+  var edges    = new THREE.LineSegments(edgesGeo, edgeMat);
+  scene.add(edges);
+
+  var rafId = null;
+  var t = 0;
+
+  function setRotation(yRot, xRot, floatY){
+    faceMesh.rotation.y = yRot; wireMesh.rotation.y = yRot; edges.rotation.y = yRot;
+    faceMesh.rotation.x = xRot; wireMesh.rotation.x = xRot; edges.rotation.x = xRot;
+    faceMesh.position.y = floatY; wireMesh.position.y = floatY; edges.position.y = floatY;
+  }
+
+  function animate(){
+    rafId = requestAnimationFrame(animate);
+    t += 0.008;
+    var floatY = Math.sin(t * 0.7) * 0.08;
+    var nodX   = Math.sin(t * 0.4) * 0.04;
+    setRotation(t, nodX, floatY);
+    renderer.render(scene, camera);
+  }
+
+  // Pause when tab hidden
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){ if(rafId){ cancelAnimationFrame(rafId); rafId=null; } }
+    else { if(!rafId) animate(); }
+  });
+
+  // Pause when card out of viewport
+  var wrap = document.getElementById('ark-hologram-wrap');
+  if(wrap && window.IntersectionObserver){
+    new IntersectionObserver(function(entries){
+      var vis = entries[0].isIntersecting;
+      if(!vis && rafId){ cancelAnimationFrame(rafId); rafId=null; }
+      else if(vis && !rafId) animate();
+    }, {threshold: 0.1}).observe(wrap);
+  }
+
+  animate();
+  window._arkHologram = {renderer: renderer, scene: scene, camera: camera};
+})();
+
+
+/* ---- Ark Card data tab state ---- */
+var _arkCurrentTab = 'live';
+
+function setArkTab(tab) {
+  _arkCurrentTab = tab;
+  // Update tab button states
+  var tabs = document.querySelectorAll('.ark-tab');
+  tabs.forEach(function(btn){
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+  renderArkCard();
+}
+
+/* ---- renderArkCard — main Ark card renderer ---- */
+function renderArkCard() {
+  try {
+    if(typeof ArkEngine === 'undefined') { _arkSetDirective('No data yet.'); return; }
+
+    var allTrades = window.trades || [];
+
+    // Determine the data window based on selected tab
+    var todayKey = '';
+    if(window.TradingDay && TradingDay.getTodayTradingDay){
+      todayKey = TradingDay.getTodayTradingDay() || _localDate(new Date());
+    } else {
+      todayKey = _localDate(new Date());
+    }
+
+    var yesterdayKey = '';
+    var yd = new Date();
+    yd.setDate(yd.getDate() - 1);
+    yesterdayKey = _localDate(yd);
+
+    var windowKey = todayKey;
+    if(_arkCurrentTab === 'yda') windowKey = yesterdayKey;
+    if(_arkCurrentTab === 'wk'){
+      // Current week: Mon-Sun
+      var now2 = new Date();
+      var dow2 = now2.getDay(); // 0=Sun
+      var monday = new Date(now2);
+      monday.setDate(now2.getDate() - (dow2 === 0 ? 6 : dow2 - 1));
+      windowKey = _localDate(monday);
+    }
+
+    // Get the trades for the window
+    var windowTrades = [];
+    if(_arkCurrentTab === 'wk'){
+      windowTrades = allTrades.filter(function(t){ return _starkTradeDay(t) >= windowKey && _starkTradeDay(t) <= todayKey; });
+    } else {
+      windowTrades = allTrades.filter(function(t){ return _starkTradeDay(t) === windowKey; });
+    }
+
+    // Use today's trades for plan status + grade regardless of tab view
+    var todayTrades = allTrades.filter(function(t){ return _starkTradeDay(t) === todayKey; });
+
+    // Compute rule results
+    var userRules = (window.acct && window.acct.rules) ? window.acct.rules : [];
+    var ruleResults = ArkEngine.getRuleResults(todayTrades, userRules);
+
+    // Plan status
+    var planStatus = ArkEngine.getPlanStatus(todayTrades, ruleResults);
+    var statusDot  = document.getElementById('ark-status-dot');
+    var statusText = document.getElementById('ark-status-text');
+    if(statusDot && statusText){
+      if(planStatus.onPlan === null){
+        statusDot.className = 'ark-status-dot armed';
+        statusText.textContent = 'ARMED · AWAITING TRADES';
+      } else if(planStatus.onPlan){
+        statusDot.className = 'ark-status-dot on';
+        statusText.textContent = 'ON PLAN';
+      } else {
+        statusDot.className = 'ark-status-dot off';
+        statusText.textContent = 'OFF PLAN' + (planStatus.violation ? ' · ' + planStatus.violation : '');
+      }
+    }
+
+    // Insights (30d window)
+    var insights = ArkEngine.getInsights(allTrades, 30);
+
+    // Directive
+    var grade = ArkEngine.computeGrade(todayTrades, ruleResults);
+    var patterns = ArkEngine.getPatterns(allTrades);
+    var directive = ArkEngine.getDeterministicDirective(insights, patterns, grade);
+    _arkSetDirective(directive || 'Stay disciplined. Execute your plan.');
+
+    // Grade display
+    var gradeEl = document.getElementById('ark-grade');
+    if(gradeEl) gradeEl.textContent = grade.letter || '—';
+
+    // Grade bars
+    function _setBar(id, pct){
+      var el = document.getElementById(id);
+      if(el) el.style.width = Math.round(Math.min(100, Math.max(0, (pct||0)*100))) + '%';
+    }
+    _setBar('ark-bar-rules', grade.rules);
+    _setBar('ark-bar-kz',    grade.kz);
+    _setBar('ark-bar-risk',  grade.risk);
+
+    // Insight rows
+    var insightsEl = document.getElementById('ark-insights');
+    if(insightsEl){
+      var rows = [
+        {label:'BEST SETUP',    value: insights.bestSetup    || '—', detail:''},
+        {label:'BEST MODEL',    value: insights.bestModel    || '—', detail:''},
+        {label:'TOP CONFLUENCE',value: insights.topConfluence|| '—', detail:''},
+        {label:'EMOTION',       value: insights.emotion      || '—', detail:''}
+      ];
+      insightsEl.innerHTML = rows.map(function(r){
+        return '<div class="ark-insight-row">' +
+          '<span class="ark-insight-label">' + r.label + '</span>' +
+          '<span class="ark-insight-value">' + _escHtml(String(r.value)) + '</span>' +
+          (r.detail ? '<span class="ark-insight-detail">' + _escHtml(r.detail) + '</span>' : '') +
+          '</div>';
+      }).join('');
+    }
+
+    // Pattern callout
+    var patternEl  = document.getElementById('ark-pattern');
+    var patLabelEl = document.getElementById('ark-pattern-label');
+    var patDetailEl= document.getElementById('ark-pattern-detail');
+    if(patternEl && patterns && patterns.length > 0){
+      // Show worst (most negative avgImpact) pattern
+      var worst = patterns.slice().sort(function(a,b){ return (a.avgImpact||0)-(b.avgImpact||0); })[0];
+      if(worst && worst.avgImpact < 0){
+        if(patLabelEl) patLabelEl.textContent = '⚠ LEAK DETECTED · ' + (worst.type||'').toUpperCase();
+        if(patDetailEl) patDetailEl.textContent = worst.description || '';
+        patternEl.style.display = '';
+      } else {
+        patternEl.style.display = 'none';
+      }
+    } else if(patternEl){
+      patternEl.style.display = 'none';
+    }
+
+  } catch(e){
+    console.warn('[Ark] renderArkCard error:', e);
+  }
+}
+
+function _arkSetDirective(text){
+  var el = document.getElementById('ark-directive-text');
+  if(el) el.textContent = text;
+}
+
+function _escHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* Wire renderArkCard into the dashboard refresh cycle */
+(function(){
+  var _origRender = window.renderStarkDashboard;
+  if(typeof _origRender === 'function'){
+    window.renderStarkDashboard = function(){
+      _origRender.apply(this, arguments);
+      renderArkCard();
+    };
+  }
+  // Also call once on DOMContentLoaded (in case dashboard is already active)
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(renderArkCard, 200); });
+  } else {
+    setTimeout(renderArkCard, 200);
+  }
+})();
 </script>
 </body>
 </html>
