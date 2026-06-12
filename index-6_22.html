@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+// No-flash theme boot — runs synchronously before first paint
+(function(){
+  try {
+    var t = localStorage.getItem('tr1_theme');
+    if(t === 'grey' || t === 'light' || t === 'dark') {
+      document.documentElement.setAttribute('data-theme', t);
+    }
+    // default dark needs no setAttribute (CSS :root handles it)
+  } catch(e) {}
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="google-site-verification" content="HPdAv5ljrR6uTqkRlOemmhaV80fYvKyZLD8T5QYWl8g">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -6490,6 +6502,25 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 #pg-account .btn-primary.ghost-quiet{
   background:transparent;color:var(--n-text-3);border:1px solid var(--n-border);
 }
+.appearance-swatch {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: none; border: 2px solid var(--n-border); border-radius: 8px;
+  padding: 8px; cursor: pointer; color: var(--n-text-3); font-size: 11px;
+  transition: border-color .15s;
+}
+.appearance-swatch.active { border-color: var(--n-accent-cool); color: var(--n-text); }
+.swatch-preview {
+  width: 72px; height: 48px; border-radius: 5px; overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.swatch-topbar { height: 8px; background: rgba(255,255,255,.08); }
+.swatch-grid { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:2px; padding:2px; }
+.swatch-cell { border-radius:2px; background:rgba(255,255,255,.06); }
+.swatch-dark { background:#070708; }
+.swatch-grey { background:#1C1D20; }
+.swatch-light { background:#F7F6F3; }
+.swatch-light .swatch-topbar { background: rgba(0,0,0,.08); }
+.swatch-light .swatch-cell { background: rgba(0,0,0,.06); }
 #pg-account .btn-danger{
   width:100%;padding:12px;border-radius:7px;cursor:pointer;
   border:1px solid rgba(201,95,95,0.3);background:rgba(201,95,95,0.08);
@@ -13365,6 +13396,10 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
         <div class="atl"    id="atl-subscription"  onclick="showTab('subscription')"><svg viewBox="0 0 16 16"><polygon points="8,1 10,6 15,6 11,9 13,14 8,11 3,14 5,9 1,6 6,6"/></svg>Subscription</div>
         <div class="atl"    id="atl-billing"       onclick="showTab('billing')"><svg viewBox="0 0 16 16"><rect x="1" y="4" width="14" height="10" rx="1.5"/><line x1="1" y1="8" x2="15" y2="8"/></svg>Billing</div>
         <div class="atl"    id="atl-notifications" onclick="showTab('notifications')"><svg viewBox="0 0 16 16"><path d="M8 1a5 5 0 0 1 5 5v3l1.5 2H1.5L3 9V6a5 5 0 0 1 5-5z"/><path d="M6.5 13a1.5 1.5 0 0 0 3 0"/></svg>Notifications</div>
+        <div class="atl" id="atl-appearance" onclick="showTab('appearance')">
+          <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2.5" fill="currentColor"/></svg>
+          Appearance
+        </div>
         <div class="atl-divider"></div>
         <div class="atl dz" id="atl-danger"        onclick="showTab('danger')"><svg viewBox="0 0 16 16"><polyline points="1,4 3,4 15,4"/><path d="M5 4V2h6v2"/><path d="M13 4l-1 10H4L3 4"/></svg>Danger Zone</div>
         <div class="atl"    id="atl-legal"         onclick="showTab('legal')"><svg viewBox="0 0 16 16"><rect x="3" y="1" width="10" height="14" rx="1.5"/><line x1="6" y1="5" x2="10" y2="5"/><line x1="6" y1="8" x2="10" y2="8"/><line x1="6" y1="11" x2="9" y2="11"/></svg>Legal</div>
@@ -13556,6 +13591,53 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
           </div>
 
           <button class="btn-primary" style="margin-top:14px" onclick="toast('Preferences saved!')">Save Preferences</button>
+        </div>
+      </div>
+
+      <!-- APPEARANCE -->
+      <div class="acct-tab" id="tab-appearance">
+        <div style="padding:20px 24px">
+          <div class="n-card-title" style="margin-bottom:18px">Appearance</div>
+
+          <!-- Theme swatches -->
+          <div style="margin-bottom:24px">
+            <div class="n-label" style="margin-bottom:12px">THEME</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <button class="appearance-swatch active" data-theme="dark" onclick="setTheme('dark')">
+                <div class="swatch-preview swatch-dark">
+                  <div class="swatch-topbar"></div>
+                  <div class="swatch-grid"><div class="swatch-cell"></div><div class="swatch-cell"></div></div>
+                </div>
+                <span>Dark</span>
+              </button>
+              <button class="appearance-swatch" data-theme="grey" onclick="setTheme('grey')">
+                <div class="swatch-preview swatch-grey">
+                  <div class="swatch-topbar"></div>
+                  <div class="swatch-grid"><div class="swatch-cell"></div><div class="swatch-cell"></div></div>
+                </div>
+                <span>Grey</span>
+              </button>
+              <button class="appearance-swatch" data-theme="light" onclick="setTheme('light')">
+                <div class="swatch-preview swatch-light">
+                  <div class="swatch-topbar"></div>
+                  <div class="swatch-grid"><div class="swatch-cell"></div><div class="swatch-cell"></div></div>
+                </div>
+                <span>Light</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Display timezone -->
+          <div style="margin-bottom:24px">
+            <div class="n-label" style="margin-bottom:8px">DISPLAY TIMEZONE</div>
+            <select id="setting-display-tz" class="n-input" style="max-width:320px">
+              <!-- Options injected by JS from TradingDay.TZ_OPTIONS -->
+            </select>
+            <p style="font-size:11px;color:var(--n-text-3);margin-top:6px">Affects clock times only. Trade grouping always uses ET.</p>
+          </div>
+
+          <button class="n-btn-primary" onclick="saveAppearanceSettings()" style="min-width:140px">SAVE</button>
+          <p id="appearance-save-status" style="font-size:12px;color:var(--n-profit);margin-top:8px;display:none">Saved.</p>
         </div>
       </div>
 
@@ -18823,7 +18905,7 @@ function goTo(pg){
     // Honor /account#billing return URL from Stripe portal (and any other
     // future deep links). Falls back to the Profile tab for unknown hashes.
     var hashTab = (window.location.hash || '').replace(/^#/, '');
-    var validTabs = ['profile','security','subscription','billing','notifications','danger','legal'];
+    var validTabs = ['profile','security','subscription','billing','notifications','appearance','danger','legal'];
     showTab(validTabs.indexOf(hashTab) >= 0 ? hashTab : 'profile');
     return;
   }
@@ -25686,27 +25768,24 @@ var LIGHT_CSS=`
 `;
 var _lightStyleEl=null;
 
-function setTheme(mode){
-  var db=document.getElementById('theme-dark-btn'),lb=document.getElementById('theme-light-btn');
-  if(mode==='light'){
-    if(!_lightStyleEl){_lightStyleEl=document.createElement('style');_lightStyleEl.id='light-theme-css';document.head.appendChild(_lightStyleEl);}
-    _lightStyleEl.textContent=LIGHT_CSS;
-    document.documentElement.setAttribute('data-theme','light');
-    if(db){db.style.background='transparent';db.style.color='rgba(255,255,255,.4)';}
-    if(lb){lb.style.background='rgba(255,200,0,.15)';lb.style.color='#ffc800';}
-    toast('Light mode on ☀️');
-  } else {
-    if(_lightStyleEl)_lightStyleEl.textContent='';
-    document.documentElement.removeAttribute('data-theme');
-    if(db){db.style.background='rgba(255,0,170,.2)';db.style.color='var(--pink)';}
-    if(lb){lb.style.background='transparent';lb.style.color='rgba(255,255,255,.4)';}
-    toast('Dark mode on 🌙');
+function setTheme(mode) {
+  // Supported: 'dark' | 'grey' | 'light'
+  var valid = ['dark','grey','light'];
+  if (valid.indexOf(mode) < 0) mode = 'dark';
+  document.documentElement.setAttribute('data-theme', mode);
+  try { localStorage.setItem('tr1_theme', mode); } catch(e) {}
+  // Persist to Supabase user_settings
+  if (window._sb && window.currentUser) {
+    window._sb.from('user_settings').upsert({user_id: currentUser.id, key:'theme', value:mode}, {onConflict:'user_id,key'}).then(function(){});
   }
-  try{localStorage.setItem('tr1_theme',mode);}catch(e){}
+  // Update swatch active states if settings panel is open
+  document.querySelectorAll('.appearance-swatch').forEach(function(sw) {
+    sw.classList.toggle('active', sw.dataset.theme === mode);
+  });
 }
 
 // Restore theme on load
-try{var _savedTheme=localStorage.getItem('tr1_theme');if(_savedTheme==='light')setTimeout(function(){setTheme('light');},50);}catch(e){}
+try{var _savedTheme=localStorage.getItem('tr1_theme');if(_savedTheme==='grey'||_savedTheme==='light'||_savedTheme==='dark')setTheme(_savedTheme);}catch(e){}
 
 // ── EXPORT TRADES CSV ─────────────────────────────────────
 function exportTradesCSV(){
@@ -28677,6 +28756,20 @@ function showTab(tab){
   if (tab === 'subscription' && typeof refreshActiveSubCard === 'function') refreshActiveSubCard();
   // Billing tab: same /api/me-driven render, branched by tier × hasStripe.
   if (tab === 'billing' && typeof refreshBillingTab === 'function') refreshBillingTab();
+  // Appearance tab: populate timezone dropdown and sync active swatch
+  if (tab === 'appearance') {
+    var tzSel = document.getElementById('setting-display-tz');
+    if(tzSel && window.TradingDay && window.TradingDay.TZ_OPTIONS) {
+      tzSel.innerHTML = window.TradingDay.TZ_OPTIONS.map(function(o){
+        return '<option value="'+o.value+'"'+(window.TradingDay.displayTz===o.value?' selected':'')+'>'+o.label+'</option>';
+      }).join('');
+    }
+    // Set current theme active swatch
+    var curTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    document.querySelectorAll('.appearance-swatch').forEach(function(sw){
+      sw.classList.toggle('active', sw.dataset.theme === curTheme);
+    });
+  }
 }
 function onPfpInput(el){
   el.value=el.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,2);
@@ -28965,9 +29058,33 @@ async function loadUserSettings(){
     _userSettings = {};
     (r.data || []).forEach(function(row){ _userSettings[row.key] = row.value; });
     _userSettingsLoaded = true;
+    // Restore display_tz from user_settings
+    if(window.TradingDay) {
+      var tzRow = (r.data || []).find(function(row){ return row.key === 'display_tz'; });
+      if(tzRow && tzRow.value) window.TradingDay.setDisplayTz(tzRow.value);
+      var themeRow = (r.data || []).find(function(row){ return row.key === 'theme'; });
+      if(themeRow && themeRow.value) setTheme(themeRow.value);
+    }
   } catch(e) {
     console.warn('User settings load failed:', e && e.message);
   }
+}
+
+async function saveAppearanceSettings() {
+  var tzSel = document.getElementById('setting-display-tz');
+  var tz = tzSel ? tzSel.value : 'America/New_York';
+  if(tz === 'device') tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  // Update display_tz
+  if(window.TradingDay) window.TradingDay.setDisplayTz(tz);
+  // Save to Supabase
+  if(window._sb && window.currentUser) {
+    await window._sb.from('user_settings').upsert([
+      {user_id:currentUser.id, key:'display_tz', value:tz}
+    ], {onConflict:'user_id,key'});
+  }
+  // Show saved
+  var st = document.getElementById('appearance-save-status');
+  if(st){ st.style.display='block'; setTimeout(function(){st.style.display='none';},2000); }
 }
 
 /* Read a setting. Falls back to legacy localStorage key if provided. */
