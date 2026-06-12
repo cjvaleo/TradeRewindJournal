@@ -10789,146 +10789,153 @@ body.stark-active .main { width: 100% !important; max-width: 100% !important; }
 <!-- DASHBOARD -->
 <div id="pg-dashboard" class="page on">
 
-  <!-- EOD DASH BAR — persistent thin pill anchored at the very top of
-       the dashboard, above the page header. Populated by renderEodDashBar()
-       in three states: Pending (before 4:30pm ET, dashed border, countdown),
-       Ready (after 4:30pm ET, click to inflate personal EOD modal),
-       Yesterday (after 4:30pm ET but no trades today — fallback to
-       yesterday's data, OR pre-4:30pm with yesterday data on hand).
-       Hidden entirely when there's no data anywhere to show. The full
-       state machine lives in renderEodDashBar(). -->
-  <div id="eod-dash-bar" class="eod-mini-bar" style="display:none"></div>
-
-  <!-- HEADER — two rows so journal + session-badge can't overlap -->
-  <div class="dash-head">
-    <div class="dash-head-row">
-      <div class="dash-head-left">
-        <div class="h-title">Dashboard</div>
-        <div id="dash-date" class="h-date"></div>
-      </div>
-      <div class="dash-tabs">
-        <div class="dash-tab active" onclick="setPeriod('today',this)">Today</div>
-        <div class="dash-tab" onclick="setPeriod('week',this)">Week</div>
-        <div class="dash-tab" onclick="setPeriod('month',this)">Month</div>
-      </div>
-    </div>
-    <div class="dash-head-row">
-      <div class="dash-journal">
-        <span class="j-dot"></span>
-        <span class="j-label">Journal</span>
-        <select id="journal-select" onchange="switchJournal(this.value)">
-          <option value="funded">Funded Account</option>
-          <option value="paper">Paper Trading</option>
-        </select>
-        <span id="journal-badge" style="display:none"></span>
-      </div>
-      <div id="session-badge" class="dash-session">
-        <span id="session-dot" class="s-dot"></span>
-        <span id="session-name"></span>
-        <span id="session-detail"></span>
-      </div>
-    </div>
+  <!-- Hidden legacy IDs preserved so existing renderDashboard() + updateSessionBadge()
+       calls don't throw. renderStarkDashboard() supersedes the visible output. -->
+  <div style="display:none" aria-hidden="true">
+    <div id="eod-dash-bar" class="eod-mini-bar"></div>
+    <div id="dash-date"></div>
+    <div id="hero-label"></div>
+    <div id="hero-amount"></div>
+    <span id="hero-trades"></span>
+    <span id="hero-winrate"></span>
+    <span id="hero-points"></span>
+    <span id="hero-streak"></span>
+    <span id="hero-avg"></span>
+    <div id="dash-stats"></div>
+    <div id="streak-num"></div>
+    <div id="streak-sub"></div>
+    <div id="streak-bar"></div>
+    <div id="highlight-content"></div>
+    <div id="recent-grid"></div>
+    <div id="wr-pct"></div>
+    <div id="wr-wins"></div>
+    <div id="wr-loss"></div>
+    <div id="wr-be"></div>
+    <div id="wr-streak"></div>
+    <div id="best-val"></div>
+    <div id="best-sub"></div>
+    <div id="worst-val"></div>
+    <div id="worst-sub"></div>
+    <div id="dash-cal"></div>
+    <div id="dash-cal-lbl"></div>
+    <svg style="display:none"><circle id="wr-circle"></circle></svg>
+    <select id="journal-select"><option value="funded">Funded Account</option><option value="paper">Paper Trading</option></select>
+    <span id="journal-badge"></span>
+    <div id="session-badge"><span id="session-dot"></span><span id="session-name"></span><span id="session-detail"></span></div>
   </div>
 
-  <!-- HERO P&L -->
-  <div class="hero-pnl">
-    <div id="hero-label" class="hero-label">Total P&amp;L &middot; Today</div>
-    <div id="hero-amount" class="hero-amount">&mdash;</div>
-    <div class="hero-divider"></div>
-    <div class="hero-meta">
-      <div class="m-item"><span id="hero-trades" class="m-num">&mdash;</span><span class="m-lbl">Trades</span></div>
-      <div class="m-item"><span id="hero-winrate" class="m-num">&mdash;</span><span class="m-lbl">Win Rate</span></div>
-      <div class="m-item"><span id="hero-points" class="m-num">&mdash;</span><span class="m-lbl">Total Points</span></div>
-      <div class="m-item"><span id="hero-streak" class="m-num">&mdash;</span><span class="m-lbl">Streak</span></div>
-      <div class="m-item"><span id="hero-avg" class="m-num">&mdash;</span><span class="m-lbl">Avg Trade</span></div>
+  <!-- Top bar -->
+  <header id="stark-topbar">
+    <span class="stark-brand"><span class="stark-brand-chevron">&laquo;</span>REWIND</span>
+    <nav class="stark-nav">
+      <button class="stark-nav-item active" data-pg="dashboard" onclick="goTo('dashboard')">DASHBOARD</button>
+      <button class="stark-nav-item" data-pg="calendar" onclick="goTo('calendar')">CALENDAR</button>
+      <button class="stark-nav-item" data-pg="history" onclick="goTo('history')">HISTORY</button>
+      <button class="stark-nav-item" data-pg="analytics" onclick="goTo('analytics')">REVIEW</button>
+      <button class="stark-nav-item" data-pg="community" onclick="goTo('community')">COMMUNITY</button>
+    </nav>
+    <div class="stark-topbar-right">
+      <button class="stark-log-btn" onclick="goTo('log')">LOG TRADE</button>
+      <div class="stark-avatar" id="stark-avatar" onclick="openAccountSettings()">?</div>
     </div>
-  </div>
+  </header>
 
-  <!-- STATS GRID -->
-  <div class="stats-row" id="dash-stats"></div>
+  <!-- Two-column grid -->
+  <div id="stark-grid">
 
-  <!-- DASH-GRID: Streak + Today's Highlight -->
-  <div class="dash-grid">
-    <div class="dash-card streak">
-      <div class="dc-h"><span class="star">&#9733;</span> Journaling Streak</div>
-      <div class="streak-num" id="streak-num">0<span class="unit">days</span></div>
-      <div class="streak-sub" id="streak-sub">Personal Best &middot; 0 days</div>
-      <div class="streak-bar" id="streak-bar"></div>
-    </div>
-    <div class="dash-card highlight" id="highlight-card">
-      <div class="dc-h">Today's Highlight</div>
-      <div id="highlight-content">
-        <div class="hl-empty">No trades today yet</div>
-      </div>
-    </div>
-  </div>
+    <!-- LEFT COLUMN -->
+    <div id="stark-left">
 
-  <!-- RECENT TRADES (designed cards) -->
-  <div class="section-h">
-    <div class="section-h-l">Recent Trades</div>
-    <span class="section-h-a" onclick="goTo('history')">View All &rarr;</span>
-  </div>
-  <div class="recent-grid" id="recent-grid"></div>
-
-  <!-- BOTTOM: win rate + best/worst + calendar -->
-  <div class="bottom-row">
-    <div class="n-card">
-      <div class="n-card-head">
-        <div class="n-card-title">Win Rate Breakdown</div>
-      </div>
-      <div class="n-winrate-display">
-        <div class="n-wr-circle-wrap">
-          <svg viewBox="0 0 88 88">
-            <circle cx="44" cy="44" r="38" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
-            <circle cx="44" cy="44" r="38" fill="none" stroke="#5fb389" stroke-width="3" stroke-linecap="round"
-                    id="wr-circle" stroke-dasharray="0 239" transform="rotate(-90 44 44)"/>
-          </svg>
-          <div class="n-wr-pct" id="wr-pct">&mdash;</div>
+      <!-- 1. Daily P&L block -->
+      <div id="stark-pnl-block" class="stark-panel stark-brackets">
+        <div id="stark-pnl-left">
+          <p class="stark-pnl-label" id="stark-pnl-label">TODAY'S P&amp;L &middot; &mdash; &mdash; &mdash;</p>
+          <div class="stark-hero-amount" id="stark-hero-amount">$0</div>
+          <p class="stark-statline" id="stark-statline">&mdash; TRADES &nbsp;&middot;&nbsp; AVG R &mdash; &nbsp;&middot;&nbsp; WIN RATE &mdash;% &nbsp;&middot;&nbsp; POINTS &mdash;</p>
         </div>
-        <div class="n-wr-stats">
-          <div class="item"><div class="lbl">Wins</div><div class="val pos" id="wr-wins">&mdash;</div></div>
-          <div class="item"><div class="lbl">Losses</div><div class="val neg" id="wr-loss">&mdash;</div></div>
-          <div class="item"><div class="lbl">B/E</div><div class="val" id="wr-be">&mdash;</div></div>
-          <div class="item"><div class="lbl">Streak</div><div class="val" id="wr-streak">&mdash;</div></div>
+        <div id="stark-pnl-right">
+          <div class="stark-pnl-cell" id="stark-session-cell">
+            <span class="stark-cell-label">SESSION</span>
+            <span class="stark-cell-value" id="stark-session-name"><span class="stark-session-dot"></span>&mdash;</span>
+            <span class="stark-cell-detail" id="stark-session-next">&mdash;</span>
+          </div>
+          <div class="stark-pnl-cell" id="stark-stop-cell">
+            <span class="stark-cell-label">DAILY STOP</span>
+            <span class="stark-cell-value" id="stark-stop-used">$0 / &mdash;</span>
+            <div class="stark-stop-bar"><div id="stark-stop-fill"></div></div>
+          </div>
+          <div class="stark-pnl-cell" id="stark-avg-cell">
+            <span class="stark-cell-label">VS 30D AVG</span>
+            <span class="stark-cell-value" id="stark-vs-avg">&mdash;</span>
+            <span class="stark-cell-detail" id="stark-avg-amount">AVG $&mdash;</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="n-card">
-      <div class="n-card-head">
-        <div class="n-card-title">Best &amp; Worst</div>
-      </div>
-      <div class="n-bw-row">
-        <div>
-          <div class="bw-lbl">Best Trade</div>
-          <div class="bw-info" id="best-sub">&mdash;</div>
+      <!-- 2. Calendar hero -->
+      <div id="stark-calendar">
+        <div class="stark-cal-header">
+          <button class="stark-cal-nav" id="stark-cal-prev" onclick="starkCalPrev()" aria-label="Previous month">&lsaquo;</button>
+          <div class="stark-cal-title">
+            <span class="stark-month-name" id="stark-month-name">JUNE</span>
+            <span class="stark-month-year" id="stark-month-year">2026</span>
+            <span class="stark-month-pnl" id="stark-month-pnl"></span>
+            <span class="stark-days-chip" id="stark-days-chip"></span>
+          </div>
+          <button class="stark-cal-nav" id="stark-cal-next" onclick="starkCalNext()" aria-label="Next month">&rsaquo;</button>
         </div>
-        <div class="bw-amt pos" id="best-val">&mdash;</div>
-      </div>
-      <div class="n-bw-row">
-        <div>
-          <div class="bw-lbl">Worst Trade</div>
-          <div class="bw-info" id="worst-sub">&mdash;</div>
+        <div class="stark-cal-body">
+          <div class="stark-cal-dow-row">
+            <span>SUN</span><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span>
+          </div>
+          <div class="stark-cal-wrap">
+            <div id="stark-cal-grid" class="stark-cal-grid"><!-- cells injected by JS --></div>
+            <div id="stark-wk-rail" class="stark-wk-rail"><!-- week totals --></div>
+          </div>
         </div>
-        <div class="bw-amt neg" id="worst-val">&mdash;</div>
       </div>
-    </div>
 
-    <div class="n-card">
-      <div class="n-cal-head">
-        <span id="dash-cal-lbl"></span>
-        <span>
-          <button class="n-cal-nav" onclick="dashCalPrev()">&lsaquo;</button>
-          <button class="n-cal-nav" onclick="goTo('calendar')" style="font-size:9px;letter-spacing:0.15em;text-transform:uppercase;font-family:var(--n-font-mono)">Full</button>
-          <button class="n-cal-nav" onclick="dashCalNext()">&rsaquo;</button>
-        </span>
+      <!-- 3. Recent trades strip -->
+      <div id="stark-recent">
+        <div class="stark-section-head">
+          <span class="stark-section-label">RECENT TRADES</span>
+          <button class="stark-link" onclick="goTo('history')">HISTORY &rarr;</button>
+        </div>
+        <div class="stark-recent-cards" id="stark-recent-cards"><!-- injected by JS --></div>
       </div>
-      <div class="n-cal-grid">
-        <div class="n-cal-dow">S</div><div class="n-cal-dow">M</div><div class="n-cal-dow">T</div><div class="n-cal-dow">W</div><div class="n-cal-dow">T</div><div class="n-cal-dow">F</div><div class="n-cal-dow">S</div>
+
+    </div><!-- /stark-left -->
+
+    <!-- RIGHT COLUMN — Ark card + Rules + Closeout (WS6 fills Ark card internals) -->
+    <div id="stark-right">
+      <!-- Ark card placeholder — WS6 fills this in -->
+      <div id="stark-ark-col" class="stark-panel stark-brackets">
+        <!-- ark-card content added by WS6 -->
       </div>
-      <div class="n-cal-grid" id="dash-cal" style="margin-top:2px"></div>
-    </div>
-  </div>
+
+      <!-- Daily Rules -->
+      <div id="stark-rules" class="stark-panel">
+        <div class="stark-rules-head">
+          <span class="stark-section-label">DAILY RULES &nbsp;&middot;&nbsp; <span id="stark-rules-count">0/0</span></span>
+          <button class="stark-link" onclick="(typeof openRulesModal === 'function' ? openRulesModal() : goTo('rules'))">EDIT</button>
+        </div>
+        <div id="stark-rules-list"><!-- injected by JS --></div>
+      </div>
+
+      <!-- Closeout -->
+      <div id="stark-closeout" class="stark-panel">
+        <div class="stark-closeout-left">
+          <span class="stark-streak-label">JOURNAL STREAK &nbsp;&middot;&nbsp; <span id="stark-streak-unit">0D</span></span>
+          <span class="stark-streak-value" id="stark-streak-val">0</span>
+          <div class="stark-streak-dots" id="stark-streak-dots"></div>
+          <span class="stark-streak-best" id="stark-streak-best">BEST 0</span>
+        </div>
+        <button class="stark-grade-btn" onclick="goTo('account')" id="stark-grade-btn">GRADE TODAY &rarr;</button>
+      </div>
+
+    </div><!-- /stark-right -->
+
+  </div><!-- /stark-grid -->
 
 </div>
 
@@ -18299,7 +18306,13 @@ function goTo(pg){
     showTab(validTabs.indexOf(hashTab) >= 0 ? hashTab : 'profile');
     return;
   }
-  if(pg==='dashboard'){renderDashboard();setTimeout(drawMiniChart,80);}
+  // Stark mode: show top bar / hide sidebar on dashboard
+  document.body.classList.toggle('stark-active', pg === 'dashboard');
+  // Sync stark-nav active underline
+  document.querySelectorAll('.stark-nav-item').forEach(function(btn){
+    btn.classList.toggle('active', btn.dataset.pg === pg);
+  });
+  if(pg==='dashboard'){renderDashboard();renderStarkDashboard();setTimeout(drawMiniChart,80);}
   if(pg==='history')renderHistory();if(pg==='propfirms')pfRender();if(pg==='calendar')renderCalPage();if(pg==='analytics')renderAnalytics();if(pg==='community')renderCommunity();if(pg==='rules')renderRules();if(pg==='goals')renderGoals();
   if(pg==='log' && typeof applyLogTradeTier === 'function') applyLogTradeTier();
   // Confluences picker: warm the library cache + render the (possibly
@@ -31207,6 +31220,515 @@ if (document.readyState === 'loading') {
 } else {
   _bootShell();
 }
+
+/* ============================================================
+   STARK DASHBOARD — WS2+3
+   renderStarkDashboard(), renderStarkCal(), renderStarkRecentTrades(),
+   renderStarkRules(), renderStarkStreak(), starkCalPrev/Next.
+   ============================================================ */
+
+var _starkCalYear = new Date().getFullYear();
+var _starkCalMonth = new Date().getMonth(); // 0-indexed
+
+function starkCalPrev() {
+  _starkCalMonth--;
+  if (_starkCalMonth < 0) { _starkCalMonth = 11; _starkCalYear--; }
+  renderStarkCal(_starkCalYear, _starkCalMonth);
+}
+function starkCalNext() {
+  _starkCalMonth++;
+  if (_starkCalMonth > 11) { _starkCalMonth = 0; _starkCalYear++; }
+  renderStarkCal(_starkCalYear, _starkCalMonth);
+}
+
+// Helper: format P&L for stark cells
+function _starkFmtPnl(v) {
+  if (v === 0) return '$0';
+  var sign = v > 0 ? '+' : '-';
+  var abs = Math.abs(v);
+  if (abs >= 1000) return sign + '$' + Math.round(abs / 100) / 10 + 'k';
+  return sign + '$' + Math.round(abs);
+}
+
+// Helper: get trading day key from a trade (prefers trading_day, falls back to date)
+function _starkTradeDay(t) {
+  return t.trading_day || t.date || '';
+}
+
+// Helper: pad to YYYY-MM-DD
+function _starkDateKey(y, m, d) {
+  return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+}
+
+// Get start-of-week (Sunday) for a given date
+function _starkWeekKey(dateStr) {
+  var d = new Date(dateStr + 'T12:00:00');
+  var day = d.getDay();
+  d.setDate(d.getDate() - day);
+  return d.toISOString().slice(0, 10);
+}
+
+// Aggregate trades by day → { 'YYYY-MM-DD': {pnl, count} }
+function _starkAggByDay(tradesArr) {
+  var byDay = {};
+  for (var i = 0; i < tradesArr.length; i++) {
+    var t = tradesArr[i];
+    var dk = _starkTradeDay(t);
+    if (!dk) continue;
+    if (!byDay[dk]) byDay[dk] = { pnl: 0, count: 0 };
+    byDay[dk].pnl += (Number(t.pnl) || 0);
+    byDay[dk].count++;
+  }
+  return byDay;
+}
+
+/* renderStarkDashboard — main entry point */
+function renderStarkDashboard() {
+  try {
+    // --- Today's trades ---
+    var todayKey = '';
+    if (window.TradingDay && TradingDay.getTodayTradingDay) {
+      todayKey = TradingDay.getTodayTradingDay() || _localDate(new Date());
+    } else {
+      todayKey = _localDate(new Date());
+    }
+
+    var todayTrades = (trades || []).filter(function(t) {
+      return _starkTradeDay(t) === todayKey;
+    });
+
+    var todayPnl = todayTrades.reduce(function(s, t) { return s + (Number(t.pnl) || 0); }, 0);
+    var todayN = todayTrades.length;
+    var todayWins = todayTrades.filter(function(t) { return t.pnl > 0; }).length;
+    var todayWinRate = todayN ? Math.round(todayWins / todayN * 100) : null;
+    var todayPoints = todayTrades.reduce(function(s, t) { return s + (Number(t.points) || 0); }, 0);
+
+    // AVG R: mean of positive rr values where available
+    var rrTrades = todayTrades.filter(function(t) { return t.rr && t.rr !== 0; });
+    var avgR = rrTrades.length ? rrTrades.reduce(function(s, t) { return s + Number(t.rr); }, 0) / rrTrades.length : null;
+
+    // --- Hero P&L ---
+    var heroEl = document.getElementById('stark-hero-amount');
+    if (heroEl) {
+      var heroClass = 'stark-hero-amount';
+      var heroText = '$0';
+      if (todayN > 0) {
+        heroClass += todayPnl > 0 ? ' win' : todayPnl < 0 ? ' loss' : '';
+        var sign = todayPnl >= 0 ? '+' : '-';
+        var abs = Math.abs(todayPnl);
+        heroText = sign + '$' + Math.floor(abs).toLocaleString() + '.' + String(Math.round((abs % 1) * 100)).padStart(2, '0');
+      }
+      heroEl.className = heroClass;
+      heroEl.textContent = heroText;
+    }
+
+    // --- P&L label with DOW + date ---
+    var pnlLabel = document.getElementById('stark-pnl-label');
+    if (pnlLabel) {
+      var now = new Date();
+      var dow = now.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+      var mon = now.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+      var day = now.getDate();
+      pnlLabel.textContent = "TODAY'S P&L · " + dow + ' ' + mon + ' ' + day;
+    }
+
+    // --- Statline ---
+    var statlineEl = document.getElementById('stark-statline');
+    if (statlineEl) {
+      var parts = [
+        '— TRADES ' + (todayN || '—'),
+        'AVG R ' + (avgR !== null ? (avgR >= 0 ? '+' : '') + avgR.toFixed(1) : '—'),
+        'WIN RATE ' + (todayWinRate !== null ? todayWinRate + '%' : '—%'),
+        'POINTS ' + (todayN ? (todayPoints >= 0 ? '+' : '') + Math.round(todayPoints * 10) / 10 : '—')
+      ];
+      statlineEl.textContent = parts.join('  ·  ');
+    }
+
+    // --- Session cell ---
+    var sessNameEl = document.getElementById('stark-session-name');
+    var sessNextEl = document.getElementById('stark-session-next');
+    if (sessNameEl && window.TradingDay) {
+      var sessLabel = TradingDay.getSession(Date.now());
+      var isOpen = TradingDay.isMarketOpen(Date.now());
+      var nextOpen = !isOpen ? TradingDay.getNextOpen(Date.now()) : null;
+      var dotColor = isOpen ? 'var(--stark-win)' : 'rgba(244,244,242,.3)';
+      sessNameEl.innerHTML = '<span class="stark-session-dot" style="background:' + dotColor + ';animation:' + (isOpen ? 'starkPulse 2s infinite' : 'none') + '"></span>' + sessLabel;
+      if (sessNextEl) {
+        if (!isOpen && nextOpen && nextOpen.msUntil > 0) {
+          var mins = Math.round(nextOpen.msUntil / 60000);
+          var hrs = Math.floor(mins / 60);
+          var remMins = mins % 60;
+          var until = hrs > 0 ? hrs + 'h ' + remMins + 'm' : remMins + 'm';
+          sessNextEl.textContent = 'OPENS IN ' + until;
+        } else {
+          sessNextEl.textContent = isOpen ? 'MARKET OPEN' : '—';
+        }
+      }
+    }
+
+    // --- VS 30D AVG ---
+    var vsAvgEl = document.getElementById('stark-vs-avg');
+    var avgAmtEl = document.getElementById('stark-avg-amount');
+    if (vsAvgEl && avgAmtEl) {
+      var thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      var thirtyKey = _localDate(thirtyDaysAgo);
+      var recent30 = (trades || []).filter(function(t) {
+        var dk = _starkTradeDay(t);
+        return dk && dk >= thirtyKey && dk < todayKey;
+      });
+      // Group by day and compute average daily P&L
+      var byDay30 = _starkAggByDay(recent30);
+      var dayKeys30 = Object.keys(byDay30);
+      if (dayKeys30.length > 0) {
+        var sumDays = dayKeys30.reduce(function(s, k) { return s + byDay30[k].pnl; }, 0);
+        var avg30 = sumDays / dayKeys30.length;
+        if (todayN > 0 && avg30 !== 0) {
+          var mult = todayPnl / avg30;
+          var multStr = (mult >= 0 ? '' : '') + mult.toFixed(1) + 'x';
+          var arrow = todayPnl >= avg30 ? '▲' : '▼';
+          vsAvgEl.textContent = arrow + ' ' + multStr;
+          vsAvgEl.style.color = todayPnl >= avg30 ? 'var(--stark-win)' : 'var(--stark-loss)';
+        } else {
+          vsAvgEl.textContent = '—';
+          vsAvgEl.style.color = '';
+        }
+        avgAmtEl.textContent = 'AVG $' + Math.round(Math.abs(avg30));
+      } else {
+        vsAvgEl.textContent = '—';
+        avgAmtEl.textContent = 'AVG $—';
+      }
+    }
+
+    // --- Calendar ---
+    _starkCalYear = new Date().getFullYear();
+    _starkCalMonth = new Date().getMonth();
+    renderStarkCal(_starkCalYear, _starkCalMonth);
+
+    // --- Recent trades ---
+    renderStarkRecentTrades();
+
+    // --- Rules ---
+    renderStarkRules();
+
+    // --- Streak ---
+    renderStarkStreak();
+
+    // --- Avatar initials ---
+    var avatarEl = document.getElementById('stark-avatar');
+    if (avatarEl && window.acct) {
+      var displayName = acct.display_name || acct.full_name || '';
+      if (!displayName && window.currentUser) displayName = currentUser.email || '';
+      var parts2 = displayName.trim().split(/\s+/);
+      var initials = parts2.length >= 2
+        ? (parts2[0][0] + parts2[parts2.length - 1][0]).toUpperCase()
+        : displayName.slice(0, 2).toUpperCase();
+      avatarEl.textContent = initials || '?';
+    }
+
+  } catch (e) {
+    console.warn('[Stark] renderStarkDashboard error:', e);
+  }
+}
+
+/* renderStarkCal — builds the 7-col calendar grid + week rail */
+function renderStarkCal(year, month) {
+  var grid = document.getElementById('stark-cal-grid');
+  var rail = document.getElementById('stark-wk-rail');
+  var monthNameEl = document.getElementById('stark-month-name');
+  var monthYearEl = document.getElementById('stark-month-year');
+  var monthPnlEl = document.getElementById('stark-month-pnl');
+  var daysChipEl = document.getElementById('stark-days-chip');
+  if (!grid || !rail) return;
+
+  var MONTH_NAMES = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE',
+                     'JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+
+  if (monthNameEl) monthNameEl.textContent = MONTH_NAMES[month];
+  if (monthYearEl) monthYearEl.textContent = year;
+
+  // Aggregate trades by day
+  var byDay = _starkAggByDay(trades || []);
+
+  // Today's key
+  var todayKey = window.TradingDay ? (TradingDay.getTodayTradingDay() || _localDate(new Date())) : _localDate(new Date());
+
+  // First day of month (day-of-week offset)
+  var firstDow = new Date(year, month, 1).getDay(); // 0=Sun
+  var daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  // Month prefix key for filtering
+  var monthPrefix = year + '-' + String(month + 1).padStart(2, '0') + '-';
+
+  // Month P&L and days traded
+  var monthTrades = Object.keys(byDay).filter(function(k) { return k.startsWith(monthPrefix); });
+  var monthPnl = monthTrades.reduce(function(s, k) { return s + byDay[k].pnl; }, 0);
+  var daysTraded = monthTrades.filter(function(k) { return byDay[k].count > 0; }).length;
+
+  if (monthPnlEl) {
+    if (daysTraded > 0) {
+      monthPnlEl.textContent = (monthPnl >= 0 ? '+' : '-') + '$' + Math.round(Math.abs(monthPnl)).toLocaleString();
+      monthPnlEl.className = 'stark-month-pnl ' + (monthPnl >= 0 ? 'win' : 'loss');
+    } else {
+      monthPnlEl.textContent = '';
+    }
+  }
+  if (daysChipEl) {
+    daysChipEl.textContent = daysTraded + ' DAY' + (daysTraded !== 1 ? 'S' : '') + ' TRADED';
+  }
+
+  // Build cells HTML
+  var cellsHtml = '';
+  var weekData = []; // array of {weekPnl, hasTrades, isFuture}
+  var currentWeekPnl = 0;
+  var currentWeekHasTrades = false;
+  var currentWeekIsFuture = true;
+
+  // Leading empty cells
+  for (var e = 0; e < firstDow; e++) {
+    cellsHtml += '<div class="stark-cal-cell empty"></div>';
+  }
+
+  for (var d = 1; d <= daysInMonth; d++) {
+    var cellKey = _starkDateKey(year, month, d);
+    var dow = (firstDow + d - 1) % 7;
+    var isWeekend = (dow === 0 || dow === 6);
+    var isFuture = cellKey > todayKey;
+    var isToday = cellKey === todayKey;
+    var dayData = byDay[cellKey];
+
+    var cls = 'stark-cal-cell';
+    if (isWeekend) {
+      cls += ' weekend';
+    } else if (isFuture) {
+      cls += ' future';
+    } else if (dayData && dayData.count > 0) {
+      cls += dayData.pnl >= 0 ? ' win' : ' loss';
+    }
+    if (isToday) cls += ' today';
+
+    var dateHtml = '<span class="stark-cal-date">' + d + '</span>';
+    var todayTag = isToday ? '<span class="stark-cal-today-tag">TODAY</span>' : '';
+    var pnlHtml = '';
+    var nTradesHtml = '';
+    if (dayData && dayData.count > 0 && !isWeekend) {
+      pnlHtml = '<span class="stark-cal-pnl">' + _starkFmtPnl(dayData.pnl) + '</span>';
+      nTradesHtml = '<span class="stark-cal-ntrades">' + dayData.count + ' trade' + (dayData.count !== 1 ? 's' : '') + '</span>';
+    }
+
+    var clickAttr = (!isWeekend && !isFuture) ? ' onclick="goTo(\'history\')"' : '';
+
+    cellsHtml += '<div class="' + cls + '"' + clickAttr + '>';
+    cellsHtml += '<div style="display:flex;justify-content:space-between;align-items:flex-start">' + dateHtml + todayTag + '</div>';
+    if (pnlHtml) cellsHtml += pnlHtml;
+    if (nTradesHtml) cellsHtml += nTradesHtml;
+    cellsHtml += '</div>';
+
+    // Week accumulation
+    if (!isWeekend) {
+      currentWeekPnl += (dayData && dayData.count > 0) ? dayData.pnl : 0;
+      if (dayData && dayData.count > 0) currentWeekHasTrades = true;
+      if (!isFuture) currentWeekIsFuture = false;
+    }
+
+    // Saturday = end of week row
+    if (dow === 6 || d === daysInMonth) {
+      weekData.push({ pnl: currentWeekPnl, hasTrades: currentWeekHasTrades, isFuture: currentWeekIsFuture });
+      currentWeekPnl = 0;
+      currentWeekHasTrades = false;
+      currentWeekIsFuture = true;
+    }
+  }
+
+  // Trailing empty cells to complete last row
+  var totalCells = firstDow + daysInMonth;
+  var remainder = totalCells % 7;
+  if (remainder !== 0) {
+    for (var t2 = 0; t2 < 7 - remainder; t2++) {
+      cellsHtml += '<div class="stark-cal-cell empty"></div>';
+    }
+  }
+
+  grid.innerHTML = cellsHtml;
+
+  // Build week rail
+  var railHtml = '';
+  for (var w = 0; w < weekData.length; w++) {
+    var wk = weekData[w];
+    var wkCls = 'stark-wk-tile';
+    var wkAmt = '—';
+    if (wk.isFuture || !wk.hasTrades) {
+      wkCls += ' future';
+    } else {
+      wkCls += wk.pnl >= 0 ? ' win' : ' loss';
+      wkAmt = (wk.pnl >= 0 ? '+' : '-') + '$' + Math.round(Math.abs(wk.pnl)).toLocaleString();
+    }
+    railHtml += '<div class="' + wkCls + '">';
+    railHtml += '<span class="stark-wk-label">WK ' + (w + 1) + '</span>';
+    railHtml += '<span class="stark-wk-amount">' + wkAmt + '</span>';
+    railHtml += '</div>';
+  }
+  rail.innerHTML = railHtml;
+}
+
+/* renderStarkRecentTrades — 3 most recent trades as cards */
+function renderStarkRecentTrades() {
+  var container = document.getElementById('stark-recent-cards');
+  if (!container) return;
+  var sorted = (trades || []).slice().sort(function(a, b) {
+    var da = a.date || '';
+    var db = b.date || '';
+    return db < da ? -1 : db > da ? 1 : 0;
+  });
+  var recent = sorted.slice(0, 3);
+  if (recent.length === 0) {
+    container.innerHTML = '<span style="font-family:Geist Mono,monospace;font-size:11px;color:var(--stark-cream45)">No trades yet</span>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < recent.length; i++) {
+    var t = recent[i];
+    var pnl = Number(t.pnl) || 0;
+    var pnlCls = pnl > 0 ? 'win' : pnl < 0 ? 'loss' : '';
+    var pnlStr = (pnl >= 0 ? '+' : '-') + '$' + Math.round(Math.abs(pnl)).toLocaleString();
+    var rrStr = t.rr ? (Number(t.rr) >= 0 ? '+' : '') + Number(t.rr).toFixed(1) + 'R' : '—R';
+    var sym = (t.sym || '—').toUpperCase();
+    var side = (t.type || '').toUpperCase();
+    var timeStr = t.date ? t.date.slice(5) : '—'; // MM-DD
+    html += '<div class="stark-trade-card">';
+    html += '<div class="stark-card-row1">';
+    html += '<span class="stark-card-sym">' + sym + '</span>';
+    html += '<span class="stark-card-pnl ' + pnlCls + '">' + pnlStr + '</span>';
+    html += '</div>';
+    html += '<div class="stark-card-row2">';
+    if (side) html += '<span class="stark-card-chip">' + side + '</span>';
+    html += '<span class="stark-card-rr">' + rrStr + '</span>';
+    html += '<span class="stark-card-time">' + timeStr + '</span>';
+    html += '</div>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+/* renderStarkRules — reads from acct.rules (array of strings) or falls back gracefully */
+function renderStarkRules() {
+  var listEl = document.getElementById('stark-rules-list');
+  var countEl = document.getElementById('stark-rules-count');
+  if (!listEl) return;
+
+  var rules = [];
+  if (window.acct && acct.rules && Array.isArray(acct.rules)) {
+    rules = acct.rules;
+  } else if (window.acct && acct.daily_rules && Array.isArray(acct.daily_rules)) {
+    rules = acct.daily_rules;
+  }
+
+  if (countEl) countEl.textContent = '0/' + rules.length;
+
+  if (rules.length === 0) {
+    listEl.innerHTML = '<span style="font-family:Geist Mono,monospace;font-size:11px;color:var(--stark-cream45)">No rules set — tap EDIT to add</span>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < rules.length; i++) {
+    var r = rules[i];
+    var text = typeof r === 'string' ? r : (r.text || r.rule || JSON.stringify(r));
+    var isAuto = typeof r === 'object' && r.auto;
+    html += '<label class="stark-rule-item">';
+    html += '<input type="checkbox" onchange="this.closest(\'.stark-rule-item\').classList.toggle(\'checked\',this.checked);_starkUpdateRuleCount()">';
+    html += '<span>' + text + '</span>';
+    if (isAuto) html += '<span class="stark-rule-auto-badge">AUTO</span>';
+    html += '</label>';
+  }
+  listEl.innerHTML = html;
+}
+
+function _starkUpdateRuleCount() {
+  var listEl = document.getElementById('stark-rules-list');
+  var countEl = document.getElementById('stark-rules-count');
+  if (!listEl || !countEl) return;
+  var all = listEl.querySelectorAll('input[type=checkbox]');
+  var checked = listEl.querySelectorAll('input[type=checkbox]:checked');
+  countEl.textContent = checked.length + '/' + all.length;
+}
+
+/* renderStarkStreak — journal streak = consecutive trading days with a grade */
+function renderStarkStreak() {
+  var valEl = document.getElementById('stark-streak-val');
+  var unitEl = document.getElementById('stark-streak-unit');
+  var dotsEl = document.getElementById('stark-streak-dots');
+  var bestEl = document.getElementById('stark-streak-best');
+  if (!valEl) return;
+
+  // Streak: consecutive distinct trading days that have any trade logged
+  // (proxy for "journaled" until grade data is accessible)
+  var byDay = _starkAggByDay(trades || []);
+  var dayKeys = Object.keys(byDay).filter(function(k) { return byDay[k].count > 0; }).sort();
+
+  // Find current streak (consecutive calendar days going backward from today)
+  var todayKey = window.TradingDay ? (TradingDay.getTodayTradingDay() || _localDate(new Date())) : _localDate(new Date());
+  var streak = 0;
+  var bestStreak = 0;
+  var cur = 0;
+  // Build consecutive run backward
+  var checkDate = new Date(todayKey + 'T12:00:00');
+  var maxIter = 365;
+  while (maxIter-- > 0) {
+    var dk = _localDate(checkDate);
+    var dow = checkDate.getDay();
+    if (dow === 0 || dow === 6) {
+      // Skip weekends in streak count
+      checkDate.setDate(checkDate.getDate() - 1);
+      continue;
+    }
+    if (byDay[dk] && byDay[dk].count > 0) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  // Best streak: scan all keys
+  var prev = null;
+  cur = 0;
+  for (var i = 0; i < dayKeys.length; i++) {
+    if (!prev) { cur = 1; }
+    else {
+      var d1 = new Date(prev + 'T12:00:00');
+      var d2 = new Date(dayKeys[i] + 'T12:00:00');
+      var diff = Math.round((d2 - d1) / 86400000);
+      // Allow 1-day or 3-day gaps (skip weekends: Fri->Mon = 3 days)
+      if (diff === 1 || diff === 3) { cur++; } else { cur = 1; }
+    }
+    if (cur > bestStreak) bestStreak = cur;
+    prev = dayKeys[i];
+  }
+
+  valEl.textContent = streak;
+  if (unitEl) unitEl.textContent = streak + 'D';
+  if (bestEl) bestEl.textContent = 'BEST ' + bestStreak;
+
+  // 7-dot meter
+  if (dotsEl) {
+    var dotsHtml = '';
+    for (var d2 = 0; d2 < 7; d2++) {
+      dotsHtml += '<span class="stark-streak-dot' + (d2 < streak ? ' filled' : '') + '"></span>';
+    }
+    dotsEl.innerHTML = dotsHtml;
+  }
+}
+
+/* DOMContentLoaded: activate stark-active if dashboard is default page,
+   and update avatar initials once acct loads */
+document.addEventListener('DOMContentLoaded', function() {
+  // If dashboard page is already 'on' (default state), activate stark mode
+  var pgDash = document.getElementById('pg-dashboard');
+  if (pgDash && pgDash.classList.contains('on')) {
+    document.body.classList.add('stark-active');
+  }
+});
 
 </script>
 
