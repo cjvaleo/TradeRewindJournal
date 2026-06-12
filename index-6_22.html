@@ -32986,31 +32986,170 @@ function scalRenderMonthStats() {
   }).join('');
 }
 
-// Stub renderers for GRID and YEAR views (expandable later)
 function scalRenderGrid() {
+  var y = window._scalState.year, m = window._scalState.month;
+  var trades = _scalMonthTrades(y, m);
+  trades = trades.slice().sort(function(a,b){ return (b.trading_day||'').localeCompare(a.trading_day||''); });
+
+  // Build filter chips
+  var filterRow = document.getElementById('scal-grid-filters');
+  var activeFilters = window._scalGridFilters || {};
+
+  // Extract unique filter values
+  var symbols = [...new Set(trades.map(function(t){return t.sym||t.symbol||''}).filter(Boolean))];
+  var setups  = [...new Set(trades.map(function(t){return t.setup||''}).filter(Boolean))];
+  var models  = [...new Set(trades.map(function(t){return t.model||(t.trade_data&&t.trade_data.model)||''}).filter(Boolean))];
+
+  filterRow.innerHTML = '';
+  function addChips(values, filterKey) {
+    if(!values.length) return;
+    var grp = document.createElement('div');
+    grp.style.cssText = 'display:flex;gap:4px;align-items:center;flex-wrap:wrap';
+    values.forEach(function(v){
+      var chip = document.createElement('button');
+      var active = activeFilters[filterKey] && activeFilters[filterKey].has(v);
+      chip.className = 'scal-chip';
+      chip.style.cursor = 'pointer';
+      chip.style.transition = 'background .15s, border-color .15s';
+      if(active){ chip.style.background='var(--gold-soft)'; chip.style.borderColor='var(--gold)'; chip.style.color='var(--ink)'; }
+      chip.textContent = v;
+      chip.onclick = function(){
+        window._scalGridFilters = window._scalGridFilters || {};
+        window._scalGridFilters[filterKey] = window._scalGridFilters[filterKey] || new Set();
+        if(window._scalGridFilters[filterKey].has(v)) window._scalGridFilters[filterKey].delete(v);
+        else window._scalGridFilters[filterKey].add(v);
+        scalRenderGrid();
+      };
+      grp.appendChild(chip);
+    });
+    filterRow.appendChild(grp);
+  }
+  addChips(symbols, 'symbol');
+  addChips(setups, 'setup');
+  addChips(models, 'model');
+
+  // Win/loss result filter group
+  var resultGrp = document.createElement('div');
+  resultGrp.style.cssText = 'display:flex;gap:4px';
+  ['WIN','LOSS'].forEach(function(r){
+    var chip = document.createElement('button');
+    var active = activeFilters['result'] && activeFilters['result'].has(r);
+    chip.className = 'scal-chip';
+    chip.style.cursor = 'pointer';
+    if(active){ chip.style.background = r==='WIN'?'rgba(63,165,119,.2)':'rgba(201,106,106,.2)'; chip.style.borderColor = r==='WIN'?'var(--win)':'var(--loss)'; chip.style.color = 'var(--ink)'; }
+    chip.textContent = r;
+    chip.onclick = function(){
+      window._scalGridFilters = window._scalGridFilters || {};
+      window._scalGridFilters['result'] = window._scalGridFilters['result'] || new Set();
+      if(window._scalGridFilters['result'].has(r)) window._scalGridFilters['result'].delete(r);
+      else window._scalGridFilters['result'].add(r);
+      scalRenderGrid();
+    };
+    resultGrp.appendChild(chip);
+  });
+  filterRow.appendChild(resultGrp);
+
+  // Apply filters
+  var filtered = trades.filter(function(t){
+    var af = window._scalGridFilters || {};
+    if(af.symbol && af.symbol.size && !af.symbol.has(t.sym||t.symbol||'')) return false;
+    if(af.setup  && af.setup.size  && !af.setup.has(t.setup||''))           return false;
+    if(af.model  && af.model.size  && !af.model.has(t.model||(t.trade_data&&t.trade_data.model)||'')) return false;
+    if(af.result && af.result.size){
+      var p = parseFloat(t.pnl)||0;
+      if(af.result.has('WIN')  && !af.result.has('LOSS') && p<=0) return false;
+      if(af.result.has('LOSS') && !af.result.has('WIN')  && p>=0) return false;
+    }
+    return true;
+  });
+
   var gallery = document.getElementById('scal-grid-gallery');
-  if(gallery) gallery.innerHTML = '<div style="font-family:\'Geist Mono\',monospace;font-size:10px;color:var(--ink45);padding:20px">Screenshot gallery coming soon.</div>';
+  if(filtered.length === 0){
+    gallery.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;font-family:\'Geist Mono\',monospace;font-size:11px;color:var(--ink45)">No trades match</div>';
+    return;
+  }
+  gallery.innerHTML = filtered.map(function(t){
+    var p = parseFloat(t.pnl)||0;
+    var sym = t.sym||t.symbol||'?';
+    var side = (t.type||t.side||'').toUpperCase();
+    var screenshotUrl = t.screenshot_url || t.chart_url || (t.trade_data&&t.trade_data.screenshot_url) || '';
+    var imgHtml = screenshotUrl
+      ? '<img src="'+screenshotUrl+'" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'" style="width:100%;aspect-ratio:16/10;object-fit:cover;display:block">'
+        + '<div style="display:none;aspect-ratio:16/10;background:var(--panel);align-items:center;justify-content:center;color:var(--ink45);font-size:24px">&#9654;</div>'
+      : '<div style="aspect-ratio:16/10;background:var(--panel);display:flex;align-items:center;justify-content:center;color:var(--ink45);font-size:24px">&#9654;</div>';
+    var session = t.session ? ' \xb7 '+t.session : '';
+    var timeStr = t.created_at ? (window.TradingDay ? window.TradingDay.formatDisplay(new Date(t.created_at).getTime()) : '') : '';
+    var rr = (parseFloat(t.rr||t.r_multiple)||0).toFixed(1);
+    return '<div style="border-radius:10px;overflow:hidden;background:var(--panel);border:1px solid var(--panel-border);cursor:pointer;transition:transform .15s;position:relative" onmouseenter="this.style.transform=\'translateY(-2px)\'" onmouseleave="this.style.transform=\'\'">'
+      + '<div style="position:relative">'
+      + imgHtml
+      + '<span style="position:absolute;top:7px;left:7px;background:'+(p>=0?'var(--win)':'var(--loss)')+';width:8px;height:8px;border-radius:50%"></span>'
+      + '<span style="position:absolute;top:6px;right:7px;background:rgba(0,0,0,.5);border-radius:5px;padding:2px 6px;font-family:\'Geist Mono\',monospace;font-size:10px;color:'+(p>=0?'var(--win-text)':'var(--loss-text)')+';">'+(p>=0?'+':'')+rr+'R</span>'
+      + '</div>'
+      + '<div style="padding:8px 10px;font-family:\'Geist Mono\',monospace;font-size:10px;display:flex;gap:8px;align-items:center">'
+      + '<span style="color:var(--ink)">'+sym+'</span>'
+      + (side?'<span style="border:1px solid var(--hair);border-radius:3px;padding:0 4px;color:var(--ink45)">'+side+'</span>':'')
+      + (timeStr?'<span style="color:var(--ink45)">'+timeStr+session+'</span>':'')
+      + '<span style="margin-left:auto;color:'+(p>=0?'var(--win-text)':'var(--loss-text)')+';font-family:\'Space Grotesk\',sans-serif;font-weight:600">'+(p>=0?'+':'')+'$'+Math.abs(p).toFixed(2)+'</span>'
+      + '</div>'
+      + '</div>';
+  }).join('');
 }
 
 function scalRenderYear() {
-  var container = document.getElementById('scal-year-grid');
-  if(!container) return;
-  container.innerHTML = '';
   var y = window._scalState.year;
-  var monthNames = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-  var today = window.TradingDay ? window.TradingDay.getTodayTradingDay() : _localDate(new Date());
-  for(var mi=0; mi<12; mi++){
-    var dayMap = _scalMonthMap(y, mi);
-    var days = Object.values(dayMap);
-    var pnl = days.reduce(function(s,v){return s+v;},0);
-    var wins = days.filter(function(p){return p>0;}).length;
-    var losses = days.filter(function(p){return p<0;}).length;
+  var grid = document.getElementById('scal-year-grid');
+  grid.innerHTML = '';
+  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var nowYear = new Date().getFullYear(), nowMonth = new Date().getMonth();
+
+  for(var m=0; m<12; m++){
+    var isFuture = (y > nowYear || (y===nowYear && m > nowMonth));
+    var isCurrent = (y===nowYear && m===nowMonth);
+    var dayMap = _scalMonthMap(y, m);
+    var days = Object.keys(dayMap);
+    var monthPnl = Object.values(dayMap).reduce(function(s,v){return s+v;},0);
+    var wins = Object.values(dayMap).filter(function(p){return p>0;}).length;
+    var wr = days.length ? Math.round(wins/days.length*100) : 0;
+    var maxAbsPnl = days.length ? Math.max.apply(null, Object.values(dayMap).map(Math.abs)) : 1;
+
+    // Mini day-dot heatmap: all days of month
+    var daysInMonth = new Date(y, m+1, 0).getDate();
+    var dots = '';
+    for(var d=1; d<=daysInMonth; d++){
+      var ds = y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      var dow = new Date(y,m,d).getDay();
+      if(dow===0||dow===6){ dots += '<span style="width:7px;height:7px;border-radius:1px;display:inline-block;margin:1px;background:transparent"></span>'; continue; }
+      var dayPnl = dayMap[ds];
+      var opacity = dayPnl!==undefined ? Math.max(0.25, Math.min(1, Math.abs(dayPnl)/Math.max(maxAbsPnl,1))) : 0;
+      var bg = dayPnl===undefined ? 'var(--hair)' : dayPnl>0 ? 'rgba(63,165,119,'+opacity+')' : 'rgba(201,106,106,'+opacity+')';
+      dots += '<span style="width:7px;height:7px;border-radius:1px;display:inline-block;margin:1px;background:'+bg+'"></span>';
+    }
+
     var card = document.createElement('div');
-    card.style.cssText = 'background:var(--panel);border:1px solid var(--panel-border);border-radius:13px;padding:12px 14px;';
-    card.innerHTML = '<div style="font-family:\'Archivo\',sans-serif;font-weight:900;font-style:italic;font-size:16px;color:var(--ink);margin-bottom:6px">' + monthNames[mi] + '</div>'
-      + '<div style="font-family:\'Geist Mono\',monospace;font-size:12px;color:'+(pnl>0?'var(--win-text)':pnl<0?'var(--loss-text)':'var(--ink45)')+'">'+(pnl>=0?'+':'')+'$'+Math.abs(pnl).toFixed(0)+'</div>'
-      + '<div style="font-family:\'Geist Mono\',monospace;font-size:9px;color:var(--ink45);margin-top:4px">'+wins+'W / '+losses+'L</div>';
-    container.appendChild(card);
+    card.style.cssText = 'background:var(--panel);border:1.5px solid '+(isCurrent?'var(--gold)':'var(--panel-border)')+';border-radius:13px;padding:14px;cursor:'+(isFuture?'default':'pointer')+';opacity:'+(isFuture?'.4':'1')+';transition:transform .15s';
+    if(!isFuture){
+      card.onmouseenter = function(){ this.style.transform='translateY(-2px)'; };
+      card.onmouseleave = function(){ this.style.transform=''; };
+    }
+    if(!isFuture){
+      (function(my,mm){
+        card.onclick = function(){
+          window._scalState.year = my;
+          window._scalState.month = mm;
+          scalSetView('month');
+        };
+      })(y, m);
+    }
+
+    var pnlColor = monthPnl>0?'var(--win-text)':monthPnl<0?'var(--loss-text)':'var(--ink45)';
+    card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">'
+      + '<span style="font-family:\'Archivo\',sans-serif;font-weight:900;font-style:italic;font-size:15px;color:var(--ink)">'+monthNames[m]+'</span>'
+      + '<span style="font-family:\'Space Grotesk\',sans-serif;font-weight:600;font-size:14px;color:'+pnlColor+'">'+(isFuture?'—':(monthPnl>=0?'+':'')+'$'+Math.abs(monthPnl).toFixed(0))+'</span>'
+      + '</div>'
+      + '<div style="line-height:0;margin-bottom:8px">'+dots+'</div>'
+      + '<div style="font-family:\'Geist Mono\',monospace;font-size:9px;color:var(--ink45);letter-spacing:.1em">WR '+(isFuture?'—':wr+'%')+' \xb7 '+(isFuture?'—':days.length+' DAYS')+'</div>';
+    grid.appendChild(card);
   }
 }
 
