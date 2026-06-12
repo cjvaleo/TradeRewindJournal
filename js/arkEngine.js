@@ -9,6 +9,9 @@
  *   computeGrade(todayTrades, ruleResults),     // -> {rules, kz, risk, letter}
  *   getJournalStreak(trades),                   // -> {current, best, dots}
  *   getDeterministicDirective(insights, patterns, grade), // -> string (1 sentence)
+ *   getGreenStreak(trades),                     // -> {current, last5:[{date,result}]}
+ *   buildDebriefContext(todayTrades, ruleResults, insights, patterns), // -> compact obj
+ *   buildTradeReadContext(trade, userAverages), // -> compact obj
  * }
  *
  * Side effect: getRuleResults writes window._arkRuleResults.
@@ -91,6 +94,7 @@
 
   // The "model" tag for a trade: explicit field, else a confluence typed model.
   function modelOf(t) {
+    if (t && t.trade_data && t.trade_data.model) return String(t.trade_data.model);
     if (t && t.model) return String(t.model);
     var cf = confluencesOf(t);
     for (var i = 0; i < cf.length; i++) {
@@ -686,6 +690,160 @@
   }
 
   // ──────────────────────────────────────────────────────────────────
+  // 8. getGreenStreak
+  // ──────────────────────────────────────────────────────────────────
+  // current = consecutive trading days (most recent first) with net positive
+  // P&L, walking back and skipping weekends. last5 = the 5 most recent
+  // trading days' results for the mini-bar display (oldest-first).
+  function getGreenStreak(trades) {
+    // Net P&L per trading-day.
+    var netByDay = {};
+    (trades || []).forEach(function (t) {
+      var day = t.date ? String(t.date).slice(0, 10) : null;
+      if (!day) {
+        var ts = tsOf(t);
+        if (ts != null) {
+          day = (window.TradingDay && window.TradingDay.getTradingDay)
+            ? window.TradingDay.getTradingDay(ts)
+            : new Date(ts).toISOString().slice(0, 10);
+        }
+      }
+      if (!day) return;
+      netByDay[day] = (netByDay[day] || 0) + pnlOf(t);
+    });
+
+    function isWeekend(d) { var w = d.getUTCDay(); return w === 0 || w === 6; }
+
+    // Walk back from today over trading days (skip weekends).
+    var cursor = new Date();
+    var current = 0, broken = false;
+    var last5 = [];
+    var guard = 0;
+    while ((current < 1000) && guard < 800) {
+      guard++;
+      if (isWeekend(cursor)) {
+        cursor = new Date(cursor.getTime() - 864e5);
+        continue;
+      }
+      var ds = cursor.toISOString().slice(0, 10);
+      var hasTrades = Object.prototype.hasOwnProperty.call(netByDay, ds);
+      var net = netByDay[ds];
+
+      if (last5.length < 5) {
+        var result = !hasTrades ? 'empty' : (net > 0 ? 'win' : 'loss');
+        last5.push({ date: ds, result: result });
+      }
+
+      if (!broken) {
+        if (hasTrades && net > 0) current++;
+        else broken = true;
+      }
+
+      if (last5.length >= 5 && broken) break;
+      cursor = new Date(cursor.getTime() - 864e5);
+    }
+
+    last5.reverse(); // oldest-first for the mini-bar display
+    return { current: current, last5: last5 };
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // 9. buildDebriefContext
+  // ──────────────────────────────────────────────────────────────────
+  // Compact JSON for the conversational debrief API (~<1200 tokens).
+  function buildDebriefContext(todayTrades, ruleResults, insights, patterns) {
+    var trades = todayTrades || [];
+    var results = ruleResults || [];
+    insights = insights || {};
+    patterns = patterns || [];
+
+    var winCount = 0, lossCount = 0, totalPnl = 0;
+    var rSum = 0, rN = 0;
+    var sessions = {};
+    var setups = {};
+    var emotionSum = 0, emotionN = 0;
+
+    for (var i = 0; i < trades.length; i++) {
+      var t = trades[i];
+      if (isWin(t)) winCount++;
+      else if (isLoss(t)) lossCount++;
+      totalPnl += pnlOf(t);
+
+      var r = num(t.rr);
+      if (r != null) { rSum += r; rN++; }
+
+      var s = sessionOf(t);
+      if (s) sessions[s] = (sessions[s] || 0) + 1;
+
+      var su = setupOf(t);
+      if (su) setups[su] = (setups[su] || 0) + 1;
+
+      var e = emotionOf(t);
+      if (e != null) { emotionSum += e; emotionN++; }
+    }
+
+    // Rule violations (auto rules that failed).
+    var violations = [];
+    for (var j = 0; j < results.length; j++) {
+      if (results[j].auto && !results[j].passed) {
+        violations.push({ rule: results[j].rule, times_broken: 1 });
+      }
+    }
+
+    // Top setup by frequency today.
+    var topSetup = null, topN = 0;
+    Object.keys(setups).forEach(function (k) {
+      if (setups[k] > topN) { topN = setups[k]; topSetup = k; }
+    });
+
+    var grade = computeGrade(trades, results);
+
+    return {
+      trade_count: trades.length,
+      win_count: winCount,
+      loss_count: lossCount,
+      total_pnl: Math.round(totalPnl),
+      avg_r: rN ? Math.round((rSum / rN) * 100) / 100 : null,
+      sessions_used: Object.keys(sessions),
+      rule_violations: violations,
+      top_setup: topSetup,
+      emotion_summary: emotionN
+        ? { avg: Math.round((emotionSum / emotionN) * 10) / 10, label: emotionLabel(Math.round(emotionSum / emotionN)) }
+        : null,
+      patterns_flagged: patterns.map(function (p) { return p.type; }),
+      grade_bars: { rules: grade.rules, kz: grade.kz, risk: grade.risk }
+    };
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // 10. buildTradeReadContext
+  // ──────────────────────────────────────────────────────────────────
+  // Compact object for a per-trade Haiku read (~<400 tokens).
+  function buildTradeReadContext(trade, userAverages) {
+    var t = trade || {};
+    userAverages = userAverages || {};
+
+    var cf = confluencesOf(t).map(function (c) { return c.name; });
+    var e = emotionOf(t);
+
+    return {
+      trade: {
+        sym: t.sym || null,
+        type: t.type || null,
+        session: sessionOf(t),
+        setup: setupOf(t),
+        r_multiple: num(t.rr),
+        emotion: e != null ? { value: e, label: emotionLabel(e) } : null,
+        confluences: cf
+      },
+      user_averages: {
+        avg_r_by_setup: userAverages.avg_r_by_setup || null,
+        avg_win_rate_by_session: userAverages.avg_win_rate_by_session || null
+      }
+    };
+  }
+
+  // ──────────────────────────────────────────────────────────────────
   window.ArkEngine = {
     getRuleResults: getRuleResults,
     getPlanStatus: getPlanStatus,
@@ -693,6 +851,9 @@
     getPatterns: getPatterns,
     computeGrade: computeGrade,
     getJournalStreak: getJournalStreak,
-    getDeterministicDirective: getDeterministicDirective
+    getDeterministicDirective: getDeterministicDirective,
+    getGreenStreak: getGreenStreak,
+    buildDebriefContext: buildDebriefContext,
+    buildTradeReadContext: buildTradeReadContext
   };
 })();
