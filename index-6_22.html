@@ -9924,6 +9924,9 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
 }
 body.stark-active #app-sidebar { display: none !important; }
 body.stark-active .main { width: 100% !important; max-width: 100% !important; }
+/* Fallback: :has() selector hides sidebar whenever dashboard is active (no JS class needed) */
+body:has(#pg-dashboard.page.on) #app-sidebar { display: none !important; }
+body:has(#pg-dashboard.page.on) .main { width: 100% !important; max-width: 100% !important; }
 header.top, #stark-topbar, .canvas { position: relative; z-index: 1; }
 
 /* ===== liquid glass ===== */
