@@ -11591,6 +11591,9 @@ h3.sec a:hover{color:var(--ink)}
 
 <style>
 /* ===== WS4 Calendar ===== */
+/* Override legacy .page.on{display:block} — calendar needs flex for canvas grid */
+#pg-calendar.page.on{display:flex!important;flex-direction:column;padding:0!important;background:transparent!important;position:static!important;}
+
 .daycard,.mstats-cal,.wktot,.shot,.ym,.dtr{
   backdrop-filter:blur(1.5px) url(#liquidLens) saturate(1.85) brightness(1.12);
   -webkit-backdrop-filter:blur(11px) saturate(1.85) brightness(1.1);
