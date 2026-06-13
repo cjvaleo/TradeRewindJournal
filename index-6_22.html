@@ -31811,6 +31811,9 @@ async function loadTradesFromDB(user) {
         // Visual redesign Chunk 2 — account_type lives on its own column.
         // Treat the column as authoritative so SQL-direct edits propagate to UI.
         if (row.account_type) t.account_type = row.account_type;
+        // WS1: hydrate trading_day from the DB column (authoritative after migration+backfill).
+        // Fall back to t.date so pre-migration rows still have a usable grouping key.
+        t.trading_day = row.trading_day || t.date || null;
         return t;
       } catch(e) { return null; }
     }).filter(Boolean);
@@ -31863,11 +31866,22 @@ async function saveTradeToSupa(trade) {
     //   as a parsed object. trade_data->>'tradingview_link' now works.
     //   (Old rows that were stored as JSONB-strings keep loading via
     //   loadTradesFromDB's both-shape handling; they get fixed on next save.)
+    // WS1: compute trading_day from the trade's own timestamp (trade.id is
+    // Date.now() at log time) so the ET cutover is correct even for trades
+    // logged during the 17:00-17:59 maintenance window or Sunday 18:00+.
+    var _tradeMs = parseInt(trade.id, 10) || Date.now();
+    var _tradingDay = (window.TradingDay && window.TradingDay.getTradingDay)
+      ? window.TradingDay.getTradingDay(_tradeMs)
+      : (trade.date || null);
+    // Mirror onto the in-memory object so the UI stays consistent without a reload.
+    trade.trading_day = _tradingDay;
+
     var r = await _sb.from('trades').upsert({
       id: String(trade.id),
       user_id: authUser.id,            // REQUIRED by RLS policy
       trade_data: trade,               // OBJECT, not string — see comment above
       account_type: accountTypeCol,    // top-level column (Chunk 2 migration)
+      trading_day: _tradingDay,        // WS1: ET-adjusted date column
       journal: activeJournal,
       updated_at: new Date().toISOString()
     }, { onConflict: 'id' });
