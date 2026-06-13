@@ -9860,7 +9860,16 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
      ============================================================ -->
 <style>
 /* ---- Design tokens ---- */
-[data-theme="dark"], :root {
+/* Default :root = Grey/mock values (champagne gold, correct panel) */
+:root {
+  --bg:#1C1D20; --ink:#F2F2F0; --ink70:rgba(242,242,240,.9); --ink45:rgba(242,242,240,.68);
+  --hair:rgba(242,242,240,.12); --hair2:rgba(242,242,240,.22);
+  --gold:#D8B26A; --gold-deep:#A8843E; --gold-grad:linear-gradient(160deg,#F2DCA4 0%,#D8B26A 45%,#A8843E 100%); --gold-soft:rgba(216,178,106,.55);
+  --panel:rgba(255,255,255,.045); --panel-border:rgba(255,255,255,.22);
+  --win:#2FAE78; --win-text:#7BE8B8; --loss:#C96A6A; --loss-text:#E8A0A0;
+  --glass-bright:1.1; --spec:rgba(255,255,255,.18); --btn-ink:#101010;
+}
+[data-theme="dark"] {
   --bg:#070708; --ink:#F4F4F2; --ink70:rgba(244,244,242,.88); --ink45:rgba(244,244,242,.66);
   --hair:rgba(244,244,242,.1); --hair2:rgba(244,244,242,.2);
   --gold:#D9A92F; --gold-soft:rgba(217,169,47,.55);
@@ -10055,16 +10064,16 @@ body.stark-active .main { overflow: hidden; height: 100vh; }
   flex-direction: column;
   border-right: 1px solid var(--stark-hair);
   overflow-y: auto;
-  padding: 16px 16px 16px 20px;
-  gap: 12px;
+  padding: 22px 28px 20px;
+  gap: 16px;
   flex: 2.45;
 }
 #stark-right {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  padding: 16px 20px 16px 16px;
-  gap: 12px;
+  padding: 20px 22px 18px;
+  gap: 14px;
   flex: 0 0 auto;
   width: minmax(310px, 1fr);
   min-width: 310px;
@@ -10304,7 +10313,7 @@ body.stark-active .main { overflow: hidden; height: 100vh; }
   position: relative;
   background: var(--panel);
   border: 1px solid var(--panel-border);
-  border-radius: 13px;
+  border-radius: 15px;
   /* Static liquid glass — NEVER animate or transition these properties */
   backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
   -webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
@@ -10591,7 +10600,8 @@ body.stark-active .main { overflow: hidden; height: 100vh; }
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 600; font-style: italic; font-stretch: 108%;
   font-size: 11px;
   color: var(--stark-cream70);
 }
@@ -32969,7 +32979,7 @@ function renderStarkRules() {
   if (countEl) countEl.textContent = '0/' + rules.length;
 
   if (rules.length === 0) {
-    listEl.innerHTML = '<span style="font-family:Geist Mono,monospace;font-size:11px;color:var(--stark-cream45)">No rules set — tap EDIT to add</span>';
+    listEl.innerHTML = '<span style="font-size:11px;color:var(--stark-cream45)">No rules set — tap EDIT to add</span>';
     return;
   }
 
