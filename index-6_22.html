@@ -11537,6 +11537,71 @@ body.stark-active .main { overflow: hidden; height: 100vh; }
   color: var(--ink45); margin-top: 0;
 }
 .ark-hologram-wrap { max-height: 100px; }
+
+/* ============================================================
+   WS3 FIX: Glass treatment + typography corrections
+   ============================================================ */
+
+/* --- Glass on ALL .stark-panel (P&L band, rules, ark card, closeout)
+       Verbatim from mock .band / .coach box-shadow stack --- */
+.stark-panel {
+  backdrop-filter: blur(1.5px) url(#liquidLens) saturate(1.85) brightness(1.12);
+  -webkit-backdrop-filter: blur(11px) saturate(1.85) brightness(1.1);
+  background: rgba(255,255,255,.045) !important;
+  border: 1px solid rgba(255,255,255,.22) !important;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.45),
+    inset 0 0 0 1.5px rgba(255,255,255,.06),
+    inset 0 -2px 3px rgba(255,255,255,.1),
+    inset 0 -16px 28px -18px rgba(0,0,0,.55),
+    inset 0 14px 24px -18px rgba(255,255,255,.12),
+    0 22px 44px -22px rgba(0,0,0,.8),
+    0 2px 8px -2px rgba(0,0,0,.4) !important;
+}
+
+/* --- Calendar cells: 6-layer box-shadow from mock .cell --- */
+.stark-cal-cell {
+  backdrop-filter: blur(2.5px) url(#liquidLens) saturate(1.7) brightness(1.16) !important;
+  -webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(1.14) !important;
+  background: rgba(255,255,255,.04) !important;
+  border: 1px solid rgba(255,255,255,.2) !important;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.42),
+    inset 0 0 0 1.5px rgba(255,255,255,.05),
+    inset 0 -12px 20px -16px rgba(0,0,0,.5),
+    inset 0 10px 18px -14px rgba(255,255,255,.1),
+    0 16px 34px -18px rgba(0,0,0,.75),
+    0 2px 6px -2px rgba(0,0,0,.35) !important;
+}
+/* no backdrop on empties / future / weekend */
+.stark-cal-cell.empty,
+.stark-cal-cell.future-cell,
+.stark-cal-cell.weekend-cell {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: transparent !important;
+  border-color: rgba(242,242,240,.05) !important;
+  box-shadow: none !important;
+}
+/* win / loss border overrides (more vivid than base) */
+.stark-cal-cell.win-day  { border-color: rgba(120,225,175,.3) !important; }
+.stark-cal-cell.loss-day { border-color: rgba(230,150,150,.26) !important; }
+
+/* --- Month header: Archivo for year & cal-nav arrows --- */
+.stark-month-year {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900; font-style: italic; font-stretch: 125%;
+  font-size: 22px; letter-spacing: -.01em; color: var(--ink45);
+}
+.stark-cal-nav {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 600; font-style: italic; font-stretch: 108%;
+  color: var(--ink45);
+}
+
+/* Hero P&L win/loss explicit (ensure class overrides are not blocked by inline style) */
+.stark-hero-amount.win  { color: var(--win)  !important; }
+.stark-hero-amount.loss { color: var(--loss) !important; }
 </style>
 
 </head>
@@ -37705,7 +37770,7 @@ function renderArkCard() {
           {label:'BEST SETUP',    value: insights.bestSetup    || '—', detail:''},
           {label:'BEST MODEL',    value: insights.bestModel    || '—', detail:''},
           {label:'TOP CONFLUENCE',value: insights.topConfluence|| '—', detail:''},
-          {label:'EMOTION',       value: insights.emotion      || '—', detail:''}
+          {label:'EMOTION',       value: (insights.emotion && insights.emotion.label) || '—', detail:''}
         ];
         insightsEl.innerHTML = rows.map(function(r){
           return '<div class="ark-insight-row">' +
