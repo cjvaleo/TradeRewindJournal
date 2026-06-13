@@ -9914,9 +9914,7 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   --stark-gold-tint: rgba(217,169,47,.06);
 }
 
-/* ---- Blueprint ground ---- */
-/* WS2: body now owns the radial-gradient ground (tokens.css).
-   Remove background-color here so it doesn't paint over it. */
+/* Dashboard page shell */
 #pg-dashboard {
   background: transparent;
   min-height: 100vh;
@@ -9924,1641 +9922,19 @@ body[data-tier="free"] #pg-analytics .sec-tab[data-locked]:hover .tab-lock-icon{
   display: flex;
   flex-direction: column;
 }
-
-/* ---- Sidebar hide when stark-active ---- */
 body.stark-active #app-sidebar { display: none !important; }
 body.stark-active .main { width: 100% !important; max-width: 100% !important; }
-
-/* ---- Glass panel base ---- */
-.stark-panel {
-  background: var(--stark-panel);
-  border: 1px solid var(--stark-hair);
-  border-radius: 12px;
-  position: relative;
-}
-
-/* ---- HUD corner brackets (top-left + bottom-right) ---- */
-.stark-brackets::before,
-.stark-brackets::after {
-  content: '';
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  pointer-events: none;
-  z-index: 2;
-}
-.stark-brackets::before {
-  top: -1px; left: -1px;
-  border-top: 2px solid var(--stark-gold55);
-  border-left: 2px solid var(--stark-gold55);
-  border-radius: 2px 0 0 0;
-}
-.stark-brackets::after {
-  bottom: -1px; right: -1px;
-  border-bottom: 2px solid var(--stark-gold55);
-  border-right: 2px solid var(--stark-gold55);
-  border-radius: 0 0 2px 0;
-}
-
-/* ---- Top bar ---- */
-#stark-topbar {
-  height: 56px;
-  min-height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
-  border-bottom: 1px solid var(--stark-hair);
-  z-index: 100;
-  flex-shrink: 0;
-  background: var(--stark-bg);
-}
-.stark-brand {
-  font-family: 'Archivo', 'Arial Black', sans-serif;
-  font-weight: 900;
-  font-style: italic;
-  font-stretch: 125%;
-  font-size: 20px;
-  letter-spacing: -0.02em;
-  color: var(--stark-cream);
-  white-space: nowrap;
-}
-.stark-brand .stark-brand-chevron {
-  color: var(--stark-gold);
-}
-.stark-nav {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-}
-.stark-nav-item {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: 'Geist Mono', 'Courier New', monospace;
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  color: var(--stark-cream45);
-  padding: 4px 0;
-  position: relative;
-  transition: color 0.15s;
-  text-transform: uppercase;
-}
-.stark-nav-item:hover { color: var(--stark-cream70); }
-.stark-nav-item.active {
-  color: var(--stark-cream);
-}
-.stark-nav-item.active::after {
-  content: '';
-  position: absolute;
-  bottom: -2px; left: 0; right: 0;
-  height: 2px;
-  background: var(--stark-gold);
-  border-radius: 1px;
-}
-.stark-topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.stark-log-btn {
-  background: transparent;
-  border: 1px solid var(--stark-gold);
-  color: var(--stark-gold);
-  font-family: 'Geist Mono', 'Courier New', monospace;
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  padding: 6px 14px;
-  border-radius: 7px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.stark-log-btn:hover { background: rgba(217,169,47,.08); }
-.stark-avatar {
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  background: rgba(217,169,47,.18);
-  border: 1px solid var(--stark-gold55);
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Geist Mono', monospace;
-  font-size: 12px;
-  color: var(--stark-gold);
-  cursor: pointer;
-  font-weight: 700;
-  letter-spacing: 0;
-}
-
-/* ---- Two-column grid ---- */
-/* QA: desktop must NEVER scroll — body and .main are locked, only inner cols scroll */
-body.stark-active { overflow: hidden; }
-body.stark-active .main { overflow: hidden; height: 100vh; }
-
-#stark-grid {
-  display: flex;
-  flex-direction: row;
-  height: calc(100vh - 56px);
-  overflow: hidden;
-}
-#stark-left {
-  display: flex;
-  flex-direction: column;
-  border-right: 1px solid var(--stark-hair);
-  overflow-y: auto;
-  padding: 22px 28px 20px;
-  gap: 16px;
-  flex: 2.45;
-}
-#stark-right {
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  padding: 20px 22px 18px;
-  gap: 14px;
-  flex: 0 0 auto;
-  width: minmax(310px, 1fr);
-  min-width: 310px;
-}
-
-/* ---- P&L block ---- */
-#stark-pnl-block {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: stretch;
-  min-height: 120px;
-  padding: 16px 20px;
-  gap: 0;
-}
-#stark-pnl-left {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 6px;
-}
-.stark-pnl-label {
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  color: var(--stark-cream45);
-  margin: 0;
-  text-transform: uppercase;
-}
-.stark-hero-amount {
-  font-family: 'Archivo', 'Arial Black', sans-serif;
-  font-weight: 900;
-  font-style: italic;
-  font-stretch: 125%;
-  font-size: clamp(38px, 4.5vw, 56px);
-  line-height: 1;
-  color: var(--stark-cream45);
-  letter-spacing: -0.02em;
-}
-.stark-hero-amount.win { color: var(--stark-win); }
-.stark-hero-amount.loss { color: var(--stark-loss); }
-.stark-statline {
-  font-family: 'Geist Mono', monospace;
-  font-size: 11px;
-  color: var(--stark-cream70);
-  margin: 0;
-  letter-spacing: 0.05em;
-}
-#stark-pnl-right {
-  display: flex;
-  flex-direction: row;
-  border-left: 1px solid var(--stark-hair);
-  margin-left: 20px;
-  padding-left: 0;
-}
-.stark-pnl-cell {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 0 18px;
-  gap: 4px;
-  border-left: 1px solid var(--stark-hair);
-}
-.stark-pnl-cell:first-child { border-left: none; }
-.stark-cell-label {
-  font-family: 'Geist Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.14em;
-  color: var(--stark-cream45);
-  text-transform: uppercase;
-}
-.stark-cell-value {
-  font-family: 'Geist Mono', monospace;
-  font-size: 14px;
-  color: var(--stark-cream);
-  font-weight: 600;
-}
-.stark-cell-detail {
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  color: var(--stark-cream45);
-}
-.stark-streak-mini-bars { display: flex; gap: 3px; margin-top: 5px; }
-.stark-streak-mini-bar {
-  width: 8px; height: 22px; border-radius: 2px;
-  background: var(--hair);
-  transition: background .2s;
-}
-.stark-streak-mini-bar.win { background: var(--win); }
-.stark-streak-mini-bar.loss { background: var(--loss); }
-.stark-streak-mini-bar.today { background: var(--win); box-shadow: 0 0 6px var(--win); }
-
-/* ---- Session dot ---- */
-.stark-session-dot {
-  display: inline-block;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--stark-win);
-  margin-right: 5px;
-  vertical-align: middle;
-  animation: starkPulse 2s infinite;
-}
-@keyframes starkPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-/* ---- Calendar hero ---- */
-#stark-calendar {
-  flex: 1 1 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.stark-cal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 0 8px;
-  flex-shrink: 0;
-}
-.stark-cal-nav {
-  background: none;
-  border: none;
-  color: var(--stark-cream45);
-  font-size: 20px;
-  cursor: pointer;
-  padding: 4px 8px;
-  transition: color 0.15s;
-}
-.stark-cal-nav:hover { color: var(--stark-cream); }
-.stark-cal-title {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
-.stark-month-name {
-  font-family: 'Archivo', 'Arial Black', sans-serif;
-  font-weight: 900;
-  font-style: italic;
-  font-stretch: 125%;
-  font-size: 22px;
-  color: var(--stark-cream);
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-}
-.stark-month-year {
-  font-family: 'Geist Mono', monospace;
-  font-size: 14px;
-  color: var(--stark-cream45);
-}
-.stark-month-pnl {
-  font-family: 'Archivo', 'Arial Black', sans-serif;
-  font-weight: 900;
-  font-style: italic;
-  font-stretch: 125%;
-  font-size: 16px;
-}
-.stark-month-pnl.win { color: var(--stark-win); }
-.stark-month-pnl.loss { color: var(--stark-loss); }
-.stark-days-chip {
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  color: var(--stark-cream45);
-  background: var(--stark-hair);
-  border-radius: 999px;
-  padding: 2px 8px;
-  letter-spacing: 0.08em;
-}
-.stark-cal-body {
-  flex: 1 1 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.stark-cal-dow-row {
-  display: grid;
-  grid-template-columns: repeat(7,1fr);
-  margin-right: 118px; /* leave room for week rail */
-  gap: 8px;
-  margin-bottom: 6px;
-  flex-shrink: 0;
-}
-.stark-cal-dow-row span {
-  font-family: 'Geist Mono', monospace;
-  font-size: 9px;
-  color: var(--stark-cream45);
-  text-align: center;
-  letter-spacing: 0.08em;
-}
-.stark-cal-wrap {
-  flex: 1 1 0;
-  min-height: 0;
-  display: flex;
-  gap: 8px;
-  overflow: hidden;
-}
-.stark-cal-grid {
-  flex: 1 1 0;
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  grid-auto-rows: 1fr;
-  gap: 8px;
-  min-height: 0;
-  overflow: hidden;
-}
-
-/* ---- Background light blobs ---- */
-#stark-blobs {
-  position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;
-}
-.stark-blob {
-  position: absolute; border-radius: 50%;
-  filter: blur(80px);
-  opacity: .045;
-}
-.stark-blob-gold {
-  width: 420px; height: 280px; background: var(--gold);
-  top: 8%; left: 15%;
-}
-.stark-blob-win {
-  width: 360px; height: 240px; background: var(--win);
-  top: 40%; left: 55%;
-}
-.stark-blob-gold2 {
-  width: 300px; height: 200px; background: var(--gold);
-  top: 70%; left: 10%;
-}
-/* ensure grid content sits above blobs */
-#stark-topbar, #stark-grid { position: relative; z-index: 1; }
-
-/* ---- Calendar cells ---- */
-.stark-cal-cell {
-  position: relative;
-  background: var(--panel);
-  border: 1px solid var(--panel-border);
-  border-radius: 15px;
-  /* Static liquid glass — NEVER animate or transition these properties */
-  backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
-  -webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
-  box-shadow:
-    inset 0 1px 0 var(--spec),
-    inset 0 -1px 0 rgba(0,0,0,.12),
-    0 4px 16px -8px rgba(0,0,0,.32);
-  min-height: 72px;
-  padding: 6px 7px 5px;
-  cursor: pointer;
-  /* Hover: border + tint + transform only — no filter change */
-  transition: border-color .18s, background .18s, transform .12s;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 0;
-  overflow: hidden;
-}
-.stark-cal-cell:hover {
-  border-color: var(--hair2);
-  transform: translateY(-1px);
-}
-.stark-cal-cell.win-day {
-  background: rgba(63,165,119,.10);
-  border-color: rgba(63,165,119,.22);
-}
-.stark-cal-cell.win-day:hover { background: rgba(63,165,119,.16); border-color: rgba(63,165,119,.38); }
-.stark-cal-cell.loss-day {
-  background: rgba(201,106,106,.10);
-  border-color: rgba(201,106,106,.22);
-}
-.stark-cal-cell.loss-day:hover { background: rgba(201,106,106,.16); border-color: rgba(201,106,106,.38); }
-.stark-cal-cell.today-cell {
-  border: 1.5px solid var(--gold);
-  background: rgba(217,169,47,.10);
-}
-.stark-cal-cell.future-cell, .stark-cal-cell.weekend-cell {
-  /* No backdrop-filter on non-traded cells — performance + visual clarity */
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  background: transparent;
-  border: 1px solid var(--hair);
-  box-shadow: none;
-  cursor: default;
-  opacity: .35;
-}
-.stark-cal-cell.future-cell:hover, .stark-cal-cell.weekend-cell:hover { transform: none; }
-.stark-cal-cell.empty {
-  background: transparent;
-  border-color: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  cursor: default;
-  opacity: 0;
-}
-/* spec highlight overlay on traded cells */
-.stark-cal-cell .spec-sheen {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse at 20% 15%, var(--spec) 0%, transparent 55%),
-    linear-gradient(135deg, var(--spec) 0%, transparent 60%);
-  opacity: .5;
-}
-/* Calendar money amounts: Space Grotesk 600 */
-.stark-cal-amount {
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 600;
-  font-size: 13px;
-  line-height: 1.2;
-}
-.stark-cal-amount.win-day { color: var(--win-text); }
-.stark-cal-amount.loss-day { color: var(--loss-text); }
-/* Week rail tiles also use Space Grotesk */
-.stark-wk-amount {
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 600;
-  font-size: 17px;
-}
-@supports (backdrop-filter: blur(1px)) {
-  .stark-cal-cell.win-day,
-  .stark-cal-cell.loss-day,
-  .stark-cal-cell.today-cell {
-    backdrop-filter: blur(2.5px) url(#liquidLens) saturate(1.7) brightness(var(--glass-bright));
-    -webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
-  }
-}
-
-/* Task 5: Safari fallback — Safari supports backdrop-filter but NOT url() in it */
-@supports not (backdrop-filter: blur(1px) url(#liquidLens)) {
-  .stark-cal-cell.win-day,
-  .stark-cal-cell.loss-day,
-  .stark-cal-cell.today-cell {
-    backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
-    -webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
-  }
-}
-
-/* Task 4: Constitution — backdrop-filter must NEVER be animated */
-/* Explicitly list ONLY safe properties; backdrop-filter/-webkit-backdrop-filter intentionally omitted */
-.stark-cal-cell { transition: border-color .18s, background .18s, transform .12s !important; }
-/* backdrop-filter, -webkit-backdrop-filter are intentionally NOT in any transition */
-
-.stark-cal-date {
-  font-family: 'Geist Mono', monospace;
-  font-size: 11px;
-  color: var(--stark-cream45);
-  line-height: 1;
-}
-.stark-cal-cell.today-cell .stark-cal-date { color: var(--gold); }
-.stark-cal-cell.win-day .stark-cal-date { color: var(--ink70); }
-.stark-cal-cell.loss-day .stark-cal-date { color: var(--ink70); }
-.stark-cal-today-tag {
-  font-family: 'Geist Mono', monospace;
-  font-size: 7px;
-  letter-spacing: 0.1em;
-  color: var(--gold);
-  text-transform: uppercase;
-}
-.stark-cal-pnl {
-  font-family: 'Geist Mono', monospace;
-  font-size: 11px;
-  font-weight: 600;
-}
-.stark-cal-cell.win-day .stark-cal-pnl { color: var(--win-text); }
-.stark-cal-cell.loss-day .stark-cal-pnl { color: var(--loss); }
-.stark-cal-ntrades {
-  font-family: 'Geist Mono', monospace;
-  font-size: 9px;
-  color: var(--stark-cream45);
-}
-
-/* ---- Week rail ---- */
-.stark-wk-rail {
-  width: 110px;
-  min-width: 110px;
-  display: grid;
-  grid-auto-rows: 1fr;
-  gap: 8px;
-  min-height: 0;
-  overflow: hidden;
-}
-.stark-wk-tile {
-  border-radius: 9px;
-  border: 1px solid var(--stark-hair);
-  background: rgba(244,244,242,.012);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 0 10px;
-  gap: 2px;
-  min-height: 0;
-  overflow: hidden;
-}
-.stark-wk-label {
-  font-family: 'Geist Mono', monospace;
-  font-size: 9px;
-  color: var(--stark-cream45);
-  letter-spacing: 0.1em;
-}
-/* .stark-wk-amount font/size set in calendar cells block above */
-.stark-wk-tile.win .stark-wk-amount { color: var(--win-text); }
-.stark-wk-tile.loss .stark-wk-amount { color: var(--loss-text); }
-.stark-wk-tile.future .stark-wk-amount { color: var(--ink45); }
-.stark-wk-daystrip { display:flex; gap:2px; margin-top:4px; }
-.stark-wk-day { width:6px; height:14px; border-radius:1.5px; background:var(--hair); }
-.stark-wk-day.win { background:var(--win); }
-.stark-wk-day.loss { background:var(--loss); }
-
-/* ---- Recent trades strip ---- */
-#stark-recent {
-  flex: 0 0 auto;
-}
-.stark-section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-.stark-section-label {
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  color: var(--stark-cream45);
-  text-transform: uppercase;
-}
-.stark-link {
-  background: none;
-  border: none;
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  color: var(--stark-gold);
-  cursor: pointer;
-  padding: 0;
-}
-.stark-recent-cards {
-  display: flex;
-  gap: 10px;
-}
-.stark-trade-card {
-  flex: 1;
-  background: var(--stark-panel);
-  border: 1px solid var(--stark-hair);
-  border-radius: 10px;
-  padding: 10px 13px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 0;
-}
-.stark-card-row1 {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.stark-card-sym {
-  font-family: 'Geist Mono', monospace;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--stark-cream);
-  letter-spacing: 0.05em;
-}
-.stark-card-pnl {
-  font-family: 'Geist Mono', monospace;
-  font-size: 13px;
-  font-weight: 600;
-}
-.stark-card-pnl.win { color: var(--stark-win); }
-.stark-card-pnl.loss { color: var(--stark-loss); }
-.stark-card-row2 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.stark-card-chip {
-  font-family: 'Geist Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid var(--stark-hair2);
-  color: var(--stark-cream45);
-  text-transform: uppercase;
-}
-.stark-card-rr {
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  color: var(--stark-cream45);
-}
-.stark-card-time {
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  color: var(--stark-cream45);
-  margin-left: auto;
-}
-
-/* ---- Right column ---- */
-#stark-ark-col {
-  flex: 1 1 0;
-  min-height: 180px;
-}
-
-/* ---- Daily rules ---- */
-#stark-rules {
-  flex: 0 0 auto;
-  padding: 14px 16px;
-}
-.stark-rules-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-#stark-rules-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.stark-rule-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 11px;
-  color: var(--stark-cream70);
-}
-.stark-rule-item input[type=checkbox] {
-  accent-color: var(--stark-gold);
-  width: 14px; height: 14px;
-  cursor: pointer;
-}
-.stark-rule-item.checked {
-  color: var(--stark-cream45);
-  text-decoration: line-through;
-}
-.stark-rule-auto-badge {
-  font-size: 8px;
-  letter-spacing: 0.1em;
-  padding: 1px 5px;
-  border-radius: 3px;
-  background: rgba(217,169,47,.12);
-  color: var(--stark-gold);
-  text-transform: uppercase;
-}
-.stark-auto-badge {
-  font-family: 'Geist Mono', monospace;
-  font-size: 8px;
-  letter-spacing: .14em;
-  color: var(--gold);
-  border: 1px solid var(--gold-soft);
-  border-radius: 3px;
-  padding: 1px 4px;
-  margin-left: 6px;
-  vertical-align: middle;
-}
-
-/* ---- Closeout row ---- */
-#stark-closeout {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-}
-.stark-closeout-left {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.stark-streak-value {
-  font-family: 'Archivo', 'Arial Black', sans-serif;
-  font-weight: 900;
-  font-style: italic;
-  font-stretch: 125%;
-  font-size: 28px;
-  color: var(--stark-gold);
-  line-height: 1;
-}
-.stark-streak-label {
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  color: var(--stark-cream45);
-}
-.stark-streak-dots {
-  display: flex;
-  gap: 4px;
-  margin-top: 2px;
-}
-.stark-streak-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--stark-hair2);
-}
-.stark-streak-dot.filled { background: var(--stark-gold); }
-.stark-streak-best {
-  font-family: 'Geist Mono', monospace;
-  font-size: 9px;
-  color: var(--stark-cream45);
-  letter-spacing: 0.08em;
-}
-.stark-grade-btn {
-  background: var(--stark-gold);
-  color: #070708;
-  border: none;
-  border-radius: 999px;
-  font-family: 'Geist Mono', monospace;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  padding: 10px 20px;
-  cursor: pointer;
-  transition: opacity 0.15s;
-  text-transform: uppercase;
-}
-.stark-grade-btn:hover { opacity: 0.88; }
-
-/* ---- Responsive: < 1080px stack ---- */
-@media (max-width: 1079px) {
-  /* Restore sidebar on mobile — overrides body.stark-active hide rule */
-  body.stark-active #app-sidebar { display: flex !important; }
-  body.stark-active .main { width: 100%; overflow-y: auto; height: auto; }
-
-  #stark-grid {
-    display: flex;
-    flex-direction: column;
-    height: auto;
-    overflow: visible;
-  }
-  #stark-left  { width: 100%; overflow: visible; }
-  #stark-right { width: 100%; overflow: visible; }
-  #stark-calendar  { min-height: 380px; }
-  #stark-ark-col   { min-height: 440px; }
-  /* Too cramped — hide the top-bar nav; sidebar used on mobile */
-  #stark-topbar .stark-nav { display: none; }
-  /* Hide blobs for perf on mobile */
-  #stark-blobs { display: none; }
-  #pg-dashboard                          { overflow: auto; }
-  .stark-cal-dow-row { margin-right: 0; }
-  .stark-cal-wrap    { flex-direction: column; }
-  .stark-wk-rail {
-    width: auto;
-    grid-auto-rows: auto;
-    grid-template-columns: repeat(auto-fill, minmax(80px,1fr));
-    flex-direction: row;
-    flex-wrap: wrap;
-    display: grid;
-  }
-}
-
-/* === STARK CALENDAR PAGE === */
-#pg-calendar.page.on {
-  background: var(--bg);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.scal-shell {
-  display: flex;
-  flex-direction: row;
-  height: calc(100vh - 56px);
-  gap: 0;
-  overflow: hidden;
-}
-.scal-left {
-  flex: 2.5;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-right: 1px solid var(--hair);
-  padding: 16px 20px;
-}
-.scal-right {
-  flex: 0 0 330px;
-  min-width: 330px;
-  max-width: 400px;
-  overflow-y: auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-/* Calendar header */
-.scal-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
-  flex-shrink: 0;
-}
-.scal-arrow-btn {
-  background: var(--panel);
-  border: 1px solid var(--hair);
-  border-radius: 6px;
-  color: var(--ink70);
-  width: 30px; height: 30px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; font-size: 14px;
-  transition: border-color .15s, color .15s;
-}
-.scal-arrow-btn:hover { border-color: var(--hair2); color: var(--ink); }
-.scal-month-title {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 900; font-style: italic; font-stretch: 125%;
-  font-size: 22px; letter-spacing: -.03em;
-  color: var(--ink); text-transform: uppercase;
-}
-.scal-month-pnl {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 900; font-style: italic;
-  font-size: 18px;
-}
-.scal-chip {
-  font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: .14em;
-  background: var(--panel); border: 1px solid var(--hair); border-radius: 12px;
-  padding: 3px 9px; color: var(--ink45);
-}
-/* View toggle: MONTH / GRID / YEAR */
-.scal-view-toggle {
-  display: flex; gap: 0;
-  background: var(--panel); border: 1px solid var(--hair); border-radius: 7px;
-  overflow: hidden; margin-left: auto;
-}
-.scal-view-btn {
-  font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: .14em;
-  background: none; border: none; color: var(--ink45);
-  padding: 6px 13px; cursor: pointer;
-  transition: color .15s, background .15s;
-}
-.scal-view-btn.active { background: var(--panel-border); color: var(--ink); }
-/* Calendar grid */
-.scal-grid-header {
-  display: grid; grid-template-columns: repeat(7,1fr);
-  gap: 6px; margin-bottom: 6px; flex-shrink: 0;
-}
-.scal-dow { font-family:'Geist Mono',monospace; font-size:9px; letter-spacing:.14em; color:var(--ink45); text-align:center; }
-.scal-grid {
-  display: grid; grid-template-columns: repeat(7,1fr);
-  gap: 6px; flex: 1; overflow: hidden;
-  min-height: 0;
-}
-/* Liquid glass cells */
-.scal-cell {
-  background: var(--panel);
-  border: 1px solid var(--panel-border);
-  border-radius: 13px;
-  backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
-  -webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
-  box-shadow: inset 0 1px 0 var(--spec), inset 0 -1px 0 rgba(0,0,0,.12), 0 4px 16px -8px rgba(0,0,0,.32);
-  padding: 6px 7px 5px;
-  cursor: pointer;
-  display: flex; flex-direction: column;
-  position: relative;
-  transition: border-color .18s, background .18s, transform .12s;
-}
-.scal-cell:hover { border-color: var(--hair2); transform: translateY(-1px); }
-.scal-cell.win { background: rgba(63,165,119,.10); border-color: rgba(63,165,119,.22); }
-.scal-cell.win:hover { background: rgba(63,165,119,.16); border-color: rgba(63,165,119,.38); }
-.scal-cell.loss { background: rgba(201,106,106,.10); border-color: rgba(201,106,106,.22); }
-.scal-cell.loss:hover { background: rgba(201,106,106,.16); border-color: rgba(201,106,106,.38); }
-.scal-cell.today { border: 1.5px solid var(--gold); background: rgba(217,169,47,.10); }
-.scal-cell.inactive { backdrop-filter:none; -webkit-backdrop-filter:none; background:transparent; border:1px solid var(--hair); opacity:.35; cursor:default; pointer-events:none; }
-.scal-cell.selected { box-shadow: 0 0 0 1.5px var(--ink), inset 0 1px 0 var(--spec); }
-.scal-day-num { font-family:'Geist Mono',monospace; font-size:10px; color:var(--ink45); }
-.scal-cell.today .scal-day-num { color:var(--gold); }
-.scal-cell-amt { font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12px; margin-top:auto; }
-.scal-cell-amt.win { color:var(--win-text); }
-.scal-cell-amt.loss { color:var(--loss-text); }
-.scal-cell-trades { font-family:'Geist Mono',monospace; font-size:9px; color:var(--ink45); }
-.scal-today-tag { font-family:'Geist Mono',monospace; font-size:7px; letter-spacing:.18em; color:var(--gold); margin-top:2px; }
-/* Week rail column */
-.scal-week-tile {
-  background: var(--panel); border: 1px solid var(--panel-border);
-  border-radius: 13px; padding: 6px 8px;
-  display: flex; flex-direction: column; gap: 3px;
-  backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
-  -webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(var(--glass-bright));
-}
-.scal-wk-label { font-family:'Geist Mono',monospace; font-size:8px; letter-spacing:.14em; color:var(--ink45); }
-.scal-wk-amt { font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; }
-.scal-wk-daystrip { display:flex; gap:2px; margin-top:auto; }
-.scal-wk-bar { width:7px; height:16px; border-radius:2px; background:var(--hair); }
-.scal-wk-bar.win { background:var(--win); }
-.scal-wk-bar.loss { background:var(--loss); }
-/* Day Detail panel */
-.scal-day-detail {
-  background: var(--panel); border: 1px solid var(--panel-border); border-radius: 13px;
-  padding: 14px 16px; position: relative;
-}
-.scal-day-detail::before, .scal-day-detail::after {
-  content:''; position:absolute; width:14px; height:14px;
-  border-color:var(--gold-soft); border-style:solid;
-}
-.scal-day-detail::before { top:6px; left:6px; border-width:1.5px 0 0 1.5px; }
-.scal-day-detail::after  { bottom:6px; right:6px; border-width:0 1.5px 1.5px 0; }
-.scal-dd-label { font-family:'Geist Mono',monospace; font-size:9px; letter-spacing:.16em; color:var(--ink45); margin-bottom:4px; }
-.scal-dd-grade { font-family:'Archivo',sans-serif; font-weight:900; font-style:italic; font-size:32px; color:var(--gold); }
-.scal-dd-pnl { font-family:'Archivo',sans-serif; font-weight:900; font-style:italic; font-size:26px; }
-.scal-dd-statrow { font-family:'Geist Mono',monospace; font-size:10px; color:var(--ink45); letter-spacing:.1em; margin:6px 0; }
-.scal-trade-row {
-  display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid var(--hair);
-  font-family:'Geist Mono',monospace; font-size:10px;
-}
-.scal-trade-row:last-child { border-bottom:none; }
-.scal-ark-quote { border-left:2px solid var(--gold); padding-left:10px; margin:10px 0 6px; font-size:11px; color:var(--ink70); font-family:'Geist',sans-serif; line-height:1.5; }
-/* Month stats panel */
-.scal-month-stats {
-  background: var(--panel); border: 1px solid var(--panel-border); border-radius: 13px;
-  padding: 14px 16px;
-}
-.scal-ms-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; margin-top:10px; }
-.scal-ms-cell { display:flex; flex-direction:column; gap:2px; }
-.scal-ms-label { font-family:'Geist Mono',monospace; font-size:8px; letter-spacing:.14em; color:var(--ink45); }
-.scal-ms-val { font-family:'Geist Mono',monospace; font-size:13px; color:var(--ink); }
-.scal-ms-delta { font-family:'Geist Mono',monospace; font-size:9px; color:var(--ink45); }
-/* Mobile */
-@media (max-width:1079px) {
-  .scal-shell { flex-direction:column; height:auto; overflow:visible; }
-  .scal-left { border-right:none; border-bottom:1px solid var(--hair); padding:12px; }
-  .scal-right { flex:none; min-width:0; padding:12px; }
-  .scal-grid { grid-template-columns:repeat(7,1fr); }
-  #scal-week-col { display:none; }
-}
-</style>
-
-<script src="js/tradingDay.js"></script>
-<script src="js/arkEngine.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-<!-- Ark Card CSS — WS6 -->
-<style>
-/* ---- Ark card layout ---- */
-#stark-ark-col {
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  gap: 0;
-  min-height: 0;
-  flex: 1 1 0;
-}
-
-.ark-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.ark-identity {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'Geist Mono', monospace;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  color: var(--stark-gold);
-}
-
-.ark-pulse-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--stark-gold);
-  box-shadow: 0 0 0 2px rgba(217,169,47,.3);
-  animation: arkPulse 2s ease-in-out infinite;
-  flex-shrink: 0;
-}
-
-@keyframes arkPulse {
-  0%, 100% { opacity: 0.4; }
-  50%       { opacity: 1; }
-}
-
-.ark-tabs {
-  display: flex;
-  gap: 4px;
-}
-
-.ark-tab {
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  color: var(--stark-cream45);
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  padding: 4px 8px;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-}
-
-.ark-tab.active {
-  color: var(--stark-gold);
-  border-bottom-color: var(--stark-gold);
-}
-
-.ark-tab:hover:not(.active) {
-  color: var(--stark-cream70);
-}
-
-/* ---- Hologram ---- */
-.ark-hologram-wrap {
-  position: relative;
-  width: 150px;
-  height: 128px;
-  max-height: 110px; /* QA: ensure ark-col fits at 1280×800 */
-  margin: 0 auto 4px;
-  overflow: hidden;
-}
-
-#ark-hologram-canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.ark-scanlines {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 3px,
-    rgba(244,244,242,.018) 3px,
-    rgba(244,244,242,.018) 4px
-  );
-}
-
-.ark-sweep {
-  position: absolute;
-  height: 2px;
-  width: 100%;
-  top: 0;
-  left: 0;
-  background: linear-gradient(90deg, transparent, rgba(217,169,47,.6), transparent);
-  animation: arkSweep 4.5s linear infinite;
-}
-
-@keyframes arkSweep {
-  from { top: 0; }
-  to   { top: 128px; }
-}
-
-.ark-chevron-svg {
-  width: 100%;
-  height: 100%;
-}
-
-/* ---- Status ---- */
-.ark-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  color: var(--stark-cream70);
-  margin-top: 12px;
-}
-
-.ark-status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.ark-status-dot.on  { background: var(--stark-win); }
-.ark-status-dot.off { background: var(--stark-loss); }
-.ark-status-dot.armed { background: var(--stark-cream45); }
-
-/* ---- Directive ---- */
-.ark-directive {
-  margin-top: 12px;
-  padding-left: 10px;
-  border-left: 2px solid var(--stark-gold);
-}
-
-#ark-directive-text {
-  font-family: 'Geist', sans-serif;
-  font-size: 13px;
-  color: var(--stark-cream70);
-  line-height: 1.5;
-  margin: 0;
-}
-
-/* ---- Insights ---- */
-.ark-insights {
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.ark-insight-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.ark-insight-label {
-  font-family: 'Geist Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  color: var(--stark-cream45);
-  flex-shrink: 0;
-}
-
-.ark-insight-value {
-  font-family: 'Geist Mono', monospace;
-  font-size: 12px;
-  color: var(--stark-cream);
-  flex: 1;
-  text-align: right;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.ark-insight-detail {
-  font-family: 'Geist Mono', monospace;
-  font-size: 9px;
-  color: var(--stark-cream45);
-  white-space: nowrap;
-}
-
-/* ---- Pattern callout ---- */
-.ark-pattern {
-  margin-top: 8px;
-  padding: 8px 10px;
-  background: rgba(201,106,106,.08);
-  border: 1px solid rgba(201,106,106,.2);
-  border-radius: 6px;
-}
-
-.ark-pattern-label {
-  font-family: 'Geist Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  color: var(--stark-loss);
-  display: block;
-  margin-bottom: 2px;
-}
-
-.ark-pattern-detail {
-  font-family: 'Geist', sans-serif;
-  font-size: 12px;
-  color: var(--stark-cream70);
-}
-
-/* ---- Footer ---- */
-.ark-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid var(--stark-hair);
-}
-
-.ark-grade {
-  font-family: 'Archivo', 'Arial Black', sans-serif;
-  font-weight: 900;
-  font-style: italic;
-  font-stretch: 125%;
-  font-size: 28px;
-  color: var(--stark-gold);
-  line-height: 1;
-}
-
-.ark-grade-bars {
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-}
-
-.ark-micro-bar-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  align-items: center;
-}
-
-.ark-bar-label {
-  font-family: 'Geist Mono', monospace;
-  font-size: 8px;
-  letter-spacing: 0.08em;
-  color: var(--stark-cream45);
-}
-
-.ark-micro-bar {
-  width: 48px;
-  height: 3px;
-  background: rgba(244,244,242,.08);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.ark-micro-bar > div {
-  height: 100%;
-  background: var(--stark-gold);
-  border-radius: 2px;
-  width: 0%;
-  transition: width 0.4s ease;
-}
-
-/* ---- Tab panels ---- */
-.ark-panel-content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.ark-auto-check {
-  font-family: 'Geist Mono', monospace;
-  font-size: 9px;
-  letter-spacing: .14em;
-  color: var(--ink45);
-  margin-top: 8px;
-}
-
-/* ---- YDA tab ---- */
-.ark-yda-grade-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--hair);
-  margin-bottom: 10px;
-}
-
-.ark-yda-read p {
-  font-size: 12px;
-  color: var(--ink70);
-  line-height: 1.55;
-}
-
-.ark-yda-read ul {
-  margin-top: 6px;
-  padding-left: 14px;
-  font-size: 11px;
-  color: var(--ink45);
-}
-
-.ark-cell-label {
-  font-family: 'Geist Mono', monospace;
-  font-size: 9px;
-  letter-spacing: .14em;
-  color: var(--ink45);
-  margin-bottom: 8px;
-}
-</style>
-
-<!-- WS3: Dashboard overrides — verbatim from design/mocks/dashboard.html -->
-<style>
-/* --- Fonts: Archivo everywhere in the band (mock uses Archivo, not Geist Mono) --- */
-.stark-pnl-label {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 9px; letter-spacing: .1em; text-transform: uppercase;
-  color: var(--ink45); margin: 0;
-}
-.stark-hero-amount {
-  font-size: clamp(36px, 3.2vw, 50px);
-  margin-top: 8px; letter-spacing: -.02em; line-height: 1;
-  color: var(--ink45);
-}
-.stark-hero-amount.win { color: var(--win); }
-.stark-hero-amount.loss { color: var(--loss); }
-.stark-statline {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--ink45); margin: 12px 0 0; padding: 0;
-}
-.stark-cell-label {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 8px; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--ink45);
-}
-.stark-cell-value {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 12.5px; color: var(--ink);
-  display: flex; align-items: center; gap: 7px;
-}
-.stark-cell-detail {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 8px; letter-spacing: .1em; text-transform: uppercase;
-  color: var(--ink45);
-}
-.stark-section-label {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase;
-  color: var(--ink45);
-}
-.stark-link {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 9px; letter-spacing: .07em;
-  color: var(--gold); background: none; border: none; cursor: pointer; padding: 0;
-}
-.stark-link:hover { color: var(--ink); }
-
-/* --- P&L band: grid layout from mock .band --- */
-#stark-pnl-block {
-  display: grid !important;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 26px;
-  padding: 18px 24px;
-  border-radius: 20px !important;
-  min-height: unset;
-}
-#stark-pnl-left { flex: unset; gap: 0; }
-#stark-pnl-right {
-  display: flex; align-items: stretch;
-  border-left: 1px solid rgba(242,242,240,.09);
-  margin-left: 0; padding-left: 0;
-}
-.stark-pnl-cell {
-  padding: 4px 22px;
-  border-left: 1px solid rgba(242,242,240,.09);
-  display: flex; flex-direction: column; justify-content: center;
-  gap: 6px; min-width: 128px; align-items: flex-start;
-}
-.stark-pnl-cell:first-child { border-left: none; }
-
-/* --- Last 3 Trades cell --- */
-.stark-last3-cell { min-width: 218px; }
-#stark-last3-trades { display: flex; flex-direction: column; gap: 3px; width: 100%; }
-.stark-t3-row {
-  display: flex; align-items: center; gap: 8px;
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%; font-size: 10px;
-}
-.stark-t3-sym { color: var(--ink); font-weight: 700; font-size: 10.5px; }
-.stark-t3-detail { color: var(--ink45); font-size: 9px; }
-.stark-t3-pnl { margin-left: auto; font-weight: 500; font-size: 11px; }
-.stark-t3-pnl.win { color: var(--win-text); }
-.stark-t3-pnl.loss { color: var(--loss-text); }
-
-/* --- Calendar: Archivo fonts (mock uses Archivo for all cal text) --- */
-.stark-cal-amount {
-  font-family: 'Archivo', sans-serif !important;
-  font-weight: 700; font-style: italic; font-stretch: 115%;
-  font-size: 17px; letter-spacing: -.01em; line-height: 1;
-}
-.stark-cal-pnl {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 700; font-style: italic; font-stretch: 115%;
-  font-size: 17px; letter-spacing: -.01em; line-height: 1;
-}
-.stark-cal-date {
-  font-family: 'Archivo', sans-serif !important;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 9px; line-height: 1;
-}
-.stark-cal-ntrades {
-  font-family: 'Archivo', sans-serif !important;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 8px; letter-spacing: .06em;
-}
-.stark-cal-today-tag {
-  font-family: 'Archivo', sans-serif !important;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 7px; letter-spacing: .08em; color: var(--gold);
-}
-.stark-cal-dow-row span {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 9px; letter-spacing: .07em;
-}
-.stark-month-name {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 900; font-style: italic; font-stretch: 125%;
-  font-size: 22px; letter-spacing: -.01em; text-transform: uppercase;
-  color: var(--ink);
-}
-.stark-month-pnl {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 900; font-style: italic; font-stretch: 125%;
-  font-size: 23px; letter-spacing: -.01em; margin-left: 6px;
-}
-.stark-days-chip {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 10.5px; letter-spacing: .06em;
-  background: rgba(242,242,240,.03); border: 1px solid rgba(242,242,240,.1);
-  color: var(--ink70); padding: 6px 13px; border-radius: 999px;
-}
-
-/* Calendar win/loss border colors verbatim from mock */
-.stark-cal-cell.win-day {
-  background: rgba(63,165,119,.10) !important;
-  border-color: rgba(120,225,175,.3) !important;
-}
-.stark-cal-cell.win-day:hover { background: rgba(63,165,119,.15) !important; border-color: rgba(120,225,175,.45) !important; }
-.stark-cal-cell.loss-day {
-  background: rgba(201,106,106,.09) !important;
-  border-color: rgba(230,150,150,.26) !important;
-}
-.stark-cal-cell.loss-day:hover { background: rgba(201,106,106,.13) !important; border-color: rgba(230,150,150,.4) !important; }
-.stark-cal-cell.today-cell {
-  border: 1.5px solid var(--gold) !important;
-  background: rgba(216,178,106,.10) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,235,180,.4),
-    inset 0 -10px 18px -14px rgba(0,0,0,.5),
-    0 12px 30px -14px rgba(216,178,106,.35) !important;
-}
-
-/* Week rail: 134px tiles, Archivo, glass (mock .wktot width 134px) */
-.stark-wk-rail { width: 134px; min-width: 134px; }
-.stark-cal-dow-row { margin-right: 142px; }
-.stark-wk-tile {
-  background: rgba(255,255,255,.025) !important;
-  border: 1px solid rgba(255,255,255,.11) !important;
-  border-radius: 13px !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.16) !important;
-}
-.stark-wk-label {
-  font-family: 'Archivo', sans-serif !important;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 7.5px; letter-spacing: .09em; text-transform: uppercase;
-}
-.stark-wk-amount {
-  font-family: 'Archivo', sans-serif !important;
-  font-weight: 700; font-style: italic; font-stretch: 115%;
-  font-size: 17px; letter-spacing: -.01em; line-height: 1;
-}
-.stark-wk-tile.win .stark-wk-amount { color: #5ED1A0; }
-.stark-wk-tile.loss .stark-wk-amount { color: #DE8C8C; }
-.stark-wk-tile.future .stark-wk-amount { color: rgba(242,242,240,.3); font-size: 14px; }
-
-/* --- Share module: sharebox layout (no panel bg, card centered, link below) --- */
-#stark-share-module {
-  background: none !important; border: none !important;
-  box-shadow: none !important; border-radius: 0 !important;
-  display: flex; flex-direction: column; align-items: center;
-  gap: 9px; padding: 4px 0 !important; flex-shrink: 0;
-}
-#stark-share-preview-wrap {
-  width: 222px !important; aspect-ratio: 16/9 !important;
-  border-radius: 12px !important;
-  border: 1px solid rgba(216,178,106,.3) !important;
-  background:
-    radial-gradient(140px 70px at 80% 10%, rgba(216,178,106,.12), transparent 70%),
-    linear-gradient(180deg,#101012,#0A0A0C) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 10px 24px -14px rgba(0,0,0,.7) !important;
-  overflow: hidden; margin-top: 0 !important;
-  transition: transform .15s ease, border-color .15s ease !important;
-}
-#stark-share-preview-wrap:hover {
-  transform: translateY(-3px);
-  border-color: rgba(216,178,106,.55) !important;
-}
-.stark-sharelink {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 9px; letter-spacing: .07em; font-weight: 500;
-  color: var(--gold); text-transform: uppercase;
-  background: none; border: none; cursor: pointer; padding: 0;
-}
-.stark-sharelink:hover { color: var(--ink); }
-
-/* --- Rules: Archivo, separated by hairlines like mock --- */
-#stark-rules { padding: 12px 16px; }
-.stark-rule-item {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 12px; color: var(--ink70); line-height: 1.3;
-  display: flex; align-items: flex-start; gap: 11px;
-  padding: 7px 0; border-top: 1px solid var(--hair); cursor: pointer;
-}
-.stark-rule-item:first-child { border-top: none !important; }
-.stark-rule-item.checked { color: var(--ink45); text-decoration: line-through; }
-#stark-rules-list { gap: 0; }
-
-/* --- Ark card (coach): 20px radius, Archivo everywhere --- */
-#stark-ark-col { border-radius: 20px !important; padding: 14px 16px !important; gap: 11px !important; overflow: hidden; }
-.ark-identity {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 900; font-style: italic; font-stretch: 125%;
-  font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--ink); gap: 8px;
-}
-.ark-tabs { border: 1px solid var(--hair); border-radius: 6px; overflow: hidden; gap: 0; }
-.ark-tab {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 8.5px; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--ink45); padding: 5px 9px;
-  background: none; border: none; border-bottom: none; cursor: pointer; transition: color .15s;
-}
-.ark-tab.active { background: var(--ink); color: #0A0A0A; }
-.ark-tab:hover:not(.active) { color: var(--ink); border-bottom-color: transparent; }
-.ark-status {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase;
-  display: flex; align-items: center; gap: 8px; color: var(--ink45); margin-top: 0;
-}
-#ark-status-text { color: var(--win); font-weight: 500; }
-.ark-directive {
-  padding: 2px 0 2px 13px; border-left: 3px solid var(--gold);
-  margin-top: 0; display: flex; flex-direction: column; gap: 4px;
-}
-.ark-directive-bar { display: none; }
-#ark-directive-text {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 900; font-style: italic; font-stretch: 125%;
-  font-size: 13.5px; letter-spacing: -.01em; color: var(--ink); line-height: 1.4; margin: 0;
-}
-.ark-insights {
-  border-top: 1px solid var(--hair); padding-top: 10px;
-  display: flex; flex-direction: column; gap: 7px; margin-top: 0;
-}
-.ark-insight-row { display: flex; align-items: baseline; gap: 10px; }
-.ark-insight-label {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 8px; letter-spacing: .07em; text-transform: uppercase;
-  color: var(--ink45); width: 86px; flex-shrink: 0;
-}
-.ark-insight-value {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 11.5px; color: var(--ink); font-weight: 500;
-  line-height: 1.3; text-align: left; white-space: normal;
-}
-.ark-insight-detail {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 9.5px; color: var(--ink45);
-}
-.ark-pattern {
-  background: rgba(201,106,106,.06); border: 1px solid rgba(201,106,106,.2);
-  border-radius: 9px; padding: 8px 11px;
-  font-size: 10.5px; line-height: 1.4; color: var(--ink70);
-}
-.ark-pattern-label {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 9px; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--loss); display: block; margin-bottom: 3px;
-}
-.ark-pattern-detail {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 11.5px; color: var(--ink70); line-height: 1.4;
-}
-.ark-auto-check {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  font-size: 9px; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--ink45); margin-top: 0;
-}
-.ark-hologram-wrap { max-height: 100px; }
-
-/* ============================================================
-   WS3 FIX: Glass treatment + typography corrections
-   ============================================================ */
-
-/* --- Glass on ALL .stark-panel (P&L band, rules, ark card, closeout)
-       Verbatim from mock .band / .coach box-shadow stack --- */
-.stark-panel {
-  backdrop-filter: blur(1.5px) url(#liquidLens) saturate(1.85) brightness(1.12);
-  -webkit-backdrop-filter: blur(11px) saturate(1.85) brightness(1.1);
-  background: rgba(255,255,255,.045) !important;
-  border: 1px solid rgba(255,255,255,.22) !important;
+header.top, #stark-topbar, .canvas { position: relative; z-index: 1; }
+
+/* ===== liquid glass ===== */
+.band,.coach,.rcard,.wktot,.cell:not(.off):not(.fut),.pcard{
+  backdrop-filter:blur(11px) saturate(1.85) brightness(1.1);
+  -webkit-backdrop-filter:blur(11px) saturate(1.85) brightness(1.1);
+  backdrop-filter:blur(1.5px) url(#liquidLens) saturate(1.85) brightness(1.12);
+}
+.band,.coach,.rcard,.wktot,.pcard{
+  background:rgba(255,255,255,.045) !important;
+  border:1px solid rgba(255,255,255,.22) !important;
   box-shadow:
     inset 0 1.5px 0 rgba(255,255,255,.45),
     inset 0 0 0 1.5px rgba(255,255,255,.06),
@@ -11568,51 +9944,295 @@ body.stark-active .main { overflow: hidden; height: 100vh; }
     0 22px 44px -22px rgba(0,0,0,.8),
     0 2px 8px -2px rgba(0,0,0,.4) !important;
 }
+.band{border-radius:20px !important}
+.coach{border-radius:20px !important}
+.rcard,.wktot,.pcard{border-radius:16px !important}
 
-/* --- Calendar cells: 6-layer box-shadow from mock .cell --- */
-.stark-cal-cell {
-  backdrop-filter: blur(2.5px) url(#liquidLens) saturate(1.7) brightness(1.16) !important;
-  -webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(1.14) !important;
-  background: rgba(255,255,255,.04) !important;
-  border: 1px solid rgba(255,255,255,.2) !important;
+/* two-column canvas */
+.canvas{
+  flex:1;min-height:0;
+  display:grid;grid-template-columns:minmax(0,2.45fr) minmax(310px,1fr);
+  gap:0;
+}
+h3.sec{
+  font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:9.5px;
+  letter-spacing:.1em;color:var(--ink45);text-transform:uppercase;margin-bottom:10px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+h3.sec a{color:var(--gold);font-size:9px;letter-spacing:.07em;cursor:pointer}
+h3.sec a:hover{color:var(--ink)}
+
+/* LEFT column */
+.mainL{
+  padding:22px 28px 20px;min-width:0;min-height:0;
+  display:flex;flex-direction:column;gap:16px;
+  border-right:1px solid var(--hair);
+}
+
+/* P&L band */
+.band{
+  display:grid;grid-template-columns:1fr auto;align-items:center;gap:26px;flex-shrink:0;
+  background:rgba(242,242,240,.018);
+  border:1px solid rgba(242,242,240,.09);
+  border-radius:12px;padding:18px 24px;position:relative;
+}
+.band:before,.band:after{
+  content:"";position:absolute;width:14px;height:14px;pointer-events:none;
+  border-color:rgba(216,178,106,.55);border-style:solid;
+}
+.band:before{top:7px;left:7px;border-width:1px 0 0 1px;border-radius:3px 0 0 0}
+.band:after{bottom:7px;right:7px;border-width:0 1px 1px 0;border-radius:0 0 3px 0}
+.daymeta{display:flex;align-items:stretch;gap:0}
+.dm{
+  padding:4px 22px;border-left:1px solid rgba(242,242,240,.09);
+  display:flex;flex-direction:column;justify-content:center;gap:6px;min-width:128px;
+}
+.dm .l{
+  font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;
+  font-size:8px;letter-spacing:.08em;color:var(--ink45);text-transform:uppercase;
+}
+.dm .v{
+  font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;
+  font-size:12.5px;color:var(--ink);display:flex;align-items:center;gap:7px;
+}
+.dm .v .ldot{width:6px;height:6px;border-radius:50%;background:var(--win)}
+.dm .v .up{color:var(--win)}
+.dm-trades{min-width:218px;gap:5px}
+.t3{display:flex;align-items:center;gap:8px;font-size:10px}
+.t3 .t3s{color:var(--ink);font-weight:700;font-size:10.5px}
+.t3 .t3d{color:var(--ink45);font-size:9px}
+.t3 .t3p{margin-left:auto;font-weight:900;font-size:11px}
+.t3 .t3p.w{color:#7BE8B8}.t3 .t3p.l{color:#E8A0A0}
+.dm .sdots{display:flex;gap:4px}
+.dm .sdots i{width:13px;height:4px;border-radius:2px;background:rgba(242,242,240,.12)}
+.dm .sdots i.w{background:var(--win)} .dm .sdots i.l{background:var(--loss)}
+.dm .sdots i.on{box-shadow:0 0 6px rgba(63,165,119,.5)}
+.statline{
+  font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;
+  font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  display:flex;gap:18px;flex-wrap:wrap;padding-bottom:6px;
+}
+.statline span{color:var(--ink45)}
+.statline span b{color:var(--ink);font-weight:500}
+
+/* calendar */
+.calwrap{flex:1;min-height:0;display:flex;flex-direction:column;width:100%}
+.calhead{display:flex;align-items:center;gap:14px;margin-bottom:12px;flex-shrink:0}
+.calhead .mo{font-size:22px;text-transform:uppercase}
+.calhead .mopnl{font-size:23px;color:var(--win);margin-left:6px}
+.calhead .arr{
+  font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;
+  color:var(--ink45);font-size:14px;cursor:pointer;padding:2px 6px;background:none;border:none;
+}
+.calhead .arr:hover{color:var(--ink)}
+.chipstat{
+  font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;
+  font-size:10.5px;letter-spacing:.06em;border-radius:999px;padding:6px 13px;
+}
+.chipstat.g{background:rgba(63,165,119,.1);color:var(--win)}
+.chipstat.d{background:rgba(242,242,240,.03);border:1px solid rgba(242,242,240,.1);color:var(--ink70)}
+.calbody{flex:1;min-height:0;display:grid;grid-template-columns:1fr 134px;gap:10px}
+.grid{display:grid;grid-template-rows:auto repeat(6,1fr);gap:8px;min-height:0}
+.dow{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.dow span{
+  font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;
+  font-size:9px;letter-spacing:.07em;color:var(--ink45);text-transform:uppercase;text-align:center;padding:2px 0;
+}
+.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;min-height:0}
+.cell{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.2);
+  border-radius:15px;position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  padding:6px 3px;min-height:0;
+  transition:border-color .15s ease, background .15s ease, transform .15s ease;
+  backdrop-filter:blur(6px) saturate(1.6) brightness(1.14);
+  -webkit-backdrop-filter:blur(6px) saturate(1.6) brightness(1.14);
+  backdrop-filter:blur(2.5px) url(#liquidLens) saturate(1.7) brightness(1.16);
   box-shadow:
     inset 0 1.5px 0 rgba(255,255,255,.42),
     inset 0 0 0 1.5px rgba(255,255,255,.05),
     inset 0 -12px 20px -16px rgba(0,0,0,.5),
     inset 0 10px 18px -14px rgba(255,255,255,.1),
     0 16px 34px -18px rgba(0,0,0,.75),
-    0 2px 6px -2px rgba(0,0,0,.35) !important;
+    0 2px 6px -2px rgba(0,0,0,.35);
 }
-/* no backdrop on empties / future / weekend */
-.stark-cal-cell.empty,
-.stark-cal-cell.future-cell,
-.stark-cal-cell.weekend-cell {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  background: transparent !important;
-  border-color: rgba(242,242,240,.05) !important;
-  box-shadow: none !important;
+.cell:hover{border-color:rgba(255,255,255,.26);transform:translateY(-2px)}
+.cell .spec{
+  position:absolute;inset:0;border-radius:13px;pointer-events:none;
+  background:
+    radial-gradient(58px 24px at 16% 0%, rgba(255,255,255,.16), transparent 70%),
+    linear-gradient(165deg, rgba(255,255,255,.07) 0%, transparent 28%);
 }
-/* win / loss border overrides (more vivid than base) */
-.stark-cal-cell.win-day  { border-color: rgba(120,225,175,.3) !important; }
-.stark-cal-cell.loss-day { border-color: rgba(230,150,150,.26) !important; }
+.cell .dt{
+  position:absolute;top:6px;right:8px;
+  font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;
+  font-size:9px;color:var(--ink45);
+}
+.cell.off{background:transparent;border-color:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none}
+.cell.fut{background:transparent;border:1px solid rgba(242,242,240,.05);backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none}
+.cell.fut:hover{border-color:rgba(242,242,240,.12);transform:none}
+.cell.fut .dt{color:rgba(242,242,240,.22)}
+.cell.w{background:rgba(63,165,119,.10);border-color:rgba(120,225,175,.3)}
+.cell.w:hover{background:rgba(63,165,119,.15);border-color:rgba(120,225,175,.45)}
+.cell.l{background:rgba(201,106,106,.09);border-color:rgba(230,150,150,.26)}
+.cell.l:hover{background:rgba(201,106,106,.13);border-color:rgba(230,150,150,.4)}
+.cell .amt{
+  font-family:'Archivo',sans-serif;font-weight:700;font-style:italic;font-stretch:115%;
+  font-size:17px;letter-spacing:-.01em;line-height:1;
+}
+.cell.w .amt{color:#7BE8B8}
+.cell.l .amt{color:#E8A0A0}
+.cell .tr{
+  font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;
+  font-size:8px;letter-spacing:.06em;color:var(--ink45);
+}
+.cell.today{
+  border:1.5px solid var(--gold);background:rgba(216,178,106,.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255,235,180,.4),
+    inset 0 -10px 18px -14px rgba(0,0,0,.5),
+    0 12px 30px -14px rgba(216,178,106,.35);
+}
+.cell.today:hover{background:rgba(216,178,106,.14)}
+.cell.today:before{
+  content:"TODAY";position:absolute;top:6px;left:8px;
+  font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;
+  font-size:7px;letter-spacing:.08em;color:var(--gold);
+}
+.cell.today .dt{color:var(--gold)}
+.wcol{display:grid;grid-template-rows:auto repeat(6,1fr);gap:8px;min-height:0}
+.wcol .spacer{font-size:9px;visibility:hidden;font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;padding:2px 0}
+.wktot{
+  background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.11);border-radius:13px;
+  display:flex;flex-direction:column;justify-content:center;gap:5px;
+  padding:8px 14px;min-height:0;position:relative;
+}
+.wktot .l{font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:7.5px;letter-spacing:.09em;color:var(--ink45);text-transform:uppercase}
+.wktot .a{font-family:'Archivo',sans-serif;font-weight:700;font-style:italic;font-stretch:115%;font-size:17px;letter-spacing:-.01em;line-height:1}
+.wktot .a.win{color:#5ED1A0} .wktot .a.loss{color:#DE8C8C} .wktot .a.zero{color:rgba(242,242,240,.3);font-size:14px}
+.wktot .days{display:flex;gap:4px}
+.wktot .days i{width:9px;height:3.5px;border-radius:2px;background:rgba(242,242,240,.12)}
+.wktot .days i.w{background:var(--win)} .wktot .days i.l{background:var(--loss)}
+.wktot.fut{opacity:.4}
 
-/* --- Month header: Archivo for year & cal-nav arrows --- */
-.stark-month-year {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 900; font-style: italic; font-stretch: 125%;
-  font-size: 22px; letter-spacing: -.01em; color: var(--ink45);
+/* RIGHT column */
+.mainR{padding:20px 22px 18px;min-width:0;min-height:0;display:flex;flex-direction:column;gap:14px}
+.sharebox{display:flex;flex-direction:column;align-items:center;gap:9px;flex-shrink:0}
+.pcard{
+  width:222px;aspect-ratio:16/9;border-radius:12px;position:relative;
+  background:
+    radial-gradient(140px 70px at 80% 10%, rgba(216,178,106,.12), transparent 70%),
+    linear-gradient(180deg,#101012,#0A0A0C);
+  border:1px solid rgba(216,178,106,.3);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 10px 24px -14px rgba(0,0,0,.7);
+  display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;
+  transition:transform .15s ease, border-color .15s ease;cursor:pointer;overflow:hidden;
 }
-.stark-cal-nav {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 600; font-style: italic; font-stretch: 108%;
-  color: var(--ink45);
+.pcard:hover{transform:translateY(-3px);border-color:rgba(216,178,106,.55)}
+.pc-top{
+  position:absolute;top:9px;left:12px;right:12px;
+  display:flex;justify-content:space-between;
+  font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;
+  font-size:7.5px;letter-spacing:.07em;color:var(--ink45);
 }
+.pc-brand{font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:125%;font-size:9px;color:var(--ink);letter-spacing:0}
+.pc-amt{font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:125%;font-size:28px;letter-spacing:-.005em;color:#5ED1A0;line-height:1;margin-top:8px}
+.pc-sub{font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:8px;letter-spacing:.07em;color:var(--ink45);text-transform:uppercase}
+.sharelink{
+  font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;
+  font-size:9px;letter-spacing:.07em;color:var(--gold);text-transform:uppercase;
+  cursor:pointer;background:none;border:none;padding:0;
+}
+.sharelink:hover{color:var(--ink)}
+.rules{flex-shrink:0}
+.rule{display:flex;align-items:flex-start;gap:11px;padding:7px 0;border-top:1px solid var(--hair);cursor:pointer}
+.rule:first-child{border-top:none}
+.box{width:15px;height:15px;border:1.5px solid var(--hair2);border-radius:4px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#0A0A0A}
+.rule.done .box{background:var(--gold);border-color:var(--gold)}
+.rule.done .box::after{content:"✓"}
+.rule .txt{font-size:12px;color:var(--ink70);line-height:1.3}
+.rule.done .txt{color:var(--ink45);text-decoration:line-through}
 
-/* Hero P&L win/loss explicit (ensure class overrides are not blocked by inline style) */
-.stark-hero-amount.win  { color: var(--win)  !important; }
-.stark-hero-amount.loss { color: var(--loss) !important; }
+/* Ark coach */
+.coach{
+  border:1px solid rgba(242,242,240,.09);border-radius:12px;background:rgba(242,242,240,.018);
+  padding:14px 16px;display:flex;flex-direction:column;min-height:0;flex:1;
+  position:relative;overflow:hidden;gap:11px;
+}
+.coach .chead{display:flex;align-items:center;justify-content:space-between}
+.coach:before,.coach:after{content:"";position:absolute;width:14px;height:14px;pointer-events:none;border-color:rgba(216,178,106,.55);border-style:solid}
+.coach:before{top:7px;left:7px;border-width:1px 0 0 1px;border-radius:3px 0 0 0}
+.coach:after{bottom:7px;right:7px;border-width:0 1px 1px 0;border-radius:0 0 3px 0}
+.coach h4{font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:125%;font-size:12px;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.coach h4 .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px rgba(216,178,106,.6)}
+.ctabs{display:flex;border:1px solid var(--hair);border-radius:6px;overflow:hidden}
+.ctabs a{font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:8.5px;letter-spacing:.06em;color:var(--ink45);padding:5px 9px;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.ctabs a.active{background:var(--ink);color:#0A0A0A}
+.cstatus{font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;display:flex;align-items:center;gap:8px;color:var(--ink45)}
+.cstatus b{color:var(--win);font-weight:500}
+.cstatus .sdot{width:6px;height:6px;border-radius:50%;background:var(--win)}
+.directive{border-left:3px solid var(--gold);padding:2px 0 2px 13px}
+.directive .dl{font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:8px;letter-spacing:.1em;color:var(--ink45);text-transform:uppercase}
+.directive .dt{font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:125%;font-size:13.5px;letter-spacing:-.01em;color:var(--ink);margin-top:4px;line-height:1.4}
+.pattern{background:rgba(201,106,106,.06);border:1px solid rgba(201,106,106,.2);border-radius:9px;padding:8px 11px;font-size:10.5px;line-height:1.4;color:var(--ink70)}
+.pattern b{font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:9px;letter-spacing:.06em;display:block;margin-bottom:3px}
+.insights{border-top:1px solid var(--hair);padding-top:10px;display:flex;flex-direction:column;gap:7px}
+.ins{display:flex;align-items:baseline;gap:10px}
+.ins .il{font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:8px;letter-spacing:.07em;color:var(--ink45);text-transform:uppercase;width:86px;flex-shrink:0}
+.ins .iv{font-size:11.5px;color:var(--ink);font-weight:500;line-height:1.3}
+.ins .iv small{color:var(--ink45);font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:9.5px;margin-left:6px}
+.ins .iv .up{color:var(--win)}
+.ark-insight-row{display:flex;align-items:baseline;gap:10px}
+.ark-insight-label{font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:8px;letter-spacing:.07em;color:var(--ink45);text-transform:uppercase;width:86px;flex-shrink:0}
+.ark-insight-value{font-size:11.5px;color:var(--ink);font-weight:500;line-height:1.3}
+.ark-insight-detail{font-size:9.5px;color:var(--ink45)}
+.ark-yda-grade-row{display:flex;align-items:center;gap:16px}
+.ark-grade{font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:125%;font-size:48px;letter-spacing:-.02em;color:var(--gold);line-height:1}
+.ark-grade-bars{display:flex;flex-direction:column;gap:6px;flex:1}
+.ark-micro-bar-wrap{display:flex;align-items:center;gap:8px}
+.ark-bar-label{font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:8px;letter-spacing:.08em;color:var(--ink45);text-transform:uppercase;width:34px;flex-shrink:0}
+.ark-micro-bar{flex:1;height:4px;background:var(--hair);border-radius:2px;overflow:hidden}
+.ark-micro-bar div{height:100%;background:var(--gold);border-radius:2px;transition:width .4s}
+.ark-yda-read{display:flex;flex-direction:column;gap:6px}
+.ark-yda-read p{font-size:11px;color:var(--ink70);line-height:1.4}
+.ark-yda-read ul{padding-left:16px;font-size:10px;color:var(--ink45);display:flex;flex-direction:column;gap:3px}
+.ark-status-dot{width:6px;height:6px;border-radius:50%;background:rgba(244,244,242,.3);display:inline-block}
+.ark-status-dot.on{background:var(--win)}
+.ark-status-dot.armed{background:var(--gold)}
+.ark-status-dot.off{background:var(--loss)}
+.ark-panel-content{display:flex;flex-direction:column;flex:1;min-height:0;gap:11px}
+.ark-cell-label{font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:9px;letter-spacing:.1em;color:var(--ink45);text-transform:uppercase}
+
+/* hologram */
+.holo{position:relative;display:flex;justify-content:center;padding:2px 0 0;flex-shrink:0}
+.holo .stage{position:relative;width:120px;height:100px}
+.holo canvas{display:block;width:120px !important;height:100px !important;animation:holoFlicker 7s steps(1) infinite}
+@keyframes holoFlicker{0%,91%,94%,100%{opacity:1}92%,93%{opacity:.7}46%{opacity:1}47%{opacity:.84}48%{opacity:1}}
+.holo .scan{
+  position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(180deg,rgba(216,178,106,.06) 0px,rgba(216,178,106,.06) 1px,transparent 1px,transparent 3px);
+  mask-image:radial-gradient(ellipse 58% 58% at 50% 50%, #000 28%, transparent 72%);
+  -webkit-mask-image:radial-gradient(ellipse 58% 58% at 50% 50%, #000 28%, transparent 72%);
+}
+.holo .sweep{
+  position:absolute;left:16%;right:16%;top:6px;height:9px;pointer-events:none;
+  background:linear-gradient(180deg, transparent, rgba(247,223,156,.2), transparent);
+  animation:sweepDown 4.5s linear infinite;
+}
+@keyframes sweepDown{0%{transform:translateY(-6px);opacity:0}8%{opacity:1}80%{opacity:1}100%{transform:translateY(100px);opacity:0}}
+
+@media(max-width:1080px){
+  body{overflow:auto;height:auto}
+  .canvas{grid-template-columns:1fr}
+  .mainL{border-right:none;border-bottom:1px solid var(--hair)}
+  .calbody{grid-template-columns:1fr}
+}
 </style>
+
+<script src="js/tradingDay.js"></script>
+<script src="js/arkEngine.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
 
 </head>
 <body>
@@ -11859,45 +10479,41 @@ body.stark-active .main { overflow: hidden; height: 100vh; }
 <!-- DASHBOARD -->
 <div id="pg-dashboard" class="page on">
 
-  <!-- Hidden legacy IDs preserved so existing renderDashboard() + updateSessionBadge()
-       calls don't throw. renderStarkDashboard() supersedes the visible output. -->
+  <!-- Hidden legacy IDs so existing calls don't throw -->
   <div style="display:none" aria-hidden="true">
     <div id="eod-dash-bar" class="eod-mini-bar"></div>
-    <div id="dash-date"></div>
-    <div id="hero-label"></div>
-    <div id="hero-amount"></div>
-    <span id="hero-trades"></span>
-    <span id="hero-winrate"></span>
-    <span id="hero-points"></span>
-    <span id="hero-streak"></span>
-    <span id="hero-avg"></span>
-    <div id="dash-stats"></div>
-    <div id="streak-num"></div>
-    <div id="streak-sub"></div>
-    <div id="streak-bar"></div>
-    <div id="highlight-content"></div>
-    <div id="recent-grid"></div>
-    <div id="wr-pct"></div>
-    <div id="wr-wins"></div>
-    <div id="wr-loss"></div>
-    <div id="wr-be"></div>
-    <div id="wr-streak"></div>
-    <div id="best-val"></div>
-    <div id="best-sub"></div>
-    <div id="worst-val"></div>
-    <div id="worst-sub"></div>
-    <div id="dash-cal"></div>
-    <div id="dash-cal-lbl"></div>
+    <div id="dash-date"></div><div id="hero-label"></div><div id="hero-amount"></div>
+    <span id="hero-trades"></span><span id="hero-winrate"></span><span id="hero-points"></span>
+    <span id="hero-streak"></span><span id="hero-avg"></span>
+    <div id="dash-stats"></div><div id="streak-num"></div><div id="streak-sub"></div>
+    <div id="streak-bar"></div><div id="highlight-content"></div><div id="recent-grid"></div>
+    <div id="wr-pct"></div><div id="wr-wins"></div><div id="wr-loss"></div>
+    <div id="wr-be"></div><div id="wr-streak"></div>
+    <div id="best-val"></div><div id="best-sub"></div><div id="worst-val"></div><div id="worst-sub"></div>
+    <div id="dash-cal"></div><div id="dash-cal-lbl"></div>
     <svg style="display:none"><circle id="wr-circle"></circle></svg>
     <select id="journal-select"><option value="funded">Funded Account</option><option value="paper">Paper Trading</option></select>
     <span id="journal-badge"></span>
     <div id="session-badge"><span id="session-dot"></span><span id="session-name"></span><span id="session-detail"></span></div>
+    <div id="stark-hero-amount"></div><div id="stark-pnl-label"></div><div id="stark-statline"></div>
+    <div id="stark-session-name"></div><div id="stark-session-next"></div>
+    <div id="stark-green-streak-val"></div><div id="stark-streak-mini-bars"></div>
+    <div id="stark-t3-0"><span class="stark-t3-sym"></span><span class="stark-t3-detail"></span><span class="stark-t3-pnl"></span></div>
+    <div id="stark-t3-1"><span class="stark-t3-sym"></span><span class="stark-t3-detail"></span><span class="stark-t3-pnl"></span></div>
+    <div id="stark-t3-2"><span class="stark-t3-sym"></span><span class="stark-t3-detail"></span><span class="stark-t3-pnl"></span></div>
+    <div id="stark-rules-list"></div><div id="stark-rules-count"></div>
+    <div id="stark-month-name"></div><div id="stark-month-year"></div>
+    <div id="stark-month-pnl"></div><div id="stark-days-chip"></div>
+    <div id="stark-share-preview-fallback"></div><canvas id="stark-share-preview"></canvas>
+    <div id="stark-closeout"></div><div id="stark-streak-val"></div>
+    <div id="stark-streak-dots"></div><div id="stark-streak-best"></div>
+    <div id="stark-streak-unit"></div><div id="stark-recent-cards"></div>
+    <div id="ark-hologram-canvas"></div>
   </div>
 
-  <!-- SVG lens filter for liquid glass (hidden, referenced by CSS) -->
+  <!-- liquidLens SVG filter -->
   <svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
     <defs>
-      <!-- WS2: parameters verbatim from design/mocks/dashboard.html -->
       <filter id="liquidLens" x="-20%" y="-20%" width="140%" height="140%">
         <feTurbulence type="fractalNoise" baseFrequency="0.0032 0.0055" numOctaves="1" seed="7" result="noise"/>
         <feGaussianBlur in="noise" stdDeviation="2.2" result="soft"/>
@@ -11906,16 +10522,14 @@ body.stark-active .main { overflow: hidden; height: 100vh; }
     </defs>
   </svg>
 
-  <!-- WS2: REWIND × ARK watermark — verbatim from mocks -->
-  <div class="wm" aria-hidden="true"><span>REWIND</span><i>×</i><span>ARK</span></div>
+  <div class="wm" aria-hidden="true"><span>REWIND</span><i>&times;</i><span>ARK</span></div>
 
-  <!-- Top bar -->
   <header id="stark-topbar">
     <span class="stark-brand"><span class="stark-brand-chevron">&laquo;</span>REWIND</span>
     <nav class="stark-nav">
       <button class="stark-nav-item active" data-pg="dashboard" onclick="goTo('dashboard')">DASHBOARD</button>
-      <button class="stark-nav-item" data-pg="calendar" onclick="goTo('calendar')">CALENDAR</button>
-      <button class="stark-nav-item" data-pg="history" onclick="goTo('history')">HISTORY</button>
+      <button class="stark-nav-item" data-pg="calendar"  onclick="goTo('calendar')">CALENDAR</button>
+      <button class="stark-nav-item" data-pg="history"   onclick="goTo('history')">HISTORY</button>
       <button class="stark-nav-item" data-pg="analytics" onclick="goTo('analytics')">REVIEW</button>
       <button class="stark-nav-item" data-pg="community" onclick="goTo('community')">COMMUNITY</button>
     </nav>
@@ -11925,145 +10539,115 @@ body.stark-active .main { overflow: hidden; height: 100vh; }
     </div>
   </header>
 
-  <!-- Two-column grid -->
-  <div id="stark-grid">
+  <div class="canvas">
 
-    <!-- LEFT COLUMN -->
-    <div id="stark-left">
+    <main class="mainL">
 
-      <!-- 1. Daily P&L block -->
-      <div id="stark-pnl-block" class="stark-panel stark-brackets">
-        <div id="stark-pnl-left">
-          <p class="stark-pnl-label" id="stark-pnl-label">TODAY'S P&amp;L &middot; &mdash; &mdash; &mdash;</p>
-          <div class="stark-hero-amount" id="stark-hero-amount">$0</div>
-          <p class="stark-statline" id="stark-statline">&mdash; TRADES &nbsp;&middot;&nbsp; AVG R &mdash; &nbsp;&middot;&nbsp; WIN RATE &mdash;% &nbsp;&middot;&nbsp; POINTS &mdash;</p>
-        </div>
-        <div id="stark-pnl-right">
-          <div class="stark-pnl-cell" id="stark-session-cell">
-            <span class="stark-cell-label">SESSION</span>
-            <span class="stark-cell-value" id="stark-session-name"><span class="stark-session-dot"></span>&mdash;</span>
-            <span class="stark-cell-detail" id="stark-session-next">&mdash;</span>
+      <div class="band" id="dash-band">
+        <div class="t">
+          <div class="l disp" id="dash-pnl-label" style="font-size:8px;letter-spacing:.1em;color:var(--ink45)">TODAY'S P&amp;L &middot; &mdash; &mdash; &mdash;</div>
+          <div class="disp" id="dash-hero-amount" style="font-size:clamp(36px,3.2vw,50px);line-height:1;margin-top:8px;color:var(--ink)">$0</div>
+          <div class="statline" id="dash-statline" style="margin-top:12px;padding-bottom:0">
+            <span>TRADES <b>&mdash;</b></span><span>AVG R <b>&mdash;</b></span>
+            <span>WIN RATE <b>&mdash;</b></span><span>POINTS <b>&mdash;</b></span>
           </div>
-          <div class="stark-pnl-cell" id="stark-green-streak-cell">
-            <span class="stark-cell-label">GREEN STREAK</span>
-            <span class="stark-cell-value" id="stark-green-streak-val" style="color:var(--win-text)">0 DAYS</span>
-            <div class="stark-streak-mini-bars" id="stark-streak-mini-bars">
-              <!-- 5 mini bars for last 5 trading days, injected by JS -->
+        </div>
+        <div class="daymeta">
+          <div class="dm">
+            <span class="l">Session</span>
+            <span class="v" id="dash-session-val"><span class="ldot"></span>&mdash;</span>
+            <span class="l" id="dash-session-detail" style="letter-spacing:.1em">&mdash;</span>
+          </div>
+          <div class="dm">
+            <span class="l">Green Streak</span>
+            <span class="v"><span class="up" id="dash-streak-val">0 DAYS</span></span>
+            <span class="sdots" id="dash-streak-dots"><i></i><i></i><i></i><i></i><i></i></span>
+          </div>
+          <div class="dm dm-trades">
+            <span class="l">Last 3 Trades</span>
+            <div class="t3" id="dash-t3-0"><span class="t3s">&mdash;</span><span class="t3d"></span><span class="t3p"></span></div>
+            <div class="t3" id="dash-t3-1"><span class="t3s">&mdash;</span><span class="t3d"></span><span class="t3p"></span></div>
+            <div class="t3" id="dash-t3-2"><span class="t3s">&mdash;</span><span class="t3d"></span><span class="t3p"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="calwrap">
+        <div class="calhead">
+          <button class="arr" id="dash-cal-prev" onclick="starkCalPrev()" aria-label="Previous month">&#8249;</button>
+          <span class="mo disp" id="dash-cal-mo">JUNE 2026</span>
+          <button class="arr" id="dash-cal-next" onclick="starkCalNext()" aria-label="Next month">&#8250;</button>
+          <span class="mopnl disp" id="dash-cal-pnl"></span>
+          <span class="chipstat d" id="dash-cal-chip" style="margin-left:10px"></span>
+        </div>
+        <div class="calbody">
+          <div class="grid" id="dash-cal-grid">
+            <div class="dow">
+              <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
             </div>
           </div>
-          <div class="stark-pnl-cell stark-last3-cell" id="stark-avg-cell">
-            <span class="stark-cell-label">LAST 3 TRADES</span>
-            <div id="stark-last3-trades">
-              <div class="stark-t3-row" id="stark-t3-0"><span class="stark-t3-sym">&mdash;</span><span class="stark-t3-detail">&mdash;</span><span class="stark-t3-pnl">&mdash;</span></div>
-              <div class="stark-t3-row" id="stark-t3-1"><span class="stark-t3-sym">&mdash;</span><span class="stark-t3-detail">&mdash;</span><span class="stark-t3-pnl">&mdash;</span></div>
-              <div class="stark-t3-row" id="stark-t3-2"><span class="stark-t3-sym">&mdash;</span><span class="stark-t3-detail">&mdash;</span><span class="stark-t3-pnl">&mdash;</span></div>
-            </div>
+          <div class="wcol" id="dash-wk-col">
+            <div class="spacer">x</div>
           </div>
         </div>
       </div>
 
-      <!-- 2. Calendar hero -->
-      <div id="stark-calendar">
-        <div class="stark-cal-header">
-          <button class="stark-cal-nav" id="stark-cal-prev" onclick="starkCalPrev()" aria-label="Previous month">&lsaquo;</button>
-          <div class="stark-cal-title">
-            <span class="stark-month-name" id="stark-month-name">JUNE</span>
-            <span class="stark-month-year" id="stark-month-year">2026</span>
-            <span class="stark-month-pnl" id="stark-month-pnl"></span>
-            <span class="stark-days-chip" id="stark-days-chip"></span>
+    </main>
+
+    <aside class="mainR">
+
+      <div class="sharebox" id="dash-sharebox">
+        <div class="pcard" id="dash-pcard" onclick="openShareCardFlow()">
+          <div class="pc-top">
+            <span class="pc-brand">&laquo;REWIND</span>
+            <span id="dash-share-date">&mdash;</span>
           </div>
-          <button class="stark-cal-nav" id="stark-cal-next" onclick="starkCalNext()" aria-label="Next month">&rsaquo;</button>
+          <div class="pc-amt" id="dash-share-pnl">$0</div>
+          <div class="pc-sub" id="dash-share-sub">&mdash;</div>
         </div>
-        <div class="stark-cal-body">
-          <div class="stark-cal-dow-row">
-            <span>SUN</span><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span>
-          </div>
-          <div class="stark-cal-wrap">
-            <div id="stark-cal-grid" class="stark-cal-grid"><!-- cells injected by JS --></div>
-            <div id="stark-wk-rail" class="stark-wk-rail"><!-- week totals --></div>
-          </div>
-        </div>
+        <button class="sharelink" onclick="openShareCardFlow()">SHARE P&amp;L CARD &rarr;</button>
       </div>
 
-      <!-- 3. Recent trades strip — hidden per mock (not on dashboard) -->
-      <div id="stark-recent" style="display:none">
-        <div class="stark-section-head">
-          <span class="stark-section-label">RECENT TRADES</span>
-          <button class="stark-link" onclick="goTo('history')">HISTORY &rarr;</button>
-        </div>
-        <div class="stark-recent-cards" id="stark-recent-cards"><!-- injected by JS --></div>
+      <div class="rules" id="dash-rules">
+        <h3 class="sec">Daily Rules &middot; <span id="dash-rules-count">0/0</span>
+          <a href="#" onclick="(typeof openRulesModal==='function'?openRulesModal():goTo('rules'));return false">EDIT</a>
+        </h3>
+        <div id="dash-rules-list"></div>
       </div>
 
-    </div><!-- /stark-left -->
-
-    <!-- RIGHT COLUMN — per mock: share card → rules → Ark Bot coach -->
-    <div id="stark-right">
-
-      <!-- 1. Share card (sharebox / pcard) — FIRST per mock -->
-      <div id="stark-share-module">
-        <div id="stark-share-preview-wrap" onclick="openShareCardFlow()">
-          <canvas id="stark-share-preview" style="width:100%;height:auto;border-radius:12px;display:block"></canvas>
-          <div id="stark-share-preview-fallback" style="display:none;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px">
-            <span style="font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:125%;font-size:9px;letter-spacing:.03em;color:var(--ink45)">«REWIND</span>
-            <span id="stark-share-pnl-preview" style="font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:125%;font-size:28px;color:var(--win-text);line-height:1">$0.00</span>
-            <span id="stark-share-date-preview" style="font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:8px;letter-spacing:.07em;color:var(--ink45)">TODAY</span>
-          </div>
-        </div>
-        <button class="stark-sharelink" onclick="openShareCardFlow()">SHARE P&amp;L CARD &rarr;</button>
-      </div>
-
-      <!-- 2. Daily Rules -->
-      <div id="stark-rules" class="stark-panel">
-        <div class="stark-rules-head">
-          <span class="stark-section-label">DAILY RULES &nbsp;&middot;&nbsp; <span id="stark-rules-count">0/0</span></span>
-          <button class="stark-link" onclick="(typeof openRulesModal === 'function' ? openRulesModal() : goTo('rules'))">EDIT</button>
-        </div>
-        <div id="stark-rules-list"><!-- injected by JS --></div>
-      </div>
-
-      <!-- 3. Ark Bot coach card — LAST per mock -->
-      <div id="stark-ark-col" class="stark-panel stark-brackets">
-
-        <!-- Header -->
-        <div class="ark-card-header">
-          <span class="ark-identity">
-            <span class="ark-pulse-dot" id="ark-pulse-dot"></span>
-            ARK BOT
-          </span>
-          <div class="ark-tabs">
-            <button class="ark-tab active" data-tab="live" onclick="setArkTab('live')">LIVE</button>
-            <button class="ark-tab" data-tab="yda" onclick="setArkTab('yda')">YDA</button>
-            <button class="ark-tab" data-tab="wk" onclick="setArkTab('wk')">WK</button>
+      <div class="coach" id="dash-coach">
+        <div class="chead">
+          <h4><span class="dot"></span>Ark Bot</h4>
+          <div class="ctabs">
+            <a class="ark-tab active" data-tab="live" href="#" onclick="setArkTab('live');return false">LIVE</a>
+            <a class="ark-tab" data-tab="yda"  href="#" onclick="setArkTab('yda');return false">YDA</a>
+            <a class="ark-tab" data-tab="wk"   href="#" onclick="setArkTab('wk');return false">WK</a>
           </div>
         </div>
 
-        <!-- LIVE tab panel -->
         <div id="ark-panel-live" class="ark-panel-content">
-          <div class="ark-hologram-wrap" id="ark-hologram-wrap">
-            <canvas id="ark-hologram-canvas"></canvas>
-            <div class="ark-scanlines" aria-hidden="true"></div>
-            <div class="ark-sweep" aria-hidden="true"></div>
-            <svg id="ark-hologram-fallback" viewBox="0 0 100 100" style="display:none">
-              <path d="M50 2 L94 98 L72 92 L50 46 L28 92 L6 98 Z" fill="none" stroke="var(--gold)" stroke-width="2"/>
-            </svg>
+          <div class="holo" aria-hidden="true">
+            <div class="stage">
+              <div id="arkholo"></div>
+              <span class="scan"></span>
+              <span class="sweep"></span>
+            </div>
           </div>
-          <div class="ark-status" id="ark-status">
-            <span class="ark-status-dot on" id="ark-status-dot"></span>
-            <span id="ark-status-text">ON PLAN</span>
+          <div class="cstatus">
+            <span class="sdot" id="ark-status-dot"></span>
+            <b id="ark-status-text">AWAITING TRADES</b>
           </div>
-          <div class="ark-directive" id="ark-directive">
-            <div class="ark-directive-bar"></div>
-            <p id="ark-directive-text">Loading...</p>
+          <div class="directive">
+            <div class="dl">Today's Directive</div>
+            <div class="dt" id="ark-directive-text">Loading...</div>
           </div>
-          <div class="ark-insights" id="ark-insights"></div>
-          <div class="ark-pattern" id="ark-pattern" style="display:none">
-            <span class="ark-pattern-label" id="ark-pattern-label"></span>
-            <span class="ark-pattern-detail" id="ark-pattern-detail"></span>
+          <div class="insights" id="ark-insights"></div>
+          <div class="pattern" id="ark-pattern" style="display:none">
+            <b id="ark-pattern-label"></b>
+            <span id="ark-pattern-detail"></span>
           </div>
-          <p class="ark-auto-check" id="ark-auto-check">RULES AUTO-CHECKED 0/0 FROM TRADE DATA</p>
         </div>
 
-        <!-- YDA tab panel -->
         <div id="ark-panel-yda" class="ark-panel-content" style="display:none">
           <div class="ark-yda-grade-row">
             <span class="ark-grade" id="ark-grade">&mdash;</span>
@@ -12077,36 +10661,57 @@ body.stark-active .main { overflow: hidden; height: 100vh; }
             <p id="ark-yda-comment"></p>
             <ul id="ark-yda-highlights"></ul>
           </div>
-          <button class="stark-link" onclick="goTo('calendar')" style="margin-top:auto">YDA REPORT &rarr;</button>
+          <button class="sharelink" onclick="goTo('calendar')" style="margin-top:auto">YDA REPORT &rarr;</button>
         </div>
 
-        <!-- WK tab panel -->
         <div id="ark-panel-wk" class="ark-panel-content" style="display:none">
-          <div id="ark-wk-content">
-            <p class="ark-cell-label">WEEKLY SUMMARY</p>
-            <div id="ark-wk-stats"></div>
-          </div>
+          <p class="ark-cell-label">WEEKLY SUMMARY</p>
+          <div id="ark-wk-stats"></div>
         </div>
 
       </div>
 
-      <!-- Closeout — not in mock, kept at bottom -->
-      <div id="stark-closeout" class="stark-panel">
-        <div class="stark-closeout-left">
-          <span class="stark-streak-label">JOURNAL STREAK &nbsp;&middot;&nbsp; <span id="stark-streak-unit">0D</span></span>
-          <span class="stark-streak-value" id="stark-streak-val">0</span>
-          <div class="stark-streak-dots" id="stark-streak-dots"></div>
-          <span class="stark-streak-best" id="stark-streak-best">BEST 0</span>
-        </div>
-        <button class="stark-grade-btn" onclick="openDebriefModal()" id="stark-grade-btn">GRADE TODAY &rarr;</button>
-      </div>
+    </aside>
 
-    </div><!-- /stark-right -->
+  </div>
 
-  </div><!-- /stark-grid -->
+  <script>
+  (function(){
+    var mount=document.getElementById('arkholo');
+    if(!mount||!window.THREE) return;
+    var W=120,H=100;
+    var renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});
+    renderer.setSize(W,H);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+    mount.appendChild(renderer.domElement);
+    var scene=new THREE.Scene();
+    var cam=new THREE.PerspectiveCamera(34,W/H,0.1,1000);
+    cam.position.set(0,6,185);
+    var pts=[[0,50],[44,-46],[22,-40],[0,6],[-22,-40],[-44,-46]];
+    var shape=new THREE.Shape();
+    shape.moveTo(pts[0][0],pts[0][1]);
+    for(var i=1;i<pts.length;i++) shape.lineTo(pts[i][0],pts[i][1]);
+    shape.closePath();
+    var geo=new THREE.ExtrudeGeometry(shape,{depth:16,bevelEnabled:false});
+    geo.translate(0,0,-8);
+    var group=new THREE.Group();
+    group.add(new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xD8B26A,wireframe:true,transparent:true,opacity:0.28})));
+    group.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo,12),new THREE.LineBasicMaterial({color:0xF7DF9C,transparent:true,opacity:0.95})));
+    group.add(new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xD8B26A,transparent:true,opacity:0.05,depthWrite:false})));
+    scene.add(group);
+    var t=0;
+    (function loop(){
+      requestAnimationFrame(loop);
+      t+=0.008;
+      group.rotation.y+=0.007;
+      group.position.y=Math.sin(t)*3;
+      group.rotation.x=Math.sin(t*0.6)*0.06;
+      renderer.render(scene,cam);
+    })();
+  })();
+  </script>
 
 </div>
-
 <!-- LOG TRADE -->
 <div id="pg-log" class="page">
 
@@ -32517,274 +31122,232 @@ function openShareCardFlow() {
 
 /* renderStarkSharePreview — paints a mini 16:9 P&L card onto the canvas */
 function renderStarkSharePreview() {
-  var canvas = document.getElementById('stark-share-preview');
-  var fallback = document.getElementById('stark-share-preview-fallback');
-  if (!canvas) return;
-  var todayKey = window.TradingDay ? (TradingDay.getTodayTradingDay ? TradingDay.getTodayTradingDay() : _localDate(new Date())) : _localDate(new Date());
-  var today = window.trades ? window.trades.filter(function(t) { return t.trading_day === todayKey || t.date === todayKey; }) : [];
+  var todayKey = window.TradingDay
+    ? (TradingDay.getTodayTradingDay ? TradingDay.getTodayTradingDay() : _localDate(new Date()))
+    : _localDate(new Date());
+  var today = (window.trades || []).filter(function(t) {
+    return t.trading_day === todayKey || t.date === todayKey;
+  });
   var pnl = today.reduce(function(s, t) { return s + (parseFloat(t.pnl) || 0); }, 0);
-  var w = canvas.parentElement ? canvas.parentElement.offsetWidth : 220;
-  if (w < 1) w = 220;
-  var h = Math.round(w * 9 / 16);
-  canvas.width = w;
-  canvas.height = h;
-  var ctx = canvas.getContext('2d');
-  if (!ctx) {
-    canvas.style.display = 'none';
-    if (fallback) { fallback.style.display = 'flex'; }
-    return;
-  }
-  canvas.style.display = 'block';
-  if (fallback) fallback.style.display = 'none';
-  // Background
-  var curTheme = document.documentElement.getAttribute('data-theme') || 'grey';
-  ctx.fillStyle = curTheme === 'light' ? '#F7F6F3' : curTheme === 'dark' ? '#070708' : '#1C1D20';
-  ctx.fillRect(0, 0, w, h);
-  // Brand
-  ctx.font = 'italic 900 ' + Math.round(w * 0.052) + 'px Archivo, serif';
-  ctx.fillStyle = '#D9A92F';
-  ctx.fillText('«REWIND', w * .06, h * .3);
-  // P&L
-  ctx.font = 'italic 900 ' + Math.round(w * 0.12) + 'px Archivo, serif';
-  ctx.fillStyle = pnl >= 0 ? '#5ED1A0' : '#DE8C8C';
-  ctx.fillText((pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(2), w * .06, h * .62);
-  // Date
-  var dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  ctx.font = '500 ' + Math.round(w * 0.038) + 'px "Geist Mono", monospace';
-  ctx.fillStyle = 'rgba(244,244,242,.55)';
-  ctx.fillText(dateStr + ' · ' + today.length + ' TRADES', w * .06, h * .8);
-}
 
-/* renderStarkDashboard — main entry point */
+  var amtEl  = document.getElementById('dash-share-pnl');
+  var dateEl = document.getElementById('dash-share-date');
+  var subEl  = document.getElementById('dash-share-sub');
+
+  if (amtEl) {
+    var sign = pnl >= 0 ? '+' : '-';
+    amtEl.textContent = sign + '$' + Math.abs(pnl).toFixed(2);
+    amtEl.style.color = pnl >= 0 ? '#5ED1A0' : '#DE8C8C';
+  }
+  if (dateEl) {
+    var now2 = new Date();
+    var dow2 = now2.toLocaleDateString('en-US', {weekday:'short'}).toUpperCase();
+    var mon2 = now2.toLocaleDateString('en-US', {month:'short'}).toUpperCase();
+    dateEl.textContent = dow2 + ' ' + mon2 + ' ' + now2.getDate();
+  }
+  if (subEl) {
+    if (today.length > 0) {
+      var seen = {};
+      var syms = today
+        .map(function(t){ return (t.symbol||t.ticker||'').toUpperCase(); })
+        .filter(function(s){ return s && !seen[s] && (seen[s]=1); })
+        .slice(0,2).join('/');
+      var n2 = today.length;
+      var rrVals = today.filter(function(t){ return t.rr; }).map(function(t){ return Number(t.rr); });
+      var avgR2 = rrVals.length
+        ? rrVals.reduce(function(s,v){ return s+v; }, 0) / rrVals.length
+        : null;
+      subEl.textContent = (syms||'—') + ' · ' + n2 + ' TRADE' + (n2!==1?'S':'') +
+        (avgR2!==null ? ' · '+(avgR2>=0?'+':'')+avgR2.toFixed(1)+'R' : '');
+    } else {
+      subEl.textContent = 'NO TRADES TODAY';
+    }
+  }
+}
 function renderStarkDashboard() {
   try {
-    // --- Today's trades ---
     var todayKey = '';
     if (window.TradingDay && TradingDay.getTodayTradingDay) {
       todayKey = TradingDay.getTodayTradingDay() || _localDate(new Date());
     } else {
       todayKey = _localDate(new Date());
     }
-
-    var todayTrades = (trades || []).filter(function(t) {
-      return _starkTradeDay(t) === todayKey;
-    });
-
-    var todayPnl = todayTrades.reduce(function(s, t) { return s + (Number(t.pnl) || 0); }, 0);
-    var todayN = todayTrades.length;
-    var todayWins = todayTrades.filter(function(t) { return t.pnl > 0; }).length;
+    var todayTrades = (trades || []).filter(function(t) { return _starkTradeDay(t) === todayKey; });
+    var todayPnl   = todayTrades.reduce(function(s, t) { return s + (Number(t.pnl) || 0); }, 0);
+    var todayN     = todayTrades.length;
+    var todayWins  = todayTrades.filter(function(t) { return t.pnl > 0; }).length;
     var todayWinRate = todayN ? Math.round(todayWins / todayN * 100) : null;
-    var todayPoints = todayTrades.reduce(function(s, t) { return s + (Number(t.points) || 0); }, 0);
-
-    // AVG R: mean of positive rr values where available
+    var todayPoints  = todayTrades.reduce(function(s, t) { return s + (Number(t.points) || 0); }, 0);
     var rrTrades = todayTrades.filter(function(t) { return t.rr && t.rr !== 0; });
-    var avgR = rrTrades.length ? rrTrades.reduce(function(s, t) { return s + Number(t.rr); }, 0) / rrTrades.length : null;
+    var avgR = rrTrades.length
+      ? rrTrades.reduce(function(s, t) { return s + Number(t.rr); }, 0) / rrTrades.length
+      : null;
 
-    // --- Hero P&L ---
-    var heroEl = document.getElementById('stark-hero-amount');
+    var heroEl = document.getElementById('dash-hero-amount');
     if (heroEl) {
-      var heroClass = 'stark-hero-amount';
-      var heroText = '$0';
       if (todayN > 0) {
-        heroClass += todayPnl > 0 ? ' win' : todayPnl < 0 ? ' loss' : '';
+        heroEl.style.color = todayPnl > 0 ? 'var(--win)' : todayPnl < 0 ? 'var(--loss)' : 'var(--ink)';
         var sign = todayPnl >= 0 ? '+' : '-';
         var abs = Math.abs(todayPnl);
-        heroText = sign + '$' + Math.floor(abs).toLocaleString() + '.' + String(Math.round((abs % 1) * 100)).padStart(2, '0');
+        heroEl.textContent = sign + '$' + Math.floor(abs).toLocaleString() + '.' +
+          String(Math.round((abs % 1) * 100)).padStart(2, '0');
+      } else {
+        heroEl.style.color = 'var(--ink)';
+        heroEl.textContent = '$0';
       }
-      heroEl.className = heroClass;
-      heroEl.textContent = heroText;
     }
 
-    // --- P&L label with DOW + date ---
-    var pnlLabel = document.getElementById('stark-pnl-label');
+    var pnlLabel = document.getElementById('dash-pnl-label');
     if (pnlLabel) {
       var now = new Date();
       var dow = now.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
       var mon = now.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-      var day = now.getDate();
-      pnlLabel.textContent = "TODAY'S P&L · " + dow + ' ' + mon + ' ' + day;
+      pnlLabel.textContent = "TODAY’S P&L · " + dow + ' ' + mon + ' ' + now.getDate();
     }
 
-    // --- Statline ---
-    var statlineEl = document.getElementById('stark-statline');
+    var statlineEl = document.getElementById('dash-statline');
     if (statlineEl) {
-      var parts = [
-        '— TRADES ' + (todayN || '—'),
-        'AVG R ' + (avgR !== null ? (avgR >= 0 ? '+' : '') + avgR.toFixed(1) : '—'),
-        'WIN RATE ' + (todayWinRate !== null ? todayWinRate + '%' : '—%'),
-        'POINTS ' + (todayN ? (todayPoints >= 0 ? '+' : '') + Math.round(todayPoints * 10) / 10 : '—')
-      ];
-      statlineEl.textContent = parts.join('  ·  ');
+      statlineEl.innerHTML =
+        '<span>TRADES <b>' + (todayN || '—') + '</b></span>' +
+        '<span>AVG R <b>' + (avgR !== null ? (avgR >= 0 ? '+' : '') + avgR.toFixed(1) : '—') + '</b></span>' +
+        '<span>WIN RATE <b>' + (todayWinRate !== null ? todayWinRate + '%' : '—%') + '</b></span>' +
+        '<span>POINTS <b>' + (todayN ? (todayPoints >= 0 ? '+' : '') + Math.round(todayPoints * 10) / 10 : '—') + '</b></span>';
     }
 
-    // --- Session cell ---
-    var sessNameEl = document.getElementById('stark-session-name');
-    var sessNextEl = document.getElementById('stark-session-next');
-    if (sessNameEl && window.TradingDay) {
+    var sessValEl    = document.getElementById('dash-session-val');
+    var sessDetailEl = document.getElementById('dash-session-detail');
+    if (sessValEl && window.TradingDay) {
       var sessLabel = TradingDay.getSession(Date.now());
-      var isOpen = TradingDay.isMarketOpen(Date.now());
-      var nextOpen = !isOpen ? TradingDay.getNextOpen(Date.now()) : null;
-      var dotColor = isOpen ? 'var(--stark-win)' : 'rgba(244,244,242,.3)';
-      sessNameEl.innerHTML = '<span class="stark-session-dot" style="background:' + dotColor + ';animation:' + (isOpen ? 'starkPulse 2s infinite' : 'none') + '"></span>' + sessLabel;
-      if (sessNextEl) {
+      var isOpen    = TradingDay.isMarketOpen(Date.now());
+      var dotColor  = isOpen ? 'var(--win)' : 'rgba(244,244,242,.3)';
+      var dotAnim   = isOpen ? 'starkPulse 2s infinite' : 'none';
+      sessValEl.innerHTML = '<span class="ldot" style="background:' + dotColor +
+        ';animation:' + dotAnim + '"></span>' + sessLabel;
+      if (sessDetailEl) {
+        var nextOpen = !isOpen ? TradingDay.getNextOpen(Date.now()) : null;
         if (!isOpen && nextOpen && nextOpen.msUntil > 0) {
           var mins = Math.round(nextOpen.msUntil / 60000);
           var hrs = Math.floor(mins / 60);
           var remMins = mins % 60;
-          var until = hrs > 0 ? hrs + 'h ' + remMins + 'm' : remMins + 'm';
-          sessNextEl.textContent = 'OPENS IN ' + until;
+          sessDetailEl.textContent = 'OPENS IN ' +
+            (hrs > 0 ? hrs + 'h ' + remMins + 'm' : remMins + 'm');
         } else {
-          sessNextEl.textContent = isOpen ? 'MARKET OPEN' : '—';
+          sessDetailEl.textContent = isOpen ? 'MARKET OPEN' : '—';
         }
       }
     }
 
-    // --- Last 3 Trades cell ---
-    (function() {
-      var sorted = (trades || []).slice().sort(function(a,b){ return Number(b.id||0) - Number(a.id||0); });
-      var last3 = sorted.slice(0,3);
+    (function renderLast3() {
+      var sorted = (trades || []).slice().sort(function(a,b){
+        return Number(b.id||0) - Number(a.id||0);
+      });
+      var last3 = sorted.slice(0, 3);
       for (var i = 0; i < 3; i++) {
-        var rowEl = document.getElementById('stark-t3-' + i);
+        var rowEl = document.getElementById('dash-t3-' + i);
         if (!rowEl) continue;
         var t = last3[i];
         if (!t) {
-          rowEl.querySelector('.stark-t3-sym').textContent = '—';
-          rowEl.querySelector('.stark-t3-detail').textContent = '';
-          rowEl.querySelector('.stark-t3-pnl').textContent = '';
-          rowEl.querySelector('.stark-t3-pnl').className = 'stark-t3-pnl';
+          rowEl.querySelector('.t3s').textContent = '—';
+          rowEl.querySelector('.t3d').textContent = '';
+          rowEl.querySelector('.t3p').textContent = '';
+          rowEl.querySelector('.t3p').className   = 't3p';
           continue;
         }
-        var sym = (t.symbol || t.ticker || '—').toUpperCase();
-        var side = (t.direction || t.side || '').toUpperCase();
-        var rr = (t.rr !== undefined && t.rr !== null && t.rr !== '') ? ((Number(t.rr) >= 0 ? '+' : '') + Number(t.rr).toFixed(1) + 'R') : '';
-        var detail = [side, rr].filter(Boolean).join(' · ');
-        var pnl = Number(t.pnl) || 0;
-        var absVal = Math.abs(pnl);
-        var pnlStr = (pnl >= 0 ? '+' : '−') + '$' + (absVal >= 1000 ? Math.round(absVal).toLocaleString() : Math.round(absVal));
-        var pnlCls = 'stark-t3-pnl' + (pnl > 0 ? ' win' : pnl < 0 ? ' loss' : '');
-        rowEl.querySelector('.stark-t3-sym').textContent = sym;
-        rowEl.querySelector('.stark-t3-detail').textContent = detail || '—';
-        var pnlEl = rowEl.querySelector('.stark-t3-pnl');
-        pnlEl.textContent = pnlStr;
-        pnlEl.className = pnlCls;
+        var sym    = (t.symbol || t.ticker || '—').toUpperCase();
+        var side   = (t.direction || t.side || '').toUpperCase();
+        var rr2    = (t.rr !== undefined && t.rr !== null && t.rr !== '')
+                     ? ((Number(t.rr) >= 0 ? '+' : '') + Number(t.rr).toFixed(1) + 'R') : '';
+        var detail = [side, rr2].filter(Boolean).join(' · ');
+        var pnl2   = Number(t.pnl) || 0;
+        var absV   = Math.abs(pnl2);
+        var pnlStr = (pnl2 >= 0 ? '+' : '−') + '$' +
+                     (absV >= 1000 ? Math.round(absV).toLocaleString() : Math.round(absV));
+        rowEl.querySelector('.t3s').textContent = sym;
+        rowEl.querySelector('.t3d').textContent = detail || '—';
+        var pnlEl2 = rowEl.querySelector('.t3p');
+        pnlEl2.textContent = pnlStr;
+        pnlEl2.className   = 't3p' + (pnl2 > 0 ? ' w' : pnl2 < 0 ? ' l' : '');
       }
     })();
 
-    // --- Green Streak cell ---
-    (function() {
-      var streakEl = document.getElementById('stark-green-streak-val');
-      var barsEl = document.getElementById('stark-streak-mini-bars');
-      if (!streakEl && !barsEl) return;
-
-      // Build sorted list of trading days (weekdays only) up to and including today
+    (function renderStreak() {
+      var streakEl = document.getElementById('dash-streak-val');
+      var dotsEl   = document.getElementById('dash-streak-dots');
+      if (!streakEl && !dotsEl) return;
       var byDayAll = _starkAggByDay(trades || []);
       var tradedDays = Object.keys(byDayAll).filter(function(k) {
-        var d = new Date(k + 'T12:00:00'); var dow = d.getDay();
-        return dow >= 1 && dow <= 5 && k <= todayKey;
+        var d2 = new Date(k + 'T12:00:00');
+        return d2.getDay() >= 1 && d2.getDay() <= 5 && k <= todayKey;
       }).sort();
-
-      // Compute consecutive green streak (count back from most recent)
       var streak = 0;
       for (var si = tradedDays.length - 1; si >= 0; si--) {
-        if (byDayAll[tradedDays[si]].pnl > 0) { streak++; } else { break; }
+        if (byDayAll[tradedDays[si]].pnl > 0) streak++;
+        else break;
       }
-      if (streakEl) {
-        streakEl.textContent = streak + ' DAY' + (streak !== 1 ? 'S' : '');
-      }
-
-      // Last 5 trading days mini bars
-      if (barsEl) {
-        // Get last 5 weekday dates up to today
-        var last5 = [];
-        var cur = new Date(todayKey + 'T12:00:00');
+      if (streakEl) streakEl.textContent = streak + ' DAY' + (streak !== 1 ? 'S' : '');
+      if (dotsEl) {
+        var last5 = [], cur = new Date(todayKey + 'T12:00:00');
         while (last5.length < 5) {
-          var dow2 = cur.getDay();
-          if (dow2 >= 1 && dow2 <= 5) {
-            last5.unshift(_localDate(cur));
-          }
+          if (cur.getDay() >= 1 && cur.getDay() <= 5) last5.unshift(_localDate(cur));
           cur.setDate(cur.getDate() - 1);
-          if (last5.length === 5) break;
         }
-        var barsHtml = '';
+        var dh = '';
         for (var bi = 0; bi < last5.length; bi++) {
-          var dk2 = last5[bi];
-          var dayInfo = byDayAll[dk2];
-          var barCls = 'stark-streak-mini-bar';
-          if (dk2 === todayKey && dayInfo && dayInfo.pnl > 0) barCls += ' today';
-          else if (dayInfo && dayInfo.count > 0) barCls += dayInfo.pnl > 0 ? ' win' : ' loss';
-          barsHtml += '<span class="' + barCls + '"></span>';
+          var dk = last5[bi];
+          var di3 = byDayAll[dk];
+          var cls = '';
+          if (dk === todayKey && di3 && di3.pnl > 0) cls = 'w on';
+          else if (di3 && di3.count > 0) cls = di3.pnl >= 0 ? 'w' : 'l';
+          dh += '<i' + (cls ? ' class="' + cls + '"' : '') + '></i>';
         }
-        barsEl.innerHTML = barsHtml;
+        dotsEl.innerHTML = dh;
       }
     })();
 
-    // --- Calendar ---
     _starkCalYear = new Date().getFullYear();
     _starkCalMonth = new Date().getMonth();
     renderStarkCal(_starkCalYear, _starkCalMonth);
-
-    // --- Recent trades ---
-    renderStarkRecentTrades();
-
-    // --- Rules ---
     renderStarkRules();
+    if (typeof renderStarkStreak === 'function') renderStarkStreak();
 
-    // --- Streak ---
-    renderStarkStreak();
-
-    // --- Avatar initials ---
     var avatarEl = document.getElementById('stark-avatar');
     if (avatarEl && window.acct) {
       var displayName = acct.display_name || acct.full_name || '';
       if (!displayName && window.currentUser) displayName = currentUser.email || '';
       var parts2 = displayName.trim().split(/\s+/);
-      var initials = parts2.length >= 2
+      var initials2 = parts2.length >= 2
         ? (parts2[0][0] + parts2[parts2.length - 1][0]).toUpperCase()
         : displayName.slice(0, 2).toUpperCase();
-      avatarEl.textContent = initials || '?';
+      avatarEl.textContent = initials2 || '?';
     }
 
-    // --- WS7: apply contextual state overlays ---
-    applyStarkState();
-
-    // --- Share card preview ---
-    renderStarkSharePreview();
+    if (typeof applyStarkState   === 'function') applyStarkState();
+    if (typeof renderStarkSharePreview === 'function') renderStarkSharePreview();
 
   } catch (e) {
     console.warn('[Stark] renderStarkDashboard error:', e);
   }
 }
-
-/* renderStarkCal — builds the 7-col calendar grid + week rail */
 function renderStarkCal(year, month) {
-  var grid = document.getElementById('stark-cal-grid');
-  var rail = document.getElementById('stark-wk-rail');
-  var monthNameEl = document.getElementById('stark-month-name');
-  var monthYearEl = document.getElementById('stark-month-year');
-  var monthPnlEl = document.getElementById('stark-month-pnl');
-  var daysChipEl = document.getElementById('stark-days-chip');
-  if (!grid || !rail) return;
+  var grid = document.getElementById('dash-cal-grid');
+  var wkCol = document.getElementById('dash-wk-col');
+  var calMoEl = document.getElementById('dash-cal-mo');
+  var monthPnlEl = document.getElementById('dash-cal-pnl');
+  var daysChipEl = document.getElementById('dash-cal-chip');
+  if (!grid || !wkCol) return;
 
   var MONTH_NAMES = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE',
                      'JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+  if (calMoEl) calMoEl.textContent = MONTH_NAMES[month] + ' ' + year;
 
-  if (monthNameEl) monthNameEl.textContent = MONTH_NAMES[month];
-  if (monthYearEl) monthYearEl.textContent = year;
-
-  // Aggregate trades by day
   var byDay = _starkAggByDay(trades || []);
-
-  // Today's key
-  var todayKey = window.TradingDay ? (TradingDay.getTodayTradingDay() || _localDate(new Date())) : _localDate(new Date());
-
-  // First day of month (day-of-week offset)
-  var firstDow = new Date(year, month, 1).getDay(); // 0=Sun
+  var todayKey = window.TradingDay
+    ? (TradingDay.getTodayTradingDay() || _localDate(new Date()))
+    : _localDate(new Date());
+  var firstDow = new Date(year, month, 1).getDay();
   var daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  // Month prefix key for filtering
   var monthPrefix = year + '-' + String(month + 1).padStart(2, '0') + '-';
 
-  // Month P&L and days traded
   var monthTrades = Object.keys(byDay).filter(function(k) { return k.startsWith(monthPrefix); });
   var monthPnl = monthTrades.reduce(function(s, k) { return s + byDay[k].pnl; }, 0);
   var daysTraded = monthTrades.filter(function(k) { return byDay[k].count > 0; }).length;
@@ -32792,31 +31355,27 @@ function renderStarkCal(year, month) {
   if (monthPnlEl) {
     if (daysTraded > 0) {
       monthPnlEl.textContent = (monthPnl >= 0 ? '+' : '-') + '$' + Math.round(Math.abs(monthPnl)).toLocaleString();
-      monthPnlEl.className = 'stark-month-pnl ' + (monthPnl >= 0 ? 'win' : 'loss');
-      monthPnlEl.style.color = '';
+      monthPnlEl.style.color = monthPnl >= 0 ? 'var(--win)' : 'var(--loss)';
     } else {
-      // WS8: empty month nav — show dim $0.00 in ink45
-      monthPnlEl.textContent = '$0.00';
-      monthPnlEl.className = 'stark-month-pnl';
-      monthPnlEl.style.color = 'var(--ink45)';
+      monthPnlEl.textContent = '';
     }
   }
   if (daysChipEl) {
-    daysChipEl.textContent = daysTraded + ' DAY' + (daysTraded !== 1 ? 'S' : '') + ' TRADED';
+    if (daysTraded > 0) {
+      daysChipEl.textContent = daysTraded + ' DAY' + (daysTraded !== 1 ? 'S' : '') + ' TRADED';
+      daysChipEl.style.display = '';
+    } else {
+      daysChipEl.style.display = 'none';
+    }
   }
 
-  // Build cells HTML
-  var cellsHtml = '';
-  var weekData = []; // array of {weekPnl, hasTrades, isFuture, days:[{key,pnl,traded,isFuture}]}
-  var currentWeekPnl = 0;
-  var currentWeekHasTrades = false;
-  var currentWeekIsFuture = true;
-  var currentWeekDays = []; // Mon-Fri day entries
+  var weeks = [];
+  var weekStats = [];
+  var currentWeek = [];
+  var currentWkPnl = 0, currentWkHasTrades = false, currentWkIsFuture = true;
+  var currentWkDays = [];
 
-  // Leading empty cells
-  for (var e = 0; e < firstDow; e++) {
-    cellsHtml += '<div class="stark-cal-cell empty"></div>';
-  }
+  for (var e = 0; e < firstDow; e++) currentWeek.push({d: null, off: true});
 
   for (var d = 1; d <= daysInMonth; d++) {
     var cellKey = _starkDateKey(year, month, d);
@@ -32825,189 +31384,146 @@ function renderStarkCal(year, month) {
     var isFuture = cellKey > todayKey;
     var isToday = cellKey === todayKey;
     var dayData = byDay[cellKey];
-
-    var cls = 'stark-cal-cell';
     var isTraded = !isWeekend && !isFuture && dayData && dayData.count > 0;
-    if (isWeekend) {
-      cls += ' weekend-cell';
-    } else if (isFuture) {
-      cls += ' future-cell';
-    } else if (isTraded) {
-      cls += dayData.pnl >= 0 ? ' win-day' : ' loss-day';
-    }
-    if (isToday) cls += ' today-cell';
 
-    var dateHtml = '<span class="stark-cal-date">' + d + '</span>';
-    var todayTag = isToday ? '<span class="stark-cal-today-tag">TODAY</span>' : '';
-    var pnlHtml = '';
-    var nTradesHtml = '';
-    var sheenHtml = '';
-    if (isTraded) {
-      var amtCls = 'stark-cal-amount ' + (dayData.pnl >= 0 ? 'win-day' : 'loss-day');
-      pnlHtml = '<span class="stark-cal-pnl"><span class="' + amtCls + '">' + _starkFmtPnl(dayData.pnl) + '</span></span>';
-      nTradesHtml = '<span class="stark-cal-ntrades">' + dayData.count + ' trade' + (dayData.count !== 1 ? 's' : '') + '</span>';
-      sheenHtml = '<span class="spec-sheen"></span>';
-    }
+    var cls = '';
+    if (isWeekend) cls = 'off';
+    else if (isFuture) cls = 'fut';
+    else if (isTraded) cls = dayData.pnl >= 0 ? 'w' : 'l';
+    if (isToday) cls = (cls ? cls + ' ' : '') + 'today';
 
-    var clickAttr = (!isWeekend && !isFuture) ? ' onclick="goTo(\'history\')"' : '';
+    currentWeek.push({
+      d: d, cls: cls, traded: isTraded,
+      pnl: isTraded ? dayData.pnl : null,
+      count: isTraded ? dayData.count : 0,
+      off: isWeekend
+    });
 
-    cellsHtml += '<div class="' + cls + '"' + clickAttr + '>';
-    cellsHtml += sheenHtml;
-    cellsHtml += '<div style="display:flex;justify-content:space-between;align-items:flex-start">' + dateHtml + todayTag + '</div>';
-    if (pnlHtml) cellsHtml += pnlHtml;
-    if (nTradesHtml) cellsHtml += nTradesHtml;
-    cellsHtml += '</div>';
-
-    // Week accumulation
     if (!isWeekend) {
-      currentWeekPnl += (dayData && dayData.count > 0) ? dayData.pnl : 0;
-      if (dayData && dayData.count > 0) currentWeekHasTrades = true;
-      if (!isFuture) currentWeekIsFuture = false;
-      currentWeekDays.push({ key: cellKey, pnl: (dayData && dayData.count > 0) ? dayData.pnl : null, traded: !!(dayData && dayData.count > 0), isFuture: isFuture });
+      currentWkPnl += isTraded ? dayData.pnl : 0;
+      if (isTraded) currentWkHasTrades = true;
+      if (!isFuture) currentWkIsFuture = false;
+      currentWkDays.push({pnl: isTraded ? dayData.pnl : null, traded: isTraded});
     }
 
-    // Saturday = end of week row
     if (dow === 6 || d === daysInMonth) {
-      weekData.push({ pnl: currentWeekPnl, hasTrades: currentWeekHasTrades, isFuture: currentWeekIsFuture, days: currentWeekDays.slice() });
-      currentWeekPnl = 0;
-      currentWeekHasTrades = false;
-      currentWeekIsFuture = true;
-      currentWeekDays = [];
+      while (currentWeek.length < 7) currentWeek.push({d: null, off: true});
+      weeks.push(currentWeek.slice());
+      weekStats.push({
+        pnl: currentWkPnl,
+        hasTrades: currentWkHasTrades,
+        isFuture: currentWkIsFuture,
+        days: currentWkDays.slice()
+      });
+      currentWeek = [];
+      currentWkPnl = 0;
+      currentWkHasTrades = false;
+      currentWkIsFuture = true;
+      currentWkDays = [];
     }
   }
 
-  // Trailing empty cells to complete last row
-  var totalCells = firstDow + daysInMonth;
-  var remainder = totalCells % 7;
-  if (remainder !== 0) {
-    for (var t2 = 0; t2 < 7 - remainder; t2++) {
-      cellsHtml += '<div class="stark-cal-cell empty"></div>';
-    }
-  }
+  var dowRow = grid.querySelector('.dow');
+  grid.innerHTML = '';
+  if (dowRow) grid.appendChild(dowRow);
 
-  grid.innerHTML = cellsHtml;
-
-  // Build week rail
-  var railHtml = '';
-  for (var w = 0; w < weekData.length; w++) {
-    var wk = weekData[w];
-    var wkCls = 'stark-wk-tile';
-    var wkAmt = '—';
-    var wkAmtCls = '';
-    if (wk.isFuture || !wk.hasTrades) {
-      wkCls += ' future';
-    } else {
-      wkCls += wk.pnl >= 0 ? ' win' : ' loss';
-      wkAmtCls = wk.pnl >= 0 ? ' win-day' : ' loss-day';
-      wkAmt = (wk.pnl >= 0 ? '+' : '-') + '$' + Math.round(Math.abs(wk.pnl)).toLocaleString();
-    }
-    // Build Mon-Fri daystrip (pad to 5 slots)
-    var days = wk.days || [];
-    // pad to 5 slots from Monday
-    var stripHtml = '<div class="stark-wk-daystrip">';
-    for (var sd = 0; sd < 5; sd++) {
-      var dayEntry = days[sd];
-      var dayCls = 'stark-wk-day';
-      if (dayEntry) {
-        if (dayEntry.isFuture || dayEntry.pnl === null) { /* empty */ }
-        else if (dayEntry.traded) dayCls += dayEntry.pnl >= 0 ? ' win' : ' loss';
+  for (var w = 0; w < weeks.length; w++) {
+    var wkEl = document.createElement('div');
+    wkEl.className = 'wk';
+    var wkHtml = '';
+    for (var c = 0; c < weeks[w].length; c++) {
+      var cell = weeks[w][c];
+      var cellCls = 'cell' + (cell.cls ? ' ' + cell.cls : (cell.off ? ' off' : ''));
+      wkHtml += '<div class="' + cellCls + '">';
+      if (!cell.off && cell.d) {
+        wkHtml += '<span class="spec"></span>';
+        wkHtml += '<span class="dt">' + cell.d + '</span>';
+        if (cell.traded) {
+          var amt = Math.abs(cell.pnl);
+          var amtStr = amt >= 10000 ? '$' + Math.round(amt/1000) + 'K' :
+                       amt >= 1000  ? '$' + (amt/1000).toFixed(1) + 'K' :
+                                      '$' + Math.round(amt);
+          if (cell.pnl < 0) amtStr = '-' + amtStr;
+          wkHtml += '<span class="amt">' + amtStr + '</span>';
+          wkHtml += '<span class="tr">' + cell.count + ' trade' + (cell.count !== 1 ? 's' : '') + '</span>';
+        }
+      } else if (cell.d && cell.off) {
+        wkHtml += '<span class="dt">' + cell.d + '</span>';
       }
-      stripHtml += '<span class="' + dayCls + '"></span>';
+      wkHtml += '</div>';
     }
-    stripHtml += '</div>';
-    railHtml += '<div class="' + wkCls + '">';
-    railHtml += '<span class="stark-wk-label">WK ' + (w + 1) + '</span>';
-    railHtml += '<span class="stark-wk-amount' + wkAmtCls + '">' + wkAmt + '</span>';
-    railHtml += stripHtml;
-    railHtml += '</div>';
+    wkEl.innerHTML = wkHtml;
+    grid.appendChild(wkEl);
   }
-  rail.innerHTML = railHtml;
-}
 
-/* renderStarkRecentTrades — 3 most recent trades as cards */
-function renderStarkRecentTrades() {
-  var container = document.getElementById('stark-recent-cards');
-  if (!container) return;
-  var sorted = (trades || []).slice().sort(function(a, b) {
-    var da = a.date || '';
-    var db = b.date || '';
-    return db < da ? -1 : db > da ? 1 : 0;
-  });
-  var recent = sorted.slice(0, 3);
-  if (recent.length === 0) {
-    container.innerHTML = '<span style="font-family:Geist Mono,monospace;font-size:11px;color:var(--stark-cream45)">No trades yet</span>';
-    return;
-  }
-  var html = '';
-  for (var i = 0; i < recent.length; i++) {
-    var t = recent[i];
-    var pnl = Number(t.pnl) || 0;
-    var pnlCls = pnl > 0 ? 'win' : pnl < 0 ? 'loss' : '';
-    var pnlStr = (pnl >= 0 ? '+' : '-') + '$' + Math.round(Math.abs(pnl)).toLocaleString();
-    var rrStr = t.rr ? (Number(t.rr) >= 0 ? '+' : '') + Number(t.rr).toFixed(1) + 'R' : '—R';
-    var sym = (t.sym || '—').toUpperCase();
-    var side = (t.type || '').toUpperCase();
-    var timeStr = t.date ? t.date.slice(5) : '—'; // MM-DD
-    html += '<div class="stark-trade-card">';
-    html += '<div class="stark-card-row1">';
-    html += '<span class="stark-card-sym">' + sym + '</span>';
-    html += '<span class="stark-card-pnl ' + pnlCls + '">' + pnlStr + '</span>';
-    html += '</div>';
-    html += '<div class="stark-card-row2">';
-    if (side) html += '<span class="stark-card-chip">' + side + '</span>';
-    html += '<span class="stark-card-rr">' + rrStr + '</span>';
-    html += '<span class="stark-card-time">' + timeStr + '</span>';
-    html += '</div>';
-    html += '</div>';
-  }
-  container.innerHTML = html;
-}
+  var spacerEl = wkCol.querySelector('.spacer');
+  wkCol.innerHTML = '';
+  if (spacerEl) wkCol.appendChild(spacerEl);
 
-/* renderStarkRules — reads from acct.rules (array of strings) or falls back gracefully */
+  for (var ws = 0; ws < weekStats.length; ws++) {
+    var wk = weekStats[ws];
+    var tileEl = document.createElement('div');
+    if (wk.isFuture || !wk.hasTrades) {
+      tileEl.className = 'wktot fut';
+      tileEl.innerHTML = '<span class="l">Week ' + (ws+1) + '</span><span class="a zero">—</span>';
+    } else {
+      tileEl.className = 'wktot';
+      var wkSign = wk.pnl >= 0 ? '+' : '-';
+      var wkAmt = wkSign + '$' + Math.round(Math.abs(wk.pnl)).toLocaleString();
+      var wkAmtCls = wk.pnl >= 0 ? 'win' : 'loss';
+      var daysHtml = '<span class="days">';
+      for (var di2 = 0; di2 < 5; di2++) {
+        var de2 = wk.days[di2];
+        var diCls2 = de2 && de2.traded ? (de2.pnl >= 0 ? ' class="w"' : ' class="l"') : '';
+        daysHtml += '<i' + diCls2 + '></i>';
+      }
+      daysHtml += '</span>';
+      tileEl.innerHTML = '<span class="l">Week ' + (ws+1) + '</span>' +
+        '<span class="a ' + wkAmtCls + '">' + wkAmt + '</span>' + daysHtml;
+    }
+    wkCol.appendChild(tileEl);
+  }
+}
 function renderStarkRules() {
-  var listEl = document.getElementById('stark-rules-list');
-  var countEl = document.getElementById('stark-rules-count');
+  var listEl = document.getElementById('dash-rules-list');
+  var countEl = document.getElementById('dash-rules-count');
   if (!listEl) return;
-
   var rules = [];
   if (window.acct && acct.rules && Array.isArray(acct.rules)) {
     rules = acct.rules;
   } else if (window.acct && acct.daily_rules && Array.isArray(acct.daily_rules)) {
     rules = acct.daily_rules;
   }
-
   if (countEl) countEl.textContent = '0/' + rules.length;
-
   if (rules.length === 0) {
-    listEl.innerHTML = '<span style="font-size:11px;color:var(--stark-cream45)">No rules set — tap EDIT to add</span>';
+    listEl.innerHTML = '<span style="font-size:11px;color:var(--ink45)">No rules set — tap EDIT to add</span>';
     return;
   }
-
   var html = '';
   for (var i = 0; i < rules.length; i++) {
     var r = rules[i];
     var text = typeof r === 'string' ? r : (r.text || r.rule || JSON.stringify(r));
     var isAuto = (typeof r === 'object' && r.auto) ||
       /max trade|max loss|loss limit|stop|killzone|session|flat by|no trading after|max daily/i.test(text);
-    html += '<label class="stark-rule-item">';
-    html += '<input type="checkbox" onchange="this.closest(\'.stark-rule-item\').classList.toggle(\'checked\',this.checked);_starkUpdateRuleCount()">';
-    html += '<span>' + text + '</span>';
-    if (isAuto) html += '<span class="stark-auto-badge">AUTO</span>';
-    html += '</label>';
+    var autoTag = isAuto
+      ? '<span style="font-family:'Archivo',sans-serif;font-size:7.5px;letter-spacing:.06em;color:var(--ink45);border:1px solid var(--hair);border-radius:3px;padding:1px 5px;margin-left:6px">AUTO</span>'
+      : '';
+    html += '<div class="rule" onclick="this.classList.toggle('done');_starkUpdateRuleCount()">';
+    html += '<span class="box"></span>';
+    html += '<span class="txt">' + _escHtml(text) + autoTag + '</span>';
+    html += '</div>';
   }
   listEl.innerHTML = html;
 }
 
 function _starkUpdateRuleCount() {
-  var listEl = document.getElementById('stark-rules-list');
-  var countEl = document.getElementById('stark-rules-count');
+  var listEl = document.getElementById('dash-rules-list');
+  var countEl = document.getElementById('dash-rules-count');
   if (!listEl || !countEl) return;
-  var all = listEl.querySelectorAll('input[type=checkbox]');
-  var checked = listEl.querySelectorAll('input[type=checkbox]:checked');
-  countEl.textContent = checked.length + '/' + all.length;
+  var all = listEl.querySelectorAll('.rule');
+  var done = listEl.querySelectorAll('.rule.done');
+  countEl.textContent = done.length + '/' + all.length;
 }
-
-/* renderStarkStreak — journal streak = consecutive trading days with a grade */
 function renderStarkStreak() {
   var valEl = document.getElementById('stark-streak-val');
   var unitEl = document.getElementById('stark-streak-unit');
