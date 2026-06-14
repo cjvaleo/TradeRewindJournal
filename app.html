@@ -900,6 +900,160 @@ h3.sec a:hover{color:var(--ink)}
 .st-cright{margin-left:auto}
 .st-badge-ok{font-size:8px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--win-text);border:1px solid rgba(47,174,120,.4);background:rgba(47,174,120,.1);border-radius:7px;padding:6px 11px}
 .st-danger-card{border-color:rgba(201,106,106,.4)!important}
+
+/* --- Log Trade Modal (lt-) --- */
+#lt-bg{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px}
+#lt-bg.on{display:flex}
+#lt-modal{width:100%;max-width:700px;max-height:calc(100vh - 40px);display:flex;flex-direction:column;border-radius:16px;overflow:hidden;position:relative}
+.lt-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 14px;border-bottom:1px solid var(--hair);flex-shrink:0}
+.lt-head h2{font-size:15px}
+.lt-head .lt-close{background:none;border:none;color:var(--ink45);cursor:pointer;font-size:20px;line-height:1;padding:2px 6px;border-radius:6px}
+.lt-head .lt-close:hover{color:var(--ink);background:var(--panel)}
+.lt-tabs{display:flex;padding:0 22px;border-bottom:1px solid var(--hair);flex-shrink:0;gap:0}
+.lt-tab{font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink45);background:none;border:none;border-bottom:2px solid transparent;padding:11px 0;margin-right:22px;cursor:pointer;transition:color .15s}
+.lt-tab:hover{color:var(--ink)}
+.lt-tab.on{color:var(--ink);border-bottom-color:var(--gold)}
+.lt-body{flex:1;min-height:0;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:14px}
+.lt-pane{display:none;flex-direction:column;gap:14px}
+.lt-pane.on{display:flex}
+
+/* result picker */
+.lt-res-row{display:flex;gap:8px}
+.lt-res{flex:1;padding:9px 0;border-radius:8px;border:1px solid var(--hair);background:transparent;font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink45);cursor:pointer;text-align:center;transition:all .15s}
+.lt-res.win.on{background:rgba(47,174,120,.15);border-color:var(--win);color:var(--win-text)}
+.lt-res.loss.on{background:rgba(201,106,106,.15);border-color:var(--loss);color:var(--loss-text)}
+.lt-res.be.on{background:rgba(216,178,106,.1);border-color:var(--gold-soft);color:var(--gold)}
+.lt-res:not(.on):hover{border-color:var(--hair2);color:var(--ink70)}
+
+/* loss type seg */
+.lt-seg-wrap{display:none;flex-direction:column;gap:6px}
+.lt-seg-wrap.on{display:flex}
+.lt-seg{display:flex;border:1px solid var(--hair);border-radius:8px;overflow:hidden}
+.lt-seg span{flex:1;padding:8px 0;text-align:center;font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink45);cursor:pointer;border-right:1px solid var(--hair);transition:all .15s}
+.lt-seg span:last-child{border-right:none}
+.lt-seg span.on{background:var(--ink);color:var(--bg)}
+.lt-seg span:not(.on):hover{background:var(--panel);color:var(--ink70)}
+
+/* field grid */
+.lt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lt-grid.thirds{grid-template-columns:1fr 1fr 1fr}
+.lt-field{display:flex;flex-direction:column;gap:5px}
+.lt-field.full{grid-column:1/-1}
+.lt-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink45)}
+.lt-lbl .lt-pro{font-size:8px;color:var(--gold);margin-left:4px;vertical-align:middle}
+.lt-inp{width:100%;background:rgba(0,0,0,.25);border:1px solid var(--hair);border-radius:7px;padding:8px 10px;font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:12px;color:var(--ink);outline:none;transition:border-color .15s}
+.lt-inp:focus{border-color:var(--gold-soft)}
+.lt-inp.ro{opacity:.6;pointer-events:none}
+.lt-inp::placeholder{color:var(--ink45)}
+.lt-sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(242,242,240,.45)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:8px;padding-right:28px}
+.lt-calc{font-size:10px;color:var(--ink45);padding:3px 0 0;min-height:16px}
+.lt-calc.pos{color:var(--win-text)}
+.lt-calc.neg{color:var(--loss-text)}
+
+/* emotion chips */
+.lt-chips{display:flex;flex-wrap:wrap;gap:6px}
+.lt-chip{padding:5px 10px;border-radius:99px;border:1px solid var(--hair);font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:10px;color:var(--ink45);cursor:pointer;transition:all .12s;background:transparent}
+.lt-chip.on{background:rgba(216,178,106,.12);border-color:var(--gold-soft);color:var(--gold)}
+.lt-chip:not(.on):hover{border-color:var(--hair2);color:var(--ink70)}
+
+/* confidence stars */
+.lt-stars{display:flex;gap:6px}
+.lt-star{width:28px;height:28px;border-radius:6px;border:1px solid var(--hair);background:transparent;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.lt-star.on{background:rgba(216,178,106,.15);border-color:var(--gold-soft)}
+.lt-star:not(.on):hover{border-color:var(--hair2)}
+
+/* grade buttons */
+.lt-grades{display:flex;gap:6px}
+.lt-grade{flex:1;padding:7px 0;border-radius:7px;border:1px solid var(--hair);background:transparent;font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:125%;font-size:12px;color:var(--ink45);cursor:pointer;text-align:center;transition:all .12s}
+.lt-grade.on{background:rgba(216,178,106,.12);border-color:var(--gold-soft);color:var(--gold)}
+.lt-grade:not(.on):hover{border-color:var(--hair2);color:var(--ink70)}
+.lt-gate-wrap{position:relative}
+.lt-gate-veil{position:absolute;inset:0;background:rgba(28,29,32,.8);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;gap:6px;backdrop-filter:blur(3px)}
+
+/* partials */
+.lt-partials-tog{display:flex;align-items:center;gap:10px;font-size:10px;color:var(--ink45);cursor:pointer;user-select:none}
+.lt-partials-tog .lt-tog{width:36px;height:20px;border-radius:99px;background:var(--hair);border:1px solid var(--hair2);position:relative;transition:background .15s}
+.lt-partials-tog .lt-tog::after{content:'';position:absolute;left:2px;top:2px;width:14px;height:14px;border-radius:50%;background:var(--ink45);transition:left .15s}
+.lt-partials-tog .lt-tog.on{background:var(--gold-grad)}
+.lt-partials-tog .lt-tog.on::after{left:18px;background:#1A1304}
+.lt-partials-box{display:none;flex-direction:column;gap:8px}
+.lt-partials-box.on{display:flex}
+.lt-partial-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center}
+.lt-partial-del{background:none;border:none;color:var(--ink45);cursor:pointer;font-size:16px;padding:0 4px;line-height:1}
+.lt-partial-del:hover{color:var(--loss-text)}
+.lt-partials-add{align-self:flex-start;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);background:none;border:1px solid var(--gold-soft);border-radius:6px;padding:5px 10px;cursor:pointer;font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%}
+.lt-partials-add:hover{background:rgba(216,178,106,.08)}
+.lt-partial-summary{font-size:10px;color:var(--ink45);padding:4px 0}
+
+/* confluence tags */
+.lt-conf-list{display:flex;flex-wrap:wrap;gap:6px;min-height:20px}
+.lt-conf-tag{display:flex;align-items:center;gap:5px;background:rgba(216,178,106,.08);border:1px solid var(--gold-soft);border-radius:6px;padding:4px 8px}
+.lt-conf-tag .lt-conf-name{font-size:10px;color:var(--gold)}
+.lt-conf-tag select{background:rgba(0,0,0,.3);border:none;font-size:9px;color:var(--ink45);border-radius:3px;padding:1px 3px;outline:none;font-family:'Archivo',sans-serif;font-style:italic;cursor:pointer}
+.lt-conf-tag .lt-conf-x{background:none;border:none;color:var(--ink45);cursor:pointer;font-size:13px;line-height:1;padding:0 1px}
+.lt-conf-tag .lt-conf-x:hover{color:var(--loss-text)}
+.lt-conf-inp-row{display:flex;gap:8px;margin-top:4px}
+.lt-conf-inp-row input{flex:1}
+.lt-conf-suggestions{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+
+/* model pills */
+.lt-model-list{display:flex;flex-wrap:wrap;gap:6px;min-height:20px}
+.lt-model-tag{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.06);border:1px solid var(--hair2);border-radius:6px;padding:4px 8px;font-size:10px;color:var(--ink70)}
+.lt-model-tag .lt-model-x{background:none;border:none;color:var(--ink45);cursor:pointer;font-size:12px;line-height:1}
+.lt-model-tag .lt-model-x:hover{color:var(--loss-text)}
+.lt-model-suggestions{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+
+/* screenshot area */
+.lt-shot-tabs{display:flex;gap:0;border-bottom:1px solid var(--hair);margin-bottom:10px}
+.lt-stab{font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink45);background:none;border:none;border-bottom:2px solid transparent;padding:7px 12px 5px;cursor:pointer;font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%}
+.lt-stab.on{color:var(--ink);border-bottom-color:var(--gold-soft)}
+.lt-shot-pane{display:none}
+.lt-shot-pane.on{display:flex;flex-direction:column;gap:8px}
+.lt-drop{border:1.5px dashed var(--hair2);border-radius:10px;padding:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:border-color .15s;min-height:100px;text-align:center}
+.lt-drop:hover,.lt-drop.drag{border-color:var(--gold-soft)}
+.lt-drop .lt-drop-ico{font-size:24px;color:var(--ink45)}
+.lt-drop .lt-drop-t{font-size:10px;color:var(--ink45)}
+.lt-drop .lt-drop-sub{font-size:9px;color:rgba(242,242,240,.35)}
+.lt-preview-img{width:100%;border-radius:8px;display:none;max-height:200px;object-fit:contain}
+.lt-preview-img.on{display:block}
+
+/* accounts multiplier */
+.lt-mult{display:flex;align-items:center;gap:0;border:1px solid var(--hair);border-radius:8px;overflow:hidden;width:fit-content}
+.lt-mult button{background:var(--panel);border:none;width:32px;height:32px;font-size:16px;color:var(--ink45);cursor:pointer;transition:color .12s}
+.lt-mult button:hover{color:var(--ink)}
+.lt-mult span{padding:0 14px;font-size:13px;min-width:40px;text-align:center;font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:118%}
+
+/* section label */
+.lt-section{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink45);padding-bottom:2px;border-bottom:1px solid var(--hair);margin-bottom:2px}
+
+/* footer */
+.lt-foot{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-top:1px solid var(--hair);flex-shrink:0;gap:10px}
+.lt-foot-left{display:flex;align-items:center;gap:10px}
+.lt-foot-msg{font-size:9px;color:var(--ink45);min-height:14px}
+.lt-btn{font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:8px 18px;border-radius:7px;border:1px solid var(--hair);color:var(--ink45);background:transparent;cursor:pointer;transition:all .15s}
+.lt-btn:hover{border-color:var(--hair2);color:var(--ink)}
+.lt-btn.gold{background:var(--gold-grad);border-color:transparent;color:#1A1304;box-shadow:0 4px 12px -6px rgba(216,178,106,.5)}
+.lt-btn.gold:hover{filter:brightness(1.07)}
+.lt-btn.danger{color:var(--loss-text);border-color:rgba(201,106,106,.4)}
+.lt-btn.danger:hover{background:rgba(201,106,106,.1)}
+.lt-btn:disabled{opacity:.45;pointer-events:none}
+
+/* CSV mode */
+.lt-csv-drop{border:2px dashed var(--hair2);border-radius:12px;padding:36px;display:flex;flex-direction:column;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s;text-align:center}
+.lt-csv-drop:hover,.lt-csv-drop.drag{border-color:var(--gold-soft)}
+.lt-csv-drop .ico{font-size:28px}
+.lt-csv-drop .t{font-size:11px;color:var(--ink70)}
+.lt-csv-drop .sub{font-size:9px;color:var(--ink45)}
+.lt-csv-prog{font-size:10px;color:var(--ink45);text-align:right}
+.lt-csv-locked{position:relative}
+.lt-csv-locked .lt-lock{position:absolute;inset:0;background:rgba(28,29,32,.88);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:2;backdrop-filter:blur(4px)}
+.lt-csv-locked .lt-lock .ico{font-size:22px;color:var(--gold)}
+.lt-csv-locked .lt-lock .t{font-size:10px;color:var(--gold);letter-spacing:.08em;text-transform:uppercase}
+.lt-csv-locked .lt-lock .sub{font-size:9px;color:var(--ink45)}
+.lt-from-csv{border:1px solid var(--hair);border-radius:8px;padding:12px 14px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px 16px;margin-bottom:10px}
+.lt-from-csv .fk{font-size:9px;color:var(--ink45);letter-spacing:.08em;text-transform:uppercase}
+.lt-from-csv .fv{font-size:12px;color:var(--ink)}
+
 @media(max-width:1080px){
   #pg-settings.page.on{padding:14px 16px}
   .st-shell{grid-template-columns:1fr}
@@ -951,7 +1105,7 @@ h3.sec a:hover{color:var(--ink)}
       <button class="stark-nav-item" data-pg="community" onclick="goTo('community')">Community</button>
     </nav>
     <div class="stark-topbar-right">
-      <button class="stark-log-btn" onclick="goTo('log')">+ Log Trade</button>
+      <button class="stark-log-btn" onclick="openLogModal()">+ Log Trade</button>
       <div class="stark-avatar" id="top-avatar" onclick="goTo('settings')" style="cursor:pointer">RW</div>
     </div>
   </header>
@@ -1315,7 +1469,7 @@ h3.sec a:hover{color:var(--ink)}
     </div>
   </div><!-- /pg-community -->
 
-  <div class="page" id="pg-log"><div style="padding:40px;color:var(--ink45);font-size:13px">Log Trade — coming soon</div></div>
+  <div class="page" id="pg-log" style="display:none!important"></div>
 
   <!-- SETTINGS -->
   <div class="page" id="pg-settings">
@@ -1603,6 +1757,288 @@ h3.sec a:hover{color:var(--ink)}
 
 </div><!-- /app -->
 
+<!-- Log Trade Modal (global overlay — covers all pages) -->
+<div id="lt-bg" onclick="if(event.target===this)closeLogModal()">
+  <div id="lt-modal" class="glass">
+    <!-- Head -->
+    <div class="lt-head">
+      <h2 class="disp" id="lt-title">Log Trade</h2>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="lt-btn danger" id="lt-delete-btn" style="display:none" onclick="ltDeleteTrade()">Delete</button>
+        <button class="lt-close" onclick="closeLogModal()" title="Close">×</button>
+      </div>
+    </div>
+    <!-- Tabs -->
+    <div class="lt-tabs">
+      <button class="lt-tab on" id="lt-tab-manual" onclick="ltSetTab('manual')">Manual</button>
+      <button class="lt-tab" id="lt-tab-csv" onclick="ltSetTab('csv')">Import CSV</button>
+    </div>
+    <!-- Body -->
+    <div class="lt-body">
+
+      <!-- MANUAL PANE -->
+      <div class="lt-pane on" id="lt-pane-manual">
+
+        <!-- Result -->
+        <div class="lt-field">
+          <div class="lt-lbl">Result</div>
+          <div class="lt-res-row">
+            <button class="lt-res win" onclick="ltSetResult('win')">Win</button>
+            <button class="lt-res loss" onclick="ltSetResult('loss')">Loss</button>
+            <button class="lt-res be" onclick="ltSetResult('be')">Break Even</button>
+          </div>
+        </div>
+
+        <!-- Loss Type (conditional) -->
+        <div class="lt-seg-wrap" id="lt-loss-type-wrap">
+          <div class="lt-lbl">Loss Type</div>
+          <div class="lt-seg" id="lt-loss-type-seg">
+            <span onclick="ltSetLossType('emotional')">Emotional</span>
+            <span onclick="ltSetLossType('technical')">Technical</span>
+            <span onclick="ltSetLossType('statistical')">Statistical</span>
+          </div>
+        </div>
+
+        <!-- Trade fields -->
+        <div class="lt-grid">
+          <div class="lt-field">
+            <div class="lt-lbl">Symbol</div>
+            <input class="lt-inp" id="lt-sym" placeholder="NQ, ES, MNQ…" list="lt-sym-list" oninput="ltSymChanged()">
+            <datalist id="lt-sym-list">
+              <option value="NQ"><option value="MNQ"><option value="ES"><option value="MES">
+              <option value="RTY"><option value="YM"><option value="CL"><option value="GC">
+              <option value="SI"><option value="ZN"><option value="ZB"><option value="6E">
+            </datalist>
+          </div>
+          <div class="lt-field">
+            <div class="lt-lbl">Side</div>
+            <div class="lt-seg" id="lt-side-seg">
+              <span onclick="ltSetSeg(this,'lt-side-seg')">Long</span>
+              <span onclick="ltSetSeg(this,'lt-side-seg')">Short</span>
+            </div>
+          </div>
+          <div class="lt-field">
+            <div class="lt-lbl">Entry Price</div>
+            <input class="lt-inp" id="lt-entry" type="number" step="0.25" placeholder="0.00" oninput="ltCalcPoints()">
+          </div>
+          <div class="lt-field">
+            <div class="lt-lbl">Exit Price <span id="lt-exit-lbl-suffix" style="color:var(--ink45);font-size:8px"></span></div>
+            <input class="lt-inp" id="lt-exit" type="number" step="0.25" placeholder="0.00" oninput="ltCalcPoints()">
+          </div>
+          <div class="lt-field">
+            <div class="lt-lbl">Points</div>
+            <input class="lt-inp lt-inp-calc" id="lt-points" type="number" step="0.25" placeholder="Auto" oninput="ltCalcPnl()">
+            <div class="lt-calc" id="lt-points-hint"></div>
+          </div>
+          <div class="lt-field">
+            <div class="lt-lbl">Contracts</div>
+            <input class="lt-inp" id="lt-qty" type="number" step="1" min="1" placeholder="1" oninput="ltCalcPnl()">
+          </div>
+          <div class="lt-field">
+            <div class="lt-lbl">P&amp;L ($)</div>
+            <input class="lt-inp" id="lt-pnl" type="number" step="1" placeholder="0" oninput="ltCalcRR()">
+            <div class="lt-calc" id="lt-pnl-hint"></div>
+          </div>
+          <div class="lt-field">
+            <div class="lt-lbl">Stop Loss (pts)</div>
+            <input class="lt-inp" id="lt-stop" type="number" step="0.25" placeholder="4.0" oninput="ltCalcRR()">
+            <div class="lt-calc" id="lt-rr-hint"></div>
+          </div>
+        </div>
+
+        <!-- Copy-trade multiplier -->
+        <div class="lt-field">
+          <div class="lt-lbl">Copy-Trade Accounts <span style="font-size:8px;color:var(--ink45);margin-left:4px">P&amp;L × N</span></div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="lt-mult">
+              <button onclick="ltMultStep(-1)">−</button>
+              <span id="lt-mult-val">1</span>
+              <button onclick="ltMultStep(1)">+</button>
+            </div>
+            <span class="lt-calc" id="lt-mult-hint"></span>
+          </div>
+        </div>
+
+        <!-- Partials toggle -->
+        <div class="lt-partials-tog" onclick="ltTogglePartials()">
+          <div class="lt-tog" id="lt-partials-tog-el"></div>
+          <span>Partials / Scale-out</span>
+        </div>
+        <div class="lt-partials-box" id="lt-partials-box">
+          <div class="lt-section">Scale-out Rows</div>
+          <div id="lt-partial-rows"></div>
+          <button class="lt-partials-add" onclick="ltAddPartialRow()">+ Add Scale</button>
+          <div class="lt-partial-summary" id="lt-partial-summary"></div>
+        </div>
+
+        <div class="lt-section">Session &amp; Setup</div>
+
+        <div class="lt-grid thirds">
+          <div class="lt-field">
+            <div class="lt-lbl">Session</div>
+            <select class="lt-inp lt-sel" id="lt-session">
+              <option value="">—</option>
+              <option>NY AM</option><option>NY PM</option><option>London</option>
+              <option>Asia</option><option>Lunch</option>
+            </select>
+          </div>
+          <div class="lt-field">
+            <div class="lt-lbl">Account Type</div>
+            <select class="lt-inp lt-sel" id="lt-acct-type">
+              <option value="">—</option>
+              <option value="live">Live</option>
+              <option value="funded">Funded</option>
+              <option value="eval">Eval</option>
+              <option value="paper">Paper</option>
+            </select>
+          </div>
+          <div class="lt-field">
+            <div class="lt-lbl">Date</div>
+            <input class="lt-inp" id="lt-date" type="date">
+          </div>
+        </div>
+
+        <!-- Model -->
+        <div class="lt-field">
+          <div class="lt-lbl">Model / Setup</div>
+          <div class="lt-model-list" id="lt-model-list"></div>
+          <div class="lt-conf-inp-row" style="margin-top:6px">
+            <input class="lt-inp" id="lt-model-inp" placeholder="Type model name…" onkeydown="ltModelKey(event)">
+          </div>
+          <div class="lt-model-suggestions" id="lt-model-suggestions"></div>
+        </div>
+
+        <!-- Confluences -->
+        <div class="lt-field">
+          <div class="lt-lbl">Confluences</div>
+          <div class="lt-conf-list" id="lt-conf-list"></div>
+          <div class="lt-conf-inp-row" style="margin-top:6px">
+            <input class="lt-inp" id="lt-conf-inp" placeholder="Add confluence…" onkeydown="ltConfKey(event)" oninput="ltConfSuggest()">
+            <button class="lt-btn" onclick="ltConfAdd()">Add</button>
+          </div>
+          <div class="lt-conf-suggestions" id="lt-conf-suggestions"></div>
+        </div>
+
+        <!-- Emotions -->
+        <div class="lt-field">
+          <div class="lt-lbl">Emotions</div>
+          <div class="lt-chips" id="lt-emotion-chips"></div>
+        </div>
+
+        <!-- Confidence -->
+        <div class="lt-field">
+          <div class="lt-lbl">Confidence</div>
+          <div class="lt-stars" id="lt-conf-stars">
+            <button class="lt-star" data-v="1" onclick="ltSetConf(1)">1</button>
+            <button class="lt-star" data-v="2" onclick="ltSetConf(2)">2</button>
+            <button class="lt-star" data-v="3" onclick="ltSetConf(3)">3</button>
+            <button class="lt-star" data-v="4" onclick="ltSetConf(4)">4</button>
+            <button class="lt-star" data-v="5" onclick="ltSetConf(5)">5</button>
+          </div>
+        </div>
+
+        <!-- Grade (Pro-gated) -->
+        <div class="lt-field">
+          <div class="lt-lbl">Grade <span class="lt-pro">PRO</span></div>
+          <div class="lt-gate-wrap" id="lt-grade-gate">
+            <div class="lt-grades" id="lt-grade-row">
+              <button class="lt-grade" onclick="ltSetGrade('A+')">A+</button>
+              <button class="lt-grade" onclick="ltSetGrade('A')">A</button>
+              <button class="lt-grade" onclick="ltSetGrade('B')">B</button>
+              <button class="lt-grade" onclick="ltSetGrade('C')">C</button>
+              <button class="lt-grade" onclick="ltSetGrade('D')">D</button>
+              <button class="lt-grade" onclick="ltSetGrade('F')">F</button>
+            </div>
+            <div class="lt-gate-veil" id="lt-grade-veil" onclick="ltUpgradeGate('grade')" style="display:none">
+              🔒 <span>Pro Only</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="lt-field full">
+          <div class="lt-lbl">Notes</div>
+          <textarea class="lt-inp" id="lt-notes" rows="3" placeholder="Trade notes, observations, what you saw…" style="resize:vertical;min-height:60px"></textarea>
+        </div>
+
+        <!-- Screenshot -->
+        <div class="lt-field full">
+          <div class="lt-lbl">Screenshot</div>
+          <div class="lt-shot-tabs">
+            <button class="lt-stab on" onclick="ltShotTab('upload',this)">Upload</button>
+            <button class="lt-stab" onclick="ltShotTab('tv',this)">TradingView Link</button>
+          </div>
+          <div class="lt-shot-pane on" id="lt-shot-upload">
+            <div class="lt-drop" id="lt-drop" onclick="document.getElementById('lt-file-inp').click()"
+              ondragover="event.preventDefault();this.classList.add('drag')"
+              ondragleave="this.classList.remove('drag')"
+              ondrop="ltHandleDrop(event)">
+              <div class="lt-drop-ico">📸</div>
+              <div class="lt-drop-t">Drop screenshot or click to upload</div>
+              <div class="lt-drop-sub">PNG, JPG, WEBP · max 8 MB</div>
+            </div>
+            <input type="file" id="lt-file-inp" accept="image/*" style="display:none" onchange="ltHandleFile(this.files[0])">
+            <img class="lt-preview-img" id="lt-preview-img" alt="preview">
+            <div style="font-size:9px;color:var(--ink45);min-height:14px" id="lt-upload-msg"></div>
+          </div>
+          <div class="lt-shot-pane" id="lt-shot-tv">
+            <input class="lt-inp" id="lt-tv-link" placeholder="https://www.tradingview.com/x/…">
+            <div style="font-size:9px;color:var(--ink45)">Paste a TradingView chart snapshot URL</div>
+          </div>
+        </div>
+
+      </div><!-- /lt-pane-manual -->
+
+      <!-- CSV PANE -->
+      <div class="lt-pane" id="lt-pane-csv">
+        <div id="lt-csv-idle">
+          <div class="lt-csv-locked" id="lt-csv-gate-wrap">
+            <div class="lt-csv-drop" id="lt-csv-drop" onclick="document.getElementById('lt-csv-inp').click()"
+              ondragover="event.preventDefault();this.classList.add('drag')"
+              ondragleave="this.classList.remove('drag')"
+              ondrop="ltCsvDrop(event)">
+              <div class="ico">📋</div>
+              <div class="t">Drop CSV or click to select</div>
+              <div class="sub">Columns: date, symbol, side, qty, entry, exit, pnl — any order, header required</div>
+            </div>
+            <input type="file" id="lt-csv-inp" accept=".csv,text/csv" style="display:none" onchange="ltCsvLoad(this.files[0])">
+            <div class="lt-lock" id="lt-csv-lock" style="display:none">
+              <div class="ico">🔒</div>
+              <div class="t">Pro Required</div>
+              <div class="sub">Upgrade to import trades from CSV</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:9px;color:var(--ink45)">Required columns: <strong style="color:var(--ink70)">date, symbol, side, pnl</strong> — other columns optional. First row must be headers.</div>
+        </div>
+        <!-- CSV review flow (shown after file selected) -->
+        <div id="lt-csv-review" style="display:none;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div class="lt-lbl">Reviewing trade <span id="lt-csv-counter"></span></div>
+            <button class="lt-btn" onclick="ltCsvCancel()">Cancel Import</button>
+          </div>
+          <!-- From CSV: locked display block -->
+          <div class="lt-from-csv" id="lt-csv-locked-block"></div>
+          <!-- Journal fields to complete -->
+          <div style="display:flex;flex-direction:column;gap:10px" id="lt-csv-journal"></div>
+        </div>
+      </div><!-- /lt-pane-csv -->
+
+    </div><!-- /lt-body -->
+
+    <!-- Footer -->
+    <div class="lt-foot">
+      <div class="lt-foot-left">
+        <div class="lt-foot-msg" id="lt-save-msg"></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="lt-btn" onclick="closeLogModal()">Cancel</button>
+        <button class="lt-btn gold" id="lt-save-btn" onclick="ltSaveTrade()">Save Trade</button>
+        <button class="lt-btn gold" id="lt-csv-next-btn" style="display:none" onclick="ltCsvSaveNext()">Save &amp; Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Community trade recap modal (outside #pg-community so it can overlay everything) -->
 <div class="cm-modal-bg" id="cm-recapBg" onclick="if(event.target===this)commCloseRecap()">
   <div class="cm-modal" id="cm-recapModal"></div>
@@ -1687,6 +2123,9 @@ function goTo(pg) {
   if (pg === 'settings') {
     settInit();
   }
+  if (pg === 'log') {
+    openLogModal();
+  }
 }
 
 /* --- Auth --- */
@@ -1770,13 +2209,23 @@ async function loadTradesFromDB() {
       type: td.type || '',
       pnl: typeof td.pnl === 'number' ? td.pnl : 0,
       rr: typeof td.rr === 'number' ? td.rr : null,
+      stop: typeof td.stop === 'number' ? td.stop : null,
+      points: typeof td.points === 'number' ? td.points : null,
+      entry: typeof td.entry === 'number' ? td.entry : null,
+      exit: typeof td.exit === 'number' ? td.exit : null,
+      qty: typeof td.qty === 'number' ? td.qty : 1,
       session: td.session || '',
       grade: td.grade || '',
       emotion: td.emotion || '',
+      emotions: Array.isArray(td.emotions) ? td.emotions : [],
+      confidence: typeof td.confidence === 'number' ? td.confidence : null,
+      loss_type: td.loss_type || null,
       setup: td.setup || '',
       model: td.model || '',
+      notes: td.notes || '',
       image_url: td.image_url || '',
       account_type: td.account_type || '',
+      confluences: Array.isArray(td.confluences) ? td.confluences : [],
     };
   });
 }
@@ -3649,6 +4098,823 @@ function commRenderMiniCal() {
 function commShareCard() { /* wire to /api/eod/render-card when Ark engine built */ }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') commCloseRecap(); });
+
+/* --- Log Trade Modal --- */
+const LT_EMOTIONS = {
+  win:  ['Locked In','Disciplined','Patient','Composed','Sharp','Focused','Confident','Flowing'],
+  be:   ['Neutral','Steady','Patient','Controlled','Relaxed'],
+  emotional: ['Tilted','Chasing','Fearful','FOMO','Impatient','Overconfident','Hesitant','Revenge Trading'],
+  technical: ['Misread','Wrong Setup','Entry Timing','False Pattern','Bad Execution'],
+  statistical: ['Followed Rules','Good Execution','Normal Loss','Statistical Noise','Well Managed']
+};
+const LT_MODEL_SUGG = ['ICT','SMC','Supply & Demand','Price Action','VWAP','Order Flow','Liquidity Grab','Breaker','FVG','OTE','Swing','Scalp'];
+const LT_CONF_SUGG = ['Higher TF Bias','Kill Zone','POI','FVG','Order Block','Breaker Block','Liquidity','VWAP','Previous High/Low','Structure Break','Session Open','NWOG','NDOG'];
+const LT_TFS = ['1m','3m','5m','10m','15m','30m','1H','4H','D','W'];
+const LT_PTS_PER_TICK = { NQ:5, MNQ:0.5, ES:12.5, MES:1.25, RTY:10, YM:5, CL:10, GC:10, SI:25, ZN:31.25, ZB:31.25 };
+
+let _ltState = {
+  result: null, lossType: null, side: null, emotions: [], models: [],
+  confluences: [], confidence: 0, grade: null, partials: [], accounts: 1,
+  imageUrl: null, uploading: false, editId: null
+};
+let _ltCsvTrades = [], _ltCsvIdx = 0, _ltCsvJournal = {};
+
+function openLogModal(tradeId) {
+  _ltState = { result:null, lossType:null, side:null, emotions:[], models:[],
+    confluences:[], confidence:0, grade:null, partials:[], accounts:1,
+    imageUrl:null, uploading:false, editId: tradeId || null };
+  const bg = document.getElementById('lt-bg');
+  if (!bg) return;
+  // Reset to manual tab
+  ltSetTab('manual');
+  // Set today's date
+  const today = getETCalendarDate();
+  const dateEl = document.getElementById('lt-date');
+  if (dateEl) dateEl.value = today;
+  // Clear fields
+  ['lt-sym','lt-entry','lt-exit','lt-points','lt-qty','lt-pnl','lt-stop','lt-notes','lt-tv-link','lt-conf-inp','lt-model-inp'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['lt-session','lt-acct-type'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  // Apply default symbol from settings
+  const defSym = window_settings && window_settings.default_symbol;
+  if (defSym) { const s = document.getElementById('lt-sym'); if (s) s.value = defSym; }
+  // Reset computed hints
+  ['lt-points-hint','lt-rr-hint','lt-pnl-hint','lt-mult-hint','lt-partial-summary','lt-save-msg','lt-upload-msg'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '';
+  });
+  // Reset segments
+  ['lt-side-seg'].forEach(segId => {
+    document.querySelectorAll('#'+segId+' span').forEach(s => s.classList.remove('on'));
+  });
+  // Reset result / loss type
+  document.querySelectorAll('.lt-res').forEach(b => b.classList.remove('on'));
+  const ltWrap = document.getElementById('lt-loss-type-wrap');
+  if (ltWrap) ltWrap.classList.remove('on');
+  document.querySelectorAll('#lt-loss-type-seg span').forEach(s => s.classList.remove('on'));
+  // Reset partials
+  const ptog = document.getElementById('lt-partials-tog-el');
+  if (ptog) ptog.classList.remove('on');
+  const pbox = document.getElementById('lt-partials-box');
+  if (pbox) pbox.classList.remove('on');
+  document.getElementById('lt-partial-rows').innerHTML = '';
+  // Reset grade/confidence
+  document.querySelectorAll('.lt-grade').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.lt-star').forEach(b => b.classList.remove('on'));
+  // Reset model/conf lists
+  ltRenderModels(); ltRenderConf(); ltRenderEmotions();
+  // Reset preview
+  const prev = document.getElementById('lt-preview-img');
+  if (prev) { prev.classList.remove('on'); prev.src = ''; }
+  // Mult
+  const mv = document.getElementById('lt-mult-val');
+  if (mv) mv.textContent = '1';
+  // Pro gate
+  ltApplyProGate();
+  // Edit mode?
+  if (tradeId) ltPrefill(tradeId);
+  // Title + delete btn
+  const titleEl = document.getElementById('lt-title');
+  const delBtn = document.getElementById('lt-delete-btn');
+  if (titleEl) titleEl.textContent = tradeId ? 'Edit Trade' : 'Log Trade';
+  if (delBtn) delBtn.style.display = tradeId ? '' : 'none';
+  // Model suggestions
+  ltRenderModelSugg();
+  bg.classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLogModal() {
+  const bg = document.getElementById('lt-bg');
+  if (bg) bg.classList.remove('on');
+  document.body.style.overflow = '';
+}
+
+function ltApplyProGate() {
+  const isPro = window_profile && window_profile.is_pro;
+  const veil = document.getElementById('lt-grade-veil');
+  if (veil) veil.style.display = isPro ? 'none' : '';
+}
+
+function ltPrefill(tradeId) {
+  const t = (window_trades || []).find(x => x.id === tradeId);
+  if (!t) return;
+  // We need the full trade_data — fetch it, or use what we have flattened
+  const el = id => document.getElementById(id);
+  if (el('lt-sym')) el('lt-sym').value = t.sym || '';
+  if (el('lt-session')) el('lt-session').value = t.session || '';
+  if (el('lt-acct-type')) el('lt-acct-type').value = t.account_type || '';
+  if (el('lt-qty')) el('lt-qty').value = t.qty || '';
+  if (el('lt-pnl')) el('lt-pnl').value = t.pnl != null ? t.pnl : '';
+  if (el('lt-notes')) el('lt-notes').value = t.notes || '';
+  if (el('lt-date')) el('lt-date').value = t.trading_day || getETCalendarDate();
+  // result from pnl
+  const autoResult = t.pnl > 0 ? 'win' : t.pnl < 0 ? 'loss' : 'be';
+  ltSetResult(autoResult);
+  // side
+  if (t.type) {
+    const side = t.type === 'long' ? 'Long' : 'Short';
+    document.querySelectorAll('#lt-side-seg span').forEach(s => s.classList.toggle('on', s.textContent === side));
+    _ltState.side = t.type;
+  }
+  // model
+  if (t.model) { _ltState.models = [t.model]; ltRenderModels(); }
+  // grade
+  if (t.grade) ltSetGrade(t.grade);
+  // image
+  if (t.image_url) { _ltState.imageUrl = t.image_url; const p = el('lt-preview-img'); if(p){p.src=t.image_url;p.classList.add('on');} }
+  // rr/stop from trade data (since we store them there)
+  if (t.rr != null && el('lt-stop')) { /* We'll skip stop auto-fill since window_trades doesn't carry it */ }
+}
+
+function ltSetTab(tab) {
+  document.querySelectorAll('.lt-tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.lt-pane').forEach(p => p.classList.remove('on'));
+  const tabEl = document.getElementById('lt-tab-' + tab);
+  const paneEl = document.getElementById('lt-pane-' + tab);
+  if (tabEl) tabEl.classList.add('on');
+  if (paneEl) paneEl.classList.add('on');
+  const saveBtn = document.getElementById('lt-save-btn');
+  const csvBtn = document.getElementById('lt-csv-next-btn');
+  if (saveBtn) saveBtn.style.display = tab === 'manual' ? '' : 'none';
+  if (csvBtn) csvBtn.style.display = tab === 'csv' && _ltCsvTrades.length ? '' : 'none';
+  // Show CSV pro lock if needed
+  if (tab === 'csv') {
+    const lock = document.getElementById('lt-csv-lock');
+    const isPro = window_profile && window_profile.is_pro;
+    if (lock) lock.style.display = isPro ? 'none' : '';
+  }
+}
+
+function ltSetResult(r) {
+  _ltState.result = r;
+  document.querySelectorAll('.lt-res').forEach(b => b.classList.remove('on'));
+  const btn = document.querySelector('.lt-res.' + (r === 'be' ? 'be' : r));
+  if (btn) btn.classList.add('on');
+  const ltWrap = document.getElementById('lt-loss-type-wrap');
+  if (ltWrap) ltWrap.classList.toggle('on', r === 'loss');
+  if (r !== 'loss') { _ltState.lossType = null; document.querySelectorAll('#lt-loss-type-seg span').forEach(s => s.classList.remove('on')); }
+  ltRenderEmotions();
+}
+
+function ltSetLossType(lt) {
+  _ltState.lossType = lt;
+  document.querySelectorAll('#lt-loss-type-seg span').forEach(s => {
+    s.classList.toggle('on', s.textContent.toLowerCase() === lt);
+  });
+  ltRenderEmotions();
+}
+
+function ltRenderEmotions() {
+  const el = document.getElementById('lt-emotion-chips');
+  if (!el) return;
+  let set;
+  if (_ltState.result === 'win') set = LT_EMOTIONS.win;
+  else if (_ltState.result === 'be') set = LT_EMOTIONS.be;
+  else if (_ltState.lossType) set = LT_EMOTIONS[_ltState.lossType] || LT_EMOTIONS.statistical;
+  else set = LT_EMOTIONS.statistical;
+  const on = new Set(_ltState.emotions);
+  el.innerHTML = set.map(e =>
+    `<button class="lt-chip${on.has(e)?' on':''}" onclick="ltToggleEmotion('${esc(e)}')">${esc(e)}</button>`
+  ).join('');
+}
+
+function ltToggleEmotion(tag) {
+  const idx = _ltState.emotions.indexOf(tag);
+  if (idx >= 0) _ltState.emotions.splice(idx, 1);
+  else _ltState.emotions.push(tag);
+  ltRenderEmotions();
+}
+
+function ltSetSeg(el, segId) {
+  document.querySelectorAll('#' + segId + ' span').forEach(s => s.classList.remove('on'));
+  el.classList.add('on');
+  if (segId === 'lt-side-seg') _ltState.side = el.textContent.toLowerCase();
+}
+
+function ltSymChanged() {
+  // update tick value hint
+  ltCalcPoints();
+}
+
+function ltGetTickVal() {
+  const sym = (document.getElementById('lt-sym') || {}).value || '';
+  const base = sym.replace(/[0-9!]/g,'').toUpperCase();
+  return LT_PTS_PER_TICK[base] || null;
+}
+
+function ltCalcPoints() {
+  const entry = parseFloat(document.getElementById('lt-entry').value);
+  const exit  = parseFloat(document.getElementById('lt-exit').value);
+  const hint = document.getElementById('lt-points-hint');
+  if (isFinite(entry) && isFinite(exit)) {
+    const side = _ltState.side;
+    const pts = side === 'short' ? (entry - exit) : (exit - entry);
+    const ptsEl = document.getElementById('lt-points');
+    if (ptsEl && !ptsEl.dataset.manual) ptsEl.value = pts.toFixed(2);
+    if (hint) {
+      hint.textContent = pts >= 0 ? `+${pts.toFixed(2)} pts` : `${pts.toFixed(2)} pts`;
+      hint.className = 'lt-calc ' + (pts >= 0 ? 'pos' : 'neg');
+    }
+    ltCalcPnl();
+  } else {
+    if (hint) hint.textContent = '';
+  }
+}
+
+function ltCalcPnl() {
+  const pts = parseFloat((document.getElementById('lt-points') || {}).value);
+  const qty = parseFloat((document.getElementById('lt-qty') || {}).value) || 1;
+  const tv = ltGetTickVal();
+  const pnlEl = document.getElementById('lt-pnl');
+  const hint = document.getElementById('lt-pnl-hint');
+  if (isFinite(pts) && tv && pnlEl && !pnlEl.dataset.manual) {
+    const pnl = pts * tv * qty * _ltState.accounts;
+    pnlEl.value = pnl.toFixed(0);
+    if (hint) { hint.textContent = fmtPnl(pnl); hint.className = 'lt-calc ' + (pnl >= 0 ? 'pos' : 'neg'); }
+    ltCalcRR();
+  } else {
+    if (hint) hint.textContent = tv ? '' : '(tick value unknown — enter P&L manually)';
+  }
+}
+
+function ltCalcRR() {
+  const pnlEl = document.getElementById('lt-pnl');
+  const stopEl = document.getElementById('lt-stop');
+  const hint = document.getElementById('lt-rr-hint');
+  if (!pnlEl || !stopEl || !hint) return;
+  const pts = parseFloat((document.getElementById('lt-points') || {}).value);
+  const stop = parseFloat(stopEl.value);
+  if (isFinite(pts) && isFinite(stop) && stop > 0) {
+    const rr = Math.abs(pts) / stop;
+    hint.textContent = `R:R  ${rr.toFixed(2)}`;
+    hint.className = 'lt-calc ' + (rr >= 1 ? 'pos' : '');
+  } else {
+    hint.textContent = '';
+  }
+}
+
+function ltMultStep(d) {
+  _ltState.accounts = Math.max(1, (_ltState.accounts || 1) + d);
+  const mv = document.getElementById('lt-mult-val');
+  if (mv) mv.textContent = _ltState.accounts;
+  ltCalcPnl();
+  const hint = document.getElementById('lt-mult-hint');
+  if (hint) hint.textContent = _ltState.accounts > 1 ? `× ${_ltState.accounts} accounts` : '';
+}
+
+function ltTogglePartials() {
+  const tog = document.getElementById('lt-partials-tog-el');
+  const box = document.getElementById('lt-partials-box');
+  if (!tog || !box) return;
+  const on = tog.classList.toggle('on');
+  box.classList.toggle('on', on);
+  if (on && _ltState.partials.length === 0) ltAddPartialRow();
+}
+
+function ltAddPartialRow() {
+  _ltState.partials.push({ price: '', contracts: '' });
+  ltRenderPartialRows();
+}
+
+function ltRemovePartialRow(i) {
+  _ltState.partials.splice(i, 1);
+  ltRenderPartialRows();
+}
+
+function ltRenderPartialRows() {
+  const cont = document.getElementById('lt-partial-rows');
+  if (!cont) return;
+  cont.innerHTML = _ltState.partials.map((p, i) => `
+    <div class="lt-partial-row">
+      <div class="lt-field"><div class="lt-lbl">Exit Price</div>
+        <input class="lt-inp" value="${esc(String(p.price||''))}" placeholder="Price" type="number" step="0.25"
+          oninput="_ltState.partials[${i}].price=this.value;ltCalcPartials()"></div>
+      <div class="lt-field"><div class="lt-lbl">Contracts</div>
+        <input class="lt-inp" value="${esc(String(p.contracts||''))}" placeholder="Qty" type="number" step="1" min="1"
+          oninput="_ltState.partials[${i}].contracts=this.value;ltCalcPartials()"></div>
+      <button class="lt-partial-del" onclick="ltRemovePartialRow(${i})" title="Remove">×</button>
+    </div>`).join('');
+  ltCalcPartials();
+}
+
+function ltCalcPartials() {
+  const entry = parseFloat((document.getElementById('lt-entry') || {}).value);
+  const stop = parseFloat((document.getElementById('lt-stop') || {}).value);
+  const tv = ltGetTickVal() || 1;
+  const side = _ltState.side;
+  let totalContracts = 0, weightedPts = 0, totalPnl = 0;
+  _ltState.partials.forEach(p => {
+    const px = parseFloat(p.price);
+    const qty = parseFloat(p.contracts);
+    if (!isFinite(px) || !isFinite(qty)) return;
+    const pts = side === 'short' ? (entry - px) : (px - entry);
+    weightedPts += pts * qty;
+    totalContracts += qty;
+    totalPnl += pts * tv * qty;
+  });
+  const summary = document.getElementById('lt-partial-summary');
+  if (!summary) return;
+  if (totalContracts > 0) {
+    const blendedPts = (weightedPts / totalContracts).toFixed(2);
+    const rr = (isFinite(stop) && stop > 0) ? (Math.abs(weightedPts / totalContracts) / stop).toFixed(2) : '—';
+    summary.innerHTML = `Blended exit: <strong>${blendedPts} pts</strong> · R:R <strong>${rr}</strong> · P&L <strong class="${totalPnl>=0?'pos':'neg'}">${fmtPnl(totalPnl * _ltState.accounts)}</strong>`;
+    // Push to main fields
+    const pnlEl = document.getElementById('lt-pnl');
+    const ptsEl = document.getElementById('lt-points');
+    if (pnlEl) pnlEl.value = (totalPnl * _ltState.accounts).toFixed(0);
+    if (ptsEl) ptsEl.value = blendedPts;
+    ltCalcRR();
+  } else {
+    summary.textContent = '';
+  }
+}
+
+/* ---- Models ---- */
+function ltRenderModels() {
+  const el = document.getElementById('lt-model-list');
+  if (!el) return;
+  el.innerHTML = _ltState.models.map((m,i) =>
+    `<div class="lt-model-tag">${esc(m)}<button class="lt-model-x" onclick="ltRemoveModel(${i})">×</button></div>`
+  ).join('');
+}
+
+function ltRenderModelSugg() {
+  const el = document.getElementById('lt-model-suggestions');
+  if (!el) return;
+  const used = new Set(_ltState.models);
+  el.innerHTML = LT_MODEL_SUGG.filter(m => !used.has(m)).map(m =>
+    `<button class="lt-chip" onclick="ltAddModel('${esc(m)}')">${esc(m)}</button>`
+  ).join('');
+}
+
+function ltModelKey(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const val = e.target.value.trim();
+    if (val) { ltAddModel(val); e.target.value = ''; }
+  }
+}
+
+function ltAddModel(m) {
+  if (!_ltState.models.includes(m)) _ltState.models.push(m);
+  ltRenderModels();
+  ltRenderModelSugg();
+  const inp = document.getElementById('lt-model-inp');
+  if (inp) inp.value = '';
+}
+
+function ltRemoveModel(i) {
+  _ltState.models.splice(i, 1);
+  ltRenderModels();
+  ltRenderModelSugg();
+}
+
+/* ---- Confluences ---- */
+function ltRenderConf() {
+  const el = document.getElementById('lt-conf-list');
+  if (!el) return;
+  el.innerHTML = _ltState.confluences.map((c,i) =>
+    `<div class="lt-conf-tag">
+      <span class="lt-conf-name">${esc(c.name)}</span>
+      <select onchange="_ltState.confluences[${i}].timeframe=this.value">
+        <option value="">TF</option>${LT_TFS.map(t=>`<option value="${t}"${c.timeframe===t?' selected':''}>${t}</option>`).join('')}
+      </select>
+      <button class="lt-conf-x" onclick="ltRemoveConf(${i})">×</button>
+    </div>`
+  ).join('');
+}
+
+function ltConfKey(e) {
+  if (e.key === 'Enter') { e.preventDefault(); ltConfAdd(); }
+}
+
+function ltConfAdd() {
+  const inp = document.getElementById('lt-conf-inp');
+  if (!inp) return;
+  const val = inp.value.trim();
+  if (val) { _ltState.confluences.push({ name: val, timeframe: '' }); ltRenderConf(); inp.value = ''; ltConfSuggest(); }
+}
+
+function ltRemoveConf(i) {
+  _ltState.confluences.splice(i, 1);
+  ltRenderConf();
+}
+
+function ltConfSuggest() {
+  const el = document.getElementById('lt-conf-suggestions');
+  if (!el) return;
+  const val = ((document.getElementById('lt-conf-inp') || {}).value || '').toLowerCase();
+  const used = new Set(_ltState.confluences.map(c => c.name));
+  const matches = LT_CONF_SUGG.filter(c => !used.has(c) && (!val || c.toLowerCase().includes(val)));
+  el.innerHTML = matches.slice(0,6).map(c =>
+    `<button class="lt-chip" onclick="document.getElementById('lt-conf-inp').value='${esc(c)}';ltConfAdd()">${esc(c)}</button>`
+  ).join('');
+}
+
+/* ---- Confidence ---- */
+function ltSetConf(n) {
+  _ltState.confidence = n;
+  document.querySelectorAll('.lt-star').forEach(b => {
+    b.classList.toggle('on', parseInt(b.dataset.v) <= n);
+  });
+}
+
+/* ---- Grade ---- */
+function ltSetGrade(g) {
+  const isPro = window_profile && window_profile.is_pro;
+  if (!isPro) return;
+  _ltState.grade = g;
+  document.querySelectorAll('.lt-grade').forEach(b => b.classList.toggle('on', b.textContent === g));
+}
+
+function ltUpgradeGate(field) {
+  alert('Grade is a Pro feature. Upgrade at Settings → Subscription.');
+}
+
+/* ---- Screenshot ---- */
+function ltShotTab(tab, el) {
+  document.querySelectorAll('.lt-stab').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.lt-shot-pane').forEach(p => p.classList.remove('on'));
+  if (el) el.classList.add('on');
+  const pane = document.getElementById('lt-shot-' + tab);
+  if (pane) pane.classList.add('on');
+}
+
+function ltHandleDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f) ltHandleFile(f);
+}
+
+async function ltHandleFile(file) {
+  if (!file) return;
+  if (file.size > 8 * 1024 * 1024) { document.getElementById('lt-upload-msg').textContent = 'File too large (max 8 MB)'; return; }
+  const msg = document.getElementById('lt-upload-msg');
+  if (msg) msg.textContent = 'Uploading…';
+  _ltState.uploading = true;
+  try {
+    const ext = file.name.split('.').pop().toLowerCase() || 'png';
+    const path = `trade-screenshots/${currentUser.id}/${Date.now()}.${ext}`;
+    const { data, error } = await _sb.storage.from('trade-images').upload(path, file, { upsert: true, contentType: file.type });
+    if (error) throw error;
+    const { data: urlData } = _sb.storage.from('trade-images').getPublicUrl(path);
+    _ltState.imageUrl = urlData.publicUrl;
+    const prev = document.getElementById('lt-preview-img');
+    const drop = document.getElementById('lt-drop');
+    if (prev) { prev.src = _ltState.imageUrl; prev.classList.add('on'); }
+    if (drop) drop.style.display = 'none';
+    if (msg) msg.textContent = 'Uploaded ✓';
+  } catch(e) {
+    if (msg) msg.textContent = 'Upload failed: ' + (e.message || 'error');
+    // Let them paste TV link instead
+  } finally {
+    _ltState.uploading = false;
+  }
+}
+
+/* ---- Trading Day (inline ET calc — mirrors tradingDay.js logic) ---- */
+function ltGetTradingDay(dateStr, timeStr) {
+  // dateStr YYYY-MM-DD, timeStr HH:MM in ET (optional — defaults to now)
+  // If date given, just return it as trading_day for now
+  if (dateStr) return dateStr;
+  // Compute ET trading day for current moment
+  const d = new Date();
+  const etParts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York', weekday:'short', year:'numeric', month:'2-digit',
+    day:'2-digit', hour:'2-digit', minute:'2-digit', hour12: false
+  }).formatToParts(d);
+  const p = {};
+  etParts.forEach(x => { p[x.type] = x.value; });
+  const dow = p.weekday; // 'Sun','Mon',…
+  const h = parseInt(p.hour);
+  const base = `${p.year}-${p.month}-${p.day}`;
+  // Saturday: null (return today anyway for UI)
+  if (dow === 'Sat') return base;
+  // Sunday before 18: no trading
+  if (dow === 'Sun' && h < 18) return base;
+  // Sunday 18+: next calendar day (Monday)
+  if (dow === 'Sun' && h >= 18) {
+    const next = new Date(d);
+    next.setDate(next.getDate() + 1);
+    const np = new Intl.DateTimeFormat('en-US', {timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(next);
+    const np2 = {};
+    np.forEach(x => { np2[x.type] = x.value; });
+    return `${np2.year}-${np2.month}-${np2.day}`;
+  }
+  // Mon-Fri 17:00-17:59: rollover to next day
+  if (h === 17) {
+    const next = new Date(d);
+    next.setDate(next.getDate() + 1);
+    const np = new Intl.DateTimeFormat('en-US', {timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(next);
+    const np2 = {};
+    np.forEach(x => { np2[x.type] = x.value; });
+    return `${np2.year}-${np2.month}-${np2.day}`;
+  }
+  return base;
+}
+
+/* ---- Save Trade ---- */
+async function ltSaveTrade() {
+  if (!currentUser) { alert('Please sign in.'); return; }
+  const btn = document.getElementById('lt-save-btn');
+  const msg = document.getElementById('lt-save-msg');
+  if (btn) btn.disabled = true;
+  if (msg) { msg.textContent = 'Saving…'; msg.style.color = 'var(--ink45)'; }
+
+  try {
+    const sym = (document.getElementById('lt-sym') || {}).value || '';
+    const entry = parseFloat((document.getElementById('lt-entry') || {}).value) || null;
+    const exit  = parseFloat((document.getElementById('lt-exit') || {}).value) || null;
+    const points = parseFloat((document.getElementById('lt-points') || {}).value) || null;
+    const qty = parseInt((document.getElementById('lt-qty') || {}).value) || 1;
+    const pnl = parseFloat((document.getElementById('lt-pnl') || {}).value) || 0;
+    const stop = parseFloat((document.getElementById('lt-stop') || {}).value) || null;
+    const session = (document.getElementById('lt-session') || {}).value || null;
+    const acctType = (document.getElementById('lt-acct-type') || {}).value || null;
+    const notes = (document.getElementById('lt-notes') || {}).value || '';
+    const tvLink = (document.getElementById('lt-tv-link') || {}).value || '';
+    const dateVal = (document.getElementById('lt-date') || {}).value || getETCalendarDate();
+
+    const rr = (isFinite(points) && isFinite(stop) && stop > 0)
+      ? parseFloat((Math.abs(points) / stop).toFixed(2)) : null;
+
+    const tradeId = _ltState.editId || String(Date.now());
+    const isPro = window_profile && window_profile.is_pro;
+
+    const trade_data = {
+      id: tradeId,
+      date: dateVal,
+      sym: sym || null,
+      type: _ltState.side || null,
+      qty: qty,
+      pnl: pnl,
+      points: points,
+      entry: entry,
+      exit: exit,
+      stop: stop,
+      rr: rr,
+      session: session,
+      setup: _ltState.models.length ? _ltState.models[0] : null,
+      model: _ltState.models.join(', ') || null,
+      confluences: _ltState.confluences.length ? _ltState.confluences : null,
+      emotions: _ltState.emotions.length ? _ltState.emotions : null,
+      emotion: _ltState.confidence || null,
+      confidence: _ltState.confidence || null,
+      grade: isPro ? _ltState.grade : null,
+      notes: isPro ? notes : null,
+      tradingview_link: isPro ? tvLink : null,
+      account_type: acctType || null,
+      accounts: _ltState.accounts || 1,
+      loss_type: _ltState.lossType || null,
+      partials: _ltState.partials.length ? _ltState.partials : null,
+      image_url: _ltState.imageUrl || null,
+    };
+
+    const trading_day = ltGetTradingDay(dateVal);
+
+    const row = {
+      id: tradeId,
+      user_id: currentUser.id,
+      trade_data: trade_data,
+      account_type: acctType || null,
+      journal: 'default',
+      updated_at: new Date().toISOString(),
+      trading_day: trading_day,
+    };
+
+    const { error } = await _sb.from('trades').upsert(row);
+    if (error) throw error;
+
+    // Save confluences to trade_confluences table
+    if (_ltState.confluences.length && isPro) {
+      await _sb.from('trade_confluences').delete().eq('trade_id', tradeId);
+      const confRows = _ltState.confluences.map((c, pos) => ({
+        trade_id: tradeId,
+        confluence_id: c.confluence_id || null,
+        timeframe: c.timeframe || null,
+        position: pos
+      })).filter(r => r.confluence_id);
+      if (confRows.length) await _sb.from('trade_confluences').insert(confRows);
+    }
+
+    if (msg) { msg.textContent = 'Saved!'; msg.style.color = 'var(--win-text)'; }
+
+    // Reload data + re-render current page
+    await loadTradesFromDB();
+    renderDashboard();
+    if (window._histInitDone) histRender();
+    if (window._reviewInitDone) reviewRender();
+    if (window._calInitDone) { calRenderMonth(); calRenderRight(); }
+
+    setTimeout(() => {
+      closeLogModal();
+    }, 600);
+  } catch(e) {
+    if (msg) { msg.textContent = 'Error: ' + (e.message || 'save failed'); msg.style.color = 'var(--loss-text)'; }
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function ltDeleteTrade() {
+  if (!_ltState.editId) return;
+  if (!confirm('Delete this trade? This cannot be undone.')) return;
+  try {
+    await _sb.from('trades').delete().eq('id', _ltState.editId).eq('user_id', currentUser.id);
+    await _sb.from('community_posts').delete().like('id', 'trade_' + _ltState.editId + '_%');
+    await loadTradesFromDB();
+    renderDashboard();
+    if (window._histInitDone) histRender();
+    if (window._reviewInitDone) reviewRender();
+    if (window._calInitDone) { calRenderMonth(); calRenderRight(); }
+    closeLogModal();
+  } catch(e) {
+    alert('Delete failed: ' + (e.message || 'error'));
+  }
+}
+
+/* ---- CSV Import ---- */
+function ltCsvDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f) ltCsvLoad(f);
+}
+
+async function ltCsvLoad(file) {
+  if (!file) return;
+  const isPro = window_profile && window_profile.is_pro;
+  if (!isPro) { alert('CSV import requires Pro. Upgrade in Settings → Subscription.'); return; }
+  const text = await file.text();
+  _ltCsvTrades = ltParseCsv(text);
+  if (!_ltCsvTrades.length) { alert('No trades found in CSV. Check your headers: date, symbol, side, pnl are required.'); return; }
+  _ltCsvIdx = 0;
+  _ltCsvJournal = {};
+  document.getElementById('lt-csv-idle').style.display = 'none';
+  const rev = document.getElementById('lt-csv-review');
+  if (rev) rev.style.display = 'flex';
+  const saveBtn = document.getElementById('lt-save-btn');
+  const csvBtn = document.getElementById('lt-csv-next-btn');
+  if (saveBtn) saveBtn.style.display = 'none';
+  if (csvBtn) csvBtn.style.display = '';
+  ltCsvRenderCurrent();
+}
+
+function ltParseCsv(text) {
+  const lines = text.trim().split(/\r?\n/);
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z0-9_]/g,''));
+  const results = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const vals = ltCsvSplitLine(lines[i]);
+    const row = {};
+    headers.forEach((h, j) => { row[h] = (vals[j] || '').trim(); });
+    // Normalize fields
+    const sym = row.symbol || row.sym || row.ticker || row.instrument || '';
+    const pnl = parseFloat(row.pnl || row.profit || row.pl || row['p&l'] || 0);
+    const side = (row.side || row.direction || row.type || '').toLowerCase();
+    const date = row.date || row.tradingday || row.trading_day || '';
+    const qty = parseFloat(row.qty || row.contracts || row.quantity || row.size || 1);
+    const entry = parseFloat(row.entry || row.entryprice || row.open || 0) || null;
+    const exit  = parseFloat(row.exit || row.exitprice || row.close || 0) || null;
+    if (!date && !pnl && !sym) continue;
+    results.push({ sym, pnl, side: side.includes('short') ? 'short' : 'long', date, qty, entry, exit,
+      result: pnl > 0 ? 'win' : pnl < 0 ? 'loss' : 'be' });
+  }
+  return results;
+}
+
+function ltCsvSplitLine(line) {
+  const vals = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; }
+    else if (c === ',' && !inQ) { vals.push(cur); cur = ''; }
+    else { cur += c; }
+  }
+  vals.push(cur);
+  return vals;
+}
+
+function ltCsvRenderCurrent() {
+  const t = _ltCsvTrades[_ltCsvIdx];
+  if (!t) { ltCsvComplete(); return; }
+  const counter = document.getElementById('lt-csv-counter');
+  if (counter) counter.textContent = `${_ltCsvIdx + 1} / ${_ltCsvTrades.length}`;
+  // Locked display block
+  const locked = document.getElementById('lt-csv-locked-block');
+  if (locked) {
+    locked.innerHTML = [
+      ['Symbol', esc(t.sym || '—')],
+      ['Side', esc((t.side || '').toUpperCase())],
+      ['Contracts', esc(String(t.qty || 1))],
+      ['P&L', `<span class="${t.pnl>=0?'pos':'neg'}">${fmtPnl(t.pnl)}</span>`],
+      ['Result', esc((t.result || '').toUpperCase())],
+      ['Date', esc(t.date || '—')],
+    ].map(([k,v]) => `<div><div class="fk">${k}</div><div class="fv">${v}</div></div>`).join('');
+  }
+  // Journal fields
+  const j = document.getElementById('lt-csv-journal');
+  if (j) {
+    const prev = _ltCsvJournal[_ltCsvIdx] || {};
+    j.innerHTML = `
+      <div class="lt-field">
+        <div class="lt-lbl">Session</div>
+        <select class="lt-inp lt-sel" id="ltcsv-session">
+          <option value="">—</option>
+          <option>NY AM</option><option>NY PM</option><option>London</option><option>Asia</option><option>Lunch</option>
+        </select>
+      </div>
+      <div class="lt-field">
+        <div class="lt-lbl">Stop Loss (pts)</div>
+        <input class="lt-inp" id="ltcsv-stop" type="number" step="0.25" placeholder="—">
+      </div>
+      <div class="lt-field">
+        <div class="lt-lbl">Model</div>
+        <input class="lt-inp" id="ltcsv-model" placeholder="ICT, SMC…">
+      </div>
+      <div class="lt-field">
+        <div class="lt-lbl">Notes</div>
+        <textarea class="lt-inp" id="ltcsv-notes" rows="2" style="resize:vertical"></textarea>
+      </div>`;
+    // Restore prior values
+    if (prev.session && document.getElementById('ltcsv-session')) document.getElementById('ltcsv-session').value = prev.session;
+    if (prev.stop && document.getElementById('ltcsv-stop')) document.getElementById('ltcsv-stop').value = prev.stop;
+    if (prev.model && document.getElementById('ltcsv-model')) document.getElementById('ltcsv-model').value = prev.model;
+    if (prev.notes && document.getElementById('ltcsv-notes')) document.getElementById('ltcsv-notes').value = prev.notes;
+  }
+}
+
+async function ltCsvSaveNext() {
+  const t = _ltCsvTrades[_ltCsvIdx];
+  if (!t) { ltCsvComplete(); return; }
+  const session = (document.getElementById('ltcsv-session') || {}).value || null;
+  const stop = parseFloat((document.getElementById('ltcsv-stop') || {}).value) || null;
+  const model = (document.getElementById('ltcsv-model') || {}).value || null;
+  const notes = (document.getElementById('ltcsv-notes') || {}).value || null;
+  // Save journal state for back navigation
+  _ltCsvJournal[_ltCsvIdx] = { session, stop, model, notes };
+  const pts = (isFinite(t.entry) && isFinite(t.exit)) ? Math.abs(t.exit - t.entry) : null;
+  const rr = (pts != null && stop != null && stop > 0) ? parseFloat((pts / stop).toFixed(2)) : null;
+  const tradeId = String(Date.now()) + '_' + _ltCsvIdx;
+  const trade_data = {
+    id: tradeId, date: t.date, sym: t.sym, type: t.side, qty: t.qty,
+    pnl: t.pnl, entry: t.entry, exit: t.exit, stop, rr, session, model,
+    setup: model, notes, account_type: null,
+  };
+  const trading_day = ltGetTradingDay(t.date);
+  try {
+    await _sb.from('trades').upsert({
+      id: tradeId, user_id: currentUser.id, trade_data,
+      account_type: null, journal: 'default',
+      updated_at: new Date().toISOString(), trading_day
+    });
+  } catch(e) { console.error('CSV save error', e); }
+  _ltCsvIdx++;
+  if (_ltCsvIdx >= _ltCsvTrades.length) { ltCsvComplete(); return; }
+  ltCsvRenderCurrent();
+}
+
+async function ltCsvComplete() {
+  await loadTradesFromDB();
+  renderDashboard();
+  if (window._histInitDone) histRender();
+  if (window._reviewInitDone) reviewRender();
+  closeLogModal();
+  // Reset CSV state
+  _ltCsvTrades = []; _ltCsvIdx = 0;
+  const idle = document.getElementById('lt-csv-idle');
+  const rev = document.getElementById('lt-csv-review');
+  if (idle) idle.style.display = '';
+  if (rev) rev.style.display = 'none';
+}
+
+function ltCsvCancel() {
+  _ltCsvTrades = []; _ltCsvIdx = 0;
+  const idle = document.getElementById('lt-csv-idle');
+  const rev = document.getElementById('lt-csv-review');
+  if (idle) idle.style.display = '';
+  if (rev) rev.style.display = 'none';
+  ltSetTab('csv');
+}
+
+// Update settImportCSV to open the modal CSV tab
+function settImportCSV() {
+  closeLogModal && closeLogModal();
+  openLogModal();
+  setTimeout(() => ltSetTab('csv'), 50);
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLogModal(); });
 
 /* --- Settings --- */
 let window_settings = {};
