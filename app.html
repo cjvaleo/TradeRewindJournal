@@ -2181,6 +2181,19 @@ let _dashCalYear = null;
 let _dashCalMonth = null; // 0-indexed
 
 /* --- Router --- */
+function _pageRun(label, fn) {
+  // Wraps both sync throws and async rejections so every page failure
+  // surfaces in the console rather than dying silently.
+  try {
+    const result = fn();
+    if (result && typeof result.catch === 'function') {
+      result.catch(err => console.error('[page:' + label + ']', err));
+    }
+  } catch (err) {
+    console.error('[page:' + label + ']', err);
+  }
+}
+
 function goTo(pg) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.stark-nav-item').forEach(b => b.classList.remove('active'));
@@ -2189,23 +2202,23 @@ function goTo(pg) {
   const btn = document.querySelector('.stark-nav-item[data-pg="' + pg + '"]');
   if (btn) btn.classList.add('active');
   if (pg === 'calendar') {
-    if (!window._calInitDone) { window._calInitDone = true; calInit(); }
-    else { calRenderMonth(); calRenderRight(); }
+    if (!window._calInitDone) { window._calInitDone = true; _pageRun('calendar:init', calInit); }
+    else _pageRun('calendar', () => { calRenderMonth(); calRenderRight(); });
   }
   if (pg === 'history') {
-    if (!window._histInitDone) { window._histInitDone = true; histInit(); }
-    else histRender();
+    if (!window._histInitDone) { window._histInitDone = true; _pageRun('history:init', histInit); }
+    else _pageRun('history', histRender);
   }
   if (pg === 'analytics') {
-    if (!window._reviewInitDone) { window._reviewInitDone = true; reviewInit(); }
-    else reviewRender();
+    if (!window._reviewInitDone) { window._reviewInitDone = true; _pageRun('analytics:init', reviewInit); }
+    else _pageRun('analytics', reviewRender);
   }
   if (pg === 'community') {
-    if (!window._commInitDone) { window._commInitDone = true; commInit(); }
-    else commRender();
+    if (!window._commInitDone) { window._commInitDone = true; _pageRun('community:init', commInit); }
+    else _pageRun('community', commRender);
   }
   if (pg === 'settings') {
-    settInit();
+    _pageRun('settings', settInit);
   }
   if (pg === 'log') {
     openLogModal();
