@@ -811,6 +811,101 @@ h3.sec a:hover{color:var(--ink)}
   #pg-community .cm-hl{flex-wrap:wrap}
   .cm-spark{display:none}
 }
+
+/* ============================================================
+   SETTINGS PAGE
+   ============================================================ */
+#pg-settings.page.on{display:flex!important;flex-direction:column;padding:18px 26px;gap:14px}
+.st-shell{flex:1;min-height:0;display:grid;grid-template-columns:212px minmax(0,1fr);gap:18px}
+/* section nav */
+.st-snav{display:flex;flex-direction:column;gap:3px}
+.st-sn{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:10px;cursor:pointer;color:var(--ink45);transition:all .14s;border:1px solid transparent}
+.st-sn:hover{color:var(--ink);background:rgba(255,255,255,.03)}
+.st-sn.on{color:var(--ink);background:var(--panel);border-color:var(--panel-border);box-shadow:inset 0 1px 0 var(--spec)}
+.st-sn.on .st-ic{color:var(--gold)}
+.st-ic{width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.st-ic svg{width:15px;height:15px;stroke-width:1.9;fill:none;stroke:currentColor}
+.st-sn .t{font-size:10.5px;letter-spacing:.04em;font-weight:700;text-transform:uppercase}
+.st-snav .sep{height:1px;background:var(--hair);margin:8px 4px}
+.st-sn.danger{color:var(--loss-text)}.st-sn.danger .st-ic{color:var(--loss-text)}
+/* content */
+.st-content{min-width:0;min-height:0;overflow-y:auto;padding-right:8px;display:flex;flex-direction:column;gap:16px}
+.st-content::-webkit-scrollbar{width:5px}.st-content::-webkit-scrollbar-thumb{background:rgba(242,242,240,.15);border-radius:3px}
+.st-sec{display:none;flex-direction:column;gap:14px}
+.st-sec.on{display:flex}
+.st-sec-h{display:flex;flex-direction:column;gap:3px}
+.st-sec-h h2{font-size:16px;text-transform:uppercase}
+.st-sec-h p{font-size:9.5px;color:var(--ink45);letter-spacing:.03em}
+.st-card{padding:0;overflow:hidden}
+.st-card-t{font-size:8.5px;letter-spacing:.11em;color:var(--ink45);text-transform:uppercase;font-weight:700;padding:13px 18px 0}
+.st-row{display:flex;align-items:center;gap:18px;padding:14px 18px;border-bottom:1px solid var(--hair)}
+.st-row:last-child{border-bottom:none}
+.st-lbl{min-width:180px}
+.st-lbl .n{font-size:11.5px;font-weight:900}
+.st-lbl .d{font-size:9px;color:var(--ink45);letter-spacing:.02em;margin-top:2px;line-height:1.4}
+.st-ctrl{margin-left:auto;display:flex;align-items:center;gap:10px}
+.st-inp{background:rgba(0,0,0,.25);border:1px solid var(--hair);border-radius:9px;padding:9px 13px;color:var(--ink);font-family:'Archivo',sans-serif;font-style:italic;font-weight:700;font-size:11px;min-width:220px;text-align:right}
+.st-inp:focus{outline:none;border-color:var(--gold-soft)}
+.st-btn{font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;border-radius:8px;padding:9px 15px;cursor:pointer;border:1px solid var(--hair2);color:var(--ink70);background:transparent;transition:all .14s;font-family:'Archivo',sans-serif;font-style:italic}
+.st-btn:hover{border-color:var(--gold-soft);color:var(--ink)}
+.st-btn.gold{color:#1A1304;background:var(--gold-grad);border-color:rgba(255,235,180,.5);box-shadow:inset 0 1px 0 rgba(255,250,230,.6)}
+.st-btn.danger{color:var(--loss-text);border-color:rgba(201,106,106,.45)}
+.st-btn.danger:hover{background:rgba(201,106,106,.1)}
+/* toggle */
+.st-tog{width:42px;height:24px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid var(--hair);position:relative;cursor:pointer;transition:all .18s;flex-shrink:0}
+.st-tog:after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--ink45);transition:all .18s}
+.st-tog.on{background:var(--gold-grad);border-color:rgba(255,235,180,.5)}
+.st-tog.on:after{left:20px;background:#1A1304}
+/* segmented */
+.st-seg{display:flex;border:1px solid var(--hair);border-radius:9px;overflow:hidden}
+.st-seg span{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;font-weight:700;color:var(--ink45);padding:9px 14px;cursor:pointer}
+.st-seg span.on{background:var(--ink);color:var(--bg)}
+/* avatar */
+.st-avbig{width:60px;height:60px;border-radius:50%;background:var(--gold-grad);color:#1A1304;display:flex;align-items:center;justify-content:center;font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:125%;font-size:20px;box-shadow:inset 0 1px 0 rgba(255,250,230,.6),0 8px 20px -10px rgba(216,178,106,.5);cursor:pointer;flex-shrink:0}
+/* plan card */
+.st-plancard{padding:18px;display:flex;align-items:center;gap:18px;border-color:rgba(216,178,106,.45)!important;background:radial-gradient(320px 120px at 85% 0%,rgba(216,178,106,.13),transparent 70%),var(--panel)!important}
+.st-plancard .pl{font-size:8px;letter-spacing:.13em;color:var(--gold);text-transform:uppercase;font-weight:700}
+.st-plancard .pn{font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:125%;font-size:24px;line-height:1.1;margin-top:3px}
+.st-plancard .pm{font-size:9px;color:var(--ink45);letter-spacing:.03em;margin-top:4px}
+.st-plancard .pm b{color:var(--win-text)}
+.st-plancard .pp{margin-left:auto;text-align:right}
+.st-plancard .pp .price{font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:125%;font-size:26px;color:var(--ink)}
+.st-plancard .pp .per{font-size:8px;color:var(--ink45);letter-spacing:.06em;text-transform:uppercase}
+.st-tier{display:flex;gap:10px}
+.st-tcell{flex:1;border:1px solid var(--hair);border-radius:11px;padding:12px 13px;display:flex;flex-direction:column;gap:4px}
+.st-tcell.cur{border-color:rgba(216,178,106,.5);background:rgba(216,178,106,.06)}
+.st-tcell .tn{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.st-tcell .tp{font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:118%;font-size:15px}
+.st-tcell .td{font-size:8px;color:var(--ink45);letter-spacing:.03em;line-height:1.4}
+.st-tcell .cur-tag{font-size:6.5px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;font-weight:700}
+/* themes */
+.st-themes{display:flex;gap:12px;padding:6px 18px 16px}
+.st-swatch{flex:1;border-radius:12px;border:1px solid var(--hair);overflow:hidden;cursor:pointer;transition:all .14s}
+.st-swatch.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 0 18px rgba(216,178,106,.25)}
+.st-sw-prev{height:64px;position:relative;display:flex;align-items:flex-end;padding:8px;gap:4px}
+.st-sw-prev .bar{width:8px;border-radius:2px}
+.sw-grey{background:linear-gradient(160deg,#26272B,#1C1D20)}
+.sw-dark{background:linear-gradient(160deg,#161616,#0C0C0D)}
+.sw-light{background:linear-gradient(160deg,#F4F2EC,#E4E1D8)}
+.st-sw-name{font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:9px 11px;display:flex;justify-content:space-between;align-items:center}
+.st-sw-name .chk{color:var(--gold);font-size:10px;opacity:0}
+.st-swatch.on .st-sw-name .chk{opacity:1}
+/* connections */
+.st-conn{display:flex;align-items:center;gap:13px;padding:14px 18px;border-bottom:1px solid var(--hair)}
+.st-conn:last-child{border-bottom:none}
+.st-clogo{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;flex-shrink:0;color:#fff;font-style:normal}
+.st-ci .cn{font-size:11.5px;font-weight:900}
+.st-ci .cs{font-size:8.5px;color:var(--ink45);letter-spacing:.03em;margin-top:1px}
+.st-ci .cs .ok{color:var(--win-text);font-weight:700}
+.st-cright{margin-left:auto}
+.st-badge-ok{font-size:8px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--win-text);border:1px solid rgba(47,174,120,.4);background:rgba(47,174,120,.1);border-radius:7px;padding:6px 11px}
+.st-danger-card{border-color:rgba(201,106,106,.4)!important}
+@media(max-width:1080px){
+  #pg-settings.page.on{padding:14px 16px}
+  .st-shell{grid-template-columns:1fr}
+  .st-content{overflow:visible}
+  .st-inp{min-width:140px}
+}
 </style>
 </head>
 <body>
@@ -857,7 +952,7 @@ h3.sec a:hover{color:var(--ink)}
     </nav>
     <div class="stark-topbar-right">
       <button class="stark-log-btn" onclick="goTo('log')">+ Log Trade</button>
-      <div class="stark-avatar" id="top-avatar">RW</div>
+      <div class="stark-avatar" id="top-avatar" onclick="goTo('settings')" style="cursor:pointer">RW</div>
     </div>
   </header>
 
@@ -1222,6 +1317,290 @@ h3.sec a:hover{color:var(--ink)}
 
   <div class="page" id="pg-log"><div style="padding:40px;color:var(--ink45);font-size:13px">Log Trade — coming soon</div></div>
 
+  <!-- SETTINGS -->
+  <div class="page" id="pg-settings">
+    <div class="titlerow" style="flex-shrink:0">
+      <h1 class="disp">Settings</h1>
+      <span style="font-size:8.5px;color:var(--ink45);letter-spacing:.08em;text-transform:uppercase;padding-bottom:3px">Manage your account, plan &amp; preferences</span>
+    </div>
+
+    <div class="st-shell">
+      <!-- SECTION NAV -->
+      <nav class="st-snav">
+        <div class="st-sn on" data-s="account" onclick="settNav('account',this)">
+          <span class="st-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></span><span class="t">Account</span>
+        </div>
+        <div class="st-sn" data-s="sub" onclick="settNav('sub',this)">
+          <span class="st-ic"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span><span class="t">Subscription</span>
+        </div>
+        <div class="st-sn" data-s="appear" onclick="settNav('appear',this)">
+          <span class="st-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18"/></svg></span><span class="t">Appearance</span>
+        </div>
+        <div class="st-sn" data-s="trading" onclick="settNav('trading',this)">
+          <span class="st-ic"><svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 3 6-7"/><path d="M3 21h18"/></svg></span><span class="t">Trading</span>
+        </div>
+        <div class="st-sn" data-s="conn" onclick="settNav('conn',this)">
+          <span class="st-ic"><svg viewBox="0 0 24 24"><path d="M9 12l-3 3a3 3 0 0 0 4 4l3-3M15 12l3-3a3 3 0 0 0-4-4l-3 3"/><path d="M8 16l8-8"/></svg></span><span class="t">Connections</span>
+        </div>
+        <div class="st-sn" data-s="notif" onclick="settNav('notif',this)">
+          <span class="st-ic"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span><span class="t">Notifications</span>
+        </div>
+        <div class="sep"></div>
+        <div class="st-sn" data-s="data" onclick="settNav('data',this)">
+          <span class="st-ic"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/></svg></span><span class="t">Data</span>
+        </div>
+      </nav>
+
+      <!-- CONTENT -->
+      <div class="st-content" id="st-content">
+
+        <!-- ACCOUNT -->
+        <div class="st-sec on" id="st-s-account">
+          <div class="st-sec-h"><h2 class="disp">Account</h2><p>Your profile and login details.</p></div>
+          <div class="glass st-card">
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Avatar</div><div class="d">Shown on your trades in Community.</div></div>
+              <div class="st-ctrl">
+                <div class="st-avbig" id="st-avbig">RW</div>
+                <button class="st-btn">Upload</button>
+              </div>
+            </div>
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Display Name</div></div>
+              <div class="st-ctrl"><input class="st-inp" id="st-name" placeholder="Your name"></div>
+            </div>
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Username</div><div class="d">Your handle in the community feed.</div></div>
+              <div class="st-ctrl"><input class="st-inp" id="st-username" placeholder="@handle"></div>
+            </div>
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Email</div></div>
+              <div class="st-ctrl"><input class="st-inp" id="st-email" type="email" readonly style="opacity:.6;cursor:default"></div>
+            </div>
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Password</div></div>
+              <div class="st-ctrl"><button class="st-btn" onclick="settChangePwd()">Change Password</button></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;flex-shrink:0">
+            <button class="st-btn" onclick="settInit()">Cancel</button>
+            <button class="st-btn gold" onclick="settSaveProfile()">Save Changes</button>
+          </div>
+          <div id="st-acct-msg" style="text-align:right;font-size:9px;min-height:14px"></div>
+        </div>
+
+        <!-- SUBSCRIPTION -->
+        <div class="st-sec" id="st-s-sub">
+          <div class="st-sec-h"><h2 class="disp">Subscription</h2><p>Your plan, billing and indicator access.</p></div>
+          <div class="glass st-plancard" id="st-plancard">
+            <div>
+              <div class="pl">Current Plan</div>
+              <div class="pn" id="st-plan-name">—</div>
+              <div class="pm" id="st-plan-meta">Loading…</div>
+            </div>
+            <div class="pp" id="st-plan-price" style="display:none">
+              <div class="price" id="st-price-amt">$9</div>
+              <div class="per">/ month</div>
+            </div>
+          </div>
+          <div class="glass st-card">
+            <div class="st-card-t">Plans</div>
+            <div style="padding:14px 18px">
+              <div class="st-tier" id="st-tier-compare">
+                <div class="st-tcell"><span class="tn">Free</span><span class="tp">$0</span><span class="td">Journal + basic indicator</span></div>
+                <div class="st-tcell"><span class="tn">Pro Premium</span><span class="tp">$9</span><span class="td">Full app · Whop members</span></div>
+                <div class="st-tcell"><span class="tn">Pro Direct</span><span class="tp">$19</span><span class="td">Full app · no Whop required</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="glass st-card">
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Ark Indicator Access</div><div class="d">TradingView invite-only access.</div></div>
+              <div class="st-ctrl"><span id="st-indicator-badge" class="st-badge-ok" style="display:none">✓ Pro Active</span><span id="st-indicator-lock" style="font-size:9px;color:var(--ink45)">Requires Pro</span></div>
+            </div>
+            <div class="st-row" id="st-billing-row" style="display:none">
+              <div class="st-lbl"><div class="n">Billing</div><div class="d">Manage payment method &amp; invoices in Stripe.</div></div>
+              <div class="st-ctrl"><button class="st-btn" onclick="settOpenStripePortal(this)">Manage Billing →</button></div>
+            </div>
+            <div class="st-row" id="st-cancel-row" style="display:none">
+              <div class="st-lbl"><div class="n">Cancel Plan</div><div class="d">Keeps access until the end of the billing cycle.</div></div>
+              <div class="st-ctrl"><button class="st-btn danger" onclick="settConfirmCancel()">Cancel Subscription</button></div>
+            </div>
+            <div class="st-row" id="st-upgrade-row">
+              <div class="st-lbl"><div class="n">Upgrade to Pro Direct</div><div class="d">$19/month · full access · no Discord required.</div></div>
+              <div class="st-ctrl"><button class="st-btn gold" onclick="settUpgrade()">Upgrade →</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- APPEARANCE -->
+        <div class="st-sec" id="st-s-appear">
+          <div class="st-sec-h"><h2 class="disp">Appearance</h2><p>Theme and visual preferences.</p></div>
+          <div class="glass st-card">
+            <div class="st-card-t">Theme</div>
+            <div class="st-themes">
+              <div class="st-swatch on" data-th="grey" onclick="settApplyTheme('grey',this)">
+                <div class="st-sw-prev sw-grey"><span class="bar" style="height:60%;background:#2FAE78"></span><span class="bar" style="height:40%;background:#C96A6A"></span><span class="bar" style="height:75%;background:#D8B26A"></span></div>
+                <div class="st-sw-name">Grey <span class="chk">✓</span></div>
+              </div>
+              <div class="st-swatch" data-th="dark" onclick="settApplyTheme('dark',this)">
+                <div class="st-sw-prev sw-dark"><span class="bar" style="height:60%;background:#2FAE78"></span><span class="bar" style="height:40%;background:#C96A6A"></span><span class="bar" style="height:75%;background:#D8B26A"></span></div>
+                <div class="st-sw-name">Dark <span class="chk">✓</span></div>
+              </div>
+              <div class="st-swatch" data-th="light" onclick="settApplyTheme('light',this)">
+                <div class="st-sw-prev sw-light"><span class="bar" style="height:60%;background:#1f9e6b"></span><span class="bar" style="height:40%;background:#b85959"></span><span class="bar" style="height:75%;background:#A8843E"></span></div>
+                <div class="st-sw-name" style="color:#1A1304">Light <span class="chk" style="color:#A8843E">✓</span></div>
+              </div>
+            </div>
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Accent</div><div class="d">Champagne gold is the Ark colorway.</div></div>
+              <div class="st-ctrl">
+                <div class="st-seg"><span class="on">Gold</span><span>Mono</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TRADING -->
+        <div class="st-sec" id="st-s-trading">
+          <div class="st-sec-h"><h2 class="disp">Trading</h2><p>Defaults applied when you log a trade.</p></div>
+          <div class="glass st-card">
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Display Timezone</div><div class="d">All times shown in this zone. Trading day resets 6:00 PM here.</div></div>
+              <div class="st-ctrl">
+                <div class="st-seg" id="st-tz-seg">
+                  <span class="on" data-tz="America/New_York" onclick="settSetTz(this)">New York</span>
+                  <span data-tz="UTC" onclick="settSetTz(this)">UTC</span>
+                  <span data-tz="device" onclick="settSetTz(this)">Local</span>
+                </div>
+              </div>
+            </div>
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Default Symbol</div></div>
+              <div class="st-ctrl">
+                <div class="st-seg" id="st-sym-seg">
+                  <span class="on" data-sym="NQ" onclick="settSetSym(this)">NQ</span>
+                  <span data-sym="ES" onclick="settSetSym(this)">ES</span>
+                  <span data-sym="" onclick="settSetSym(this)">None</span>
+                </div>
+              </div>
+            </div>
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Account Size</div><div class="d">Used for % return on the share card.</div></div>
+              <div class="st-ctrl"><input class="st-inp" id="st-acct-size" placeholder="$50,000"></div>
+            </div>
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Default Risk / Trade</div></div>
+              <div class="st-ctrl"><input class="st-inp" id="st-risk" placeholder="1.0%  ·  $500"></div>
+            </div>
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Default Contracts</div></div>
+              <div class="st-ctrl"><input class="st-inp" id="st-contracts" placeholder="2"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;flex-shrink:0">
+            <button class="st-btn gold" onclick="settSaveTrading()">Save Defaults</button>
+          </div>
+          <div id="st-trading-msg" style="text-align:right;font-size:9px;min-height:14px"></div>
+        </div>
+
+        <!-- CONNECTIONS -->
+        <div class="st-sec" id="st-s-conn">
+          <div class="st-sec-h"><h2 class="disp">Connections</h2><p>Linked accounts and integrations.</p></div>
+          <div class="glass st-card">
+            <div class="st-conn">
+              <div class="st-clogo" style="background:#5865F2">Dc</div>
+              <div class="st-ci">
+                <div class="cn">Discord</div>
+                <div class="cs" id="st-discord-status">Not connected</div>
+              </div>
+              <div class="st-cright" id="st-discord-ctrl">
+                <button class="st-btn" onclick="settConnectDiscord()">Connect</button>
+              </div>
+            </div>
+            <div class="st-conn">
+              <div class="st-clogo" style="background:linear-gradient(160deg,#2962FF,#1E53E5)">TV</div>
+              <div class="st-ci">
+                <div class="cn">TradingView</div>
+                <div class="cs">Indicator invite via Discord role</div>
+              </div>
+              <div class="st-cright">
+                <button class="st-btn" onclick="">Manage</button>
+              </div>
+            </div>
+            <div class="st-conn">
+              <div class="st-clogo" style="background:#FF6243">W</div>
+              <div class="st-ci">
+                <div class="cn">Whop</div>
+                <div class="cs" id="st-whop-status">Trading Ark membership</div>
+              </div>
+              <div class="st-cright" id="st-whop-ctrl">
+                <button class="st-btn" onclick="">View</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div class="st-sec" id="st-s-notif">
+          <div class="st-sec-h"><h2 class="disp">Notifications</h2><p>Choose what Ark sends you, and where.</p></div>
+          <div class="glass st-card">
+            <div class="st-card-t">Ark Bot</div>
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Daily Pre-Market Brief</div><div class="d">Morning NQ/ES read before the open.</div></div>
+              <div class="st-ctrl"><div class="st-tog on" id="ntog-brief" onclick="settToggle(this,'notif_brief')"></div></div>
+            </div>
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Daily Debrief</div><div class="d">End-of-day summary + tomorrow's focus.</div></div>
+              <div class="st-ctrl"><div class="st-tog on" id="ntog-debrief" onclick="settToggle(this,'notif_debrief')"></div></div>
+            </div>
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Weekly Edge Report</div><div class="d">Sunday review with the month directive.</div></div>
+              <div class="st-ctrl"><div class="st-tog on" id="ntog-weekly" onclick="settToggle(this,'notif_weekly')"></div></div>
+            </div>
+          </div>
+          <div class="glass st-card">
+            <div class="st-card-t">Community &amp; Email</div>
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Community Activity</div><div class="d">When someone you follow posts a trade.</div></div>
+              <div class="st-ctrl"><div class="st-tog on" id="ntog-community" onclick="settToggle(this,'notif_community')"></div></div>
+            </div>
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Trade of the Week</div></div>
+              <div class="st-ctrl"><div class="st-tog" id="ntog-totw" onclick="settToggle(this,'notif_totw')"></div></div>
+            </div>
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Email Recaps</div><div class="d">Weekly performance recap to your inbox.</div></div>
+              <div class="st-ctrl"><div class="st-tog on" id="ntog-email" onclick="settToggle(this,'notif_email')"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DATA -->
+        <div class="st-sec" id="st-s-data">
+          <div class="st-sec-h"><h2 class="disp">Data</h2><p>Import, export, and account removal.</p></div>
+          <div class="glass st-card">
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Import Trades</div><div class="d">CSV from your broker or another journal.</div></div>
+              <div class="st-ctrl"><button class="st-btn" onclick="settImportCSV()">Import CSV</button></div>
+            </div>
+            <div class="st-row">
+              <div class="st-lbl"><div class="n">Export All Data</div><div class="d">Download every trade as CSV.</div></div>
+              <div class="st-ctrl"><button class="st-btn" onclick="settExportCSV()">Export CSV</button></div>
+            </div>
+          </div>
+          <div class="glass st-card st-danger-card">
+            <div class="st-row">
+              <div class="st-lbl"><div class="n" style="color:var(--loss-text)">Delete Account</div><div class="d">Permanently removes your account and all trades. This cannot be undone.</div></div>
+              <div class="st-ctrl"><button class="st-btn danger" onclick="settConfirmDelete()">Delete Account</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /st-content -->
+    </div><!-- /st-shell -->
+  </div><!-- /pg-settings -->
+
 </div><!-- /app -->
 
 <!-- Community trade recap modal (outside #pg-community so it can overlay everything) -->
@@ -1305,6 +1684,9 @@ function goTo(pg) {
     if (!window._commInitDone) { window._commInitDone = true; commInit(); }
     else commRender();
   }
+  if (pg === 'settings') {
+    settInit();
+  }
 }
 
 /* --- Auth --- */
@@ -1349,7 +1731,7 @@ async function onSignedIn(user) {
   currentUser = user;
   showApp();
   updateAvatar(user);
-  await Promise.all([loadProfileFromDB(), loadTradesFromDB()]);
+  await Promise.all([loadProfileFromDB(), loadTradesFromDB(), loadUserSettingsFromDB()]);
   renderDashboard();
   initArkHolo();
   // Re-render pages that were visited before data loaded
@@ -3267,6 +3649,348 @@ function commRenderMiniCal() {
 function commShareCard() { /* wire to /api/eod/render-card when Ark engine built */ }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') commCloseRecap(); });
+
+/* --- Settings --- */
+let window_settings = {};
+let _settTier = null;
+
+async function settInit() {
+  if (!currentUser) return;
+  // Populate account fields
+  const p = window_profile || {};
+  const nameEl = document.getElementById('st-name');
+  const userEl = document.getElementById('st-username');
+  const emailEl = document.getElementById('st-email');
+  if (nameEl) nameEl.value = p.display_name || '';
+  if (userEl) userEl.value = p.username || '';
+  if (emailEl) emailEl.value = (currentUser && currentUser.email) || '';
+  // Avatar
+  const avBig = document.getElementById('st-avbig');
+  if (avBig) {
+    if (p.avatar_url) {
+      avBig.innerHTML = `<img src="${esc(p.avatar_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    } else {
+      avBig.textContent = (p.display_name || currentUser.email || 'RW').slice(0,2).toUpperCase();
+    }
+  }
+  // Trading defaults from window_settings
+  const tzSel = document.getElementById('st-tz-seg');
+  if (tzSel) {
+    const tz = window_settings.display_tz || 'America/New_York';
+    tzSel.querySelectorAll('span').forEach(s => {
+      s.classList.toggle('on', s.dataset.tz === tz);
+    });
+  }
+  const symSel = document.getElementById('st-sym-seg');
+  if (symSel) {
+    const sym = window_settings.default_symbol || 'NQ';
+    symSel.querySelectorAll('span').forEach(s => {
+      s.classList.toggle('on', s.dataset.sym === sym);
+    });
+  }
+  const acctSizeEl = document.getElementById('st-acct-size');
+  if (acctSizeEl) acctSizeEl.value = window_settings.account_size || '';
+  const riskEl = document.getElementById('st-risk');
+  if (riskEl) riskEl.value = window_settings.default_risk || '';
+  const contractsEl = document.getElementById('st-contracts');
+  if (contractsEl) contractsEl.value = window_settings.default_contracts || '';
+  // Notification toggles
+  ['brief','debrief','weekly','community','totw','email'].forEach(k => {
+    const tog = document.getElementById('ntog-' + k);
+    if (tog) {
+      const val = window_settings['notif_' + k];
+      tog.classList.toggle('on', val === undefined ? true : val !== 'false' && val !== false);
+    }
+  });
+  // Active theme swatch
+  const curTheme = window_settings.theme || 'grey';
+  document.querySelectorAll('.st-swatch').forEach(sw => {
+    sw.classList.toggle('on', sw.dataset.th === curTheme);
+  });
+  // Load subscription
+  await settLoadSub();
+  // Discord status
+  settRefreshDiscord();
+}
+
+async function settLoadSub() {
+  try {
+    const res = await fetch('/api/me');
+    if (res.ok) {
+      const data = await res.json();
+      _settTier = data.tier || data.plan || 'free';
+    }
+  } catch(e) {
+    _settTier = window_profile && window_profile.is_pro ? 'pro_premium' : 'free';
+  }
+  const tier = _settTier || 'free';
+  const isPro = tier !== 'free';
+  const nameMap = { free: 'Free', pro_premium: 'Pro · Premium', pro_direct: 'Pro · Direct' };
+  const priceMap = { free: null, pro_premium: '$9', pro_direct: '$19' };
+  const metaMap = {
+    free: 'Basic journal + indicator access',
+    pro_premium: 'Full app · Trading Ark Whop member',
+    pro_direct: 'Full app · no Whop required'
+  };
+  const planNameEl = document.getElementById('st-plan-name');
+  const planMetaEl = document.getElementById('st-plan-meta');
+  const planPriceEl = document.getElementById('st-plan-price');
+  const priceAmtEl = document.getElementById('st-price-amt');
+  if (planNameEl) planNameEl.textContent = nameMap[tier] || 'Free';
+  if (planMetaEl) planMetaEl.textContent = metaMap[tier] || '';
+  if (planPriceEl && priceAmtEl) {
+    const price = priceMap[tier];
+    planPriceEl.style.display = price ? '' : 'none';
+    if (price) priceAmtEl.textContent = price;
+  }
+  // Tier compare highlight
+  const tierMap = { free: 0, pro_premium: 1, pro_direct: 2 };
+  const curIdx = tierMap[tier] || 0;
+  document.querySelectorAll('.st-tcell').forEach((cell, i) => {
+    cell.classList.toggle('cur', i === curIdx);
+  });
+  // Indicator badge
+  const badge = document.getElementById('st-indicator-badge');
+  const lock = document.getElementById('st-indicator-lock');
+  if (badge) badge.style.display = isPro ? '' : 'none';
+  if (lock) lock.style.display = isPro ? 'none' : '';
+  // Billing row (Stripe portal) — show only for pro_direct (has Stripe sub)
+  const billingRow = document.getElementById('st-billing-row');
+  const cancelRow = document.getElementById('st-cancel-row');
+  const upgradeRow = document.getElementById('st-upgrade-row');
+  if (billingRow) billingRow.style.display = tier === 'pro_direct' ? '' : 'none';
+  if (cancelRow) cancelRow.style.display = isPro ? '' : 'none';
+  if (upgradeRow) upgradeRow.style.display = tier === 'pro_direct' ? 'none' : '';
+}
+
+function settNav(section, el) {
+  document.querySelectorAll('.st-sn').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.st-sec').forEach(s => s.classList.remove('on'));
+  if (el) el.classList.add('on');
+  const sec = document.getElementById('st-s-' + section);
+  if (sec) sec.classList.add('on');
+}
+
+async function settSaveProfile() {
+  if (!currentUser) return;
+  const name = (document.getElementById('st-name') || {}).value || '';
+  const username = (document.getElementById('st-username') || {}).value || '';
+  const msgEl = document.getElementById('st-acct-msg');
+  if (msgEl) { msgEl.textContent = 'Saving…'; msgEl.style.color = 'var(--ink45)'; }
+  try {
+    const { error } = await _sb.from('profiles').update({
+      display_name: name,
+      username: username
+    }).eq('id', currentUser.id);
+    if (error) throw error;
+    if (window_profile) { window_profile.display_name = name; window_profile.username = username; }
+    updateAvatar(currentUser);
+    if (msgEl) { msgEl.textContent = 'Saved.'; msgEl.style.color = 'var(--win-text)'; }
+    setTimeout(() => { if (msgEl) msgEl.textContent = ''; }, 2500);
+  } catch(e) {
+    if (msgEl) { msgEl.textContent = 'Error: ' + (e.message || 'Failed to save'); msgEl.style.color = 'var(--loss-text)'; }
+  }
+}
+
+async function settChangePwd() {
+  const email = currentUser && currentUser.email;
+  if (!email) return;
+  try {
+    await _sb.auth.resetPasswordForEmail(email);
+    alert('Password reset email sent to ' + email);
+  } catch(e) {
+    alert('Error: ' + (e.message || 'Failed to send reset email'));
+  }
+}
+
+function settApplyTheme(theme, el) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.querySelectorAll('.st-swatch').forEach(sw => sw.classList.remove('on'));
+  if (el) el.classList.add('on');
+  window_settings.theme = theme;
+  settSaveSetting('theme', theme);
+}
+
+async function settSaveSetting(key, value) {
+  if (!currentUser) return;
+  try {
+    await _sb.from('user_settings').upsert(
+      { user_id: currentUser.id, key, value: String(value) },
+      { onConflict: 'user_id,key' }
+    );
+  } catch(e) { /* silently degrade */ }
+}
+
+function settSetTz(el) {
+  if (!el) return;
+  const seg = el.closest('.st-seg');
+  if (seg) seg.querySelectorAll('span').forEach(s => s.classList.remove('on'));
+  el.classList.add('on');
+  const tz = el.dataset.tz || 'America/New_York';
+  window_settings.display_tz = tz;
+  settSaveSetting('display_tz', tz);
+}
+
+function settSetSym(el) {
+  if (!el) return;
+  const seg = el.closest('.st-seg');
+  if (seg) seg.querySelectorAll('span').forEach(s => s.classList.remove('on'));
+  el.classList.add('on');
+  window_settings.default_symbol = el.dataset.sym || '';
+  settSaveSetting('default_symbol', el.dataset.sym || '');
+}
+
+async function settSaveTrading() {
+  const msgEl = document.getElementById('st-trading-msg');
+  if (msgEl) { msgEl.textContent = 'Saving…'; msgEl.style.color = 'var(--ink45)'; }
+  const acctSize = (document.getElementById('st-acct-size') || {}).value || '';
+  const risk = (document.getElementById('st-risk') || {}).value || '';
+  const contracts = (document.getElementById('st-contracts') || {}).value || '';
+  try {
+    await Promise.all([
+      settSaveSetting('account_size', acctSize),
+      settSaveSetting('default_risk', risk),
+      settSaveSetting('default_contracts', contracts)
+    ]);
+    window_settings.account_size = acctSize;
+    window_settings.default_risk = risk;
+    window_settings.default_contracts = contracts;
+    if (msgEl) { msgEl.textContent = 'Saved.'; msgEl.style.color = 'var(--win-text)'; }
+    setTimeout(() => { if (msgEl) msgEl.textContent = ''; }, 2500);
+  } catch(e) {
+    if (msgEl) { msgEl.textContent = 'Error saving'; msgEl.style.color = 'var(--loss-text)'; }
+  }
+}
+
+async function settOpenStripePortal(btn) {
+  if (btn) btn.disabled = true;
+  try {
+    const res = await fetch('/api/billing/portal', { method: 'POST' });
+    const data = await res.json();
+    if (data.url) { window.open(data.url, '_blank'); }
+    else throw new Error('No portal URL');
+  } catch(e) {
+    alert('Unable to open billing portal: ' + (e.message || 'Try again'));
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function settConfirmCancel() {
+  if (!confirm('Cancel your subscription? You keep access until the end of the billing period.')) return;
+  await settOpenStripePortal(null);
+}
+
+async function settUpgrade() {
+  window.open('https://tradingark.com/upgrade', '_blank');
+}
+
+async function settConnectDiscord() {
+  try {
+    const res = await fetch('/api/oauth/discord/start', { method: 'POST' });
+    const data = await res.json();
+    if (data.url) { window.location.href = data.url; }
+    else throw new Error('No OAuth URL');
+  } catch(e) {
+    alert('Unable to start Discord auth: ' + (e.message || 'Try again'));
+  }
+}
+
+function settRefreshDiscord() {
+  const p = window_profile || {};
+  const statusEl = document.getElementById('st-discord-status');
+  const ctrlEl = document.getElementById('st-discord-ctrl');
+  if (p.discord_id) {
+    if (statusEl) statusEl.textContent = 'Connected · ' + (p.discord_username || p.discord_id);
+    if (ctrlEl) ctrlEl.innerHTML = '<button class="st-btn" style="color:var(--loss-text);border-color:rgba(201,106,106,.4)" onclick="settDisconnectDiscord()">Disconnect</button>';
+  } else {
+    if (statusEl) statusEl.textContent = 'Not connected';
+    if (ctrlEl) ctrlEl.innerHTML = '<button class="st-btn" onclick="settConnectDiscord()">Connect</button>';
+  }
+}
+
+async function settDisconnectDiscord() {
+  if (!confirm('Disconnect Discord? This may affect your Pro Premium access.')) return;
+  try {
+    await _sb.from('profiles').update({ discord_id: null, discord_username: null }).eq('id', currentUser.id);
+    if (window_profile) { window_profile.discord_id = null; window_profile.discord_username = null; }
+    settRefreshDiscord();
+  } catch(e) { alert('Error disconnecting: ' + e.message); }
+}
+
+async function settToggle(el, key) {
+  if (!el) return;
+  el.classList.toggle('on');
+  const val = el.classList.contains('on');
+  window_settings[key] = val;
+  await settSaveSetting(key, val);
+}
+
+function settExportCSV() {
+  if (!window_trades || !window_trades.length) { alert('No trades to export.'); return; }
+  const cols = ['trading_day','sym','type','pnl','rr','session','emotion','setup','model','grade','notes','qty'];
+  const header = cols.join(',');
+  const rows = window_trades.map(t =>
+    cols.map(c => {
+      const v = t[c];
+      if (v == null) return '';
+      const s = String(v);
+      return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g,'""') + '"' : s;
+    }).join(',')
+  );
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'rewind_trades.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function settImportCSV() {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.csv';
+  inp.onchange = async () => {
+    const file = inp.files[0];
+    if (!file) return;
+    alert('CSV import coming soon — paste trades via the Log Trade flow for now.');
+  };
+  inp.click();
+}
+
+async function settConfirmDelete() {
+  const email = currentUser && currentUser.email;
+  const confirmed = prompt(`This will permanently delete your account and all trade data. Type your email to confirm: ${email}`);
+  if (!confirmed || confirmed.trim().toLowerCase() !== (email || '').toLowerCase()) {
+    alert('Email did not match. Account NOT deleted.');
+    return;
+  }
+  try {
+    // Delete trades
+    await _sb.from('trades').delete().eq('user_id', currentUser.id);
+    // Delete profile
+    await _sb.from('profiles').delete().eq('id', currentUser.id);
+    // Sign out (server-side delete requires admin key; we deactivate client-side)
+    await _sb.auth.signOut();
+    alert('Your data has been deleted. Your auth account will be removed shortly.');
+    window.location.reload();
+  } catch(e) {
+    alert('Error deleting account: ' + (e.message || 'Contact support'));
+  }
+}
+
+async function loadUserSettingsFromDB() {
+  if (!currentUser) return;
+  try {
+    const { data } = await _sb.from('user_settings').select('key,value').eq('user_id', currentUser.id);
+    if (data) {
+      window_settings = {};
+      data.forEach(row => { window_settings[row.key] = row.value; });
+      // Apply theme immediately
+      const theme = window_settings.theme;
+      if (theme) document.documentElement.setAttribute('data-theme', theme);
+    }
+  } catch(e) { /* degrade silently */ }
+}
 
 /* --- Boot --- */
 (function boot() {
