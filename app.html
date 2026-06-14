@@ -3724,7 +3724,8 @@ async function commInit() {
   if (!currentUser) return;
   const isPro = window_profile && window_profile.is_pro;
   if (!isPro) { commShowNoPro(); return; }
-  document.getElementById('cm-sub-txt').textContent = 'Loading…';
+  const nameEl = document.getElementById('cm-hbar-name');
+  if (nameEl) nameEl.textContent = 'Loading…';
   await commLoadData();
   commRender();
 }
