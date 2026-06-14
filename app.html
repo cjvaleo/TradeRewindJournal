@@ -673,64 +673,104 @@ h3.sec a:hover{color:var(--ink)}
 /* ============================================================
    COMMUNITY PAGE
    ============================================================ */
-#pg-community.page.on{display:flex!important;flex-direction:column;padding:16px 26px;gap:13px}
-#pg-community .titlerow{display:flex;align-items:flex-end;gap:14px;flex-shrink:0}
-#pg-community .titlerow h1{font-size:22px;text-transform:uppercase;line-height:1}
-#pg-community .cm-sub{font-size:8.5px;color:var(--ink45);letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
-#pg-community .cm-sub .dot{width:5px;height:5px;border-radius:50%;background:var(--win);flex-shrink:0}
-.cm-viewtog{margin-left:auto;display:flex;border:1px solid var(--hair);border-radius:9px;overflow:hidden}
-.cm-vt{font-size:9px;letter-spacing:.08em;color:var(--ink45);padding:8px 16px;text-transform:uppercase;font-weight:700;cursor:pointer;font-family:'Archivo',sans-serif;font-style:italic}
+/* ============================================================
+   COMMUNITY — 3-COLUMN FEED LAYOUT (WS13)
+   ============================================================ */
+#pg-community.page.on{display:flex!important;flex-direction:column;padding:0;gap:0;overflow:hidden}
+
+/* headliner bar */
+.cm-hbar{display:flex;align-items:center;gap:14px;padding:13px 20px;flex-shrink:0;border-bottom:1px solid var(--hair);position:relative;z-index:2}
+.cm-hbar::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,rgba(216,178,106,.18),transparent)}
+.cm-hbar-av{width:38px;height:38px;border-radius:10px;border:1.5px solid rgba(216,178,106,.45);background:var(--gold-grad);display:flex;align-items:center;justify-content:center;font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-size:11px;color:#1A1304;flex-shrink:0}
+.cm-hbar-info{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.cm-hbar-name{font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:125%;font-size:15px;letter-spacing:-.01em}
+.cm-hbar-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cm-hbar-meta span{font-size:8.5px;color:var(--ink45);letter-spacing:.07em;text-transform:uppercase}
+.cm-hbar-badge{color:var(--gold)!important;font-size:8px!important}
+.cm-hbar-manage{font-size:8.5px;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.cm-hbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.cm-viewtog{display:flex;border:1px solid var(--hair);border-radius:9px;overflow:hidden}
+.cm-vt{font-size:9px;letter-spacing:.08em;color:var(--ink45);padding:7px 14px;text-transform:uppercase;font-weight:700;cursor:pointer;font-family:'Archivo',sans-serif;font-style:italic;transition:all .15s}
 .cm-vt.on{background:var(--ink);color:var(--bg)}
-.cm-view{display:none;flex:1;min-height:0;flex-direction:column;gap:13px}
+.cm-view{display:none;flex:1;min-height:0;overflow:hidden}
 .cm-view.on{display:flex}
-/* headliner */
-#pg-community .cm-hl{display:flex;align-items:center;gap:28px;padding:15px 22px;flex-shrink:0;position:relative}
-#pg-community .cm-hl:before,#pg-community .cm-hl:after{content:"";position:absolute;width:14px;height:14px;pointer-events:none;border-color:var(--gold-soft);border-style:solid}
-#pg-community .cm-hl:before{top:7px;left:7px;border-width:1px 0 0 1px;border-radius:3px 0 0 0}
-#pg-community .cm-hl:after{bottom:7px;right:7px;border-width:0 1px 1px 0;border-radius:0 0 3px 0}
-.cm-hl-main{display:flex;flex-direction:column;gap:6px}
-.cm-hl-l{font-size:8px;letter-spacing:.1em;color:var(--ink45);text-transform:uppercase;font-weight:700}
-.cm-hl-v{font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:125%;font-size:38px;line-height:1;letter-spacing:-.02em}
-.cm-hl-v.w{color:var(--win-text)}.cm-hl-v.l{color:var(--loss-text)}.cm-hl-v.n{color:var(--ink45)}
-.cm-hl-strip{display:flex;gap:3px}.cm-hl-strip i{height:4px;width:14px;border-radius:2px;background:rgba(245,241,230,.12)}.cm-hl-strip i.w{background:var(--win)}.cm-hl-strip i.l{background:var(--loss)}
-.cm-hl-stats{display:flex;gap:24px;padding-left:28px;border-left:1px solid var(--hair)}
+
+/* 3-column layout */
+.cm-3col{flex:1;min-height:0;display:grid;grid-template-columns:220px minmax(0,1fr) 230px;gap:0;overflow:hidden}
+.cm-lrail{display:flex;flex-direction:column;gap:10px;padding:14px 12px 14px 16px;overflow-y:auto;border-right:1px solid var(--hair)}
+.cm-lrail::-webkit-scrollbar{width:4px}.cm-lrail::-webkit-scrollbar-thumb{background:rgba(242,242,240,.12);border-radius:2px}
+.cm-center{min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.cm-rrail{display:flex;flex-direction:column;gap:10px;padding:14px 16px 14px 12px;overflow-y:auto;border-left:1px solid var(--hair)}
+.cm-rrail::-webkit-scrollbar{width:4px}.cm-rrail::-webkit-scrollbar-thumb{background:rgba(242,242,240,.12);border-radius:2px}
+
+/* left rail: P&L pulse */
+.cm-pulse{padding:14px;display:flex;flex-direction:column;gap:8px}
+.cm-pulse-lbl{font-size:8px;letter-spacing:.1em;color:var(--ink45);text-transform:uppercase;font-weight:700}
+.cm-pulse-v{font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:125%;font-size:28px;line-height:1;letter-spacing:-.02em}
+.cm-pulse-v.w{color:var(--win-text)}.cm-pulse-v.l{color:var(--loss-text)}.cm-pulse-v.n{color:var(--ink45)}
+.cm-hl-strip{display:flex;gap:3px;flex-wrap:wrap}.cm-hl-strip i{height:4px;width:12px;border-radius:2px;background:rgba(245,241,230,.12)}.cm-hl-strip i.w{background:var(--win)}.cm-hl-strip i.l{background:var(--loss)}
+.cm-pulse-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding-top:4px;border-top:1px solid var(--hair)}
+.cm-pulse-stats .v{font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:125%;font-size:15px;line-height:1}
+.cm-pulse-stats .l{font-size:7px;letter-spacing:.09em;color:var(--ink45);text-transform:uppercase;font-weight:700;margin-top:2px}
+
+/* left rail: filter nav */
+.cm-filter-card{padding:12px 13px;display:flex;flex-direction:column;gap:8px}
+.cm-filter-hd{font-size:8px;letter-spacing:.1em;color:var(--ink45);text-transform:uppercase;font-weight:700}
+.cm-filter-list{display:flex;flex-direction:column;gap:1px}
+.cm-filter-item{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;border-radius:7px;font-family:'Archivo',sans-serif;font-weight:600;font-style:italic;font-stretch:108%;font-size:11px;color:var(--ink45);cursor:pointer;transition:all .12s;border:1px solid transparent;text-decoration:none}
+.cm-filter-item:hover{color:var(--ink);background:rgba(255,255,255,.03);border-color:var(--hair)}
+.cm-filter-item.on{color:var(--ink);background:var(--panel);border-color:var(--hair2)}
+.cm-filter-item span{font-size:9px;color:var(--ink45);font-weight:700;background:rgba(255,255,255,.06);border-radius:4px;padding:1px 5px}
+.cm-filter-item.on span{color:var(--gold);background:rgba(216,178,106,.12)}
+
+/* left rail: trading now */
+.cm-presence{display:flex;flex-direction:column;gap:7px}
+.cm-pres-item{display:flex;align-items:center;gap:9px}
+.cm-pres-av{width:24px;height:24px;border-radius:50%;border:1px solid var(--hair2);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;flex-shrink:0;background:var(--panel);position:relative}
+.cm-pres-av::after{content:'';position:absolute;bottom:0;right:0;width:7px;height:7px;border-radius:50%;background:var(--win);border:1.5px solid var(--bg)}
+.cm-pres-nm{font-size:10px;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cm-pres-kz{font-size:8px;color:var(--gold);letter-spacing:.06em}
+
+/* center feed */
+.cm-feed{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:0;padding:0}
+.cm-feed::-webkit-scrollbar{width:5px}.cm-feed::-webkit-scrollbar-thumb{background:rgba(242,242,240,.15);border-radius:3px}
+
+/* post card — horizontal layout */
+.cm-post{display:flex;border-bottom:1px solid var(--hair);cursor:pointer;transition:background .12s;padding:15px 18px;gap:14px}
+.cm-post:hover{background:rgba(255,255,255,.025)}
+.cm-post.win-post{border-left:2.5px solid var(--win)}
+.cm-post.loss-post{border-left:2.5px solid var(--loss)}
+.cm-post-left{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.cm-post-who{display:flex;align-items:center;gap:8px}
+.cm-post-av{width:26px;height:26px;border-radius:50%;border:1px solid rgba(216,178,106,.35);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;background:var(--panel)}
+.cm-post-nm{font-size:11px;font-weight:900}
+.cm-role{font-size:6.5px;letter-spacing:.1em;text-transform:uppercase;color:#1A1304;background:var(--gold-grad);border-radius:4px;padding:2px 5px;font-weight:900;margin-left:3px;vertical-align:1px}
+.cm-role.teach{background:linear-gradient(160deg,#C8D8F0,#5AA9E6);color:#0a1628}
+.cm-role.you{background:rgba(255,255,255,.12);color:var(--ink);border:1px solid var(--hair2)}
+.cm-post-tm{font-size:8px;color:var(--ink45);letter-spacing:.05em;margin-left:auto;white-space:nowrap}
+.cm-post-note{font-size:11px;line-height:1.5;color:var(--ink70);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cm-post-stats{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cm-post-sym{font-size:12px;font-weight:900}
+.cm-post-tag{font-size:8.5px;color:var(--ink45);letter-spacing:.05em;text-transform:uppercase;font-weight:700}
+.cm-post-pnl{font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:118%;font-size:18px;line-height:1;margin-top:2px}
+.cm-post-pnl.w{color:var(--win-text)}.cm-post-pnl.l{color:var(--loss-text)}.cm-post-pnl.n{color:var(--ink45)}
+.cm-post-foot{display:flex;align-items:center;gap:12px;padding-top:4px}
+.cm-post-react{font-size:9px;color:var(--ink45);cursor:pointer;letter-spacing:.03em;transition:color .12s}
+.cm-post-react:hover{color:var(--ink)}
+.cm-post-recap{font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-left:auto;cursor:pointer;font-weight:700;opacity:.85}
+.cm-post-recap:hover{opacity:1}
+.cm-post-thumb{width:130px;height:104px;flex-shrink:0;border-radius:9px;border:1px solid var(--hair);overflow:hidden;position:relative;background:linear-gradient(180deg,#15171A,#0C0D10)}
+.cm-post-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cm-post-thumb.noshot{display:none}
+.cm-wl{position:absolute;top:6px;right:7px;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:900;border-radius:5px;padding:3px 7px;backdrop-filter:blur(4px);z-index:1}
+.cm-wl.w{color:var(--win-text);background:rgba(20,40,32,.7);border:1px solid rgba(47,174,120,.4)}
+.cm-wl.l{color:var(--loss-text);background:rgba(44,22,22,.7);border:1px solid rgba(201,106,106,.4)}
+
+/* right rail */
+.cm-rrail .cm-acard{padding:12px 14px;display:flex;flex-direction:column;gap:9px}
 .cm-hs{display:flex;flex-direction:column;gap:3px}
 .cm-hs .v{font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:125%;font-size:21px;line-height:1}
 .cm-hs .l{font-size:7.5px;letter-spacing:.09em;color:var(--ink45);text-transform:uppercase;font-weight:700}
-.cm-spark{flex:1;height:56px;min-width:120px;position:relative;opacity:.9}
-.cm-spark svg{position:absolute;inset:0;width:100%;height:100%}
-.cm-sharecta{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#1A1304;background:var(--gold-grad);border-radius:9px;padding:11px 18px;font-weight:700;box-shadow:inset 0 1px 0 rgba(255,250,230,.6),0 8px 18px -9px rgba(216,178,106,.55);white-space:nowrap;cursor:pointer;border:none;font-family:'Archivo',sans-serif;font-style:italic;flex-shrink:0}
-.cm-sharecta:hover{filter:brightness(1.07)}
-/* tabs + feed */
-.cm-feedhead{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.cm-tab{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink45);font-weight:700;border:1px solid var(--hair);border-radius:999px;padding:7px 15px;background:var(--panel);cursor:pointer;transition:all .15s;font-family:'Archivo',sans-serif;font-style:italic}
-.cm-tab:hover{color:var(--ink);border-color:var(--hair2)}.cm-tab.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.cm-feedcount{margin-left:auto;font-size:8.5px;letter-spacing:.08em;color:var(--ink45);text-transform:uppercase;font-weight:700}
-.cm-feed{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(390px,1fr));grid-auto-rows:min-content;gap:13px;padding-right:6px;align-content:start}
-.cm-feed::-webkit-scrollbar{width:5px}.cm-feed::-webkit-scrollbar-thumb{background:rgba(242,242,240,.15);border-radius:3px}
-/* trade card */
-.cm-tcard{padding:0;overflow:hidden;cursor:pointer;transition:transform .14s,border-color .14s,box-shadow .14s;border-radius:14px;background:var(--panel);border:1px solid var(--panel-border);backdrop-filter:blur(9px) saturate(1.6);box-shadow:inset 0 1.5px 0 var(--spec),0 14px 30px -18px rgba(0,0,0,.7)}
-.cm-tcard:hover{transform:translateY(-3px);border-color:rgba(216,178,106,.45);box-shadow:inset 0 1.5px 0 var(--spec),0 22px 40px -22px rgba(0,0,0,.85)}
-.cm-tc-chart{height:150px;position:relative;border-bottom:1px solid var(--hair);background:radial-gradient(120% 140% at 70% 0%,rgba(216,178,106,.05),transparent 55%),linear-gradient(180deg,#15171A,#0C0D10);overflow:hidden}
-.cm-tc-chart img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.9}
-.cm-tc-chart svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-.cm-wl{position:absolute;top:10px;right:11px;font-size:8px;letter-spacing:.1em;text-transform:uppercase;font-weight:900;border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);z-index:1}
-.cm-wl.w{color:var(--win-text);background:rgba(20,40,32,.6);border:1px solid rgba(47,174,120,.4)}
-.cm-wl.l{color:var(--loss-text);background:rgba(44,22,22,.6);border:1px solid rgba(201,106,106,.4)}
-.cm-rtag{position:absolute;bottom:10px;left:12px;font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:118%;font-size:17px;z-index:1}
-.cm-rtag.w{color:var(--win-text)}.cm-rtag.l{color:var(--loss-text)}
-.cm-tc-meta{padding:11px 14px 12px;display:flex;flex-direction:column;gap:9px}
-.cm-tc-id{display:flex;align-items:center;gap:10px}
-.cm-tc-id .av{width:28px;height:28px;border-radius:50%;border:1px solid rgba(216,178,106,.45);display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:900;flex-shrink:0;background:var(--panel)}
-.cm-tc-id .nm{font-size:11.5px;font-weight:900}
-.cm-role{font-size:6.5px;letter-spacing:.1em;text-transform:uppercase;color:#1A1304;background:var(--gold-grad);border-radius:4px;padding:2px 6px;font-weight:900;margin-left:5px;vertical-align:1px}
-.cm-role.teach{background:linear-gradient(160deg,#C8D8F0,#5AA9E6);color:#0a1628}
-.cm-tc-id .tm{font-size:8px;color:var(--ink45);letter-spacing:.06em;text-transform:uppercase;margin-left:auto}
-.cm-tc-stats{display:flex;align-items:center;gap:11px;border-top:1px solid var(--hair);padding-top:10px}
-.cm-tc-stats .sym{font-size:13px;font-weight:900}
-.cm-tc-stats .bs{font-size:9px;letter-spacing:.05em;color:var(--ink45);text-transform:uppercase;font-weight:700}
-.cm-tc-stats .pnl{margin-left:auto;font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:118%;font-size:14px}
-.cm-tc-stats .pnl.w{color:var(--win-text)}.cm-tc-stats .pnl.l{color:var(--loss-text)}
 /* analytics */
 .cm-anawrap{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,1fr);gap:16px;overflow:hidden}
 .cm-analeft{min-width:0;display:flex;flex-direction:column;gap:14px;overflow-y:auto;padding-right:4px}
@@ -805,11 +845,12 @@ h3.sec a:hover{color:var(--ink)}
 .cm-empty h3{font-size:16px;color:var(--ink70);text-transform:uppercase}
 .cm-empty p{font-size:11px;line-height:1.6;max-width:320px}
 @media(max-width:1080px){
-  .cm-feed{grid-template-columns:1fr;overflow:visible}
+  .cm-3col{grid-template-columns:1fr;overflow:visible}
+  .cm-lrail,.cm-rrail{border:none;flex-direction:row;flex-wrap:wrap;overflow:visible}
+  .cm-center{overflow:visible}
+  .cm-feed{overflow:visible}
   .cm-anawrap{grid-template-columns:1fr;overflow:visible}
   .cm-analeft,.cm-anaside{overflow:visible}
-  #pg-community .cm-hl{flex-wrap:wrap}
-  .cm-spark{display:none}
 }
 
 /* ============================================================
@@ -1390,44 +1431,86 @@ h3.sec a:hover{color:var(--ink)}
     </div>
   </div><!-- /pg-analytics -->
   <div class="page" id="pg-community">
-    <!-- Title row -->
-    <div class="titlerow">
-      <h1 class="disp">Community</h1>
-      <span class="cm-sub"><span class="dot"></span><span id="cm-sub-txt">Loading…</span></span>
-      <div class="cm-viewtog">
-        <span class="cm-vt on" data-v="dash" onclick="commSetView('dash')">Dash</span>
-        <span class="cm-vt" data-v="ana" onclick="commSetView('ana')">Analytics</span>
+
+    <!-- Headliner bar -->
+    <div class="cm-hbar glass">
+      <div class="cm-hbar-av" id="cm-hbar-av">TA</div>
+      <div class="cm-hbar-info">
+        <div class="cm-hbar-name" id="cm-hbar-name">Trading Ark</div>
+        <div class="cm-hbar-meta">
+          <span class="cm-hbar-badge">◆ Discord · Premium</span>
+          <span id="cm-hbar-members">— members</span>
+          <span class="cm-hbar-manage" id="cm-hbar-manage" style="display:none" onclick="commManage()">Manage</span>
+        </div>
+      </div>
+      <div class="cm-hbar-right">
+        <div class="cm-viewtog">
+          <span class="cm-vt on" data-v="dash" onclick="commSetView('dash')">Feed</span>
+          <span class="cm-vt" data-v="ana" onclick="commSetView('ana')">Analytics</span>
+        </div>
       </div>
     </div>
 
-    <!-- DASH VIEW -->
+    <!-- DASH VIEW: 3-col -->
     <div class="cm-view on" id="cm-v-dash">
-      <div class="glass cm-hl">
-        <div class="cm-hl-main">
-          <span class="cm-hl-l" id="cm-hl-label">Group P&amp;L · Today</span>
-          <span class="cm-hl-v n disp" id="cm-hl-pnl">—</span>
-          <div class="cm-hl-strip" id="cm-hl-strip"></div>
-        </div>
-        <div class="cm-hl-stats">
-          <div class="cm-hs"><span class="v" id="cm-hs-pts">—</span><span class="l">Total Points</span></div>
-          <div class="cm-hs"><span class="v" id="cm-hs-wr">—</span><span class="l">Win Rate</span></div>
-          <div class="cm-hs"><span class="v" id="cm-hs-rr">—</span><span class="l">Avg RR</span></div>
-          <div class="cm-hs"><span class="v" id="cm-hs-active">—</span><span class="l">Traders</span></div>
-        </div>
-        <div class="cm-spark" id="cm-spark"></div>
-        <button class="cm-sharecta" onclick="commShareCard()">⬡ Share Group Card</button>
-      </div>
+      <div class="cm-3col">
 
-      <div class="cm-feedhead">
-        <span class="cm-tab on" onclick="commSetTab('all',this)">All Trades</span>
-        <span class="cm-tab" onclick="commSetTab('teach',this)">Teachers</span>
-        <span class="cm-tab" onclick="commSetTab('mine',this)">My Activity</span>
-        <span class="cm-feedcount" id="cm-feedcount"></span>
+        <!-- Left rail -->
+        <aside class="cm-lrail">
+          <div class="glass cm-pulse">
+            <div class="cm-pulse-lbl">Group P&amp;L · Today</div>
+            <div class="cm-pulse-v n disp" id="cm-pulse-pnl">—</div>
+            <div class="cm-hl-strip" id="cm-hl-strip"></div>
+            <div class="cm-pulse-stats">
+              <div><div class="v" id="cm-hs-wr">—</div><div class="l">WR</div></div>
+              <div><div class="v" id="cm-hs-rr">—</div><div class="l">Avg R</div></div>
+              <div><div class="v" id="cm-hs-active">—</div><div class="l">Active</div></div>
+            </div>
+          </div>
+          <div class="glass cm-filter-card">
+            <div class="cm-filter-hd">Feed</div>
+            <nav class="cm-filter-list">
+              <a class="cm-filter-item on" onclick="commSetTab('all',this)">All Trades <span id="cflt-all"></span></a>
+              <a class="cm-filter-item" onclick="commSetTab('teach',this)">Teachers <span id="cflt-teach"></span></a>
+              <a class="cm-filter-item" onclick="commSetTab('following',this)">Following <span id="cflt-following"></span></a>
+              <a class="cm-filter-item" onclick="commSetTab('mine',this)">My Activity <span id="cflt-mine"></span></a>
+              <a class="cm-filter-item" onclick="commSetTab('wins',this)">Wins Only <span id="cflt-wins"></span></a>
+            </nav>
+          </div>
+          <div class="glass cm-filter-card">
+            <div class="cm-filter-hd">Trading Now</div>
+            <div class="cm-presence" id="cm-presence">
+              <span style="font-size:10px;color:var(--ink45);font-style:italic">—</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Center feed -->
+        <main class="cm-center">
+          <div class="cm-feed" id="cm-feed"></div>
+        </main>
+
+        <!-- Right rail -->
+        <aside class="cm-rrail">
+          <div class="glass cm-acard">
+            <h5 class="cm-ct">This Week</h5>
+            <div class="cm-lbtabs">
+              <span class="cm-lbtab on" onclick="commLbTab('return',this)">Return</span>
+              <span class="cm-lbtab" onclick="commLbTab('consistency',this)">Consistency</span>
+              <span class="cm-lbtab" onclick="commLbTab('biggest',this)">Biggest</span>
+            </div>
+            <div id="cm-leaderboard-rail"></div>
+          </div>
+          <div class="glass cm-acard cm-arkread">
+            <h5 class="cm-ct" style="color:var(--gold)">● Ark Bot · Group Read</h5>
+            <p class="cm-ar-t" id="cm-group-read">Group Read will surface when the Ark engine is connected.</p>
+          </div>
+        </aside>
+
       </div>
-      <div class="cm-feed" id="cm-feed"></div>
     </div>
 
-    <!-- ANALYTICS VIEW -->
+    <!-- ANALYTICS VIEW (unchanged) -->
     <div class="cm-view" id="cm-v-ana">
       <div class="cm-anawrap">
         <div class="cm-analeft">
@@ -1461,12 +1544,13 @@ h3.sec a:hover{color:var(--ink)}
             <div class="cm-minical" id="cm-minical"></div>
           </div>
           <div class="glass cm-acard cm-arkread">
-            <h5 class="cm-ct" style="color:var(--gold)">● Ark Bot · Group Read</h5>
-            <p class="cm-ar-t" id="cm-group-read">Group Read will surface when the Ark engine is connected.</p>
+            <h5 class="cm-ct" style="color:var(--gold)">● Ark Bot · Group Read (Analytics)</h5>
+            <p class="cm-ar-t">Group Read will surface when the Ark engine is connected.</p>
           </div>
         </aside>
       </div>
     </div>
+
   </div><!-- /pg-community -->
 
   <div class="page" id="pg-log" style="display:none!important"></div>
@@ -3692,21 +3776,20 @@ async function commLoadData() {
 }
 
 function commShowNoPro() {
-  document.getElementById('cm-sub-txt').textContent = 'Pro required';
+  document.getElementById('cm-hbar-name').textContent = 'Community';
   document.getElementById('cm-feed').innerHTML = `
-    <div class="cm-empty" style="grid-column:1/-1">
+    <div class="cm-empty">
       <h3>Pro Required</h3>
       <p>Community access requires the Pro plan. Connect your Trading Ark Discord role to unlock.</p>
     </div>`;
-  ['cm-hl-pnl','cm-hs-pts','cm-hs-wr','cm-hs-rr','cm-hs-active']
-    .forEach(id => { const e = document.getElementById(id); if (e) e.textContent = '—'; });
 }
 
 function commRenderDash() {
   if (!_commActive) {
-    document.getElementById('cm-sub-txt').textContent = 'No community';
+    document.getElementById('cm-hbar-name').textContent = 'No Community';
+    document.getElementById('cm-hbar-members').textContent = 'Not a member of any group';
     document.getElementById('cm-feed').innerHTML = `
-      <div class="cm-empty" style="grid-column:1/-1">
+      <div class="cm-empty">
         <h3>No Community Yet</h3>
         <p>You're not a member of any trading group yet. Ask for an invite or connect your Trading Ark account.</p>
       </div>`;
@@ -3715,39 +3798,119 @@ function commRenderDash() {
 
   const g = _commActive;
   const memberCount = ((g.members || []).length || 0) + 1;
-  document.getElementById('cm-sub-txt').textContent =
-    esc(g.name) + ' · ' + memberCount + ' member' + (memberCount !== 1 ? 's' : '');
+  const isOwner = g.owner_id === (currentUser && currentUser.id);
 
+  // Update headliner bar
+  const nameEl = document.getElementById('cm-hbar-name');
+  const membersEl = document.getElementById('cm-hbar-members');
+  const manageEl = document.getElementById('cm-hbar-manage');
+  const avEl = document.getElementById('cm-hbar-av');
+  if (nameEl) nameEl.textContent = g.name || 'Trading Ark';
+  if (membersEl) membersEl.textContent = memberCount + ' member' + (memberCount !== 1 ? 's' : '');
+  if (manageEl) manageEl.style.display = isOwner ? '' : 'none';
+  if (avEl) avEl.textContent = (g.icon_initials || (g.name || 'TA').slice(0,2)).toUpperCase();
+
+  // Stats from API
   const stats = _commStats;
   if (stats) {
     const net = stats.net_pnl || 0;
     const n   = stats.total_trades || 0;
-    const pnlEl = document.getElementById('cm-hl-pnl');
-    pnlEl.textContent = n ? fmtPnl(net) : '—';
-    pnlEl.className = 'cm-hl-v disp ' + (net > 0 ? 'w' : net < 0 ? 'l' : 'n');
-    document.getElementById('cm-hs-pts').textContent   = (stats.total_points || 0).toLocaleString();
-    document.getElementById('cm-hs-wr').textContent    = stats.win_rate != null ? Math.round(stats.win_rate * 100) + '%' : '—';
-    document.getElementById('cm-hs-rr').textContent    = stats.avg_rr != null ? (+stats.avg_rr).toFixed(1) : '—';
-    document.getElementById('cm-hs-active').textContent = stats.trader_count || '—';
+    const pnlEl = document.getElementById('cm-pulse-pnl');
+    if (pnlEl) {
+      pnlEl.textContent = n ? fmtPnl(net) : '—';
+      pnlEl.className = 'cm-pulse-v disp ' + (net > 0 ? 'w' : net < 0 ? 'l' : 'n');
+    }
+    const wrEl = document.getElementById('cm-hs-wr');
+    const rrEl = document.getElementById('cm-hs-rr');
+    const acEl = document.getElementById('cm-hs-active');
+    if (wrEl) wrEl.textContent = stats.win_rate != null ? Math.round(stats.win_rate * 100) + '%' : '—';
+    if (rrEl) rrEl.textContent = stats.avg_rr != null ? (+stats.avg_rr).toFixed(1) : '—';
+    if (acEl) acEl.textContent = stats.trader_count || '—';
 
     const lb = stats.leaderboard || [];
     const stripEl = document.getElementById('cm-hl-strip');
     if (stripEl) {
       const wins = lb.filter(m => (m.net_pnl || 0) > 0).length;
       const lss  = lb.filter(m => (m.net_pnl || 0) < 0).length;
-      stripEl.innerHTML = Array(wins).fill('<i class="w"></i>').join('') +
-                          Array(lss).fill('<i class="l"></i>').join('');
+      stripEl.innerHTML = Array(Math.min(wins, 8)).fill('<i class="w"></i>').join('') +
+                          Array(Math.min(lss, 8)).fill('<i class="l"></i>').join('');
     }
+    // Right rail leaderboard
+    commRenderRailLeaderboard(lb);
   } else {
-    // fallback: show member count only
+    // Fallback from posts
     const todayStr = new Date().toISOString().slice(0, 10);
     const todayPosts = _commPosts.filter(p => p.id.startsWith('trade_') && (p.created_at || '').startsWith(todayStr));
-    document.getElementById('cm-hs-active').textContent = new Set(todayPosts.map(p => p.user_id)).size || '—';
+    const acEl = document.getElementById('cm-hs-active');
+    if (acEl) acEl.textContent = new Set(todayPosts.map(p => p.user_id)).size || '—';
   }
 
-  commRenderSpark();
+  // Trading Now presence (people who posted today)
+  commRenderPresence();
+  commUpdateFilterCounts();
   commRenderFeed();
 }
+
+function commRenderPresence() {
+  const el = document.getElementById('cm-presence');
+  if (!el) return;
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayPosts = _commPosts.filter(p => (p.created_at || '').startsWith(todayStr));
+  const seen = new Set();
+  const traders = [];
+  todayPosts.forEach(p => {
+    if (!seen.has(p.user_id)) { seen.add(p.user_id); traders.push(p.user_id); }
+  });
+  if (!traders.length) {
+    el.innerHTML = '<span style="font-size:10px;color:var(--ink45);font-style:italic">No one trading yet</span>';
+    return;
+  }
+  el.innerHTML = traders.slice(0, 6).map(uid => {
+    const prof = _commProfiles[uid] || {};
+    const initials = (prof.avatar_initials || (prof.username || 'U').slice(0,2)).toUpperCase();
+    const nm = prof.username ? '@' + esc(prof.username) : 'Trader';
+    return `<div class="cm-pres-item">
+      <div class="cm-pres-av">${esc(initials)}</div>
+      <div class="cm-pres-nm">${esc(nm)}</div>
+      <span class="cm-pres-kz">NY AM</span>
+    </div>`;
+  }).join('');
+}
+
+function commUpdateFilterCounts() {
+  const tradePosts = _commPosts.filter(p => p.id.startsWith('trade_'));
+  const s = id => { const e = document.getElementById(id); if (e) e.textContent = String(id.replace('cflt-','') === 'all' ? tradePosts.length : ''); };
+  const all = tradePosts.length;
+  const teach = tradePosts.filter(p => (_commProfiles[p.user_id] || {}).is_pro).length;
+  const mine = tradePosts.filter(p => p.user_id === (currentUser && currentUser.id)).length;
+  const wins = tradePosts.filter(p => (p.metadata && (p.metadata.rr > 0 || (p.metadata.pnl || 0) > 0))).length;
+  [['cflt-all', all], ['cflt-teach', teach], ['cflt-following', ''], ['cflt-mine', mine], ['cflt-wins', wins]].forEach(([id, v]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = v != null && v !== '' ? String(v) : '';
+  });
+}
+
+function commRenderRailLeaderboard(lb) {
+  const el = document.getElementById('cm-leaderboard-rail');
+  if (!el || !lb) return;
+  if (!lb.length) { el.innerHTML = '<span style="color:var(--ink45);font-size:10px;font-style:italic">No data yet</span>'; return; }
+  const top = lb[0];
+  el.innerHTML = `
+    <div class="cm-champ">
+      <div class="av">${esc((top.username || 'U').slice(0,2).toUpperCase())}</div>
+      <div><div class="nm">@${esc(top.username || '—')}</div><div class="cl">#1 This Week</div></div>
+      <span class="amt">${fmtPnl(top.net_pnl || 0)}</span>
+    </div>` +
+    lb.slice(1, 6).map((m, i) => `
+    <div class="cm-lb">
+      <span class="rk">${i + 2}</span>
+      <span class="av">${esc((m.username || 'U').slice(0,2).toUpperCase())}</span>
+      <span class="nm">@${esc(m.username || '—')}</span>
+      <span class="amt">${fmtPnl(m.net_pnl || 0)}</span>
+    </div>`).join('');
+}
+
+function commManage() { /* stub — open group settings when Ark backend extends community management */ }
 
 function commRenderSpark() {
   const el = document.getElementById('cm-spark');
@@ -3785,62 +3948,82 @@ function commRenderSpark() {
 
 function commRenderFeed() {
   const el = document.getElementById('cm-feed');
-  const countEl = document.getElementById('cm-feedcount');
   if (!el) return;
 
   let posts = _commPosts.filter(p => p.id.startsWith('trade_'));
+
   if (_commTab === 'mine') {
-    posts = posts.filter(p => p.user_id === currentUser.id);
+    posts = posts.filter(p => p.user_id === (currentUser && currentUser.id));
   } else if (_commTab === 'teach') {
     posts = posts.filter(p => (_commProfiles[p.user_id] || {}).is_pro);
+  } else if (_commTab === 'wins') {
+    posts = posts.filter(p => {
+      const m = p.metadata || {};
+      return (m.rr != null && m.rr > 0) || (m.pnl != null && m.pnl > 0);
+    });
+  } else if (_commTab === 'following') {
+    // Stub: following = all for now (no follow graph yet)
+    posts = posts;
   }
-
-  if (countEl) countEl.textContent = posts.length ? posts.length + ' trade' + (posts.length !== 1 ? 's' : '') : '';
 
   if (!posts.length) {
-    el.innerHTML = `<div class="cm-empty" style="grid-column:1/-1"><p>No trades for this filter yet.</p></div>`;
+    el.innerHTML = `<div class="cm-empty"><p>No trades for this filter yet.</p></div>`;
     return;
   }
-  el.innerHTML = posts.map(p => commCardHTML(p)).join('');
+  el.innerHTML = posts.map(p => commPostHTML(p)).join('');
 }
 
-function commCardHTML(post) {
-  const prof    = _commProfiles[post.user_id] || {};
+function commPostHTML(post) {
+  const prof     = _commProfiles[post.user_id] || {};
   const initials = esc((prof.avatar_initials || (prof.username || 'U').slice(0, 2)).toUpperCase());
   const username = '@' + esc(prof.username || 'unknown');
-  const meta    = post.metadata || {};
-  const rr      = meta.rr != null ? +meta.rr : null;
-  const rrStr   = rr != null ? (rr >= 0 ? '+' : '') + rr.toFixed(1) + 'R' : '—';
-  const wlCls   = rr != null ? (rr > 0 ? 'w' : 'l') : '';
-  const sym     = esc(meta.market || '');
-  const grade   = esc(meta.grade || '');
-  const sess    = esc((meta.session || '').split(' · ')[0]);
-  const time    = post.created_at
-    ? new Date(post.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  const meta     = post.metadata || {};
+  const pnl      = meta.pnl != null ? +meta.pnl : null;
+  const rr       = meta.rr  != null ? +meta.rr  : null;
+  const wl       = pnl != null ? (pnl > 0 ? 'win' : pnl < 0 ? 'loss' : 'be') :
+                   (rr != null ? (rr > 0 ? 'win' : 'loss') : null);
+  const wlCls    = wl === 'win' ? 'w' : wl === 'loss' ? 'l' : '';
+  const pnlStr   = pnl != null ? fmtPnl(pnl) : (rr != null ? (rr >= 0 ? '+' : '') + rr.toFixed(1) + 'R' : '—');
+  const sym      = esc(meta.market || meta.sym || '');
+  const side     = esc((meta.type || meta.side || '').toUpperCase());
+  const sess     = esc((meta.session || '').split(' · ')[0]);
+  const note     = esc(post.note || post.caption || '');
+  const time     = post.created_at
+    ? new Date(post.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
     : '';
+  const isOwn = post.user_id === (currentUser && currentUser.id);
+  const isMod = prof.is_pro && _commActive && _commActive.owner_id === post.user_id;
 
-  const chartHTML = post.image_url
-    ? `<img src="${esc(post.image_url)}" alt="" loading="lazy">`
-    : commPlaceholderSVG(rr == null || rr >= 0);
+  const roleBadge = isMod
+    ? `<span class="cm-role">MOD</span>`
+    : (prof.is_pro ? `<span class="cm-role teach">TEACHER</span>` : '')
+    + (isOwn ? `<span class="cm-role you">YOU</span>` : '');
 
-  return `<div class="cm-tcard" onclick="commOpenRecap('${esc(post.id)}')">
-    <div class="cm-tc-chart">
-      ${chartHTML}
-      ${wlCls ? `<span class="cm-wl ${wlCls}">${rr >= 0 ? 'WIN' : 'LOSS'}</span>` : ''}
-      ${rr != null ? `<span class="cm-rtag ${wlCls}">${rrStr}</span>` : ''}
+  const hasThumb = !!post.image_url;
+
+  return `<div class="cm-post ${wlCls === 'w' ? 'win-post' : wlCls === 'l' ? 'loss-post' : ''}" onclick="commOpenRecap('${esc(post.id)}')">
+    <div class="cm-post-left">
+      <div class="cm-post-who">
+        <div class="cm-post-av">${initials}</div>
+        <span class="cm-post-nm">${username}${roleBadge}</span>
+        <span class="cm-post-tm">${esc(time)}</span>
+      </div>
+      ${note ? `<div class="cm-post-note">${note}</div>` : ''}
+      <div class="cm-post-stats">
+        ${sym  ? `<span class="cm-post-sym">${sym}</span>` : ''}
+        ${side ? `<span class="cm-post-tag">${side}</span>` : ''}
+        ${sess ? `<span class="cm-post-tag">${sess}</span>` : ''}
+      </div>
+      <div class="cm-post-pnl ${wlCls || 'n'}">${pnlStr}</div>
+      <div class="cm-post-foot">
+        <span class="cm-post-react">▲ 0</span>
+        <span class="cm-post-react">◆ 0</span>
+        <span class="cm-post-react">💬 0</span>
+        <span class="cm-post-recap">Full Recap →</span>
+      </div>
     </div>
-    <div class="cm-tc-meta">
-      <div class="cm-tc-id">
-        <span class="av">${initials}</span>
-        <span class="nm">${username}</span>
-        <span class="tm">${esc(time)}</span>
-      </div>
-      <div class="cm-tc-stats">
-        ${sym   ? `<span class="sym">${sym}</span>` : ''}
-        ${grade ? `<span class="bs">${grade}</span>` : ''}
-        ${sess  ? `<span class="bs">${sess}</span>` : ''}
-        ${rr != null ? `<span class="pnl ${wlCls}">${rrStr}</span>` : ''}
-      </div>
+    <div class="cm-post-thumb${hasThumb ? '' : ' noshot'}">
+      ${hasThumb ? `<img src="${esc(post.image_url)}" alt="" loading="lazy"><span class="cm-wl ${wlCls}">${wl === 'win' ? 'WIN' : 'LOSS'}</span>` : ''}
     </div>
   </div>`;
 }
@@ -3935,11 +4118,12 @@ function commSetView(v) {
   const t = document.getElementById('cm-v-' + v);
   if (t) t.classList.add('on');
   if (v === 'ana') commRenderAna();
+  if (v === 'dash') commRenderFeed();
 }
 
 function commSetTab(tab, el) {
   _commTab = tab;
-  document.querySelectorAll('.cm-tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.cm-filter-item').forEach(t => t.classList.remove('on'));
   if (el) el.classList.add('on');
   commRenderFeed();
 }
