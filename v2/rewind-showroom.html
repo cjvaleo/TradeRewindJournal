@@ -279,6 +279,12 @@ body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opa
   .nav{display:none;}
   .studio{grid-template-columns:1fr;}
 }
+
+.notice{display:flex;align-items:center;gap:12px;margin:0 0 16px;padding:11px 16px;
+  border:1px solid var(--edge);border-radius:3px;background:rgba(255,255,255,.04);
+  font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;}
+.notice i{width:4px;height:4px;background:#FFF;flex:none;}
+.notice a{color:#FFF;text-decoration:underline;}
 </style>
 </head>
 <body>
@@ -298,7 +304,7 @@ body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opa
     </nav>
     <div class="tools">
       <span class="tstamp">NY · 16:42 · Closed</span>
-      <button class="btn-w">Log trade</button>
+      <button class="btn-w" id="logBtn">Log trade</button>
       <span class="avatar"></span>
     </div>
   </div>
@@ -314,6 +320,7 @@ body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opa
     <div class="mastr" id="mastr"></div>
   </div>
 
+  <div id="notice"></div>
   <div class="tabs" id="tabs"></div>
 
   <!-- CARD STUDIO -->
@@ -367,66 +374,20 @@ body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opa
   <div class="foot"><span>Rewind · Members' ledger</span><span>Log · Review · Repeat</span></div>
 </div>
 
-<script>
+<script src="rewind-config.js?v=3"></script>
+<script type="module">
 /* ============================================================
    ONE data source. Reconciles with Calendar / Overview / History.
    ============================================================ */
 const HANDLE='christian';
 /* QR -> https://traderewindjournal.com */
 const QR=`<svg viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><g fill="#FFFFFF"><rect x="0" y="0" width="7" height="1"/><rect x="9" y="0" width="2" height="1"/><rect x="12" y="0" width="3" height="1"/><rect x="16" y="0" width="1" height="1"/><rect x="18" y="0" width="7" height="1"/><rect x="0" y="1" width="1" height="1"/><rect x="6" y="1" width="1" height="1"/><rect x="9" y="1" width="3" height="1"/><rect x="13" y="1" width="3" height="1"/><rect x="18" y="1" width="1" height="1"/><rect x="24" y="1" width="1" height="1"/><rect x="0" y="2" width="1" height="1"/><rect x="2" y="2" width="3" height="1"/><rect x="6" y="2" width="1" height="1"/><rect x="8" y="2" width="1" height="1"/><rect x="11" y="2" width="2" height="1"/><rect x="14" y="2" width="1" height="1"/><rect x="18" y="2" width="1" height="1"/><rect x="20" y="2" width="3" height="1"/><rect x="24" y="2" width="1" height="1"/><rect x="0" y="3" width="1" height="1"/><rect x="2" y="3" width="3" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="9" y="3" width="1" height="1"/><rect x="12" y="3" width="1" height="1"/><rect x="16" y="3" width="1" height="1"/><rect x="18" y="3" width="1" height="1"/><rect x="20" y="3" width="3" height="1"/><rect x="24" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="2" y="4" width="3" height="1"/><rect x="6" y="4" width="1" height="1"/><rect x="8" y="4" width="2" height="1"/><rect x="12" y="4" width="1" height="1"/><rect x="18" y="4" width="1" height="1"/><rect x="20" y="4" width="3" height="1"/><rect x="24" y="4" width="1" height="1"/><rect x="0" y="5" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="8" y="5" width="1" height="1"/><rect x="10" y="5" width="1" height="1"/><rect x="12" y="5" width="1" height="1"/><rect x="18" y="5" width="1" height="1"/><rect x="24" y="5" width="1" height="1"/><rect x="0" y="6" width="7" height="1"/><rect x="8" y="6" width="1" height="1"/><rect x="10" y="6" width="1" height="1"/><rect x="12" y="6" width="1" height="1"/><rect x="14" y="6" width="1" height="1"/><rect x="16" y="6" width="1" height="1"/><rect x="18" y="6" width="7" height="1"/><rect x="9" y="7" width="2" height="1"/><rect x="12" y="7" width="2" height="1"/><rect x="15" y="7" width="2" height="1"/><rect x="1" y="8" width="1" height="1"/><rect x="4" y="8" width="1" height="1"/><rect x="6" y="8" width="1" height="1"/><rect x="8" y="8" width="2" height="1"/><rect x="11" y="8" width="1" height="1"/><rect x="13" y="8" width="1" height="1"/><rect x="17" y="8" width="1" height="1"/><rect x="19" y="8" width="2" height="1"/><rect x="22" y="8" width="1" height="1"/><rect x="1" y="9" width="1" height="1"/><rect x="4" y="9" width="1" height="1"/><rect x="7" y="9" width="2" height="1"/><rect x="10" y="9" width="1" height="1"/><rect x="12" y="9" width="3" height="1"/><rect x="17" y="9" width="2" height="1"/><rect x="20" y="9" width="5" height="1"/><rect x="1" y="10" width="1" height="1"/><rect x="4" y="10" width="1" height="1"/><rect x="6" y="10" width="3" height="1"/><rect x="11" y="10" width="2" height="1"/><rect x="17" y="10" width="3" height="1"/><rect x="21" y="10" width="1" height="1"/><rect x="23" y="10" width="2" height="1"/><rect x="1" y="11" width="1" height="1"/><rect x="3" y="11" width="2" height="1"/><rect x="7" y="11" width="1" height="1"/><rect x="9" y="11" width="2" height="1"/><rect x="12" y="11" width="1" height="1"/><rect x="14" y="11" width="1" height="1"/><rect x="16" y="11" width="3" height="1"/><rect x="21" y="11" width="1" height="1"/><rect x="24" y="11" width="1" height="1"/><rect x="2" y="12" width="2" height="1"/><rect x="6" y="12" width="1" height="1"/><rect x="8" y="12" width="1" height="1"/><rect x="13" y="12" width="2" height="1"/><rect x="16" y="12" width="3" height="1"/><rect x="20" y="12" width="1" height="1"/><rect x="22" y="12" width="1" height="1"/><rect x="24" y="12" width="1" height="1"/><rect x="0" y="13" width="1" height="1"/><rect x="3" y="13" width="2" height="1"/><rect x="7" y="13" width="2" height="1"/><rect x="11" y="13" width="1" height="1"/><rect x="19" y="13" width="1" height="1"/><rect x="21" y="13" width="1" height="1"/><rect x="24" y="13" width="1" height="1"/><rect x="2" y="14" width="1" height="1"/><rect x="5" y="14" width="2" height="1"/><rect x="8" y="14" width="2" height="1"/><rect x="15" y="14" width="1" height="1"/><rect x="17" y="14" width="6" height="1"/><rect x="2" y="15" width="1" height="1"/><rect x="12" y="15" width="1" height="1"/><rect x="14" y="15" width="2" height="1"/><rect x="18" y="15" width="1" height="1"/><rect x="20" y="15" width="1" height="1"/><rect x="22" y="15" width="1" height="1"/><rect x="24" y="15" width="1" height="1"/><rect x="0" y="16" width="2" height="1"/><rect x="5" y="16" width="3" height="1"/><rect x="11" y="16" width="2" height="1"/><rect x="14" y="16" width="8" height="1"/><rect x="24" y="16" width="1" height="1"/><rect x="8" y="17" width="3" height="1"/><rect x="12" y="17" width="1" height="1"/><rect x="15" y="17" width="2" height="1"/><rect x="20" y="17" width="2" height="1"/><rect x="23" y="17" width="2" height="1"/><rect x="0" y="18" width="7" height="1"/><rect x="9" y="18" width="3" height="1"/><rect x="14" y="18" width="3" height="1"/><rect x="18" y="18" width="1" height="1"/><rect x="20" y="18" width="3" height="1"/><rect x="0" y="19" width="1" height="1"/><rect x="6" y="19" width="1" height="1"/><rect x="11" y="19" width="1" height="1"/><rect x="13" y="19" width="2" height="1"/><rect x="16" y="19" width="1" height="1"/><rect x="20" y="19" width="2" height="1"/><rect x="24" y="19" width="1" height="1"/><rect x="0" y="20" width="1" height="1"/><rect x="2" y="20" width="3" height="1"/><rect x="6" y="20" width="1" height="1"/><rect x="8" y="20" width="1" height="1"/><rect x="11" y="20" width="12" height="1"/><rect x="0" y="21" width="1" height="1"/><rect x="2" y="21" width="3" height="1"/><rect x="6" y="21" width="1" height="1"/><rect x="9" y="21" width="1" height="1"/><rect x="13" y="21" width="2" height="1"/><rect x="16" y="21" width="1" height="1"/><rect x="18" y="21" width="3" height="1"/><rect x="24" y="21" width="1" height="1"/><rect x="0" y="22" width="1" height="1"/><rect x="2" y="22" width="3" height="1"/><rect x="6" y="22" width="1" height="1"/><rect x="9" y="22" width="1" height="1"/><rect x="13" y="22" width="2" height="1"/><rect x="19" y="22" width="1" height="1"/><rect x="23" y="22" width="1" height="1"/><rect x="0" y="23" width="1" height="1"/><rect x="6" y="23" width="1" height="1"/><rect x="8" y="23" width="1" height="1"/><rect x="10" y="23" width="2" height="1"/><rect x="13" y="23" width="2" height="1"/><rect x="18" y="23" width="2" height="1"/><rect x="22" y="23" width="3" height="1"/><rect x="0" y="24" width="7" height="1"/><rect x="9" y="24" width="4" height="1"/><rect x="14" y="24" width="2" height="1"/><rect x="17" y="24" width="4" height="1"/><rect x="24" y="24" width="1" height="1"/></g></svg>`;
-const PERIODS={
-  daily:{
-    key:'daily', tab:'Daily', per:'Daily card', range:'Wed 22 Jul 2026', label:'Wed 22 Jul 2026', hold:21,
-    net:1085, trades:3, wins:2, losses:1, be:0, win:67, best:900, worstR:-1.00, bestR:2.10,
-    days:1, avgR:0.83, pf:3.58,
-    /* cumulative through the session, trade by trade */
-    viz:{cum:[0,900,475,1085], from:'09:32', to:'11:02', note:'3 trades'}
-  },
-  weekly:{
-    key:'weekly', tab:'Weekly', per:'Weekly card', range:'Jul 19 – 25, 2026', label:'Week of Jul 19, 2026', hold:19,
-    net:1645, trades:10, wins:7, losses:3, be:0, win:70, best:1085, worstR:-1.10, bestR:2.40,
-    days:3, avgR:0.92, pf:2.60,
-    viz:{cum:[0,740,560,1645], from:'Mon 20', to:'Wed 22', note:'3 sessions'}
-  },
-  monthly:{
-    key:'monthly', tab:'Monthly', per:'Monthly card', range:'July 2026', label:'July 2026', hold:18,
-    net:4835, trades:53, wins:31, losses:15, be:7, win:67, best:1180, worstR:-1.40, bestR:2.80,
-    days:15, avgR:0.86, pf:1.80,
-    viz:{cum:[0,420,110,960,1200,680,1785,2175,1495,1805,2730,2730,3190,3930,3750,4835], from:'Jul 01', to:'Jul 22', note:'15 sessions'}
-  },
-  alltime:{
-    key:'alltime', tab:'All-time', per:'All-time card', range:'Apr 2026 – Jul 2026', label:'All time', hold:20,
-    net:14206, trades:214, wins:121, losses:68, be:25, win:64, best:1180, worstR:-1.80, bestR:2.80,
-    days:58, avgR:0.71, pf:1.72,
-    viz:{cum:[0,820,1640,2210,3020,3980,4610,5540,6180,7020,7880,8640,9371,10620,11540,12380,13210,14206], from:'Apr', to:'Jul', note:'58 sessions'}
-  }
-};
-
-/* achievements are computed against the all-time record */
-const A=PERIODS.alltime, MO=PERIODS.monthly;
-const ACHIEVEMENTS=[
-  {n:'First hundred',   d:'Log 100 trades with a chart attached.',            have:A.trades, need:100, unit:'trades', on:'12 Jun 2026'},
-  {n:'Two hundred',     d:'Log 200 trades.',                                   have:A.trades, need:200, unit:'trades', on:'19 Jul 2026'},
-  {n:'Sixty sessions',  d:'Log 60 separate trading sessions.',                 have:A.days,   need:60,  unit:'sessions'},
-  {n:'Green week',      d:'Close a full week in profit.',                      have:1,        need:1,   unit:'weeks',   on:'25 Jul 2026'},
-  {n:'Green month',     d:'Close a full month in profit.',                     have:1,        need:1,   unit:'months',  on:'31 Jul 2026'},
-  {n:'Five in a row',   d:'Five consecutive green sessions.',                  have:5,        need:5,   unit:'days',    on:'10 Jul 2026'},
-  {n:'Three R',         d:'Close a single trade at 3R or better.',             have:A.bestR,  need:3,   unit:'R',       dec:true},
-  {n:'Factor of two',   d:'Hold a monthly profit factor above 2.00.',          have:MO.pf,    need:2,   unit:'PF',      dec:true},
-  {n:'Discipline',      d:'Twenty sessions with no trade beyond the stop.',    have:14,       need:20,  unit:'sessions'},
-  {n:'Five figures',    d:'Reach $10,000 net all-time.',                       have:A.net,    need:10000, unit:'$',     on:'16 Jul 2026'},
-  {n:'Twenty five k',   d:'Reach $25,000 net all-time.',                       have:A.net,    need:25000, unit:'$'},
-  {n:'Full notes',      d:'Write a note on 50 trades.',                        have:38,       need:50,  unit:'notes'}
-];
-
-const SAVED=[
-  {t:'Monthly · July 2026', net:4835, when:'2h ago', fmt:'Post'},
-  {t:'Weekly · Jul 19–25',  net:1645, when:'Yesterday', fmt:'Story'},
-  {t:'Daily · Wed 22 Jul',  net:1085, when:'Yesterday', fmt:'Post'},
-  {t:'Weekly · Jul 12–18',  net:1207, when:'6d ago', fmt:'Post'},
-  {t:'Daily · Thu 09 Jul',  net:1105, when:'15d ago', fmt:'Portrait'},
-  {t:'Monthly · June 2026', net:3572, when:'24d ago', fmt:'Post'}
-];
+/* All built live from the ledger. Shapes unchanged, so every render
+   function below works untouched. */
+let HANDLE_REAL = HANDLE;
+let PERIODS = {};
+let ACHIEVEMENTS = [];
+let SAVED = [];
 
 /* ---------- helpers ---------- */
 const signed=n=>n===0?'$0':(n<0?'−$':'+$')+Math.abs(Math.round(n)).toLocaleString();
@@ -567,7 +528,131 @@ document.querySelectorAll('#fmt button').forEach(b=>b.addEventListener('click',(
   b.classList.add('on'); FMT=b.dataset.f; renderStage(); renderOpts();
 }));
 
-renderTabs(); renderAll();
+/* ============================================================
+   LOAD
+   ============================================================ */
+import { loadTrades, aggregate, deriveDays, client, currentUser } from './rewind-data.js';
+import { openLogTrade } from './rewind-log.js';
+
+const _lb=document.getElementById('logBtn');
+if(_lb) _lb.addEventListener('click', openLogTrade);
+
+const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const nice = v => { const [y,m,dd]=v.split('-'); return `${+dd} ${MON[+m-1]}`; };
+const longDate = v => { const d=new Date(v+'T12:00:00'); return `${DOW[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}`; };
+
+/* build one period block in the shape the cards already read */
+function per(ts, meta){
+  const a = aggregate(ts);
+  const best = ts.length ? [...ts].sort((x,y)=>y.pnl-x.pnl)[0] : null;
+  const rs = ts.map(t=>t.r).filter(v=>Number.isFinite(v));
+  const holds = ts.map(t=>t.holdMin).filter(Boolean);
+  return {
+    ...meta,
+    net:a.net, trades:a.trades, wins:a.wins, losses:a.losses, be:a.bes,
+    win: a.winRate === null ? 0 : Math.round(a.winRate),
+    best: best ? best.pnl : 0,
+    bestR: rs.length ? Math.max(...rs) : 0,
+    worstR: rs.length ? Math.min(...rs) : 0,
+    days:a.tradingDays,
+    avgR: a.avgR === null ? 0 : a.avgR,
+    pf: a.pf === null ? 0 : a.pf,
+    hold: holds.length ? Math.round(holds.reduce((x,y)=>x+y,0)/holds.length) : 0,
+  };
+}
+
+/* the longest run of consecutive green SESSIONS — an achievement that has to
+   be counted, not stored */
+function greenStreak(ts){
+  let best=0, run=0;
+  for(const d of deriveDays(ts)){ if(d.net>0){ run++; best=Math.max(best,run); } else run=0; }
+  return best;
+}
+/* whole calendar weeks / months that closed green */
+function greenBuckets(ts, keyFn){
+  const m={};
+  for(const d of deriveDays(ts)) { const k=keyFn(d.date); m[k]=(m[k]||0)+d.net; }
+  return Object.values(m).filter(v=>v>0).length;
+}
+const weekKey = v => { const d=new Date(v+'T12:00:00'); d.setDate(d.getDate()-d.getDay()); return iso(d); };
+const monthKey = v => v.slice(0,7);
+
+(async () => {
+  const now = new Date();
+  const wkStart = new Date(now); wkStart.setDate(now.getDate()-now.getDay());
+  const wkEnd   = new Date(wkStart); wkEnd.setDate(wkStart.getDate()+6);
+  const moStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const moEnd   = new Date(now.getFullYear(), now.getMonth()+1, 0);
+
+  /* one fetch of everything — all-time is a period the cards offer */
+  const { trades, source } = await loadTrades({});
+
+  const nb=document.getElementById('notice');
+  if(nb){
+    const msg = source==='demo' ? 'Demo data — set your Supabase keys to read your own ledger'
+             : source==='no-session' ? 'Signed out — <a href="rewind-login-echo.html">sign in with Discord</a> to see your ledger'
+             : source==='error' ? 'Could not reach your ledger — showing demo data' : '';
+    nb.innerHTML = msg ? `<div class="notice"><i></i><span>${msg}</span></div>` : '';
+  }
+
+  const inR = (from,to) => trades.filter(t => t.date>=from && t.date<=to);
+  const today = iso(now);
+  const dayTs = inR(today, today);
+  const wkTs  = inR(iso(wkStart), iso(wkEnd));
+  const moTs  = inR(iso(moStart), iso(moEnd));
+
+  const firstDate = trades.length ? trades[0].date : today;
+  const lastDate  = trades.length ? trades[trades.length-1].date : today;
+
+  PERIODS = {
+    daily:   per(dayTs, { key:'daily',   tab:'Daily',     per:'Daily card',
+                          range:longDate(today), label:longDate(today) }),
+    weekly:  per(wkTs,  { key:'weekly',  tab:'Weekly',    per:'Weekly card',
+                          range:`${nice(iso(wkStart))} – ${nice(iso(wkEnd))}`,
+                          label:`Week of ${nice(iso(wkStart))}, ${wkStart.getFullYear()}` }),
+    monthly: per(moTs,  { key:'monthly', tab:'Monthly',   per:'Monthly card',
+                          range:`${MON[now.getMonth()]} ${now.getFullYear()}`,
+                          label:`${['January','February','March','April','May','June','July','August','September','October','November','December'][now.getMonth()]} ${now.getFullYear()}` }),
+    alltime: per(trades,{ key:'alltime', tab:'All-time',  per:'All-time card',
+                          range: trades.length ? `${nice(firstDate)} – ${nice(lastDate)}` : '—',
+                          label:'All time' }),
+  };
+
+  /* ---- achievements, every one COUNTED from the ledger ---- */
+  const A = PERIODS.alltime, MO = PERIODS.monthly;
+  const noted   = trades.filter(t => t.note && t.note.trim()).length;
+  const charted = trades.filter(t => (t.images||[]).length).length;
+  ACHIEVEMENTS = [
+    {n:'First hundred', d:'Log 100 trades.',                          have:A.trades,          need:100,   unit:'trades'},
+    {n:'Two hundred',   d:'Log 200 trades.',                          have:A.trades,          need:200,   unit:'trades'},
+    {n:'Sixty sessions',d:'Log 60 separate trading sessions.',        have:A.days,            need:60,    unit:'sessions'},
+    {n:'Green week',    d:'Close a full week in profit.',             have:greenBuckets(trades,weekKey),  need:1, unit:'weeks'},
+    {n:'Green month',   d:'Close a full month in profit.',            have:greenBuckets(trades,monthKey), need:1, unit:'months'},
+    {n:'Five in a row', d:'Five consecutive green sessions.',         have:greenStreak(trades), need:5,   unit:'days'},
+    {n:'Three R',       d:'Close a single trade at 3R or better.',    have:A.bestR,           need:3,     unit:'R',  dec:true},
+    {n:'Factor of two', d:'Hold a monthly profit factor above 2.00.', have:MO.pf,             need:2,     unit:'PF', dec:true},
+    {n:'Show your work',d:'Attach a chart to 50 trades.',             have:charted,           need:50,    unit:'charts'},
+    {n:'Five figures',  d:'Reach $10,000 net all-time.',              have:A.net,             need:10000, unit:'$'},
+    {n:'Twenty five k', d:'Reach $25,000 net all-time.',              have:A.net,             need:25000, unit:'$'},
+    {n:'Full notes',    d:'Write a note on 50 trades.',               have:noted,             need:50,    unit:'notes'},
+  ];
+
+  /* ---- saved cards live in user_settings, not invented ---- */
+  try{
+    const c=client(), u=await currentUser();
+    if(c && u){
+      const { data } = await c.from('user_settings').select('value')
+        .eq('user_id', u.id).eq('key','showroom_saved').maybeSingle();
+      if(data && Array.isArray(data.value)) SAVED = data.value;
+      const { data: p } = await c.from('profiles').select('username, display_name').eq('id', u.id).maybeSingle();
+      if(p) HANDLE_REAL = p.username || p.display_name || HANDLE_REAL;
+    }
+  }catch(e){ /* no saved cards yet is the normal state */ }
+
+  renderTabs(); renderAll();
+})();
 </script>
 </body>
 </html>
