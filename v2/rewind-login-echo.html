@@ -271,9 +271,20 @@ const ERRORS={
   'timeout':{kind:'Connection lost',title:'Discord took too long',
     body:'The authorization window timed out before Discord answered. This is usually temporary.',join:false}
 };
-function showError(k){
+function showError(k, detail){
   const e=ERRORS[k]||ERRORS['denied'];
-  errKind.textContent=e.kind; errTitle.textContent=e.title; errBody.textContent=e.body;
+  errKind.textContent=e.kind; errTitle.textContent=e.title;
+  errBody.textContent=e.body;
+  /* the actual cause, printed so a failure is diagnosable instead of mysterious */
+  if(detail){
+    const d=document.createElement('div');
+    d.style.cssText='margin-top:14px;padding:11px 13px;border:1px solid rgba(255,255,255,.22);'+
+                    'font-family:var(--mono);font-size:9px;letter-spacing:.08em;line-height:1.7;'+
+                    'color:#FFF;word-break:break-word;text-transform:none;';
+    d.textContent=String(detail);
+    errBody.appendChild(d);
+    console.error('[login]', detail);
+  }
   errJoin.style.display=e.join?'block':'none'; go('err');
 }
 
@@ -302,13 +313,28 @@ authBtn.addEventListener('click', async () => {
   }
 
   const c = await client();
-  if(!c){ resetAuthBtn(); showError('denied'); return; }
+  if(!c){
+    resetAuthBtn();
+    showError('denied', `Supabase keys not loaded on this page. URL:${SB_URL?'set':'MISSING'} KEY:${SB_ANON?'set':'MISSING'}`);
+    return;
+  }
 
-  const { error } = await c.auth.signInWithOAuth({
-    provider: 'discord',
-    options: { scopes: SCOPES, redirectTo: location.origin + '/v2/rewind-login-echo.html' },
-  });
-  if(error){ resetAuthBtn(); showError('denied'); }
+  const redirectTo = location.origin + '/v2/rewind-login-echo.html';
+  console.log('[login] signing in, redirectTo =', redirectTo);
+
+  let res;
+  try{
+    res = await c.auth.signInWithOAuth({
+      provider: 'discord',
+      options: { scopes: SCOPES, redirectTo },
+    });
+  }catch(e){
+    resetAuthBtn(); showError('denied', 'signInWithOAuth threw: '+(e && e.message)); return;
+  }
+  if(res && res.error){
+    resetAuthBtn();
+    showError('denied', `Supabase rejected the sign-in: ${res.error.message} (status ${res.error.status||'—'}) · redirectTo was ${redirectTo}`);
+  }
   /* on success the browser leaves for Discord and comes back to checkGate() */
 });
 
@@ -326,7 +352,7 @@ async function checkGate(){
   authBtn.innerHTML='Checking your membership…';
   sub1.style.display='none';
 
-  let verdict;
+  let verdict, raw='';
   try{
     const r = await fetch('/api/auth/gate', {
       method:'POST',
@@ -336,9 +362,15 @@ async function checkGate(){
         provider_refresh_token: session.provider_refresh_token,
       }),
     });
-    verdict = await r.json();
+    raw = await r.text();
+    try{ verdict = JSON.parse(raw); }
+    catch{ resetAuthBtn(); showError('timeout', `gate returned ${r.status}: ${raw.slice(0,200)}`); return; }
+    console.log('[login] gate said', verdict);
+    if(!r.ok && !('allowed' in verdict)){
+      resetAuthBtn(); showError('timeout', `gate ${r.status}: ${verdict.error||raw.slice(0,200)}`); return;
+    }
   }catch(e){
-    resetAuthBtn(); showError('timeout'); return;
+    resetAuthBtn(); showError('timeout', 'could not reach /api/auth/gate: '+(e && e.message)); return;
   }
 
   if(verdict && verdict.allowed){
@@ -350,19 +382,22 @@ async function checkGate(){
   await c.auth.signOut();
   resetAuthBtn();
 
-  if(verdict && verdict.reason === 'discord_unreachable') showError('timeout');
-  else if(verdict && verdict.reason === 'scope_missing')   showError('denied');
-  else showError('no-membership');            /* not_in_server | no_role */
+  const why = verdict && verdict.reason ? `reason: ${verdict.reason}` : 'no reason returned';
+  if(verdict && verdict.reason === 'discord_unreachable') showError('timeout', why);
+  else if(verdict && verdict.reason === 'scope_missing')  showError('denied', why);
+  else showError('no-membership', why);       /* not_in_server | no_role */
 }
 
 if(!SIM_MODE) checkGate();
 
 /* if the callback bounced back with an error, show it on arrival */
 /* Supabase or Discord can bounce back with ?error= / ?error_description= */
-const _inbound = _q.get('error') || _q.get('error_code');
+const _hash = new URLSearchParams((location.hash||'').replace(/^#/,''));
+const _inbound = _q.get('error') || _q.get('error_code') || _hash.get('error') || _hash.get('error_code');
 if(_inbound){
+  const desc = _q.get('error_description') || _hash.get('error_description') || '';
   const map={ access_denied:'denied', no_membership:'no-membership', timeout:'timeout' };
-  showError(map[_inbound] || 'denied');
+  showError(map[_inbound] || 'denied', `${_inbound}${desc ? ' — '+decodeURIComponent(desc.replace(/\+/g,' ')) : ''}`);
 }
 
 const hst=document.getElementById('hst'), claimBtn=document.getElementById('claimBtn');
