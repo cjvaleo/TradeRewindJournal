@@ -736,35 +736,33 @@ h3.sec a:hover{color:var(--ink)}
 .cm-feed::-webkit-scrollbar{width:5px}.cm-feed::-webkit-scrollbar-thumb{background:rgba(242,242,240,.15);border-radius:3px}
 
 /* post card — horizontal layout */
-.cm-post{display:flex;border-bottom:1px solid var(--hair);cursor:pointer;transition:background .12s;padding:15px 18px;gap:14px}
+.cm-post{display:flex;align-items:flex-start;border-bottom:1px solid var(--hair);cursor:pointer;transition:background .12s;padding:20px 22px;gap:16px}
 .cm-post:hover{background:rgba(255,255,255,.025)}
-.cm-post.win-post{border-left:2.5px solid var(--win)}
-.cm-post.loss-post{border-left:2.5px solid var(--loss)}
-.cm-post-left{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.cm-post.win-post{border-left:3px solid var(--win)}
+.cm-post.loss-post{border-left:3px solid var(--loss)}
+.cm-post-left{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
 .cm-post-who{display:flex;align-items:center;gap:8px}
-.cm-post-av{width:26px;height:26px;border-radius:50%;border:1px solid rgba(216,178,106,.35);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;background:var(--panel)}
+.cm-post-av{width:28px;height:28px;border-radius:50%;border:1px solid rgba(216,178,106,.35);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;background:var(--panel)}
 .cm-post-nm{font-size:11px;font-weight:900}
 .cm-role{font-size:6.5px;letter-spacing:.1em;text-transform:uppercase;color:#1A1304;background:var(--gold-grad);border-radius:4px;padding:2px 5px;font-weight:900;margin-left:3px;vertical-align:1px}
 .cm-role.teach{background:linear-gradient(160deg,#C8D8F0,#5AA9E6);color:#0a1628}
 .cm-role.you{background:rgba(255,255,255,.12);color:var(--ink);border:1px solid var(--hair2)}
 .cm-post-tm{font-size:8px;color:var(--ink45);letter-spacing:.05em;margin-left:auto;white-space:nowrap}
 .cm-post-note{font-size:11px;line-height:1.5;color:var(--ink70);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.cm-post-stats{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cm-post-stats{display:flex;align-items:center;gap:5px}
 .cm-post-sym{font-size:12px;font-weight:900}
-.cm-post-tag{font-size:8.5px;color:var(--ink45);letter-spacing:.05em;text-transform:uppercase;font-weight:700}
-.cm-post-pnl{font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:118%;font-size:18px;line-height:1;margin-top:2px}
-.cm-post-pnl.w{color:var(--win-text)}.cm-post-pnl.l{color:var(--loss-text)}.cm-post-pnl.n{color:var(--ink45)}
-.cm-post-foot{display:flex;align-items:center;gap:12px;padding-top:4px}
+.cm-post-dot{font-size:9px;color:var(--ink45);font-weight:600;flex-shrink:0}
+.cm-post-tag{font-size:9px;color:var(--ink45);letter-spacing:.05em;text-transform:uppercase;font-weight:700}
+.cm-post-foot{display:flex;align-items:center;gap:14px;padding-top:2px}
 .cm-post-react{font-size:9px;color:var(--ink45);cursor:pointer;letter-spacing:.03em;transition:color .12s}
 .cm-post-react:hover{color:var(--ink)}
 .cm-post-recap{font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-left:auto;cursor:pointer;font-weight:700;opacity:.85}
 .cm-post-recap:hover{opacity:1}
-.cm-post-thumb{width:130px;height:104px;flex-shrink:0;border-radius:9px;border:1px solid var(--hair);overflow:hidden;position:relative;background:linear-gradient(180deg,#15171A,#0C0D10)}
+.cm-post-thumb{width:145px;height:120px;flex-shrink:0;border-radius:10px;border:1px solid var(--hair);overflow:hidden;position:relative;background:linear-gradient(180deg,#15171A,#0C0D10);align-self:center}
 .cm-post-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cm-post-thumb.noshot{display:none}
-.cm-wl{position:absolute;top:6px;right:7px;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:900;border-radius:5px;padding:3px 7px;backdrop-filter:blur(4px);z-index:1}
-.cm-wl.w{color:var(--win-text);background:rgba(20,40,32,.7);border:1px solid rgba(47,174,120,.4)}
-.cm-wl.l{color:var(--loss-text);background:rgba(44,22,22,.7);border:1px solid rgba(201,106,106,.4)}
+.cm-pnl-tag{position:absolute;bottom:9px;right:10px;font-family:'Archivo',sans-serif;font-weight:900;font-style:italic;font-stretch:118%;font-size:14px;line-height:1;text-shadow:0 1px 5px rgba(0,0,0,.8)}
+.cm-pnl-tag.w{color:var(--win-text)}.cm-pnl-tag.l{color:var(--loss-text)}.cm-pnl-tag.n{color:var(--ink45)}
 
 /* right rail */
 .cm-rrail .cm-acard{padding:12px 14px;display:flex;flex-direction:column;gap:9px}
@@ -2284,7 +2282,7 @@ function updateAvatar(user) {
 /* --- Data Loading --- */
 async function loadProfileFromDB() {
   if (!currentUser) return;
-  const { data } = await _sb.from('profiles').select('*').eq('id', currentUser.id).single();
+  const { data } = await _sb.from('profiles').select('id, display_name, username, initials, color, plan, created_at, updated_at, avatar_finish, avatar_initials, avatar_image_url, last_seen_at, is_pro, pro_source, pro_active_until, discord_user_id, last_role_check').eq('id', currentUser.id).single();
   window_profile = data;
 }
 
@@ -3992,15 +3990,23 @@ function commPostHTML(post) {
   const initials = esc((prof.avatar_initials || (prof.username || 'U').slice(0, 2)).toUpperCase());
   const username = '@' + esc(prof.username || 'unknown');
   const meta     = post.metadata || {};
-  const pnl      = meta.pnl != null ? +meta.pnl : null;
-  const rr       = meta.rr  != null ? +meta.rr  : null;
+
+  // Resolve actual trade for pnl/sym/side (works for own posts; other users fall back to metadata)
+  const _parts   = post.id.startsWith('trade_') ? post.id.split('_') : [];
+  const _tradeId = _parts.length >= 2 ? _parts[1] : null;
+  const _trade   = _tradeId ? (window_trades || []).find(t => t.id === _tradeId) : null;
+
+  const pnl      = _trade ? _trade.pnl : (meta.pnl != null ? +meta.pnl : null);
+  const rr       = meta.rr != null ? +meta.rr : (_trade ? _trade.rr : null);
   const wl       = pnl != null ? (pnl > 0 ? 'win' : pnl < 0 ? 'loss' : 'be') :
                    (rr != null ? (rr > 0 ? 'win' : 'loss') : null);
   const wlCls    = wl === 'win' ? 'w' : wl === 'loss' ? 'l' : '';
   const pnlStr   = pnl != null ? fmtPnl(pnl) : (rr != null ? (rr >= 0 ? '+' : '') + rr.toFixed(1) + 'R' : '—');
-  const sym      = esc(meta.market || meta.sym || '');
-  const side     = esc((meta.type || meta.side || '').toUpperCase());
-  const sess     = esc((meta.session || '').split(' · ')[0]);
+  // sym: trade.sym is the actual ticker; meta.market is a category label ("Futures") — prefer trade
+  const sym      = esc((_trade ? _trade.sym : '') || meta.sym || '');
+  // side: trade.type is 'long'/'short'; metadata has no side field
+  const side     = esc(((_trade ? _trade.type : '') || '').toUpperCase());
+  const sess     = esc((meta.session || (_trade ? _trade.session : '') || '').split(' · ')[0]);
   const note     = esc(post.note || post.caption || '');
   const time     = post.created_at
     ? new Date(post.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
@@ -4014,6 +4020,16 @@ function commPostHTML(post) {
     + (isOwn ? `<span class="cm-role you">YOU</span>` : '');
 
   const hasThumb = !!post.image_url;
+  // P&L dollar string for thumbnail corner — no R fallback (spec: NO R multiple on card)
+  const pnlTag = pnl != null ? fmtPnl(pnl) : '';
+
+  // Stats dots only between present fields
+  const statsParts = [
+    sym  ? `<span class="cm-post-sym">${sym}</span>` : '',
+    side ? `<span class="cm-post-tag">${side}</span>` : '',
+    sess ? `<span class="cm-post-tag">${sess}</span>` : '',
+  ].filter(Boolean);
+  const statsHTML = statsParts.join('<span class="cm-post-dot">·</span>');
 
   return `<div class="cm-post ${wlCls === 'w' ? 'win-post' : wlCls === 'l' ? 'loss-post' : ''}" onclick="commOpenRecap('${esc(post.id)}')">
     <div class="cm-post-left">
@@ -4023,21 +4039,16 @@ function commPostHTML(post) {
         <span class="cm-post-tm">${esc(time)}</span>
       </div>
       ${note ? `<div class="cm-post-note">${note}</div>` : ''}
-      <div class="cm-post-stats">
-        ${sym  ? `<span class="cm-post-sym">${sym}</span>` : ''}
-        ${side ? `<span class="cm-post-tag">${side}</span>` : ''}
-        ${sess ? `<span class="cm-post-tag">${sess}</span>` : ''}
-      </div>
-      <div class="cm-post-pnl ${wlCls || 'n'}">${pnlStr}</div>
+      ${statsHTML ? `<div class="cm-post-stats">${statsHTML}</div>` : ''}
       <div class="cm-post-foot">
         <span class="cm-post-react">▲ 0</span>
-        <span class="cm-post-react">◆ 0</span>
+        <span class="cm-post-react">◆</span>
         <span class="cm-post-react">💬 0</span>
         <span class="cm-post-recap">Full Recap →</span>
       </div>
     </div>
     <div class="cm-post-thumb${hasThumb ? '' : ' noshot'}">
-      ${hasThumb ? `<img src="${esc(post.image_url)}" alt="" loading="lazy"><span class="cm-wl ${wlCls}">${wl === 'win' ? 'WIN' : 'LOSS'}</span>` : ''}
+      ${hasThumb ? `<img src="${esc(post.image_url)}" alt="" loading="lazy">${pnlTag ? `<span class="cm-pnl-tag ${wlCls || 'n'}">${pnlTag}</span>` : ''}` : ''}
     </div>
   </div>`;
 }
@@ -4318,6 +4329,7 @@ let _ltState = {
 let _ltCsvTrades = [], _ltCsvIdx = 0, _ltCsvJournal = {};
 
 function openLogModal(tradeId) {
+  try {
   _ltState = { result:null, lossType:null, side:null, emotions:[], models:[],
     confluences:[], confidence:0, grade:null, partials:[], accounts:1,
     imageUrl:null, uploading:false, editId: tradeId || null };
@@ -4385,6 +4397,7 @@ function openLogModal(tradeId) {
   ltRenderModelSugg();
   bg.classList.add('on');
   document.body.style.overflow = 'hidden';
+  } catch (err) { console.error('[modal:init]', err); }
 }
 
 function closeLogModal() {
@@ -4904,17 +4917,41 @@ async function ltSaveTrade() {
 
     if (msg) { msg.textContent = 'Saved!'; msg.style.color = 'var(--win-text)'; }
 
+    // Community post — upsert if Pro + member of a community
+    if (isPro && _commActive) {
+      const commPostId = 'trade_' + tradeId + '_' + _commActive.id.slice(0, 8);
+      const commPostRow = {
+        id: commPostId,
+        user_id: currentUser.id,
+        community_id: _commActive.id,
+        image_url: _ltState.imageUrl || null,
+        note: notes || null,
+        metadata: {
+          market: sym || null,
+          session: session || null,
+          rr: rr,
+          grade: isPro ? _ltState.grade : null,
+          emotion: _ltState.emotions.length ? _ltState.emotions[0] : null,
+          confidence: _ltState.confidence || null,
+        },
+      };
+      const { error: cpErr } = await _sb.from('community_posts').upsert(commPostRow);
+      if (cpErr) console.error('[modal:save:community_post]', cpErr);
+    }
+
     // Reload data + re-render current page
     await loadTradesFromDB();
     renderDashboard();
     if (window._histInitDone) histRender();
     if (window._reviewInitDone) reviewRender();
     if (window._calInitDone) { calRenderMonth(); calRenderRight(); }
+    if (window._commInitDone) { await commLoadData(); commRender(); }
 
     setTimeout(() => {
       closeLogModal();
     }, 600);
   } catch(e) {
+    console.error('[modal:save]', e);
     if (msg) { msg.textContent = 'Error: ' + (e.message || 'save failed'); msg.style.color = 'var(--loss-text)'; }
   } finally {
     if (btn) btn.disabled = false;
@@ -5076,7 +5113,7 @@ async function ltCsvSaveNext() {
       account_type: null, journal: 'default',
       updated_at: new Date().toISOString(), trading_day
     });
-  } catch(e) { console.error('CSV save error', e); }
+  } catch(e) { console.error('[modal:csv-save]', e); }
   _ltCsvIdx++;
   if (_ltCsvIdx >= _ltCsvTrades.length) { ltCsvComplete(); return; }
   ltCsvRenderCurrent();
