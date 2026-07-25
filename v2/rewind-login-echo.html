@@ -224,26 +224,41 @@ body{min-height:100vh;background:var(--black);color:var(--text);font-family:var(
   </div>
 </div>
 
-<script>
+<script src="rewind-config.js"></script>
+<script type="module">
 /* ============================================================
-   REAL OAUTH. His vercel.json rewrites /oauth/discord/start ->
-   /api/oauth/discord/start, so this page hands off to the flow
-   that already exists rather than reimplementing it.
+   DISCORD IS THE ONLY WAY IN.
 
-   Add ?sim=1 to the URL to run the old design simulation instead
-   (handle claim, welcome, the three error states) without touching
-   the live flow. ?sim=denied | no-membership | timeout jumps straight
-   to an error state.
+   1. signInWithOAuth -> Discord, asking for guilds.members.read
+   2. back here with a session that carries a provider_token
+   3. POST it to /api/auth/gate, which checks the Trading Ark roles
+      SERVER-SIDE and answers allowed / not
+   4. no role -> sign the session straight back out and show the wall
+
+   The gate is the only thing that decides. This page just renders
+   its answer, so nothing here can be edited to get past it.
+
+   ?sim=1 | returning | denied | no-membership | timeout still runs the
+   design flow for review without touching the live path.
    ============================================================ */
-const OAUTH_START = '/oauth/discord/start';
+const SB_URL  = window.__REWIND_SUPABASE_URL      || '';
+const SB_ANON = window.__REWIND_SUPABASE_ANON_KEY  || '';
+const SCOPES  = 'identify guilds.members.read';
 
 const _q = new URLSearchParams(location.search);
 const SIM_MODE  = _q.has('sim');
 const RETURNING = _q.get('sim') === 'returning';
 const SIMULATE  = ['denied','no-membership','timeout'].includes(_q.get('sim')) ? _q.get('sim') : null;
 
-/* his callback can hand errors back as ?error= — surface them properly */
-const INBOUND_ERROR = _q.get('error');
+let sb = null;
+async function client(){
+  if(sb) return sb;
+  if(!SB_URL || !SB_ANON) return null;
+  const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+  sb = createClient(SB_URL, SB_ANON);
+  return sb;
+}
+
 const taken = ['nq_operator','jt_futures','christian','admin','rewind'];
 const S={1:s1,2:s2,3:s3,err:sErr};
 const go=n=>{Object.values(S).forEach(x=>x.classList.remove('on'));S[n].classList.add('on');};
@@ -271,31 +286,83 @@ function resetAuthBtn(){
 }
 function backToStart(){ resetAuthBtn(); go(1); }
 
-authBtn.addEventListener('click',()=>{
+authBtn.addEventListener('click', async () => {
   authBtn.classList.add('busy'); authBtn.innerHTML='Authorizing…';
   sub1.style.display='none'; log.style.display='block';
   ['g1','g2'].forEach((id,i)=>setTimeout(()=>document.getElementById(id).classList.add('hit'),300+i*620));
 
-  /* LIVE: leave for Discord. no timers, no fake states. */
-  if(!SIM_MODE){
-    const back = new URLSearchParams({ return_to: '/v2/rewind-calendar.html' });
-    location.href = `${OAUTH_START}?${back}`;
+  if(SIM_MODE){
+    setTimeout(()=>{
+      resetAuthBtn();
+      if(SIMULATE){ showError(SIMULATE); return; }
+      if(RETURNING){ gTitle.textContent='Welcome back'; gLead.textContent='Your ledger is where you left it.'; go(3); }
+      else { go(2); setTimeout(()=>handle.focus(),240); }
+    },1900);
     return;
   }
 
-  /* SIMULATION: the design flow, for review only */
-  setTimeout(()=>{
-    resetAuthBtn();
-    if(SIMULATE){ showError(SIMULATE); return; }
-    if(RETURNING){ gTitle.textContent='Welcome back'; gLead.textContent='@nq_operator — your ledger is where you left it.'; go(3); }
-    else { go(2); setTimeout(()=>handle.focus(),240); }
-  },1900);
+  const c = await client();
+  if(!c){ resetAuthBtn(); showError('denied'); return; }
+
+  const { error } = await c.auth.signInWithOAuth({
+    provider: 'discord',
+    options: { scopes: SCOPES, redirectTo: location.origin + '/v2/rewind-login-echo.html' },
+  });
+  if(error){ resetAuthBtn(); showError('denied'); }
+  /* on success the browser leaves for Discord and comes back to checkGate() */
 });
 
+/* ============================================================
+   ON RETURN FROM DISCORD — ask the gate, then act
+   ============================================================ */
+async function checkGate(){
+  const c = await client();
+  if(!c) return;
+
+  const { data: { session } } = await c.auth.getSession();
+  if(!session) return;                        /* not back from OAuth */
+
+  authBtn.classList.add('busy');
+  authBtn.innerHTML='Checking your membership…';
+  sub1.style.display='none';
+
+  let verdict;
+  try{
+    const r = await fetch('/api/auth/gate', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', Authorization:'Bearer '+session.access_token },
+      body: JSON.stringify({
+        provider_token: session.provider_token,
+        provider_refresh_token: session.provider_refresh_token,
+      }),
+    });
+    verdict = await r.json();
+  }catch(e){
+    resetAuthBtn(); showError('timeout'); return;
+  }
+
+  if(verdict && verdict.allowed){
+    location.href = '/v2/rewind-calendar.html';
+    return;
+  }
+
+  /* NOT A MEMBER — end the session so a refresh can't sneak past */
+  await c.auth.signOut();
+  resetAuthBtn();
+
+  if(verdict && verdict.reason === 'discord_unreachable') showError('timeout');
+  else if(verdict && verdict.reason === 'scope_missing')   showError('denied');
+  else showError('no-membership');            /* not_in_server | no_role */
+}
+
+if(!SIM_MODE) checkGate();
+
 /* if the callback bounced back with an error, show it on arrival */
-if(INBOUND_ERROR){
+/* Supabase or Discord can bounce back with ?error= / ?error_description= */
+const _inbound = _q.get('error') || _q.get('error_code');
+if(_inbound){
   const map={ access_denied:'denied', no_membership:'no-membership', timeout:'timeout' };
-  showError(map[INBOUND_ERROR] || 'denied');
+  showError(map[_inbound] || 'denied');
 }
 
 const hst=document.getElementById('hst'), claimBtn=document.getElementById('claimBtn');
