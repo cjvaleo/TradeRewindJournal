@@ -274,7 +274,7 @@ select option{background:var(--raise);color:#FFF;}
     </nav>
     <div class="tools">
       <span class="tstamp">NY · 16:42 · Closed</span>
-      <button class="btn-w">Log trade</button>
+      <button class="btn-w" id="logBtn">Log trade</button>
       <span class="avatar"></span>
     </div>
   </div>
@@ -688,6 +688,11 @@ function buildSelects(){
   fill('fSession', T.map(t=>t.sess),  'All sessions');
   fill('fSymbol',  T.map(t=>t.sym),   'All symbols');
 }
+
+/* ---- log-trade modal ---- */
+import { openLogTrade } from './rewind-log.js';
+const _lb = document.getElementById('logBtn');
+if(_lb) _lb.addEventListener('click', openLogTrade);
 </script>
 </body>
 </html>

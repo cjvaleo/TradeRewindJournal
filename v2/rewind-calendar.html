@@ -188,7 +188,7 @@ body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opa
     </nav>
     <div class="tools">
       <span class="tstamp">NY · 16:42 · Closed</span>
-      <button class="btn-w">Log trade</button>
+      <button class="btn-w" id="logBtn">Log trade</button>
       <span class="avatar"></span>
     </div>
   </div>
@@ -333,6 +333,11 @@ if(mp){ const [yy,mm]=mp.split('-').map(Number); if(yy&&mm) view=new Date(yy,mm-
 if(u.get('date')) SELECTED=u.get('date');
 
 render();
+
+/* ---- log-trade modal ---- */
+import { openLogTrade } from './rewind-log.js';
+const _lb = document.getElementById('logBtn');
+if(_lb) _lb.addEventListener('click', openLogTrade);
 </script>
 </body>
 </html>
