@@ -17,12 +17,13 @@
    run of illuminated frames.
    ============================================================ */
 :root{
-  --black:#080A0C; --ink:#0C0F12; --panel:#111519;
-  --edge:rgba(255,255,255,.07); --edge-2:rgba(255,255,255,.13);
-  --white:#FFFFFF; --text:#F2F4F6; --mute:#D6DADE; --dim:#AEB4BA; --faint:#8C939A;
+  --black:#0E1114; --ink:#0C0F12; --panel:#111519;
+  --edge:rgba(255,255,255,.20); --edge-2:rgba(255,255,255,.34);
+  --rule:rgba(255,255,255,.15);
+  --white:#FFFFFF; --text:#FFFFFF; --mute:#FFFFFF; --dim:#FFFFFF; --faint:#FFFFFF;
 
-  --up:#3DE08C; --up-2:#9BF5C6; --up-glow:rgba(61,224,140,.5);
-  --dn:#FF5A52; --dn-2:#FFA39D; --dn-glow:rgba(255,90,82,.48);
+  --up:#57BE8B; --up-2:#7FD9AC; --up-glow:rgba(87,190,139,.32);
+  --dn:#DE6B62; --dn-2:#F09189; --dn-glow:rgba(222,107,98,.30);
 
   --fig:"Azeret Mono",ui-monospace,monospace;
   --disp:"Instrument Sans",system-ui,sans-serif;
@@ -33,12 +34,12 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--black);color:var(--text);font-family:var(--ui);font-size:14px;-webkit-font-smoothing:antialiased;}
 .num{font-variant-numeric:tabular-nums;}
-.lab{font-family:var(--mono);font-size:8.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--dim);}
+.lab{font-family:var(--mono);font-size:8.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--white);opacity:1;}
 
 /* ---- the field, identical to the door ---- */
 body::before{content:'';position:fixed;inset:0;z-index:-3;pointer-events:none;
-  background:radial-gradient(58% 42% at 50% -10%, rgba(255,255,255,.075), transparent 68%);}
-.flute{position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:.42;
+  background:radial-gradient(58% 42% at 50% -10%, rgba(255,255,255,.045), transparent 68%);}
+.flute{position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:.3;
   background:repeating-linear-gradient(90deg,
     rgba(255,255,255,.045) 0px, rgba(255,255,255,.045) 1px,
     rgba(255,255,255,.012) 2px, rgba(0,0,0,.16) 7px, rgba(0,0,0,.16) 11px);}
@@ -48,18 +49,18 @@ body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opa
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>");}
 
 /* ---------------- TOP ---------------- */
-.top{position:sticky;top:0;z-index:50;background:rgba(8,10,12,.86);backdrop-filter:blur(16px);
+.top{position:sticky;top:0;z-index:50;background:rgba(14,17,20,.88);backdrop-filter:blur(16px);
   box-shadow:inset 0 -1px 0 var(--edge);}
 .top .in{max-width:1600px;margin:0 auto;height:60px;display:flex;align-items:center;gap:26px;padding:0 30px;}
 .brand{font-family:var(--brand);font-weight:800;font-size:17px;letter-spacing:-.03em;text-transform:uppercase;position:relative;color:var(--white);}
 .brand .gh{position:absolute;left:-10px;top:0;opacity:.22;filter:blur(3.5px);pointer-events:none;}
-.brand em{font-family:var(--mono);font-style:normal;font-weight:400;font-size:8px;letter-spacing:.24em;color:var(--dim);margin-left:10px;vertical-align:3px;}
+.brand em{font-family:var(--mono);font-style:normal;font-weight:400;font-size:8px;letter-spacing:.24em;color:var(--white);opacity:1;margin-left:10px;vertical-align:3px;}
 .nav{display:flex;gap:2px;height:100%;}
-.nl{display:flex;align-items:center;padding:0 14px;font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);cursor:pointer;position:relative;transition:color .16s;}
-.nl:hover,.nl.on{color:var(--white);}
+.nl{display:flex;align-items:center;padding:0 14px;font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--white);opacity:1;cursor:pointer;position:relative;transition:color .16s;}
+.nl:hover,.nl.on{color:var(--white);opacity:1;}
 .nl.on::after{content:'';position:absolute;left:14px;right:14px;bottom:-1px;height:1px;background:var(--white);}
 .tools{margin-left:auto;display:flex;align-items:center;gap:14px;}
-.tstamp{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase;}
+.tstamp{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:var(--white);opacity:1;text-transform:uppercase;}
 .btn-w{background:var(--white);color:var(--black);font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;
   border:none;border-radius:2px;padding:11px 18px;cursor:pointer;transition:transform .15s;}
 .btn-w:hover{transform:translateY(-1px);}
@@ -76,9 +77,9 @@ body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opa
 .mtitle .g2{transform:translateX(-24px);filter:blur(6px); opacity:.16;color:#fff;}
 .mtitle .g1{transform:translateX(-10px);filter:blur(2.5px);opacity:.28;color:#fff;}
 .mtitle .now{color:var(--white);}
-.mtitle .now em{font-style:normal;font-weight:500;color:var(--dim);}
+.mtitle .now em{font-style:normal;font-weight:500;color:var(--white);opacity:1;}
 .mrow{display:flex;align-items:center;gap:6px;margin-top:16px;}
-.mrow button{font-family:var(--mono);font-size:10px;color:var(--mute);background:transparent;
+.mrow button{font-family:var(--mono);font-size:10px;color:var(--white);background:transparent;
   border:1px solid var(--edge);height:27px;min-width:29px;cursor:pointer;transition:all .15s;}
 .mrow button:hover{color:var(--white);border-color:var(--edge-2);}
 .mrow .now-btn{padding:0 14px;font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;margin-left:8px;}
@@ -86,60 +87,64 @@ body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opa
 .mast-r{text-align:right;}
 .mast-r .lab{display:block;margin-bottom:10px;}
 .net{font-family:var(--fig);font-weight:600;font-size:clamp(30px,3.7vw,54px);line-height:1;letter-spacing:-.055em;
-  color:var(--up-2);text-shadow:0 0 44px var(--up-glow), 0 0 96px rgba(61,224,140,.16);}
-.net.dn{color:var(--dn-2);text-shadow:0 0 44px var(--dn-glow), 0 0 96px rgba(255,90,82,.14);}
-.netsub{margin-top:12px;font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);}
+  color:var(--up-2);text-shadow:0 0 40px rgba(87,190,139,.22);}
+.net.dn{color:var(--dn-2);text-shadow:0 0 40px rgba(222,107,98,.20);}
+.netsub{margin-top:12px;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--white);opacity:1;}
 .netsub b{color:var(--white);font-weight:500;}
 
 /* ---------------- GRID ---------------- */
-.dow{display:grid;grid-template-columns:repeat(7,1fr) 122px;gap:4px;margin-bottom:8px;}
-.dow div{font-family:var(--mono);font-size:8px;letter-spacing:.26em;text-transform:uppercase;color:var(--dim);padding-left:12px;}
-.dow div:last-child{color:var(--white);text-align:right;padding-right:12px;}
+.dow{display:grid;grid-template-columns:repeat(7,1fr) 152px;gap:0;margin-bottom:0;
+  border:1px solid var(--edge);border-bottom:none;border-radius:4px 4px 0 0;overflow:hidden;background:#171B1F;}
+.dow div{font-family:var(--mono);font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--white);padding:11px 12px;border-right:1px solid var(--rule);}
+.dow div:last-child{color:var(--white);text-align:right;border-right:none;background:rgba(255,255,255,.05);}
 
-.grid{display:grid;grid-template-columns:repeat(7,1fr) 122px;gap:4px;}
+.grid{display:grid;grid-template-columns:repeat(7,1fr) 152px;gap:0;
+  background:#111417;
+  border:1px solid var(--edge);border-radius:0 0 4px 4px;overflow:hidden;}
+.grid > *{border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);}
+.grid > *:nth-child(8n){border-right:none;}
+.grid > *:nth-last-child(-n+8){border-bottom:none;}
 
-.cell{min-height:130px;padding:12px;position:relative;overflow:hidden;
-  background:var(--ink);border:1px solid var(--edge);border-radius:2px;
-  transition:border-color .18s, background .18s;}
-.cell.void{background:transparent;border-color:rgba(255,255,255,.035);}
-.cell .d{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--dim);position:relative;z-index:4;}
-.cell.void .d{color:#4E555C;}
+.cell{min-height:132px;padding:12px;position:relative;overflow:hidden;
+  background:#14171B;border-radius:0;transition:background .18s;}
+.cell.void{background:#101316;}
+.cell .d{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--white);position:relative;z-index:4;}
+.cell.void .d{color:#FFFFFF;}
 .cell.tr{cursor:pointer;}
-.cell.tr:hover{border-color:var(--edge-2);}
+.cell.tr:hover{background:#1B1F23;}
 
-.cell .pl{font-family:var(--fig);font-weight:600;font-size:18px;letter-spacing:-.05em;margin-top:18px;position:relative;z-index:4;}
-.cell .pl::before{content:attr(data-v);position:absolute;left:-7px;top:0;color:inherit;
-  filter:blur(4px);opacity:.32;pointer-events:none;}
-.cell .meta{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-top:6px;position:relative;z-index:4;}
+.cell .pl{font-family:var(--fig);font-weight:600;font-size:19px;letter-spacing:-.05em;margin-top:17px;position:relative;z-index:4;text-shadow:none;}
+
+.cell .meta{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:#FFFFFF;opacity:1;margin-top:9px;position:relative;z-index:4;}
 /* the day IS the colour — a tinted pane, green up, red down, grey flat */
-.cell.up{background:linear-gradient(0deg, rgba(61,224,140,.13) 0%, rgba(61,224,140,.055) 100%);
-  border-color:rgba(61,224,140,.26);}
-.cell.up:hover{background:linear-gradient(0deg, rgba(61,224,140,.19) 0%, rgba(61,224,140,.08) 100%);
-  border-color:rgba(61,224,140,.42);}
+.cell.up{background:linear-gradient(0deg,
+    rgba(87,190,139,calc(.10 + .16 * var(--i,1))) 0%,
+    rgba(87,190,139,calc(.04 + .07 * var(--i,1))) 100%);}
+.cell.up:hover{background:linear-gradient(0deg, rgba(87,190,139,.26) 0%, rgba(87,190,139,.13) 100%);}
 .cell.up .pl{color:var(--up-2);}
 
-.cell.dn{background:linear-gradient(0deg, rgba(255,90,82,.13) 0%, rgba(255,90,82,.055) 100%);
-  border-color:rgba(255,90,82,.26);}
-.cell.dn:hover{background:linear-gradient(0deg, rgba(255,90,82,.19) 0%, rgba(255,90,82,.08) 100%);
-  border-color:rgba(255,90,82,.42);}
+.cell.dn{background:linear-gradient(0deg,
+    rgba(222,107,98,calc(.10 + .17 * var(--i,1))) 0%,
+    rgba(222,107,98,calc(.04 + .08 * var(--i,1))) 100%);}
+.cell.dn:hover{background:linear-gradient(0deg, rgba(222,107,98,.27) 0%, rgba(222,107,98,.14) 100%);}
 .cell.dn .pl{color:var(--dn-2);}
 
-.cell.be{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.16);}
-.cell.be:hover{background:rgba(255,255,255,.085);border-color:rgba(255,255,255,.26);}
-.cell.be .pl{color:var(--mute);}
-.cell.sel{border-color:var(--white);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);}
+.cell.be{background:rgba(228,232,235,.07);}
+.cell.be:hover{background:rgba(228,232,235,.10);}
+.cell.be .pl{color:var(--white);}
+.cell.sel{box-shadow:inset 0 0 0 2px rgba(232,235,237,.9);}
 .cell.sel .d{color:var(--white);}
 .flag{position:absolute;top:12px;right:12px;font-family:var(--mono);font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:var(--white);z-index:4;}
 
-.wk{padding:12px;background:transparent;border:1px solid rgba(255,255,255,.035);border-radius:2px;
+.wk{padding:14px;background:#1A1E22;
   display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;text-align:right;}
-.wk .k{font-family:var(--mono);font-size:7.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);}
-.wk .v{font-family:var(--fig);font-weight:600;font-size:15px;letter-spacing:-.05em;position:relative;}
-.wk .v::before{content:attr(data-v);position:absolute;left:-6px;top:0;color:inherit;filter:blur(3.5px);opacity:.3;pointer-events:none;}
-.wk .v.up{color:var(--up-2);} .wk .v.dn{color:var(--dn-2);} .wk .v.z{color:var(--faint);}
-.wk .n{font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;}
+.wk .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--white);}
+.wk .v{font-family:var(--fig);font-weight:600;font-size:21px;letter-spacing:-.055em;position:relative;}
+.wk .v::before{content:attr(data-v);position:absolute;left:-6px;top:0;color:inherit;filter:blur(3.5px);opacity:1;pointer-events:none;}
+.wk .v.up{color:var(--up-2);} .wk .v.dn{color:var(--dn-2);} .wk .v.z{color:#FFFFFF;}
+.wk .n{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--white);opacity:1;text-transform:uppercase;}
 
-.foot{display:flex;justify-content:space-between;margin-top:36px;font-family:var(--mono);font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);}
+.foot{display:flex;justify-content:space-between;margin-top:36px;font-family:var(--mono);font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--white);opacity:1;}
 
 @media(max-width:1100px){
   .nav{display:none;}
@@ -147,10 +152,26 @@ body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opa
   .mast-r{text-align:left;}
   .dow,.grid{grid-template-columns:repeat(7,1fr);}
   .dow div:last-child,.wk{display:none;}
-  .dow div{padding-left:6px;}
+  .dow div{padding:9px 6px;}
   .cell{min-height:86px;padding:8px;}
   .cell .pl{font-size:13px;margin-top:12px;}
 }
+
+/* ---- branded plate behind the masthead, same image family as Community ---- */
+.plateband{position:absolute;left:0;right:0;top:0;height:210px;z-index:-1;pointer-events:none;overflow:hidden;}
+.plateband .im{position:absolute;inset:0;background:url("https://d8j0ntlcm91z4.cloudfront.net/user_3DdB73ts10b7cJDBWSq817QLgQw/hf_20260724_233044_de760f1e-15bb-4a9b-8a69-65b184dc37c8.png") center 45%/cover no-repeat;
+  filter:grayscale(1) contrast(1.25) brightness(.42);opacity:.5;}
+.plateband .fade{position:absolute;inset:0;
+  background:linear-gradient(180deg, rgba(14,17,20,.45) 0%, rgba(14,17,20,.78) 55%, var(--black) 100%);}
+.wrap{position:relative;}
+
+/* state band — demo data, signed out, or a fetch problem */
+.notice{display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:11px 16px;
+  border:1px solid var(--edge);border-radius:3px;background:rgba(255,255,255,.04);
+  font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;}
+.notice i{width:4px;height:4px;background:#FFF;flex:none;}
+.notice a{color:#FFF;text-decoration:underline;}
+.cell.loading{opacity:.35;}
 </style>
 </head>
 <body>
@@ -162,7 +183,8 @@ body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opa
   <div class="in">
     <div class="brand"><span class="gh">Rewind</span>Rewind<em>No. 001</em></div>
     <nav class="nav">
-      <a class="nl on">Calendar</a><a class="nl">Overview</a><a class="nl">Trades</a><a class="nl">Clubhouse</a><a class="nl">Settings</a>
+      <a class="nl on">Calendar</a><a class="nl" href="rewind-overview.html">Overview</a><a class="nl" href="rewind-history.html">History</a><a class="nl" href="rewind-community.html">Community</a><a class="nl" href="rewind-showroom.html">Showroom</a>
+      <a class="nl">Settings</a>
     </nav>
     <div class="tools">
       <span class="tstamp">NY · 16:42 · Closed</span>
@@ -174,80 +196,143 @@ body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opa
 
 <div class="wrap">
 
+  <div class="plateband"><div class="im"></div><div class="fade"></div></div>
+
+
   <div class="mast">
     <div>
-      <div class="mtitle">
-        <span class="g3">July</span><span class="g2">July</span><span class="g1">July</span>
-        <span class="now">July <em>2026</em></span>
+      <div class="mtitle" id="mtitle"></div>
+      <div class="mrow">
+        <button id="prev" aria-label="Previous month">‹</button>
+        <button id="next" aria-label="Next month">›</button>
+        <button class="now-btn" id="today">Today</button>
       </div>
-      <div class="mrow"><button>‹</button><button>›</button><button class="now-btn">Today</button></div>
     </div>
     <div class="mast-r">
       <span class="lab">Net P&amp;L</span>
-      <div class="net num">+$4,835</div>
-      <div class="netsub num">53 trades · <b>15</b> days · <b>11</b> green · PF <b>2.1</b></div>
+      <div class="net num" id="net">—</div>
+      <div class="netsub num" id="netsub">Loading…</div>
     </div>
   </div>
 
+  <div id="notice"></div>
+
   <div class="dow"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Week</div></div>
 
-  <div class="grid">
-    <div class="cell void"><span class="d">28</span></div>
-    <div class="cell void"><span class="d">29</span></div>
-    <div class="cell void"><span class="d">30</span></div>
-    <div class="cell tr up"><span class="d">01</span><div class="pl num" data-v="+$420">+$420</div><div class="meta num">3 trades</div></div>
-    <div class="cell tr dn"><span class="d">02</span><div class="pl num" data-v="−$310">−$310</div><div class="meta num">4 trades</div></div>
-    <div class="cell"><span class="d">03</span><div class="meta" style="margin-top:20px;">Holiday</div></div>
-    <div class="cell void"><span class="d">04</span></div>
-    <div class="wk"><span class="k">Week 01</span><span class="v up num" data-v="+$110">+$110</span><span class="n num">3 days</span></div>
-
-    <div class="cell void"><span class="d">05</span></div>
-    <div class="cell tr up"><span class="d">06</span><div class="pl num" data-v="+$850">+$850</div><div class="meta num">5 trades</div></div>
-    <div class="cell tr up"><span class="d">07</span><div class="pl num" data-v="+$240">+$240</div><div class="meta num">2 trades</div></div>
-    <div class="cell tr dn"><span class="d">08</span><div class="pl num" data-v="−$520">−$520</div><div class="meta num">6 trades</div></div>
-    <div class="cell tr up"><span class="flag">Best</span><span class="d">09</span><div class="pl num" data-v="+$1,105">+$1,105</div><div class="meta num">4 trades</div></div>
-    <div class="cell tr up"><span class="d">10</span><div class="pl num" data-v="+$390">+$390</div><div class="meta num">3 trades</div></div>
-    <div class="cell void"><span class="d">11</span></div>
-    <div class="wk"><span class="k">Week 02</span><span class="v up num" data-v="+$2,065">+$2,065</span><span class="n num">5 days</span></div>
-
-    <div class="cell void"><span class="d">12</span></div>
-    <div class="cell tr dn"><span class="d">13</span><div class="pl num" data-v="−$680">−$680</div><div class="meta num">7 trades</div></div>
-    <div class="cell tr up"><span class="d">14</span><div class="pl num" data-v="+$310">+$310</div><div class="meta num">2 trades</div></div>
-    <div class="cell tr up"><span class="d">15</span><div class="pl num" data-v="+$925">+$925</div><div class="meta num">4 trades</div></div>
-    <div class="cell tr be"><span class="d">16</span><div class="pl num" data-v="$0">$0</div><div class="meta num">1 trade · BE</div></div>
-    <div class="cell tr up"><span class="d">17</span><div class="pl num" data-v="+$460">+$460</div><div class="meta num">3 trades</div></div>
-    <div class="cell void"><span class="d">18</span></div>
-    <div class="wk"><span class="k">Week 03</span><span class="v up num" data-v="+$1,015">+$1,015</span><span class="n num">5 days</span></div>
-
-    <div class="cell void"><span class="d">19</span></div>
-    <div class="cell tr up"><span class="d">20</span><div class="pl num" data-v="+$740">+$740</div><div class="meta num">4 trades</div></div>
-    <div class="cell tr dn"><span class="d">21</span><div class="pl num" data-v="−$180">−$180</div><div class="meta num">3 trades</div></div>
-    <div class="cell tr up sel"><span class="d">22</span><div class="pl num" data-v="+$1,085">+$1,085</div><div class="meta num">3 trades</div></div>
-    <div class="cell"><span class="d">23</span></div>
-    <div class="cell"><span class="d">24</span></div>
-    <div class="cell void"><span class="d">25</span></div>
-    <div class="wk"><span class="k">Week 04</span><span class="v up num" data-v="+$1,645">+$1,645</span><span class="n num">3 days</span></div>
-
-    <div class="cell void"><span class="d">26</span></div>
-    <div class="cell"><span class="d">27</span></div>
-    <div class="cell"><span class="d">28</span></div>
-    <div class="cell"><span class="d">29</span></div>
-    <div class="cell"><span class="d">30</span></div>
-    <div class="cell"><span class="d">31</span></div>
-    <div class="cell void"><span class="d">01</span></div>
-    <div class="wk"><span class="k">Week 05</span><span class="v z num" data-v="$0">$0</span><span class="n num">0 days</span></div>
-  </div>
+  <div class="grid" id="grid"></div>
 
   <div class="foot"><span>Rewind · Members' ledger</span><span>Log · Review · Repeat</span></div>
 </div>
 
-<script>
-document.querySelectorAll('.cell.tr').forEach(c=>{
-  c.addEventListener('click',()=>{
-    document.querySelectorAll('.cell.sel').forEach(x=>x.classList.remove('sel'));
-    c.classList.add('sel');
+<script src="rewind-config.js"></script>
+<script type="module">
+import { loadTrades, deriveCalendar, aggregate, assertConsistent,
+         signed, money, pct, dir } from './rewind-data.js';
+
+const MONTHS = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+
+/* open on the current month; a ?month= or ?date= param overrides it below */
+const _n = new Date();
+let view = new Date(_n.getFullYear(), _n.getMonth(), 1);
+let SELECTED = null;
+
+const el = id => document.getElementById(id);
+
+function monthRange(d){
+  const y=d.getFullYear(), m=d.getMonth();
+  const pad=n=>String(n).padStart(2,'0');
+  /* pull a week either side so the grid's leading/trailing cells can fill */
+  const from=new Date(y,m,1); from.setDate(from.getDate()-7);
+  const to=new Date(y,m+1,0); to.setDate(to.getDate()+7);
+  return { from:`${from.getFullYear()}-${pad(from.getMonth()+1)}-${pad(from.getDate())}`,
+           to:`${to.getFullYear()}-${pad(to.getMonth()+1)}-${pad(to.getDate())}` };
+}
+
+function renderTitle(){
+  const m=MONTHS[view.getMonth()], y=view.getFullYear();
+  el('mtitle').innerHTML =
+    `<span class="g3">${m}</span><span class="g2">${m}</span><span class="g1">${m}</span>
+     <span class="now">${m} <em>${y}</em></span>`;
+}
+
+function renderNotice(source){
+  const box=el('notice');
+  if(source==='demo'){
+    box.innerHTML=`<div class="notice"><i></i><span>Demo data — set your Supabase keys to read your own ledger</span></div>`;
+  }else if(source==='no-session'){
+    box.innerHTML=`<div class="notice"><i></i><span>Signed out — <a href="rewind-login-echo.html">sign in with Discord</a> to see your ledger</span></div>`;
+  }else if(source==='error'){
+    box.innerHTML=`<div class="notice"><i></i><span>Could not reach your ledger — showing demo data</span></div>`;
+  }else box.innerHTML='';
+}
+
+function renderHead(a){
+  el('net').textContent = a.trades ? signed(a.net) : '—';
+  el('net').className = 'net num ' + (a.net<0?'dn':'');
+  el('netsub').innerHTML = a.trades
+    ? `${a.trades} trades · <b>${a.tradingDays}</b> days · <b>${a.greenDays}</b> green · PF <b>${a.pf?a.pf.toFixed(2):'—'}</b>`
+    : 'No trades this month — use ‹ › to find one';
+}
+
+function renderGrid(cal){
+  const grid=el('grid');
+  grid.innerHTML = cal.rows.map(row=>
+    row.cells.map(c=>{
+      if(!c.inMonth) return `<div class="cell void"><span class="d num">${String(c.dayNum).padStart(2,'0')}</span></div>`;
+      if(!c.trades)  return `<div class="cell"><span class="d num">${String(c.dayNum).padStart(2,'0')}</span></div>`;
+      const tone = c.outcome==='be' ? 'be' : c.outcome;
+      const sel  = SELECTED===c.date ? ' sel' : '';
+      return `<div class="cell tr ${tone}${sel}" data-date="${c.date}" tabindex="0" role="button"
+                   style="--i:${c.intensity.toFixed(2)}">
+        <span class="d num">${String(c.dayNum).padStart(2,'0')}</span>
+        <div class="pl num" data-v="${signed(c.net)}">${signed(c.net)}</div>
+        <div class="meta num">${c.trades} ${c.trades===1?'trade':'trades'}</div>
+      </div>`;
+    }).join('') +
+    `<div class="wk">
+       <span class="k">Week ${String(row.week.index).padStart(2,'0')}</span>
+       <span class="v ${row.week.net>0?'up':row.week.net<0?'dn':'z'} num" data-v="${signed(row.week.net)}">${signed(row.week.net)}</span>
+       <span class="n num">${row.week.days} ${row.week.days===1?'day':'days'}</span>
+     </div>`
+  ).join('');
+
+  grid.querySelectorAll('.cell.tr').forEach(c=>{
+    const pick=()=>{ SELECTED=c.dataset.date; renderGrid(cal); };
+    c.addEventListener('click',pick);
+    c.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();pick();} });
+    c.addEventListener('dblclick',()=>{ location.href=`rewind-history.html?date=${c.dataset.date}`; });
   });
-});
+}
+
+async function render(){
+  renderTitle();
+  el('netsub').textContent='Loading…';
+  const { trades, source } = await loadTrades(monthRange(view));
+  renderNotice(source);
+
+  const y=view.getFullYear(), m=view.getMonth()+1;
+  const pad=n=>String(n).padStart(2,'0');
+  const inMonth = trades.filter(t => t.date.startsWith(`${y}-${pad(m)}`));
+
+  const a = aggregate(inMonth);
+  assertConsistent(inMonth, { label:`${MONTHS[m-1]} ${y}` });
+
+  renderHead(a);
+  renderGrid(deriveCalendar(inMonth, y, m));
+}
+
+el('prev').addEventListener('click',()=>{ view=new Date(view.getFullYear(),view.getMonth()-1,1); SELECTED=null; render(); });
+el('next').addEventListener('click',()=>{ view=new Date(view.getFullYear(),view.getMonth()+1,1); SELECTED=null; render(); });
+el('today').addEventListener('click',()=>{ const n=new Date(); view=new Date(n.getFullYear(),n.getMonth(),1); SELECTED=null; render(); });
+
+/* deep link in: ?month=2026-07 or ?date=2026-07-22 */
+const u=new URLSearchParams(location.search);
+const mp=u.get('month')||u.get('date');
+if(mp){ const [yy,mm]=mp.split('-').map(Number); if(yy&&mm) view=new Date(yy,mm-1,1); }
+if(u.get('date')) SELECTED=u.get('date');
+
+render();
 </script>
 </body>
 </html>
