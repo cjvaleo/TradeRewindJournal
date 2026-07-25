@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rewind — Overview</title>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Syne:wght@700;800&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   REWIND — OVERVIEW
+
+   Every figure on this page is DERIVED from raw aggregates
+   (trades, wins, losses, gross profit, gross loss, fees, days).
+   Nothing is hand-typed, so nothing can drift out of sync.
+
+   Comparisons come from a `prior` block that may be null —
+   when there's no prior period, the page says so instead of
+   inventing one. Ratio stats are suppressed on thin samples.
+
+   The DAY / WEEK / MONTH cards are the page's time control.
+   ============================================================ */
+:root{
+  --black:#0E1114; --ink:#14171B; --panel:#181C20; --raise:#1E2227;
+  --edge:rgba(255,255,255,.20); --rule:rgba(255,255,255,.15); --hair:rgba(255,255,255,.09);
+  --white:#E8EBED; --text:#DEE2E5;
+  --up:#57BE8B; --up-2:#7FD9AC;
+  --dn:#DE6B62; --dn-2:#F09189;
+  --fig:"Azeret Mono",ui-monospace,monospace;
+  --disp:"Instrument Sans",system-ui,sans-serif;
+  --brand:"Syne",Helvetica,sans-serif;
+  --ui:"Inter Tight",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--black);color:var(--text);font-family:var(--ui);font-size:14px;-webkit-font-smoothing:antialiased;}
+.num{font-variant-numeric:tabular-nums;}
+.lab{font-family:var(--mono);font-size:8.5px;letter-spacing:.28em;text-transform:uppercase;color:#FFF;opacity:.78;}
+
+body::before{content:'';position:fixed;inset:0;z-index:-3;pointer-events:none;
+  background:radial-gradient(58% 42% at 50% -10%, rgba(255,255,255,.045), transparent 68%);}
+.flute{position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:.3;
+  background:repeating-linear-gradient(90deg,
+    rgba(255,255,255,.045) 0px, rgba(255,255,255,.045) 1px,
+    rgba(255,255,255,.012) 2px, rgba(0,0,0,.16) 7px, rgba(0,0,0,.16) 11px);}
+.vign{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(100% 80% at 50% 40%, transparent 52%, rgba(6,8,10,.55) 100%);}
+body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>");}
+
+/* ---------------- TOP ---------------- */
+.top{position:sticky;top:0;z-index:60;background:rgba(14,17,20,.9);backdrop-filter:blur(16px);box-shadow:inset 0 -1px 0 var(--hair);}
+.top .in{max-width:1560px;margin:0 auto;height:60px;display:flex;align-items:center;gap:26px;padding:0 30px;}
+.brand{font-family:var(--brand);font-weight:800;font-size:17px;letter-spacing:-.03em;text-transform:uppercase;position:relative;color:#FFF;}
+.brand .gh{position:absolute;left:-10px;top:0;opacity:.22;filter:blur(3.5px);pointer-events:none;}
+.brand em{font-family:var(--mono);font-style:normal;font-weight:400;font-size:8px;letter-spacing:.24em;color:#FFF;opacity:.6;margin-left:10px;vertical-align:3px;}
+.nav{display:flex;gap:2px;height:100%;}
+.nl{display:flex;align-items:center;padding:0 14px;font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#FFF;opacity:.62;cursor:pointer;position:relative;transition:opacity .16s;}
+.nl:hover,.nl.on{opacity:1;}
+.nl.on::after{content:'';position:absolute;left:14px;right:14px;bottom:-1px;height:1px;background:#FFF;}
+.tools{margin-left:auto;display:flex;align-items:center;gap:14px;}
+.tstamp{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:#FFF;opacity:.75;text-transform:uppercase;}
+.btn-w{background:#FFF;color:var(--black);font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;
+  border:none;border-radius:2px;padding:11px 18px;cursor:pointer;transition:transform .15s;}
+.btn-w:hover{transform:translateY(-1px);}
+.avatar{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px var(--hair);}
+
+.wrap{max-width:1560px;margin:0 auto;padding:36px 30px 66px;}
+
+/* ---------------- MASTHEAD ---------------- */
+.mast{display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:22px;}
+.mtitle{position:relative;height:clamp(46px,5.4vw,72px);}
+.mtitle span{position:absolute;left:0;top:0;font-family:var(--disp);font-weight:700;
+  font-size:clamp(40px,4.9vw,68px);line-height:1;letter-spacing:-.035em;text-transform:uppercase;white-space:nowrap;color:#FFF;}
+.mtitle .g3{transform:translateX(-34px);filter:blur(9px);opacity:.09;}
+.mtitle .g2{transform:translateX(-19px);filter:blur(5px);opacity:.15;}
+.mtitle .g1{transform:translateX(-8px); filter:blur(2.5px);opacity:.26;}
+.scopenote{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#FFF;opacity:.62;text-align:right;line-height:1.9;}
+.scopenote b{color:#FFF;opacity:1;}
+
+/* ---------------- PERIOD SELECTOR CARDS ---------------- */
+.horizons{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;}
+.hz{border:1px solid var(--edge);border-radius:4px;background:var(--ink);overflow:hidden;cursor:pointer;
+  transition:border-color .18s, background .18s;position:relative;
+  display:block;width:100%;text-align:left;font:inherit;color:inherit;padding:0;}
+.hz:focus-visible{outline:2px solid #FFF;outline-offset:2px;}
+.hz:hover{border-color:rgba(255,255,255,.34);}
+.hz.on{border-color:#FFF;}
+.hz.on::after{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:#FFF;}
+.hz .tag{display:flex;align-items:center;justify-content:space-between;padding:13px 20px;
+  background:var(--panel);border-bottom:1px solid var(--rule);}
+.hz.on .tag{background:var(--raise);}
+.hz .tag .name{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.02em;text-transform:uppercase;color:#FFF;}
+.hz .tag .range{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#FFF;opacity:.62;}
+.hz .body{padding:20px 20px 18px;}
+.hz .fig{font-family:var(--fig);font-weight:600;font-size:clamp(28px,3.3vw,42px);letter-spacing:-.055em;line-height:1;color:var(--up-2);}
+.hz .fig.dn{color:var(--dn-2);}
+.hz .line{display:flex;flex-wrap:wrap;gap:0 18px;margin-top:15px;}
+.hz .line div{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#FFF;opacity:.62;}
+.hz .line div b{font-family:var(--fig);font-weight:500;letter-spacing:-.03em;color:#FFF;opacity:1;margin-left:5px;}
+
+/* ---------------- CARDS ---------------- */
+.card{border:1px solid var(--edge);border-radius:4px;background:var(--ink);overflow:hidden;}
+.chead{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:15px 20px 14px;border-bottom:1px solid var(--rule);}
+.chead .t{font-family:var(--disp);font-weight:600;font-size:14.5px;letter-spacing:-.01em;color:#FFF;}
+.chead .q{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#FFF;opacity:.6;text-align:right;}
+.mb{margin-bottom:16px;}
+
+/* thin-sample notice */
+.notice{display:flex;align-items:center;gap:12px;padding:12px 20px;background:rgba(255,255,255,.045);
+  border-bottom:1px solid var(--rule);font-size:12.5px;color:#FFF;opacity:.92;}
+.notice i{width:4px;height:4px;background:#FFF;flex:none;}
+.notice b{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;opacity:.7;}
+
+/* ---------------- STATS ---------------- */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);}
+.st{padding:18px 20px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);}
+.st:nth-child(4n){border-right:none;}
+.st.last-row{border-bottom:none;}
+.st .k{display:block;margin-bottom:10px;}
+.st .v{font-family:var(--fig);font-weight:600;font-size:20px;letter-spacing:-.05em;color:#FFF;}
+.st .v.up{color:var(--up-2);} .st .v.dn{color:var(--dn-2);}
+.st .s{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:#FFF;opacity:.56;margin-top:8px;}
+.st .cmp{display:flex;align-items:baseline;gap:7px;margin-top:9px;font-family:var(--fig);font-size:10.5px;font-weight:500;letter-spacing:-.03em;}
+.st .cmp .d.up{color:var(--up-2);} .st .cmp .d.dn{color:var(--dn-2);} .st .cmp .d.flat{color:#FFF;opacity:.6;}
+.st .cmp .prev{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#FFF;opacity:.42;}
+.st .cmp .none{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:#FFF;opacity:.38;}
+.st.hero{grid-column:span 2;}
+.st.hero .v{font-size:34px;}
+.st.dimmed .v,.st.dimmed .s,.st.dimmed .cmp{opacity:.34;}
+
+/* ---------------- CURVE ---------------- */
+.chartwrap{padding:20px 20px 12px;position:relative;}
+.chartwrap svg{width:100%;height:250px;display:block;overflow:visible;}
+.cvtip{position:absolute;transform:translate(-50%,-100%);padding:7px 11px;background:var(--raise);
+  border:1px solid var(--edge);border-radius:3px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;
+  color:#FFF;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .1s;z-index:6;}
+.cvtip.on{opacity:1;}
+.cvtip b{font-family:var(--fig);font-weight:600;letter-spacing:-.03em;}
+.cvlegend{display:flex;gap:20px;padding:0 20px 16px;font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;opacity:.55;}
+.cvlegend i{display:inline-block;width:20px;height:5px;margin-right:7px;vertical-align:middle;}
+
+/* ---------------- BREAKDOWN ---------------- */
+.dims{display:flex;border:1px solid var(--edge);border-radius:3px;overflow:hidden;}
+.dims button{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#FFF;opacity:.6;
+  background:transparent;border:none;border-right:1px solid var(--rule);padding:8px 14px;cursor:pointer;transition:all .15s;}
+.dims button:last-child{border-right:none;}
+.dims button:hover{opacity:1;}
+.dims button.on{background:#FFF;color:var(--black);opacity:1;}
+table{width:100%;border-collapse:collapse;}
+th{font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#FFF;opacity:.6;
+  text-align:left;padding:13px 20px;border-bottom:1px solid var(--rule);white-space:nowrap;}
+th.n,td.n{text-align:right;}
+td{padding:14px 20px;border-bottom:1px solid var(--hair);font-size:13px;color:#FFF;white-space:nowrap;}
+tr:last-child td{border-bottom:none;}
+tbody tr{transition:background .15s;}
+td a.rowlink{color:inherit;text-decoration:none;display:block;}
+tbody tr:hover td{background:var(--panel);}
+.tag2{font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;padding:5px 10px;border:1px solid var(--rule);color:#FFF;}
+td .fig{font-family:var(--fig);font-weight:500;letter-spacing:-.04em;}
+td .up{color:var(--up-2);font-weight:600;} td .dn{color:var(--dn-2);font-weight:600;}
+.wbar{display:inline-block;width:44px;height:3px;background:rgba(255,255,255,.10);vertical-align:middle;margin-left:10px;}
+.wbar i{display:block;height:100%;background:var(--up);}
+.wbar i{background:rgba(255,255,255,.55);}
+.share{display:inline-flex;align-items:center;gap:9px;justify-content:flex-end;}
+.share .axisbar{width:96px;height:5px;background:rgba(255,255,255,.08);position:relative;}
+.share .axisbar .zero{position:absolute;left:30%;top:-3px;bottom:-3px;width:1px;background:rgba(255,255,255,.34);}
+.share .axisbar i{position:absolute;top:0;bottom:0;background:var(--up);}
+.share .axisbar i.dn{background:var(--dn);}
+.share .sp{font-family:var(--fig);font-size:11px;font-weight:500;letter-spacing:-.03em;width:46px;text-align:right;}
+.share .sp.dn{color:var(--dn-2);}
+.arrow{font-family:var(--mono);font-size:9px;opacity:0;transition:opacity .15s;}
+tbody tr:hover .arrow{opacity:.7;}
+
+/* ---------------- RECORDS ---------------- */
+.recs{display:grid;grid-template-columns:repeat(5,1fr);}
+.rec{padding:18px;border-right:1px solid var(--rule);transition:background .15s;
+  display:block;color:inherit;text-decoration:none;}
+.rec:focus-visible{outline:2px solid #FFF;outline-offset:-2px;}
+.rec .go{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;opacity:0;transition:opacity .15s;margin-top:7px;display:block;}
+.rec:hover .go{opacity:.6;}
+.rec:last-child{border-right:none;}
+.rec:hover{background:var(--panel);}
+.rec .k{display:block;margin-bottom:10px;}
+.rec .v{font-family:var(--fig);font-weight:600;font-size:17px;letter-spacing:-.05em;color:#FFF;}
+.rec .v.up{color:var(--up-2);} .rec .v.dn{color:var(--dn-2);}
+.rec .s{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:#FFF;opacity:.56;margin-top:8px;}
+
+.foot{display:flex;justify-content:space-between;margin-top:36px;font-family:var(--mono);font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:#FFF;opacity:.6;}
+
+@media(max-width:1150px){
+  .nav{display:none;}
+  .horizons{grid-template-columns:1fr;}
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .st:nth-child(2n){border-right:none;}
+  .recs{grid-template-columns:repeat(2,1fr);}
+  .rec{border-bottom:1px solid var(--rule);}
+  .chead{flex-wrap:wrap;}
+}
+
+/* ---- branded plate behind the masthead, same image family as Community ---- */
+.plateband{position:absolute;left:0;right:0;top:0;height:210px;z-index:-1;pointer-events:none;overflow:hidden;}
+.plateband .im{position:absolute;inset:0;background:url("https://d8j0ntlcm91z4.cloudfront.net/user_3DdB73ts10b7cJDBWSq817QLgQw/hf_20260724_233044_de760f1e-15bb-4a9b-8a69-65b184dc37c8.png") center 45%/cover no-repeat;
+  filter:grayscale(1) contrast(1.25) brightness(.42);opacity:.5;}
+.plateband .fade{position:absolute;inset:0;
+  background:linear-gradient(180deg, rgba(14,17,20,.45) 0%, rgba(14,17,20,.78) 55%, var(--black) 100%);}
+.wrap{position:relative;}
+</style>
+</head>
+<body>
+
+<div class="flute"></div>
+<div class="vign"></div>
+
+<header class="top">
+  <div class="in">
+    <div class="brand"><span class="gh">Rewind</span>Rewind<em>No. 001</em></div>
+    <nav class="nav">
+      <a class="nl" href="rewind-calendar.html">Calendar</a><a class="nl on">Overview</a><a class="nl" href="rewind-history.html">History</a><a class="nl" href="rewind-community.html">Community</a><a class="nl">Settings</a>
+    </nav>
+    <div class="tools">
+      <span class="tstamp">NY · 16:42 · Closed</span>
+      <button class="btn-w">Log trade</button>
+      <span class="avatar"></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="plateband"><div class="im"></div><div class="fade"></div></div>
+
+
+  <div class="mast">
+    <div class="mtitle">
+      <span class="g3">Overview</span><span class="g2">Overview</span><span class="g1">Overview</span><span>Overview</span>
+    </div>
+    <div class="scopenote">
+      Showing <b id="scopeName">month</b> · <b id="scopeRange">July 2026</b><br>
+      <span id="scopeCmp">compared with June 2026</span>
+    </div>
+  </div>
+
+  <!-- DAY / WEEK / MONTH — these select the period for the whole page -->
+  <div class="horizons" id="horizons"></div>
+
+  <!-- STATISTICS -->
+  <div class="card mb">
+    <div class="chead">
+      <span class="t">Statistics</span>
+      <span class="q" id="statnote"></span>
+    </div>
+    <div id="thin"></div>
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <!-- EQUITY CURVE -->
+  <div class="card mb">
+    <div class="chead">
+      <span class="t">Equity curve</span>
+      <span class="q" id="curvenote"></span>
+    </div>
+    <div class="chartwrap" id="chartwrap">
+      <svg id="curve" viewBox="0 0 1200 250" preserveAspectRatio="none"></svg>
+      <div class="cvtip" id="cvtip"></div>
+    </div>
+    <div class="cvlegend">
+      <span><i style="background:#7FD9AC"></i>Cumulative</span>
+      <span><i style="background:rgba(222,107,98,.35)"></i>Drawdown from peak</span>
+      <span style="margin-left:auto;">Hover for a point</span>
+    </div>
+  </div>
+
+  <!-- BREAKDOWN -->
+  <div class="card mb">
+    <div class="chead">
+      <span class="t">Breakdown</span>
+      <div class="dims" id="dims">
+        <button class="on" data-d="model">Model</button>
+        <button data-d="session">Session</button>
+        <button data-d="account">Account</button>
+        <button data-d="symbol">Instrument</button>
+      </div>
+      <span class="q" id="dimnote"></span>
+    </div>
+    <table>
+      <thead><tr>
+        <th id="dimhead">Model</th><th class="n">History</th><th class="n">Win rate</th>
+        <th class="n">Avg R</th><th class="n">Net</th><th class="n">Contribution</th><th></th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <!-- RECORDS -->
+  <div class="card">
+    <div class="chead"><span class="t">Records</span><span class="q" id="recnote"></span></div>
+    <div class="recs" id="recs"></div>
+  </div>
+
+  <div class="foot"><span>Rewind · Members' ledger</span><span>Log · Review · Repeat</span></div>
+</div>
+
+<script>
+/* ============================================================
+   RAW AGGREGATES — the only hand-entered numbers on the page.
+   Everything displayed is derived from these.
+   `prior` may be null: the page then says there's no comparison
+   instead of inventing one.
+   ============================================================ */
+const RAW = {
+  day:{
+    name:'Day', range:'Wed 22 Jul', cmpLabel:'Tue 21 Jul', scope:'date=2026-07-22',
+    trades:3, wins:2, losses:1, be:0,
+    grossProfit:1522, grossLoss:425, fees:12,
+    tradingDays:1, greenDays:1,
+    maxDD:425, ddFrom:'10:14', ddTo:'10:41',
+    holdAvg:21, holdWin:28, holdLoss:7,
+    series:[['09:32',900],['10:14',475],['11:02',1085]],
+    prior:{trades:3, wins:1, losses:2, be:0, grossProfit:260, grossLoss:428, fees:12,
+           tradingDays:1, greenDays:0, maxDD:428, holdAvg:15},
+    /* row aggregates: [key, trades, wins, losses, grossProfit, grossLoss, sumR] */
+    breakdown:{
+      model:  [['OTE',1,1,0,912,0,2.10],['FVG',1,1,0,610,0,1.40],['CISD',1,0,1,0,425,-1.00]],
+      session:[['NY AM',3,2,1,1522,425,2.50]],
+      account:[['Funded',2,2,0,1522,0,3.50],['Eval',1,0,1,0,425,-1.00]],
+      symbol: [['NQ',2,1,1,912,425,1.10],['ES',1,1,0,610,0,1.40]]
+    },
+    records:[
+      ['Best trade','+$900','OTE · +2.1R','up','sort=pnl_desc'],
+      ['Worst trade','−$425','CISD · −1.0R','dn','sort=pnl_asc'],
+      ['Largest size','2 contracts','NQ · 09:32','','sort=size_desc'],
+      ['Longest hold','28m','09:32 → 10:00','','sort=hold_desc'],
+      ['Shortest hold','7m','10:14 → 10:21','','sort=hold_asc']
+    ]
+  },
+  week:{
+    name:'Week', range:'Jul 19 – 25', cmpLabel:'Jul 12 – 18', scope:'from=2026-07-19&to=2026-07-25',
+    trades:10, wins:7, losses:3, be:0,
+    grossProfit:2735, grossLoss:1050, fees:40,
+    tradingDays:3, greenDays:2,
+    maxDD:180, ddFrom:'Jul 20', ddTo:'Jul 21',
+    holdAvg:19, holdWin:25, holdLoss:8,
+    series:[['Jul 20',740],['Jul 21',560],['Jul 22',1645]],
+    prior:{trades:16, wins:9, losses:6, be:1, grossProfit:2890, grossLoss:1620, fees:63,
+           tradingDays:5, greenDays:3, maxDD:680, holdAvg:17},
+    breakdown:{
+      model:  [['OTE',5,4,1,1780,345,9.50],['CISD',3,2,1,560,370,2.10],['FVG',2,1,1,395,335,0.60]],
+      session:[['NY AM',8,6,2,2340,780,11.20],['NY PM',2,1,1,395,270,1.00]],
+      account:[['Funded',6,5,1,2035,690,9.60],['Eval',3,2,1,560,280,1.80],['Paper',1,0,1,140,80,0.80]],
+      symbol: [['NQ',8,6,2,2280,855,10.40],['ES',2,1,1,455,195,1.80]]
+    },
+    records:[
+      ['Best day','+$1,085','Wed · Jul 22','up','cal:2026-07-22'],
+      ['Worst day','−$180','Tue · Jul 21','dn','cal:2026-07-21'],
+      ['Largest win','+$1,085','OTE · +2.4R','up','sort=pnl_desc'],
+      ['Largest loss','−$430','CISD · −1.1R','dn','sort=pnl_asc'],
+      ['Green days','2 of 3','67% of sessions','','cal:range']
+    ]
+  },
+  month:{
+    name:'Month', range:'July 2026', cmpLabel:'June 2026', scope:'month=2026-07',
+    trades:53, wins:31, losses:15, be:7,
+    grossProfit:11317, grossLoss:6270, fees:212,
+    tradingDays:15, greenDays:10,
+    maxDD:680, ddFrom:'Jul 10', ddTo:'Jul 13',
+    holdAvg:18, holdWin:24, holdLoss:9,
+    series:[['Jul 01',420],['Jul 02',110],['Jul 06',960],['Jul 07',1200],['Jul 08',680],
+            ['Jul 09',1785],['Jul 10',2175],['Jul 13',1495],['Jul 14',1805],['Jul 15',2730],
+            ['Jul 16',2730],['Jul 17',3190],['Jul 20',3930],['Jul 21',3750],['Jul 22',4835]],
+    prior:{trades:47, wins:26, losses:16, be:5, grossProfit:9180, grossLoss:5420, fees:188,
+           tradingDays:14, greenDays:8, maxDD:1180, holdAvg:21},
+    breakdown:{
+      model:  [['OTE',21,14,4,5010,1690,31.50],['CISD',14,8,4,3020,1930,7.20],
+               ['FVG',11,6,4,2410,1470,8.40],['Silver Bullet',7,3,3,877,1180,-1.60]],
+      session:[['NY AM',34,21,9,7460,3430,42.10],['NY PM',12,6,4,2380,1720,3.60],['London',7,4,2,1477,1120,2.80]],
+      account:[['Funded',31,19,8,7060,3560,33.60],['Eval',16,9,5,3260,1990,12.10],['Paper',6,3,2,997,720,1.20]],
+      symbol: [['NQ',41,24,12,8940,4830,38.60],['ES',12,7,3,2377,1440,8.30]]
+    },
+    records:[
+      ['Best day','+$1,105','Thu · Jul 09','up','cal:2026-07-09'],
+      ['Worst day','−$680','Mon · Jul 13','dn','cal:2026-07-13'],
+      ['Largest win','+$1,180','OTE · +2.8R','up','sort=pnl_desc'],
+      ['Largest loss','−$540','CISD · −1.4R','dn','sort=pnl_asc'],
+      ['Longest green run','5 days','Jul 06 – Jul 10','','cal:range']
+    ]
+  }
+};
+
+/* ---- ratio statistics need a sample to mean anything ---- */
+const MIN_SAMPLE = 20;
+
+/* ---------- derive everything ---------- */
+function derive(a){
+  if(!a) return null;
+  const net = a.grossProfit - a.grossLoss - a.fees;
+  const decided = a.wins + a.losses;
+  return {
+    net, trades:a.trades, days:a.tradingDays,
+    winRate: decided ? a.wins/decided*100 : null,
+    pf: a.grossLoss ? a.grossProfit/a.grossLoss : null,
+    exp: a.trades ? net/a.trades : null,
+    avgWin: a.wins ? a.grossProfit/a.wins : null,
+    avgLoss: a.losses ? a.grossLoss/a.losses : null,
+    maxDD: -a.maxDD,
+    greenPct: a.tradingDays ? a.greenDays/a.tradingDays*100 : null,
+    tpd: a.tradingDays ? a.trades/a.tradingDays : null,
+    hold: a.holdAvg, fees:a.fees,
+    avgDaily: a.tradingDays ? net/a.tradingDays : null
+  };
+}
+
+/* ---------- formatters ---------- */
+const money=n=>(n<0?'−$':'$')+Math.abs(Math.round(n)).toLocaleString();
+const signed=n=>(n<0?'−$':'+$')+Math.abs(Math.round(n)).toLocaleString();
+const pct=n=>n===null?'—':Math.round(n)+'%';
+const dec=(n,d=2)=>n===null?'—':n.toFixed(d);
+
+/* ---------- comparison cell ----------
+   dir: 'higher' = up is good, 'lower' = down is good, 'none' = no good direction */
+function cmp(cur, prev, fmt, dir, prevLabel){
+  if(prev===null||prev===undefined||cur===null) return '<div class="cmp"><span class="none">No prior period</span></div>';
+  const diff = cur - prev;
+  if(Math.abs(diff) < 1e-9) return `<div class="cmp"><span class="d flat">no change</span><span class="prev">${prevLabel} ${fmt(prev)}</span></div>`;
+  const rising = diff > 0;
+  let cls='flat', word='';
+  if(dir==='higher'){ cls = rising?'up':'dn'; }
+  else if(dir==='lower'){ cls = rising?'dn':'up'; word = rising?' worse':' better'; }
+  const glyph = rising?'▲':'▼';
+  return `<div class="cmp"><span class="d ${cls}">${glyph} ${fmt(Math.abs(diff))}${word}</span><span class="prev">${prevLabel} ${fmt(prev)}</span></div>`;
+}
+
+/* ---------- render ---------- */
+let CUR='month', DIM='model';
+
+function renderHorizons(){
+  document.getElementById('horizons').innerHTML = Object.keys(RAW).map(k=>{
+    const a=RAW[k], d=derive(a);
+    return `<button type="button" class="hz ${k===CUR?'on':''}" data-k="${k}" aria-pressed="${k===CUR}">
+      <div class="tag"><span class="name">${a.name}</span><span class="range num">${a.range}</span></div>
+      <div class="body">
+        <div class="fig num ${d.net<0?'dn':''}">${signed(d.net)}</div>
+        <div class="line">
+          <div>History<b class="num">${d.trades}</b></div>
+          <div>Days<b class="num">${d.days}</b></div>
+          <div>Win rate<b class="num">${pct(d.winRate)}</b></div>
+        </div>
+      </div>
+    </button>`;
+  }).join('');
+  document.querySelectorAll('.hz').forEach(h=>h.addEventListener('click',()=>{
+    const had=document.activeElement===h; CUR=h.dataset.k; renderAll(had?CUR:null);
+  }));
+}
+
+function renderStats(){
+  const a=RAW[CUR], d=derive(a), p=derive(a.prior);
+  const L='Prior';                       /* one convention for every period */
+  const thin = a.trades < MIN_SAMPLE;
+  const multiDay = a.tradingDays > 1;    /* per-day stats are meaningless on a single session */
+
+  document.getElementById('statnote').innerHTML =
+    `${a.range} · ${a.trades} trades` + (a.prior?` · vs ${a.cmpLabel}`:` · no prior period`);
+
+  document.getElementById('thin').innerHTML = thin
+    ? `<div class="notice"><i></i><span><b>Thin sample</b> &nbsp; ${a.trades} trades — ratio statistics below need roughly ${MIN_SAMPLE}+ to carry meaning. Shown greyed.</span></div>`
+    : '';
+
+  const cells=[
+    {hero:true,k:'Net P&L',v:signed(d.net),cls:d.net<0?'dn':'up',
+      s:`Gross ${money(a.grossProfit)} · loss ${money(a.grossLoss)} · fees ${money(a.fees)}`,
+      c:cmp(d.net,p&&p.net,signed,'higher',L)},
+    {k:'Win rate',v:pct(d.winRate),s:`${a.wins}W · ${a.losses}L · ${a.be}BE excluded`,
+      c:cmp(d.winRate,p&&p.winRate,n=>Math.round(n)+' pts','higher',L)},
+    {k:'Profit factor',v:dec(d.pf),ratio:true,s:`${money(a.grossProfit)} / ${money(a.grossLoss)}`,
+      c:cmp(d.pf,p&&p.pf,n=>n.toFixed(2),'higher',L)},
+
+    {k:'Expectancy',v:signed(d.exp),cls:d.exp<0?'dn':'up',ratio:true,s:'Per trade taken',
+      c:cmp(d.exp,p&&p.exp,signed,'higher',L)},
+    {k:'Average win',v:signed(d.avgWin),cls:'up',s:`Across ${a.wins} winners`,
+      c:cmp(d.avgWin,p&&p.avgWin,signed,'higher',L)},
+    {k:'Average loss',v:'−'+money(d.avgLoss),cls:'dn',s:`Across ${a.losses} losers`,
+      c:cmp(d.avgLoss,p&&p.avgLoss,money,'lower',L)},
+    {k:'Max drawdown',v:money(d.maxDD),cls:'dn',s:`${a.ddFrom} peak → ${a.ddTo} trough`,
+      c:cmp(a.maxDD,a.prior&&a.prior.maxDD,money,'lower',L)},
+
+    /* per-day figures only exist once there is more than one session */
+    multiDay && {k:'Green days',v:pct(d.greenPct),s:`${a.greenDays} of ${a.tradingDays} sessions`,
+      c:cmp(d.greenPct,p&&p.greenPct,n=>Math.round(n)+' pts','higher',L)},
+    multiDay && {k:'Avg daily P&L',v:signed(d.avgDaily),cls:d.avgDaily<0?'dn':'up',s:`Across ${a.tradingDays} days`,
+      c:cmp(d.avgDaily,p&&p.avgDaily,signed,'higher',L)},
+    multiDay && {k:'Trades per day',v:d.tpd.toFixed(1),s:'Volume, not quality',
+      c:cmp(d.tpd,p&&p.tpd,n=>n.toFixed(1),'none',L)},
+
+    {k:'Avg hold time',v:d.hold+'m',s:`Wins ${a.holdWin}m · losses ${a.holdLoss}m`,
+      c:cmp(d.hold,p&&p.hold,n=>Math.round(n)+'m','none',L)}
+  ].filter(Boolean);
+
+  const total=cells.reduce((s,c)=>s+(c.hero?2:1),0);
+  const perRow=4, lastRowStart=Math.floor((total-1)/perRow)*perRow;
+  let slot=0;
+  document.getElementById('stats').innerHTML=cells.map(c=>{
+    const span=c.hero?2:1, isLast=slot>=lastRowStart; slot+=span;
+    return `<div class="st ${c.hero?'hero':''} ${isLast?'last-row':''} ${(c.ratio&&thin)?'dimmed':''}">
+      <span class="lab k">${c.k}</span>
+      <span class="v num ${c.cls||''}">${c.v}</span>
+      <div class="s num">${c.s}</div>
+      ${c.c}
+    </div>`;
+  }).join('');
+}
+
+function renderCurve(){
+  const a=RAW[CUR], svg=document.getElementById('curve'), tip=document.getElementById('cvtip');
+  const W=1200,H=250,PL=64,PR=14,PT=16,PB=30;
+  const vals=a.series.map(s=>s[1]);
+  const lo=Math.min(0,...vals), hi=Math.max(...vals);
+  const pad=(hi-lo)*0.12||100;
+  const yMin=lo-pad, yMax=hi+pad;
+  const X=i=>PL+(W-PL-PR)*(a.series.length===1?0.5:i/(a.series.length-1));
+  const Y=v=>PT+(H-PT-PB)*(1-(v-yMin)/(yMax-yMin));
+
+  /* running peak -> drawdown band */
+  let peak=-Infinity; const peaks=vals.map(v=>{peak=Math.max(peak,v);return peak;});
+
+  const line=a.series.map((s,i)=>`${i?'L':'M'}${X(i)} ${Y(s[1])}`).join(' ');
+  const area=line+` L${X(a.series.length-1)} ${Y(yMin)} L${X(0)} ${Y(yMin)} Z`;
+  const ddTop=peaks.map((v,i)=>`${i?'L':'M'}${X(i)} ${Y(v)}`).join(' ');
+  const ddBand=ddTop+' '+a.series.map((s,i)=>`L${X(a.series.length-1-i)} ${Y(a.series[a.series.length-1-i][1])}`).join(' ')+' Z';
+
+  const ticks=4, gl=[];
+  for(let i=0;i<=ticks;i++){
+    const v=yMin+(yMax-yMin)*i/ticks, y=Y(v);
+    gl.push(`<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="rgba(255,255,255,.08)"/>
+      <text x="${PL-10}" y="${y+3}" text-anchor="end" fill="#FFF" opacity=".5"
+        style="font-family:'Azeret Mono',monospace;font-size:9px">${v>=0?'':'−'}$${Math.abs(Math.round(v/100)*100).toLocaleString()}</text>`);
+  }
+  const zero = yMin<0&&yMax>0 ? `<line x1="${PL}" y1="${Y(0)}" x2="${W-PR}" y2="${Y(0)}" stroke="rgba(255,255,255,.26)" stroke-dasharray="3 3"/>` : '';
+
+  svg.setAttribute('role','img');
+  svg.setAttribute('aria-label',
+    `Cumulative equity for ${a.range}: ${a.series.length} points, from ${signed(a.series[0][1])} `+
+    `on ${a.series[0][0]} to ${signed(a.series[a.series.length-1][1])} on ${a.series[a.series.length-1][0]}, `+
+    `peak ${money(Math.max(...vals))}, maximum drawdown ${money(-a.maxDD)}.`);
+  const single = a.series.length===1;
+
+  svg.innerHTML=`
+    <defs><linearGradient id="cf" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#57BE8B" stop-opacity=".18"/><stop offset="1" stop-color="#57BE8B" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${gl.join('')}${zero}
+    ${single?'':`<path d="${ddBand}" fill="rgba(222,107,98,.14)"/>
+    <path d="${area}" fill="url(#cf)"/>
+    <path d="${line}" fill="none" stroke="#7FD9AC" stroke-width="2"/>`}
+    ${a.series.map((s,i)=>{
+      const dd=s[1]-peaks[i];
+      return `<circle class="pt" cx="${X(i)}" cy="${Y(s[1])}" r="4.5" fill="${dd<0?'#DE6B62':'#7FD9AC'}"
+        stroke="#0E1114" stroke-width="2" data-l="${s[0]}" data-v="${s[1]}" data-dd="${dd}" style="cursor:pointer"/>`;
+    }).join('')}
+    ${a.series.map((s,i)=> i%Math.ceil(a.series.length/5)===0||i===a.series.length-1
+      ? `<text x="${X(i)}" y="${H-8}" text-anchor="middle" fill="#FFF" opacity=".45"
+           style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.1em">${s[0]}</text>` : '').join('')}
+  `;
+
+  document.getElementById('curvenote').textContent = `Cumulative · ${a.range} · peak ${money(Math.max(...vals))}`;
+
+  svg.querySelectorAll('.pt').forEach(c=>{
+    c.addEventListener('mouseenter',e=>{
+      const dd=+c.dataset.dd;
+      tip.innerHTML=`${c.dataset.l} &nbsp;·&nbsp; <b>${signed(+c.dataset.v)}</b>`+
+        (dd<0?` &nbsp;·&nbsp; <span style="color:#F09189">${money(dd)} off peak</span>`:'');
+      const r=svg.getBoundingClientRect(), wr=document.getElementById('chartwrap').getBoundingClientRect();
+      tip.style.left=(r.left-wr.left + (+c.getAttribute('cx'))/1200*r.width)+'px';
+      tip.style.top =(r.top -wr.top  + (+c.getAttribute('cy'))/250*r.height - 8)+'px';
+      tip.classList.add('on');
+    });
+    c.addEventListener('mouseleave',()=>tip.classList.remove('on'));
+  });
+}
+
+/* row aggregates -> derived row + a reconciliation check against the period net */
+function deriveRows(raw){
+  return raw.map(([k,t,w,l,gp,gl,sumR])=>({
+    k, t, w, l,
+    winRate: (w+l) ? w/(w+l)*100 : null,
+    avgR:    t ? sumR/t : null,
+    n:       gp - gl
+  }));
+}
+
+function renderBreakdown(){
+  const a=RAW[CUR], rows=deriveRows(a.breakdown[DIM]||[]);
+  const HEAD={model:'Model',session:'Session',account:'Account',symbol:'Symbol'};
+  const NOTE={model:'models',session:'sessions',account:'accounts',symbol:'instruments'};
+  const d=derive(a);
+  dimhead.textContent=HEAD[DIM];
+
+  /* every dimension must account for the whole period — say so, or flag it */
+  const rowNet=rows.reduce((t,x)=>t+x.n,0);
+  const rowTrades=rows.reduce((t,x)=>t+x.t,0);
+  const rowWins=rows.reduce((t,x)=>t+x.w,0), rowLosses=rows.reduce((t,x)=>t+x.l,0);
+  const gap=Math.round(d.net + a.fees - rowNet);       /* rows are pre-fee */
+  const reconciled = Math.abs(gap)<=2 && rowTrades===a.trades
+                     && rowWins===a.wins && rowLosses===a.losses;
+  document.getElementById('dimnote').innerHTML = reconciled
+    ? `${rows.length} ${NOTE[DIM]} · ${rowTrades} trades · reconciles to net`
+    : `${rows.length} ${NOTE[DIM]} · <span style="color:var(--dn-2)">does not reconcile · ${rowTrades}/${a.trades} trades · ${rowWins}W/${a.wins}W · ${signed(gap)} unaccounted</span>`;
+
+  /* CONTRIBUTION — signed share of the period's positive contributions,
+     drawn at ONE scale in both directions. */
+  const posSum=rows.filter(x=>x.n>0).reduce((t,x)=>t+x.n,0)||1;
+  const shares=rows.map(x=>x.n/posSum*100);
+  const ZERO=30, RIGHT=70, LEFT=30;
+  const maxPos=Math.max(0,...shares), maxNeg=Math.max(0,...shares.map(v=>-v));
+  const scale = maxNeg>0 ? Math.min(RIGHT/(maxPos||1), LEFT/maxNeg) : RIGHT/(maxPos||1);
+
+  document.getElementById('rows').innerHTML=rows.map((x,i)=>{
+    const share=shares[i], neg=x.n<0, len=Math.abs(share)*scale;
+    const bar = neg ? `right:${100-ZERO}%;width:${len}%` : `left:${ZERO}%;width:${len}%`;
+    const href=`rewind-history.html?${a.scope}&${DIM}=${encodeURIComponent(x.k)}`;
+    /* win-rate bar is neutral: a low hit rate with a big payoff is not a fault */
+    return `<tr>
+      <td><a class="rowlink" href="${href}"><span class="tag2">${x.k}</span></a></td>
+      <td class="n"><span class="fig">${x.t}</span></td>
+      <td class="n"><span class="fig">${Math.round(x.winRate)}%</span><span class="wbar"><i style="width:${x.winRate}%"></i></span></td>
+      <td class="n"><span class="fig ${x.avgR<0?'dn':''}">${x.avgR>=0?'+':'−'}${Math.abs(x.avgR).toFixed(2)}</span></td>
+      <td class="n"><span class="fig ${neg?'dn':'up'}">${signed(x.n)}</span></td>
+      <td class="n"><span class="share">
+        <span class="axisbar"><span class="zero"></span><i class="${neg?'dn':''}" style="${bar}"></i></span>
+        <span class="sp ${neg?'dn':''}">${share>=0?'+':'−'}${Math.abs(Math.round(share))}%</span>
+      </span></td>
+      <td class="n"><a class="rowlink" href="${href}" aria-label="View ${x.k} trades"><span class="arrow">→</span></a></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderRecords(){
+  const a=RAW[CUR];
+  document.getElementById('recnote').textContent=a.range;
+  document.getElementById('recs').innerHTML=a.records.map(([k,v,sub,cls,target])=>{
+    let href, hint;
+    if(target.startsWith('cal:')){
+      const d=target.slice(4);
+      href = d==='range' ? `rewind-calendar.html?${a.scope}` : `rewind-calendar.html?date=${d}`;
+      hint = 'Open in calendar →';
+    }else{
+      href = `rewind-history.html?${a.scope}&${target}`;
+      hint = 'Open in trades →';
+    }
+    return `<a class="rec" href="${href}">
+       <span class="lab k">${k}</span>
+       <span class="v num ${cls}">${v}</span>
+       <div class="s num">${sub}</div>
+       <span class="go">${hint}</span>
+     </a>`;
+  }).join('');
+}
+
+function renderScope(){
+  const a=RAW[CUR];
+  document.getElementById('scopeName').textContent=a.name.toLowerCase();
+  document.getElementById('scopeRange').textContent=a.range;
+  document.getElementById('scopeCmp').textContent=a.prior?`compared with ${a.cmpLabel}`:'no prior period to compare';
+}
+
+function renderAll(refocus){
+  renderHorizons();renderScope();renderStats();renderCurve();renderBreakdown();renderRecords();
+  /* re-render replaces the buttons, so put focus back where the user left it */
+  if(refocus){const b=document.querySelector(`.hz[data-k="${refocus}"]`); if(b) b.focus();}
+}
+document.querySelectorAll('#dims button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#dims button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); DIM=b.dataset.d; renderBreakdown();
+}));
+renderAll();
+let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(renderCurve,120);});
+</script>
+</body>
+</html>

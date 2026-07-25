@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rewind — Community</title>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Syne:wght@700;800&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   REWIND — COMMUNITY
+   A branded banner bar, a feed down the middle, and two rails
+   that only Rewind could fill — because every number in them
+   comes out of a member's own ledger.
+
+   BANNER PLATE: generated in Higgsfield (crowd, motion-blurred,
+   monochrome). Swap --banner for a /public path in production.
+   ============================================================ */
+:root{
+  --black:#0E1114; --ink:#14171B; --panel:#181C20; --raise:#1E2227;
+  --edge:rgba(255,255,255,.20); --rule:rgba(255,255,255,.15); --hair:rgba(255,255,255,.09);
+  --white:#E8EBED; --text:#DEE2E5;
+  --up:#57BE8B; --up-2:#7FD9AC;
+  --dn:#DE6B62; --dn-2:#F09189;
+  --fig:"Azeret Mono",ui-monospace,monospace;
+  --disp:"Instrument Sans",system-ui,sans-serif;
+  --brand:"Syne",Helvetica,sans-serif;
+  --ui:"Inter Tight",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+
+  --banner:url("https://d8j0ntlcm91z4.cloudfront.net/user_3DdB73ts10b7cJDBWSq817QLgQw/hf_20260724_233037_86c68b7f-9b25-4910-8477-dce9110d061f.png");
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--black);color:var(--text);font-family:var(--ui);font-size:14px;-webkit-font-smoothing:antialiased;}
+.num{font-variant-numeric:tabular-nums;}
+.lab{font-family:var(--mono);font-size:8.5px;letter-spacing:.28em;text-transform:uppercase;color:#FFF;opacity:.78;}
+
+body::before{content:'';position:fixed;inset:0;z-index:-3;pointer-events:none;
+  background:radial-gradient(58% 42% at 50% -10%, rgba(255,255,255,.04), transparent 68%);}
+.flute{position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:.28;
+  background:repeating-linear-gradient(90deg,
+    rgba(255,255,255,.045) 0px, rgba(255,255,255,.045) 1px,
+    rgba(255,255,255,.012) 2px, rgba(0,0,0,.16) 7px, rgba(0,0,0,.16) 11px);}
+body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>");}
+
+/* ---------------- TOP NAV ---------------- */
+.top{position:sticky;top:0;z-index:60;background:rgba(14,17,20,.94);backdrop-filter:blur(16px);box-shadow:inset 0 -1px 0 var(--hair);}
+.top .in{max-width:1420px;margin:0 auto;height:60px;display:flex;align-items:center;gap:26px;padding:0 30px;}
+.brand{font-family:var(--brand);font-weight:800;font-size:17px;letter-spacing:-.03em;text-transform:uppercase;position:relative;color:#FFF;}
+.brand .gh{position:absolute;left:-10px;top:0;opacity:.22;filter:blur(3.5px);pointer-events:none;}
+.brand em{font-family:var(--mono);font-style:normal;font-weight:400;font-size:8px;letter-spacing:.24em;color:#FFF;opacity:.6;margin-left:10px;vertical-align:3px;}
+.nav{display:flex;gap:2px;height:100%;}
+.nl{display:flex;align-items:center;padding:0 14px;font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#FFF;opacity:.62;cursor:pointer;position:relative;transition:opacity .16s;text-decoration:none;}
+.nl:hover,.nl.on{opacity:1;}
+.nl.on::after{content:'';position:absolute;left:14px;right:14px;bottom:-1px;height:1px;background:#FFF;}
+.tools{margin-left:auto;display:flex;align-items:center;gap:14px;}
+.tstamp{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:#FFF;opacity:.72;text-transform:uppercase;}
+.btn-w{background:#FFF;color:var(--black);font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;
+  border:none;border-radius:2px;padding:11px 18px;cursor:pointer;transition:transform .15s;}
+.btn-w:hover{transform:translateY(-1px);}
+.avatar{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px var(--hair);}
+
+/* ============================================================
+   THE BANNER BAR
+   ============================================================ */
+.banner{position:relative;overflow:hidden;border-bottom:1px solid var(--rule);}
+.banner .plate{position:absolute;inset:0;background:var(--banner) center 42%/cover no-repeat;
+  filter:grayscale(1) contrast(1.22) brightness(.5);}
+.banner .scrim{position:absolute;inset:0;
+  background:
+    linear-gradient(180deg, rgba(14,17,20,.62) 0%, rgba(14,17,20,.30) 40%, rgba(14,17,20,.88) 100%),
+    radial-gradient(80% 120% at 18% 40%, rgba(14,17,20,.55), transparent 70%);}
+.banner .ribs{position:absolute;inset:0;opacity:.3;
+  background:repeating-linear-gradient(90deg,
+    rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 1px,
+    rgba(255,255,255,.01) 2px, rgba(0,0,0,.2) 7px, rgba(0,0,0,.2) 11px);}
+.banner .in{position:relative;max-width:1420px;margin:0 auto;padding:44px 30px 0;}
+.blockup{position:relative;}
+.blockup .gname{position:absolute;left:0;top:0;font-family:var(--brand);font-weight:800;
+  font-size:clamp(34px,4.6vw,62px);line-height:1;letter-spacing:-.035em;text-transform:uppercase;white-space:nowrap;color:#FFF;}
+.blockup .g3{transform:translateX(-30px);filter:blur(10px);opacity:.11;}
+.blockup .g2{transform:translateX(-17px);filter:blur(5.5px);opacity:.17;}
+.blockup .g1{transform:translateX(-7px); filter:blur(2.5px);opacity:.3;}
+.blockup .now{position:relative;text-shadow:0 0 60px rgba(0,0,0,.9);}
+.bsub{margin-top:16px;display:flex;align-items:center;gap:14px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.42em;text-transform:uppercase;color:#FFF;opacity:.72;}
+.bsub i{width:34px;height:1px;background:rgba(255,255,255,.4);display:inline-block;}
+.blead{margin-top:16px;max-width:520px;font-size:13.5px;line-height:1.7;color:#FFF;opacity:.78;}
+
+/* live strip along the base of the banner */
+.bstrip{position:relative;max-width:1420px;margin:32px auto 0;padding:0 30px;}
+.bstrip .row{display:grid;grid-template-columns:repeat(5,1fr);
+  border:1px solid var(--edge);border-bottom:none;border-radius:4px 4px 0 0;
+  background:rgba(14,17,20,.82);backdrop-filter:blur(10px);overflow:hidden;}
+.bs{padding:15px 18px;border-right:1px solid var(--rule);}
+.bs:last-child{border-right:none;}
+.bs .k{display:block;font-family:var(--mono);font-size:7.5px;letter-spacing:.2em;text-transform:uppercase;color:#FFF;opacity:.5;margin-bottom:8px;}
+.bs .v{font-family:var(--fig);font-weight:600;font-size:17px;letter-spacing:-.05em;color:#FFF;}
+.bs .v.up{color:var(--up-2);} .bs .v.dn{color:var(--dn-2);}
+.bs .v .sm{font-size:10px;opacity:.5;}
+.live{display:inline-flex;align-items:center;gap:6px;}
+.live i{width:5px;height:5px;border-radius:50%;background:var(--up);box-shadow:0 0 8px rgba(87,190,139,.8);}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.wrap{max-width:1420px;margin:0 auto;padding:22px 30px 66px;}
+.grid3{display:grid;grid-template-columns:258px 1fr 292px;gap:16px;align-items:start;}
+.card{border:1px solid var(--edge);border-radius:4px;background:var(--ink);overflow:hidden;}
+.chead{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px 13px;border-bottom:1px solid var(--rule);}
+.chead .t{font-family:var(--disp);font-weight:600;font-size:13px;letter-spacing:-.01em;color:#FFF;}
+.chead .q{font-family:var(--mono);font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;color:#FFF;opacity:.48;}
+.stack{display:flex;flex-direction:column;gap:16px;}
+.sticky{position:sticky;top:88px;}
+
+/* ---------------- LEFT: you ---------------- */
+.youcard{padding:16px;}
+.youhead{display:flex;align-items:center;gap:11px;margin-bottom:15px;}
+.av{width:36px;height:36px;border-radius:50%;background:var(--raise);box-shadow:inset 0 0 0 1px var(--hair);flex:none;
+  display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;font-size:13px;color:#FFF;}
+.youhead b{display:block;font-family:var(--disp);font-weight:600;font-size:13.5px;color:#FFF;}
+.youhead span{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;opacity:.48;}
+.yrow{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--hair);}
+.yrow:last-child{border-bottom:none;}
+.yrow span{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;opacity:.55;}
+.yrow b{font-family:var(--fig);font-size:13px;font-weight:600;letter-spacing:-.04em;color:#FFF;}
+.yrow b.up{color:var(--up-2);} .yrow b.dn{color:var(--dn-2);}
+.standing{padding:14px 16px;border-top:1px solid var(--hair);}
+.strack{position:relative;height:22px;margin-top:11px;}
+.strack .ax{position:absolute;left:0;right:0;top:10px;height:1px;background:rgba(255,255,255,.12);}
+.strack i{position:absolute;top:6px;width:2px;height:9px;background:rgba(255,255,255,.28);border-radius:1px;}
+.strack i.med{top:2px;height:18px;width:1px;background:rgba(255,255,255,.45);}
+.strack i.you{top:1px;height:20px;width:3px;background:var(--up-2);border-radius:1px;box-shadow:0 0 9px rgba(87,190,139,.6);}
+.sfoot{display:flex;justify-content:space-between;margin-top:9px;font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;color:#FFF;opacity:.45;}
+.jump{display:block;padding:11px 16px;border-top:1px solid var(--hair);font-family:var(--mono);font-size:8px;
+  letter-spacing:.18em;text-transform:uppercase;color:#FFF;opacity:.62;text-decoration:none;transition:all .14s;}
+.jump:hover{opacity:1;background:var(--panel);}
+.jump em{font-style:normal;float:right;opacity:.6;}
+
+/* ---------------- CENTER: the feed ---------------- */
+.composer{padding:15px 16px;}
+.crow{display:flex;gap:11px;align-items:center;}
+.composer input{flex:1;background:rgba(255,255,255,.045);border:1px solid var(--rule);border-radius:3px;
+  padding:11px 14px;color:#FFF;font-family:var(--ui);font-size:13px;outline:none;}
+.composer input::placeholder{color:#FFF;opacity:.4;}
+.composer input:focus{border-color:rgba(255,255,255,.34);}
+.crules{display:flex;align-items:center;gap:7px;margin-top:11px;padding-left:47px;}
+.pill{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;
+  background:rgba(255,255,255,.05);border:1px solid var(--rule);border-radius:2px;padding:7px 10px;cursor:pointer;transition:all .14s;}
+.pill:hover{background:rgba(255,255,255,.1);}
+.pill.post{margin-left:auto;background:#FFF;color:var(--black);border-color:#FFF;font-weight:500;}
+.houserule{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;opacity:.4;
+  padding:0 16px 15px 63px;line-height:1.7;}
+
+.fbar{display:flex;border:1px solid var(--edge);border-radius:4px;overflow:hidden;background:var(--ink);}
+.fbar button{flex:1;font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;opacity:.55;
+  background:transparent;border:none;border-right:1px solid var(--rule);padding:12px 6px;cursor:pointer;transition:all .14s;}
+.fbar button:last-child{border-right:none;}
+.fbar button:hover{opacity:1;}
+.fbar button.on{background:#FFF;color:var(--black);opacity:1;}
+.fbar button .n{font-family:var(--fig);opacity:.5;margin-left:5px;}
+
+.post{border:1px solid var(--edge);border-radius:4px;background:var(--ink);overflow:hidden;}
+.post.win{box-shadow:inset 3px 0 0 var(--up);}
+.post.lose{box-shadow:inset 3px 0 0 var(--dn);}
+.post.ask{box-shadow:inset 3px 0 0 rgba(255,255,255,.26);}
+.post.mile{box-shadow:inset 3px 0 0 rgba(255,255,255,.5);}
+.phead{display:flex;align-items:center;gap:11px;padding:14px 16px;border-bottom:1px solid var(--hair);}
+.who b{display:block;font-family:var(--disp);font-weight:600;font-size:13px;color:#FFF;letter-spacing:-.01em;}
+.who span{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;opacity:.46;}
+.tier{font-family:var(--mono);font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:#FFF;
+  border:1px solid var(--rule);padding:3px 6px;margin-left:7px;vertical-align:2px;opacity:.8;}
+.pnet{margin-left:auto;font-family:var(--fig);font-weight:600;font-size:16px;letter-spacing:-.05em;}
+.pnet.up{color:var(--up-2);} .pnet.dn{color:var(--dn-2);}
+.tstrip{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--hair);background:rgba(255,255,255,.02);}
+.tstrip .f{padding:11px 13px;border-right:1px solid var(--hair);}
+.tstrip .f:last-child{border-right:none;}
+.tstrip .f span{display:block;font-family:var(--mono);font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:#FFF;opacity:.48;margin-bottom:5px;}
+.tstrip .f b{font-family:var(--fig);font-size:12px;font-weight:500;letter-spacing:-.04em;color:#FFF;}
+.tstrip .f b.up{color:var(--up-2);} .tstrip .f b.dn{color:var(--dn-2);}
+.chart{margin:13px 16px 0;height:150px;border:1px solid var(--hair);border-radius:3px;position:relative;
+  display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.015);overflow:hidden;}
+.chart .ribs2{position:absolute;inset:0;opacity:.22;
+  background:repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 7px);}
+.chart .vfd{position:absolute;top:8px;right:10px;font-family:var(--mono);font-size:6.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:#FFF;opacity:.55;}
+.pbody{padding:13px 16px 0;font-size:13.5px;line-height:1.7;color:#FFF;opacity:.9;}
+/* the cross-reference only Rewind can draw */
+.mine{margin:13px 16px 0;padding:10px 12px;border-left:2px solid rgba(255,255,255,.34);background:rgba(255,255,255,.035);
+  font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:#FFF;opacity:.8;line-height:1.8;}
+.mine b{font-family:var(--fig);letter-spacing:-.03em;text-transform:none;}
+.mine b.up{color:var(--up-2);} .mine b.dn{color:var(--dn-2);}
+.pacts{display:flex;gap:6px;padding:13px 16px;}
+.act{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;opacity:.7;
+  background:transparent;border:1px solid var(--rule);border-radius:2px;padding:7px 10px;cursor:pointer;transition:all .14s;}
+.act:hover{opacity:1;background:rgba(255,255,255,.06);}
+.act.on{background:#FFF;color:var(--black);border-color:#FFF;opacity:1;}
+.act .c{font-family:var(--fig);margin-left:5px;}
+.thread{display:none;border-top:1px solid var(--hair);background:rgba(255,255,255,.014);}
+.thread.on{display:block;}
+.cmt{display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--hair);}
+.cav{width:22px;height:22px;border-radius:50%;background:var(--raise);box-shadow:inset 0 0 0 1px var(--hair);flex:none;
+  display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;font-size:9px;color:#FFF;}
+.cmt .cb2 b{font-family:var(--disp);font-weight:600;font-size:11.5px;color:#FFF;}
+.cmt .cb2 time{font-family:var(--mono);font-size:7px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;opacity:.4;margin-left:7px;}
+.cmt .cb2 p{font-size:12.5px;line-height:1.6;color:#FFF;opacity:.86;margin-top:4px;}
+.creply{display:flex;gap:10px;padding:12px 16px;border-top:1px solid var(--hair);}
+.creply input{flex:1;background:rgba(255,255,255,.045);border:1px solid var(--rule);border-radius:3px;
+  padding:9px 11px;color:#FFF;font-family:var(--ui);font-size:12px;outline:none;}
+.creply input::placeholder{color:#FFF;opacity:.38;}
+/* milestone post — generated from a ledger, not typed by anyone */
+.milebody{padding:18px 16px;display:flex;align-items:center;gap:14px;}
+.milebody .big{font-family:var(--fig);font-weight:600;font-size:22px;letter-spacing:-.05em;color:#FFF;}
+.milebody p{font-size:13px;line-height:1.6;color:#FFF;opacity:.82;}
+.auto{font-family:var(--mono);font-size:7px;letter-spacing:.2em;text-transform:uppercase;color:#FFF;opacity:.45;margin-top:6px;}
+
+/* ---------------- RIGHT rail ---------------- */
+.lb{display:grid;grid-template-columns:16px 1fr auto;gap:9px;align-items:center;padding:9px 16px;border-bottom:1px solid var(--hair);}
+.lb:last-child{border-bottom:none;}
+.lb.you{background:rgba(255,255,255,.055);}
+.lb .rk{font-family:var(--fig);font-size:10px;color:#FFF;opacity:.42;}
+.lb.you .rk{opacity:1;}
+.lb .nm{font-family:var(--disp);font-weight:600;font-size:11.5px;color:#FFF;overflow:hidden;text-overflow:ellipsis;}
+.lb .nm em{font-family:var(--mono);font-style:normal;font-size:6.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.4;display:block;margin-top:3px;}
+.lb .amt{font-family:var(--fig);font-weight:600;font-size:11.5px;letter-spacing:-.04em;text-align:right;}
+.lb .amt.up{color:var(--up-2);} .lb .amt.dn{color:var(--dn-2);}
+.trow{display:grid;grid-template-columns:1fr auto auto;gap:11px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--hair);}
+.trow:last-child{border-bottom:none;}
+.trow .tn{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;}
+.trow .th{font-family:var(--fig);font-size:10.5px;color:#FFF;opacity:.55;}
+.trow .tv{font-family:var(--fig);font-size:11.5px;font-weight:600;letter-spacing:-.04em;text-align:right;}
+.trow .tv.up{color:var(--up-2);} .trow .tv.dn{color:var(--dn-2);}
+.onl{padding:14px 16px;}
+.dots{display:flex;flex-wrap:wrap;gap:5px;}
+.dots span{width:26px;height:26px;border-radius:50%;background:var(--raise);box-shadow:inset 0 0 0 1px var(--hair);
+  display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;font-size:10px;color:#FFF;position:relative;}
+.dots span::after{content:'';position:absolute;right:-1px;bottom:-1px;width:7px;height:7px;border-radius:50%;
+  background:var(--up);border:2px solid var(--ink);}
+.dots span.more{background:transparent;box-shadow:none;font-family:var(--mono);font-size:8px;opacity:.55;}
+.dots span.more::after{display:none;}
+.note2{font-family:var(--mono);font-size:7px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;opacity:.4;
+  padding:11px 16px;border-top:1px solid var(--hair);line-height:1.8;}
+.dsc{padding:16px;}
+.dsc p{font-size:12.5px;line-height:1.6;color:#FFF;opacity:.64;margin-bottom:13px;}
+.dbtn2{display:block;text-align:center;font-family:var(--mono);font-size:8px;letter-spacing:.18em;
+  text-transform:uppercase;color:#FFF;background:rgba(255,255,255,.06);border:1px solid var(--rule);border-radius:2px;
+  padding:11px 0;cursor:pointer;text-decoration:none;transition:all .14s;}
+.dbtn2:hover{background:rgba(255,255,255,.12);}
+
+.foot{display:flex;justify-content:space-between;margin-top:32px;font-family:var(--mono);font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:#FFF;opacity:.55;}
+
+@media(max-width:1240px){
+  .nav{display:none;}
+  .grid3{grid-template-columns:1fr;}
+  .sticky{position:static;}
+  .bstrip .row{grid-template-columns:repeat(2,1fr);}
+  .bs{border-bottom:1px solid var(--rule);}
+  .tstrip{grid-template-columns:repeat(3,1fr);}
+  .tstrip .f{border-bottom:1px solid var(--hair);}
+}
+</style>
+</head>
+<body>
+
+<div class="flute"></div>
+
+<header class="top">
+  <div class="in">
+    <div class="brand"><span class="gh">Rewind</span>Rewind<em>No. 001</em></div>
+    <nav class="nav">
+      <a class="nl" href="rewind-calendar.html">Calendar</a>
+      <a class="nl" href="rewind-overview.html">Overview</a>
+      <a class="nl" href="rewind-history.html">History</a>
+      <a class="nl on" href="rewind-community.html">Community</a>
+      <a class="nl">Settings</a>
+    </nav>
+    <div class="tools">
+      <span class="tstamp">NY · 16:42 · Closed</span>
+      <button class="btn-w">Log trade</button>
+      <span class="avatar"></span>
+    </div>
+  </div>
+</header>
+
+<!-- ============ BANNER ============ -->
+<section class="banner">
+  <div class="plate"></div>
+  <div class="scrim"></div>
+  <div class="ribs"></div>
+  <div class="in">
+    <div class="blockup" style="height:clamp(38px,5vw,68px);">
+      <span class="gname g3">Trading Ark</span>
+      <span class="gname g2">Trading Ark</span>
+      <span class="gname g1">Trading Ark</span>
+      <span class="gname now">Trading Ark</span>
+    </div>
+    <div class="bsub"><i></i>A Community<i></i></div>
+    <p class="blead">Everyone here logs their trades. Which means nothing on this page is a claim — it's a record.</p>
+  </div>
+  <div class="bstrip"><div class="row" id="bstrip"></div></div>
+</section>
+
+<div class="wrap">
+  <div class="grid3">
+
+    <!-- ============ LEFT ============ -->
+    <div class="stack sticky">
+      <div class="card">
+        <div class="youcard">
+          <div class="youhead">
+            <span class="av">C</span>
+            <span><b>@christian</b><span>Elite · member since 2026</span></span>
+          </div>
+          <div class="yrow"><span>Today</span><b class="up num" id="yToday"></b></div>
+          <div class="yrow"><span>This week</span><b class="up num" id="yWeek"></b></div>
+          <div class="yrow"><span>This month</span><b class="up num" id="yMonth"></b></div>
+        </div>
+        <div class="standing">
+          <span class="lab">Where you sit · month</span>
+          <div class="strack" id="strack"></div>
+          <div class="sfoot"><span id="sLow"></span><span id="sRank"></span><span id="sHigh"></span></div>
+        </div>
+        <a class="jump" href="rewind-overview.html">Your overview<em>→</em></a>
+        <a class="jump" href="rewind-history.html">Your tape<em>→</em></a>
+      </div>
+
+      <div class="card">
+        <div class="chead"><span class="t">On the tape now</span><span class="q" id="onlineN"></span></div>
+        <div class="onl"><div class="dots" id="dots"></div></div>
+        <div class="note2">Members who logged a trade in the last hour.</div>
+      </div>
+    </div>
+
+    <!-- ============ CENTER : THE FEED ============ -->
+    <div class="stack">
+      <div class="card">
+        <div class="composer">
+          <div class="crow">
+            <span class="av">C</span>
+            <input id="compose" placeholder="Post a trade from your ledger, or ask the floor…">
+          </div>
+          <div class="crules">
+            <button class="pill">＋ Chart</button>
+            <button class="pill">From my tape</button>
+            <button class="pill">Ask</button>
+            <button class="pill post">Post</button>
+          </div>
+        </div>
+        <div class="houserule">House rule · a posted trade carries its chart, and its numbers come straight from your ledger</div>
+      </div>
+
+      <div class="fbar" id="fbar"></div>
+      <div class="stack" id="feed"></div>
+    </div>
+
+    <!-- ============ RIGHT ============ -->
+    <div class="stack sticky">
+      <div class="card">
+        <div class="chead"><span class="t">Standings</span><span class="q">Month</span></div>
+        <div id="board"></div>
+        <div class="note2">Net P&amp;L from logged trades, after fees.</div>
+      </div>
+
+      <div class="card">
+        <div class="chead"><span class="t">The floor is trading</span><span class="q">Today</span></div>
+        <div id="trend"></div>
+        <div class="note2">Counts, not opinions — taken from today's logged trades.</div>
+      </div>
+
+      <div class="card">
+        <div class="chead"><span class="t">Trading Ark</span><span class="q">Discord</span></div>
+        <div class="dsc">
+          <p>Live rooms, signals and the chat live in Discord. Your role there sets your access here.</p>
+          <a class="dbtn2" href="https://discord.gg/tradingark" target="_blank" rel="noopener">Open Discord →</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="foot"><span>Rewind · Members' ledger</span><span>Log · Review · Repeat</span></div>
+</div>
+
+<script>
+/* ============================================================
+   ONE source: member rows. Everything on the page derives.
+   ============================================================ */
+const ME='christian';
+const MEMBERS=[
+  {h:'jt_futures', tier:'Elite',   today: 1240, week:4210, month:8202, trades:48, win:74, since:'2025'},
+  {h:'christian',  tier:'Elite',   today: 1085, week:1645, month:4835, trades:53, win:67, since:'2026'},
+  {h:'tape_reader',tier:'Premium', today:  620, week:2140, month:3536, trades:39, win:69, since:'2025'},
+  {h:'gc_gold',    tier:'Premium', today:  410, week:1145, month:3172, trades:35, win:66, since:'2026'},
+  {h:'nas_scalps', tier:'Premium', today: -380, week:1890, month:2159, trades:66, win:54, since:'2025'},
+  {h:'torres_nq',  tier:'Pro',     today:  260, week: 880, month:1554, trades:35, win:59, since:'2026'},
+  {h:'es_mornings',tier:'Pro',     today: -145, week: 520, month:1102, trades:34, win:61, since:'2026'},
+  {h:'liq_hunter', tier:'Pro',     today:  195, week: 340, month: 868, trades:33, win:56, since:'2026'},
+  {h:'fvg_only',   tier:'Free',    today:  330, week: 610, month: 812, trades:32, win:59, since:'2026'},
+  {h:'orb_trader', tier:'Free',    today: null, week: 210, month: 474, trades:18, win:61, since:'2026'},
+  {h:'open_drive', tier:'Pro',     today:  -90, week: 180, month: 284, trades:30, win:52, since:'2026'},
+  {h:'sunday_open',tier:'Free',    today: null, week:-160, month:-458, trades:25, win:44, since:'2026'}
+];
+const TOTAL_MEMBERS=312;
+/* today's logged trades by model — the rail's counts come from here */
+const TODAY_MODELS=[
+  {m:'OTE',           members:14, trades:31, net: 4820},
+  {m:'FVG',           members: 9, trades:18, net: 1240},
+  {m:'CISD',          members: 8, trades:21, net:  -310},
+  {m:'Silver Bullet', members: 4, trades: 9, net: -1180},
+  {m:'Turtle Soup',   members: 3, trades: 5, net:  -240}
+];
+const ONLINE=['jt_futures','gc_gold','nas_scalps','torres_nq','tape_reader','liq_hunter','fvg_only','open_drive'];
+
+/* your own trades today, so posts can cross-reference against your tape */
+const MY_TODAY=[
+  {model:'OTE',  pnl: 900, r: 2.10},
+  {model:'CISD', pnl:-425, r:-1.00},
+  {model:'FVG',  pnl: 610, r: 1.40}
+];
+
+const POSTS=[
+  {id:'P1',h:'jt_futures',t:'2h ago',kind:'trade',
+   tr:{sym:'NQ',side:'Long',model:'OTE',acct:'Funded',r:2.80,pnl:1240,hold:41},
+   note:'Waited for the 5m CISD to confirm before entry, then left the runner alone until the 1H objective. Chart attached — the 09:40 sweep is the whole trade.',
+   props:18,propped:false,
+   cm:[{h:'torres_nq',t:'1h ago',b:'Textbook. That sweep was the tell.'},
+       {h:'gc_gold',t:'52m ago',b:'How long were you sat on your hands before the entry?'}]},
+
+  {id:'M1',h:'gc_gold',t:'3h ago',kind:'mile',
+   big:'30 sessions',
+   note:'@gc_gold has now logged thirty consecutive trading sessions without a gap.',
+   props:24,propped:false,cm:[]},
+
+  {id:'P2',h:'nas_scalps',t:'4h ago',kind:'trade',
+   tr:{sym:'NQ',side:'Short',model:'Silver Bullet',acct:'Funded',r:-1.40,pnl:-380,hold:9},
+   note:'Chased the second leg after 11am again. Posting the L so I stop doing it — my own stats say I am net negative after 11:00 and I keep ignoring them.',
+   props:31,propped:false,
+   cm:[{h:'christian',t:'3h ago',b:'Respect for posting it. A hard cutoff alert fixed the same leak for me.'},
+       {h:'es_mornings',t:'2h ago',b:'Same pattern here. The 11:00 line is real.'}]},
+
+  {id:'P3',h:'gc_gold',t:'6h ago',kind:'ask',
+   note:'How is everyone handling eval versus funded sizing? I keep passing evals then shrinking on the funded account and leaving most of the move behind.',
+   props:9,propped:false,
+   cm:[{h:'jt_futures',t:'5h ago',b:'Same size, same rules — or the eval taught you nothing.'},
+       {h:'liq_hunter',t:'4h ago',b:'Funded at 80% of eval size for the first month, then match.'},
+       {h:'nas_scalps',t:'3h ago',b:'This is my exact problem. Watching this thread.'}]},
+
+  {id:'P4',h:'tape_reader',t:'7h ago',kind:'trade',
+   tr:{sym:'ES',side:'Long',model:'FVG',acct:'Eval',r:1.40,pnl:620,hold:19},
+   note:'Clean 15m FVG retest. Took it off at the first opposing order block rather than pushing for the full leg.',
+   props:12,propped:false,cm:[]},
+
+  {id:'P5',h:'es_mornings',t:'8h ago',kind:'trade',
+   tr:{sym:'NQ',side:'Short',model:'Turtle Soup',acct:'Paper',r:-1.00,pnl:-145,hold:12},
+   note:'Paper account, still testing the afternoon reversal. Three attempts, three stops — leaving it on paper until the sample says otherwise.',
+   props:6,propped:false,
+   cm:[{h:'christian',t:'6h ago',b:'That is the right way round. Most people do it backwards.'}]}
+];
+
+/* ---------- helpers ---------- */
+const money=n=>(n<0?'−$':'$')+Math.abs(Math.round(n)).toLocaleString();
+const signed=n=>n===0?'$0':(n<0?'−$':'+$')+Math.abs(Math.round(n)).toLocaleString();
+const cls=n=>n>0?'up':n<0?'dn':'flat';
+const init=h=>h[0].toUpperCase();
+const M=Object.fromEntries(MEMBERS.map(m=>[m.h,m]));
+const median=a=>{const s=[...a].sort((x,y)=>x-y),k=s.length>>1;return s.length%2?s[k]:(s[k-1]+s[k])/2;};
+
+/* ---------- banner strip ---------- */
+function renderStrip(){
+  const logged=MEMBERS.filter(m=>m.today!==null);
+  const net=logged.reduce((s,m)=>s+m.today,0);
+  const green=logged.filter(m=>m.today>0).length;
+  const trades=TODAY_MODELS.reduce((s,x)=>s+x.trades,0);
+  document.getElementById('bstrip').innerHTML=`
+    <div class="bs"><span class="k">Floor P&amp;L today</span>
+      <span class="v ${cls(net)}">${signed(net)}</span></div>
+    <div class="bs"><span class="k">Logged today</span>
+      <span class="v">${logged.length}<span class="sm"> / ${MEMBERS.length}</span></span></div>
+    <div class="bs"><span class="k">Green today</span>
+      <span class="v">${Math.round(green/logged.length*100)}%</span></div>
+    <div class="bs"><span class="k">Trades on the tape</span>
+      <span class="v">${trades}</span></div>
+    <div class="bs"><span class="k">Members</span>
+      <span class="v"><span class="live"><i></i>${ONLINE.length}</span><span class="sm"> of ${TOTAL_MEMBERS}</span></span></div>`;
+}
+
+/* ---------- left: you ---------- */
+function renderYou(){
+  const me=M[ME];
+  yToday.textContent=signed(me.today); yToday.className='num '+cls(me.today);
+  yWeek.textContent=signed(me.week);   yWeek.className ='num '+cls(me.week);
+  yMonth.textContent=signed(me.month); yMonth.className='num '+cls(me.month);
+
+  const vals=MEMBERS.map(m=>m.month), lo=Math.min(...vals), hi=Math.max(...vals), span=(hi-lo)||1;
+  const pos=v=>((v-lo)/span)*100;
+  const med=median(vals);
+  document.getElementById('strack').innerHTML=
+    `<i class="ax"></i>`+
+    vals.map(v=>v===me.month?'':`<i style="left:${pos(v)}%"></i>`).join('')+
+    `<i class="med" style="left:${pos(med)}%"></i><i class="you" style="left:${pos(me.month)}%"></i>`;
+  document.getElementById('sLow').textContent=money(lo);
+  document.getElementById('sHigh').textContent=money(hi);
+  document.getElementById('sRank').textContent=
+    (vals.filter(v=>v>me.month).length+1)+' of '+vals.length;
+
+  document.getElementById('onlineN').textContent=ONLINE.length+' active';
+  document.getElementById('dots').innerHTML=
+    ONLINE.slice(0,7).map(h=>`<span title="@${h}">${init(h)}</span>`).join('')+
+    (ONLINE.length>7?`<span class="more">+${ONLINE.length-7}</span>`:'');
+}
+
+/* ---------- right rails ---------- */
+function renderBoard(){
+  const r=[...MEMBERS].sort((a,b)=>b.month-a.month);
+  document.getElementById('board').innerHTML=r.slice(0,7).map((m,i)=>
+    `<div class="lb ${m.h===ME?'you':''}">
+      <span class="rk num">${i+1}</span>
+      <span class="nm">${m.h===ME?'You':'@'+m.h}<em>${m.trades} trades · ${m.win}%</em></span>
+      <span class="amt ${cls(m.month)}">${signed(m.month)}</span>
+    </div>`).join('');
+}
+function renderTrend(){
+  document.getElementById('trend').innerHTML=TODAY_MODELS.map(x=>
+    `<div class="trow">
+      <span class="tn">${x.m}</span>
+      <span class="th num">${x.members} · ${x.trades}t</span>
+      <span class="tv ${cls(x.net)}">${signed(x.net)}</span>
+    </div>`).join('');
+}
+
+/* ---------- feed ---------- */
+let F='all';
+const match=p=>F==='all'?true
+  :F==='wins'?(p.kind==='trade'&&p.tr.pnl>0)
+  :F==='losses'?(p.kind==='trade'&&p.tr.pnl<0)
+  :F==='asks'?p.kind==='ask'
+  :F==='miles'?p.kind==='mile':true;
+
+function renderBar(){
+  const c={all:POSTS.length,
+    wins:POSTS.filter(p=>p.kind==='trade'&&p.tr.pnl>0).length,
+    losses:POSTS.filter(p=>p.kind==='trade'&&p.tr.pnl<0).length,
+    asks:POSTS.filter(p=>p.kind==='ask').length,
+    miles:POSTS.filter(p=>p.kind==='mile').length};
+  const L={all:'All',wins:'Wins',losses:'Losses',asks:'Questions',miles:'Milestones'};
+  document.getElementById('fbar').innerHTML=Object.keys(L).map(k=>
+    `<button class="${F===k?'on':''}" data-f="${k}">${L[k]}<span class="n">${c[k]}</span></button>`).join('');
+  document.querySelectorAll('#fbar button').forEach(b=>b.addEventListener('click',()=>{
+    F=b.dataset.f; renderBar(); renderFeed();
+  }));
+}
+
+const OPEN=new Set();
+const CANDLES=`<svg width="150" height="60" viewBox="0 0 150 60"><g stroke-width="5" stroke-linecap="round">
+  <line x1="10" y1="50" x2="10" y2="34" stroke="#57BE8B"/><line x1="30" y1="45" x2="30" y2="24" stroke="#57BE8B"/>
+  <line x1="50" y1="38" x2="50" y2="49" stroke="#DE6B62"/><line x1="70" y1="41" x2="70" y2="20" stroke="#57BE8B"/>
+  <line x1="90" y1="31" x2="90" y2="13" stroke="#57BE8B"/><line x1="110" y1="27" x2="110" y2="36" stroke="#DE6B62"/>
+  <line x1="130" y1="24" x2="130" y2="8" stroke="#57BE8B"/></g></svg>`;
+
+function renderFeed(){
+  const set=POSTS.filter(match);
+  const box=document.getElementById('feed');
+  if(!set.length){
+    box.innerHTML=`<div class="card"><div style="padding:46px 20px;text-align:center;">
+      <div style="font-family:var(--disp);font-weight:600;font-size:15px;color:#FFF;margin-bottom:7px;">Nothing under this filter</div>
+      <p style="font-size:12.5px;color:#FFF;opacity:.55;">Try another tab.</p></div></div>`;
+    return;
+  }
+  box.innerHTML=set.map(p=>{
+    const tone = p.kind==='mile'?'mile':p.kind==='ask'?'ask':(p.tr.pnl>0?'win':'lose');
+    const open = OPEN.has(p.id);
+    /* did YOU trade the same setup today? only Rewind can answer this */
+    let mineLine='';
+    if(p.kind==='trade'){
+      const mine=MY_TODAY.find(x=>x.model===p.tr.model);
+      mineLine = mine
+        ? `<div class="mine">You traded ${p.tr.model} today too —
+             <b class="${cls(mine.pnl)}">${signed(mine.pnl)}</b> at
+             <b>${mine.r>0?'+':'−'}${Math.abs(mine.r).toFixed(2)}R</b></div>`
+        : `<div class="mine">You did not trade ${p.tr.model} today</div>`;
+    }
+    return `<div class="post ${tone}">
+      <div class="phead">
+        <span class="av">${init(p.h)}</span>
+        <span class="who"><b>@${p.h}<span class="tier">${M[p.h].tier}</span></b>
+          <span>${p.t} · ${p.kind==='mile'?'Milestone':p.kind==='ask'?'Question':p.tr.sym+' · '+p.tr.model}</span></span>
+        ${p.kind==='trade'?`<span class="pnet ${cls(p.tr.pnl)}">${signed(p.tr.pnl)}</span>`:''}
+      </div>
+
+      ${p.kind==='trade'?`
+      <div class="tstrip">
+        <div class="f"><span>Side</span><b>${p.tr.side}</b></div>
+        <div class="f"><span>Model</span><b>${p.tr.model}</b></div>
+        <div class="f"><span>Account</span><b>${p.tr.acct}</b></div>
+        <div class="f"><span>R</span><b class="${cls(p.tr.r)}">${p.tr.r>0?'+':'−'}${Math.abs(p.tr.r).toFixed(2)}R</b></div>
+        <div class="f"><span>Hold</span><b>${p.tr.hold}m</b></div>
+      </div>
+      <div class="chart"><div class="ribs2"></div><span class="vfd">Chart · verified from ledger</span>${CANDLES}</div>`:''}
+
+      ${p.kind==='mile'?`<div class="milebody"><span class="big num">${p.big}</span><p>${p.note}<span class="auto">Generated from @${p.h}'s ledger</span></p></div>`
+                       :`<p class="pbody">${p.note}</p>${mineLine}`}
+
+      <div class="pacts">
+        <button class="act props ${p.propped?'on':''}" data-id="${p.id}">▲ Props<span class="c">${p.props}</span></button>
+        <button class="act thr" data-id="${p.id}">${open?'Hide':'Replies'}<span class="c">${p.cm.length}</span></button>
+        <button class="act save" data-id="${p.id}">Save</button>
+      </div>
+
+      <div class="thread ${open?'on':''}">
+        ${p.cm.map(c=>`<div class="cmt"><span class="cav">${init(c.h)}</span>
+          <div class="cb2"><b>@${c.h}</b><time>${c.t}</time><p>${c.b}</p></div></div>`).join('')}
+        <div class="creply"><span class="cav">C</span><input placeholder="Reply to @${p.h}…"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  box.querySelectorAll('.props').forEach(b=>b.addEventListener('click',()=>{
+    const p=POSTS.find(x=>x.id===b.dataset.id);
+    p.propped=!p.propped; p.props+=p.propped?1:-1; renderFeed();
+  }));
+  box.querySelectorAll('.thr').forEach(b=>b.addEventListener('click',()=>{
+    const id=b.dataset.id; OPEN.has(id)?OPEN.delete(id):OPEN.add(id); renderFeed();
+  }));
+  box.querySelectorAll('.save').forEach(b=>b.addEventListener('click',()=>{
+    b.classList.toggle('on'); b.textContent=b.classList.contains('on')?'Saved':'Save';
+  }));
+}
+
+renderStrip(); renderYou(); renderBoard(); renderTrend(); renderBar(); renderFeed();
+</script>
+</body>
+</html>

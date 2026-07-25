@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rewind — Showroom</title>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Syne:wght@700;800&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   REWIND — SHOWROOM
+   Where a period becomes an object you can hand to someone.
+   Daily · Weekly · Monthly · All-time cards in three formats,
+   plus achievements that unlock from the ledger, not from a list.
+
+   Every figure on every card is DERIVED from PERIODS below and
+   reconciles with Calendar / Overview / History.
+   ============================================================ */
+:root{
+  --black:#0E1114; --ink:#14171B; --panel:#181C20; --raise:#1E2227;
+  --edge:rgba(255,255,255,.17); --rule:rgba(255,255,255,.12); --hair:rgba(255,255,255,.07);
+  --white:#FFFFFF; --text:#FFFFFF;
+  --up:#57BE8B; --up-2:#7FD9AC;
+  --dn:#DE6B62; --dn-2:#F09189;
+  --fig:"Azeret Mono",ui-monospace,monospace;
+  --disp:"Instrument Sans",system-ui,sans-serif;
+  --brand:"Syne",Helvetica,sans-serif;
+  --ui:"Inter Tight",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+  --plate:url("https://d8j0ntlcm91z4.cloudfront.net/user_3DdB73ts10b7cJDBWSq817QLgQw/hf_20260724_233044_de760f1e-15bb-4a9b-8a69-65b184dc37c8.png");
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--black);color:var(--text);font-family:var(--ui);font-size:14px;-webkit-font-smoothing:antialiased;}
+.num{font-variant-numeric:tabular-nums;}
+.lab{font-family:var(--mono);font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:#FFF;opacity:1;}
+
+.flute{position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:.2;
+  background:repeating-linear-gradient(90deg,
+    rgba(255,255,255,.04) 0px, rgba(255,255,255,.04) 1px,
+    rgba(255,255,255,.01) 2px, rgba(0,0,0,.14) 7px, rgba(0,0,0,.14) 11px);}
+body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opacity:.055;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>");}
+
+/* ---------------- TOP ---------------- */
+.top{position:sticky;top:0;z-index:60;background:rgba(14,17,20,.94);backdrop-filter:blur(16px);box-shadow:inset 0 -1px 0 var(--hair);}
+.top .in{max-width:1440px;margin:0 auto;height:60px;display:flex;align-items:center;gap:24px;padding:0 30px;}
+.brand{font-family:var(--brand);font-weight:800;font-size:17px;letter-spacing:-.03em;text-transform:uppercase;position:relative;color:#FFF;}
+.brand .gh{position:absolute;left:-10px;top:0;opacity:.2;filter:blur(3.5px);pointer-events:none;}
+.brand em{font-family:var(--mono);font-style:normal;font-weight:400;font-size:8px;letter-spacing:.24em;color:#FFF;opacity:1;margin-left:10px;vertical-align:3px;}
+.nav{display:flex;gap:2px;height:100%;}
+.nl{display:flex;align-items:center;padding:0 13px;font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#FFF;opacity:1;cursor:pointer;position:relative;transition:opacity .16s;text-decoration:none;}
+.nl:hover,.nl.on{opacity:1;}
+.nl.on::after{content:'';position:absolute;left:13px;right:13px;bottom:-1px;height:1px;background:#FFF;}
+.tools{margin-left:auto;display:flex;align-items:center;gap:14px;}
+.tstamp{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:#FFF;opacity:1;text-transform:uppercase;}
+.btn-w{background:#FFF;color:var(--black);font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;
+  border:none;border-radius:2px;padding:11px 18px;cursor:pointer;transition:transform .15s;}
+.btn-w:hover{transform:translateY(-1px);}
+.avatar{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px var(--hair);}
+
+.wrap{max-width:1440px;margin:0 auto;padding:34px 30px 70px;position:relative;}
+.plateband{position:absolute;left:0;right:0;top:0;height:190px;z-index:-1;pointer-events:none;overflow:hidden;}
+.plateband .im{position:absolute;inset:0;background:var(--plate) center 45%/cover no-repeat;
+  filter:grayscale(1) contrast(1.25) brightness(.4);opacity:.45;}
+.plateband .fade{position:absolute;inset:0;background:linear-gradient(180deg, rgba(14,17,20,.5) 0%, rgba(14,17,20,.8) 55%, var(--black) 100%);}
+
+/* ---------------- MASTHEAD ---------------- */
+.mast{display:flex;align-items:flex-end;justify-content:space-between;gap:36px;margin-bottom:22px;}
+.mtitle{position:relative;height:clamp(40px,4.6vw,60px);}
+.mtitle span{position:absolute;left:0;top:0;font-family:var(--disp);font-weight:700;
+  font-size:clamp(34px,4.2vw,56px);line-height:1;letter-spacing:-.035em;text-transform:uppercase;white-space:nowrap;color:#FFF;}
+.mtitle .g2{transform:translateX(-16px);filter:blur(5px);opacity:.13;}
+.mtitle .g1{transform:translateX(-7px);filter:blur(2.5px);opacity:.24;}
+.mastr{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#FFF;opacity:1;text-align:right;line-height:1.9;}
+
+/* ---------------- TABS ---------------- */
+.tabs{display:flex;gap:7px;margin-bottom:18px;flex-wrap:wrap;}
+.tabs button{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#FFF;opacity:1;
+  background:transparent;border:1px solid var(--rule);border-radius:99px;padding:9px 17px;cursor:pointer;transition:all .14s;}
+.tabs button:hover{opacity:.92;}
+.tabs button.on{background:#FFF;color:var(--black);border-color:#FFF;opacity:1;}
+
+/* ---------------- STUDIO ---------------- */
+.studio{display:grid;grid-template-columns:1fr 296px;gap:20px;align-items:start;}
+.stage{border:1px solid var(--edge);border-radius:4px;background:var(--ink);padding:26px;
+  display:flex;align-items:center;justify-content:center;min-height:440px;}
+.panel{border:1px solid var(--edge);border-radius:4px;background:var(--ink);overflow:hidden;}
+.phead{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--rule);}
+.phead .t{font-family:var(--disp);font-weight:600;font-size:12.5px;color:#FFF;}
+.pbody{padding:15px 16px;}
+.stack{display:flex;flex-direction:column;gap:16px;}
+.seg{display:flex;border:1px solid var(--rule);border-radius:3px;overflow:hidden;}
+.seg button{flex:1;font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:#FFF;opacity:1;
+  background:transparent;border:none;border-right:1px solid var(--rule);padding:9px 4px;cursor:pointer;transition:all .14s;}
+.seg button:last-child{border-right:none;}
+.seg button.on{background:#FFF;color:var(--black);opacity:1;}
+.orow{display:flex;align-items:center;gap:11px;padding:9px 0;}
+.orow + .orow{border-top:1px solid var(--hair);}
+.orow span{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:#FFF;opacity:1;}
+.tog{width:30px;height:16px;border-radius:99px;background:rgba(255,255,255,.14);position:relative;flex:none;cursor:pointer;transition:background .16s;}
+.tog::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#FFF;transition:transform .16s;}
+.tog.on{background:var(--up);}
+.tog.on::after{transform:translateX(14px);}
+.acts{display:flex;flex-direction:column;gap:8px;padding:15px 16px;}
+.abtn{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#FFF;
+  background:transparent;border:1px solid var(--rule);border-radius:2px;padding:11px 0;cursor:pointer;transition:all .14s;}
+.abtn:hover{background:rgba(255,255,255,.06);}
+.abtn.solid{background:#FFF;color:var(--black);border-color:#FFF;font-weight:500;}
+.abtn.solid:hover{transform:translateY(-1px);}
+
+/* ============================================================
+   THE CARD
+   ============================================================ */
+.card{position:relative;overflow:hidden;background:#0A0C0F;color:#FFF;container-type:inline-size;
+  box-shadow:0 30px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.08);}
+.card.post{width:min(100%,780px);aspect-ratio:1.91/1;}
+.card.portrait{width:min(100%,470px);aspect-ratio:4/5;}
+.card.story{width:min(100%,352px);aspect-ratio:9/16;}
+
+/* the login's field — no photograph */
+.card .bloom{position:absolute;inset:0;
+  background:radial-gradient(58% 50% at 34% 42%, rgba(255,255,255,.11), transparent 70%),
+             radial-gradient(86% 76% at 50% 50%, #10141A 0%, #08090C 80%);}
+.card .ribs{position:absolute;inset:0;opacity:.38;
+  background:repeating-linear-gradient(90deg,
+    rgba(255,255,255,.045) 0px, rgba(255,255,255,.045) 1px,
+    rgba(255,255,255,.012) 2px, rgba(0,0,0,.16) 7px, rgba(0,0,0,.16) 11px);}
+.card .vign{position:absolute;inset:0;
+  background:radial-gradient(98% 84% at 50% 46%, transparent 46%, rgba(4,5,7,.7) 100%);}
+.card .grain{position:absolute;inset:0;opacity:.075;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4'/></filter><rect width='200' height='200' filter='url(%23g)'/></svg>");}
+
+/* FOUR TINY MARKS AND ONE HERO — the login's discipline */
+.card .body{position:relative;height:100%;padding:3.4% 4.4%;}
+.card.portrait .body{padding:4% 5%;}
+.card.portrait .card.portrait .card.story .body{padding:3.6% 9.5% 3.6% 6.5%;}
+.card.story .card.story 
+/* top edge */
+.cmark{position:relative;font-family:var(--brand);font-weight:800;font-size:2.4cqw;
+  letter-spacing:-.035em;text-transform:uppercase;color:#FFF;line-height:1;white-space:nowrap;
+  /* Syne's cap sits below its em box, so lift it to put the R's corner on the vertex */
+  }
+.card.portrait .cmark,.card.story .cmark{font-size:3.7cqw;}
+.cmark .g{position:absolute;left:0;top:0;pointer-events:none;}
+.cmark .g3{transform:translateX(-.26em);filter:blur(.075em);opacity:.13;}
+.cmark .g2{transform:translateX(-.15em);filter:blur(.042em);opacity:.21;}
+.cmark .g1{transform:translateX(-.065em);filter:blur(.015em);opacity:.34;}
+.cmark .n{position:relative;}
+.cmark em{display:block;font-family:var(--mono);font-style:normal;font-weight:400;
+  font-size:.30em;letter-spacing:.22em;margin-top:.8em;}
+.cwhen{font-family:var(--mono);font-size:1.34cqw;letter-spacing:.26em;text-transform:uppercase;
+  color:#FFF;text-align:right;line-height:1.2;white-space:nowrap;
+  }
+.card.portrait .cwhen,.card.story .cwhen{font-size:2.3cqw;letter-spacing:.18em;}
+.cwhen b{display:block;font-weight:500;}
+
+/* the hero, floating with air above and below */
+/* the figure is dead-centre in the card. the top and bottom bands are
+   absolutely positioned so they can't shift the middle off centre. */
+.chero{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:0;}
+
+/* a faint echo of the figure, well behind it — motion, not a glow */
+
+/* the outcome ticker: one mark per trade or session, the month's shape in a single line */
+/* 9:16 is a tall thin canvas — so the height becomes the composition.
+   the period runs vertically up the right edge and a spine rule runs the full drop. */
+
+/* ---- CORNERS: text and QR sit in the corners with a little air on both sides ---- */
+
+/* landscape */
+
+/* portrait */
+
+/* story — extra clearance on the right for the vertical ribbon */
+
+/* the figure sits on a hairline with the direction word cut into it */
+
+/* tall cards get a stacked block instead of a one-line strip — poster credits, not a table */
+
+.cfig{font-family:var(--fig);font-weight:600;letter-spacing:-.055em;line-height:.94;
+  white-space:nowrap;text-align:center;position:relative;}
+
+.cfig .gho{position:absolute;left:0;right:0;top:0;text-align:center;color:inherit;
+  transform:translateX(-.055em);filter:blur(.02em);opacity:.16;pointer-events:none;}
+
+.cvert{display:none;}
+.card.story .cvert{display:block;position:absolute;right:0;top:14%;bottom:14%;
+  writing-mode:vertical-rl;transform:rotate(180deg);
+  font-family:var(--mono);font-size:2.5cqw;letter-spacing:.5em;text-transform:uppercase;color:#FFF;
+  white-space:nowrap;}
+.cspine{display:none;}
+.card.story .cspine{display:block;position:absolute;left:0;top:8%;bottom:8%;width:1px;
+  background:linear-gradient(180deg, transparent, rgba(255,255,255,.32) 14%,
+             rgba(255,255,255,.32) 86%, transparent);}
+.card.story .cwhen{display:none;}
+
+.ctop,.cbot{position:absolute;display:flex;gap:8%;
+  font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#FFF;
+  white-space:nowrap;line-height:1.2;}
+.ctop{align-items:flex-start;justify-content:space-between;}
+.cbot{align-items:flex-end;justify-content:space-between;font-size:1.3cqw;}
+
+.card.post .ctop{left:4.4%;right:4.4%;top:3.4%;}
+.card.post .cbot{left:4.4%;right:4.4%;bottom:3.4%;}
+
+.card.portrait .ctop{left:5%;right:5%;top:4%;}
+.card.portrait .cbot{left:5%;right:5%;bottom:4%;font-size:1.85cqw;letter-spacing:.12em;}
+
+.card.story .ctop{left:6.5%;right:9.5%;top:3.6%;}
+.card.story .cbot{left:6.5%;right:9.5%;bottom:3.6%;font-size:1.85cqw;letter-spacing:.12em;}
+
+.cbase{display:flex;align-items:center;gap:1.4cqw;width:64%;margin-top:3.6%;}
+.card.portrait .cbase,.card.story .cbase{width:82%;gap:2cqw;}
+.cbase i{flex:1;height:1px;background:rgba(255,255,255,.34);}
+.cbase span{font-family:var(--mono);font-size:1.3cqw;letter-spacing:.34em;text-transform:uppercase;
+  color:#FFF;white-space:nowrap;}
+.cline{font-family:var(--mono);font-size:2.05cqw;letter-spacing:.22em;text-transform:uppercase;
+  color:#FFF;white-space:nowrap;margin-top:6%;}
+.card.portrait .cbase span,.card.story .cbase span{font-size:1.85cqw;letter-spacing:.26em;}
+
+/* hairline crosshair marks in the corners — the Oakley/Nike annotation language */
+.cfig.up{color:#7FD9AC;} .cfig.dn{color:#F09189;}
+/* size is set inline from the character count so the figure always spans the card */
+
+/* bottom edge — side by side on landscape, stacked on tall */
+
+.seal{display:inline-flex;align-items:center;gap:.55em;}
+.seal i{width:.92em;height:.92em;border-radius:50%;border:1px solid rgba(255,255,255,.7);position:relative;flex:none;}
+.seal i::after{content:'';position:absolute;left:.27em;top:.31em;width:.2em;height:.36em;
+  border:solid #FFF;border-width:0 .12em .12em 0;transform:rotate(42deg);}
+.cbot .rt{display:inline-flex;align-items:center;gap:1.4em;}
+/* a scannable mark instead of a line of type */
+.cqr{width:7.4cqw;height:7.4cqw;flex:none;display:block;}
+.card.portrait .cqr,.card.story .cqr{width:9.4cqw;height:9.4cqw;}
+
+/* ---------------- SAVED GALLERY ---------------- */
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:14px;padding:16px;}
+.gcard{border:1px solid var(--rule);border-radius:3px;overflow:hidden;background:#0A0C0F;position:relative;cursor:pointer;transition:all .15s;}
+.gcard:hover{border-color:rgba(255,255,255,.34);transform:translateY(-2px);}
+.gcard .mini{aspect-ratio:1.91/1;position:relative;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:14px;}
+.gcard .mini .bl2{position:absolute;inset:0;
+  background:radial-gradient(60% 50% at 50% 34%, rgba(255,255,255,.09), transparent 68%),
+             radial-gradient(80% 70% at 50% 50%, #10141A 0%, #08090C 78%);}
+.gcard .mini .rb{position:absolute;inset:0;opacity:.34;
+  background:repeating-linear-gradient(90deg, rgba(255,255,255,.045) 0 1px, rgba(0,0,0,.16) 2px 8px);}
+.gcard .mini .n{position:relative;font-family:var(--fig);font-weight:600;font-size:19px;letter-spacing:-.05em;}
+.gcard .mini .n.up{color:#7FD9AC;} .gcard .mini .n.dn{color:#F09189;}
+.gcard .mini .n .gh2{position:absolute;left:-5px;top:0;opacity:.26;filter:blur(2.5px);}
+.gcard .mini .d{position:relative;font-family:var(--mono);font-size:6.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:#FFF;margin-top:8px;}
+.gcard .meta{display:flex;justify-content:space-between;padding:9px 11px;border-top:1px solid var(--hair);
+  font-family:var(--mono);font-size:6.5px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;}
+
+/* ---------------- ACHIEVEMENTS ---------------- */
+.ach{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:14px;}
+.ac{border:1px solid var(--edge);border-radius:4px;background:var(--ink);padding:16px;position:relative;overflow:hidden;}
+.ac.locked{opacity:.62;}
+.ac .head{display:flex;align-items:flex-start;gap:12px;}
+.ac .badge{width:38px;height:38px;flex:none;border-radius:50%;border:1px solid rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;font-family:var(--fig);font-size:12px;font-weight:600;color:#FFF;}
+.ac.done .badge{border-color:var(--up);color:var(--up-2);box-shadow:0 0 16px rgba(87,190,139,.2);}
+.ac .name{font-family:var(--disp);font-weight:600;font-size:13.5px;color:#FFF;}
+.ac .desc{font-size:12px;line-height:1.55;color:#FFF;opacity:1;margin-top:5px;}
+.ac .bar{height:4px;background:rgba(255,255,255,.09);margin-top:14px;overflow:hidden;}
+.ac .bar i{display:block;height:100%;background:var(--up);}
+.ac .prog{display:flex;justify-content:space-between;margin-top:8px;
+  font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;opacity:1;}
+.ac .prog b{font-family:var(--fig);letter-spacing:-.02em;opacity:1;}
+.ac.done .prog b{color:var(--up-2);}
+.ac .when{font-family:var(--mono);font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:#FFF;opacity:1;margin-top:12px;}
+.achead{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;}
+.achead .c{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#FFF;opacity:1;}
+.achead .c b{font-family:var(--fig);letter-spacing:-.02em;opacity:1;color:#FFF;}
+
+.foot{display:flex;justify-content:space-between;margin-top:36px;font-family:var(--mono);font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:#FFF;opacity:1;}
+
+@media(max-width:1080px){
+  .nav{display:none;}
+  .studio{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="flute"></div>
+
+<header class="top">
+  <div class="in">
+    <div class="brand"><span class="gh">Rewind</span>Rewind<em>No. 001</em></div>
+    <nav class="nav">
+      <a class="nl" href="rewind-calendar.html">Calendar</a>
+      <a class="nl" href="rewind-overview.html">Overview</a>
+      <a class="nl" href="rewind-history.html">History</a>
+      <a class="nl" href="rewind-community.html">Community</a>
+      <a class="nl on" href="rewind-showroom.html">Showroom</a>
+      <a class="nl">Settings</a>
+    </nav>
+    <div class="tools">
+      <span class="tstamp">NY · 16:42 · Closed</span>
+      <button class="btn-w">Log trade</button>
+      <span class="avatar"></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="plateband"><div class="im"></div><div class="fade"></div></div>
+
+  <div class="mast">
+    <div class="mtitle">
+      <span class="g2">Showroom</span><span class="g1">Showroom</span><span>Showroom</span>
+    </div>
+    <div class="mastr" id="mastr"></div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <!-- CARD STUDIO -->
+  <div id="studioWrap">
+    <div class="studio">
+      <div class="stage" id="stage"></div>
+
+      <div class="stack">
+        <div class="panel">
+          <div class="phead"><span class="t">Format</span></div>
+          <div class="pbody">
+            <div class="seg" id="fmt">
+              <button data-f="post" class="on">Post 1.91:1</button>
+              <button data-f="portrait">Portrait 4:5</button>
+              <button data-f="story">Story 9:16</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="phead"><span class="t">Show on the card</span></div>
+          <div class="pbody" id="opts"></div>
+        </div>
+
+        <div class="panel">
+          <div class="phead"><span class="t">Share</span><span class="lab" id="dims"></span></div>
+          <div class="acts">
+            <button class="abtn solid">Download PNG</button>
+            <button class="abtn">Copy image</button>
+              <button class="abtn">Save to Showroom</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:20px;">
+      <div class="phead"><span class="t">Saved cards</span><span class="lab" id="savedN"></span></div>
+      <div class="gal" id="gal"></div>
+    </div>
+  </div>
+
+  <!-- ACHIEVEMENTS -->
+  <div id="achWrap" style="display:none;">
+    <div class="achead">
+      <span class="lab">Unlocked from your ledger — nothing here is self-reported</span>
+      <span class="c" id="achCount"></span>
+    </div>
+    <div class="ach" id="ach"></div>
+  </div>
+
+  <div class="foot"><span>Rewind · Members' ledger</span><span>Log · Review · Repeat</span></div>
+</div>
+
+<script>
+/* ============================================================
+   ONE data source. Reconciles with Calendar / Overview / History.
+   ============================================================ */
+const HANDLE='christian';
+/* QR -> https://traderewindjournal.com */
+const QR=`<svg viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><g fill="#FFFFFF"><rect x="0" y="0" width="7" height="1"/><rect x="9" y="0" width="2" height="1"/><rect x="12" y="0" width="3" height="1"/><rect x="16" y="0" width="1" height="1"/><rect x="18" y="0" width="7" height="1"/><rect x="0" y="1" width="1" height="1"/><rect x="6" y="1" width="1" height="1"/><rect x="9" y="1" width="3" height="1"/><rect x="13" y="1" width="3" height="1"/><rect x="18" y="1" width="1" height="1"/><rect x="24" y="1" width="1" height="1"/><rect x="0" y="2" width="1" height="1"/><rect x="2" y="2" width="3" height="1"/><rect x="6" y="2" width="1" height="1"/><rect x="8" y="2" width="1" height="1"/><rect x="11" y="2" width="2" height="1"/><rect x="14" y="2" width="1" height="1"/><rect x="18" y="2" width="1" height="1"/><rect x="20" y="2" width="3" height="1"/><rect x="24" y="2" width="1" height="1"/><rect x="0" y="3" width="1" height="1"/><rect x="2" y="3" width="3" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="9" y="3" width="1" height="1"/><rect x="12" y="3" width="1" height="1"/><rect x="16" y="3" width="1" height="1"/><rect x="18" y="3" width="1" height="1"/><rect x="20" y="3" width="3" height="1"/><rect x="24" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="2" y="4" width="3" height="1"/><rect x="6" y="4" width="1" height="1"/><rect x="8" y="4" width="2" height="1"/><rect x="12" y="4" width="1" height="1"/><rect x="18" y="4" width="1" height="1"/><rect x="20" y="4" width="3" height="1"/><rect x="24" y="4" width="1" height="1"/><rect x="0" y="5" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="8" y="5" width="1" height="1"/><rect x="10" y="5" width="1" height="1"/><rect x="12" y="5" width="1" height="1"/><rect x="18" y="5" width="1" height="1"/><rect x="24" y="5" width="1" height="1"/><rect x="0" y="6" width="7" height="1"/><rect x="8" y="6" width="1" height="1"/><rect x="10" y="6" width="1" height="1"/><rect x="12" y="6" width="1" height="1"/><rect x="14" y="6" width="1" height="1"/><rect x="16" y="6" width="1" height="1"/><rect x="18" y="6" width="7" height="1"/><rect x="9" y="7" width="2" height="1"/><rect x="12" y="7" width="2" height="1"/><rect x="15" y="7" width="2" height="1"/><rect x="1" y="8" width="1" height="1"/><rect x="4" y="8" width="1" height="1"/><rect x="6" y="8" width="1" height="1"/><rect x="8" y="8" width="2" height="1"/><rect x="11" y="8" width="1" height="1"/><rect x="13" y="8" width="1" height="1"/><rect x="17" y="8" width="1" height="1"/><rect x="19" y="8" width="2" height="1"/><rect x="22" y="8" width="1" height="1"/><rect x="1" y="9" width="1" height="1"/><rect x="4" y="9" width="1" height="1"/><rect x="7" y="9" width="2" height="1"/><rect x="10" y="9" width="1" height="1"/><rect x="12" y="9" width="3" height="1"/><rect x="17" y="9" width="2" height="1"/><rect x="20" y="9" width="5" height="1"/><rect x="1" y="10" width="1" height="1"/><rect x="4" y="10" width="1" height="1"/><rect x="6" y="10" width="3" height="1"/><rect x="11" y="10" width="2" height="1"/><rect x="17" y="10" width="3" height="1"/><rect x="21" y="10" width="1" height="1"/><rect x="23" y="10" width="2" height="1"/><rect x="1" y="11" width="1" height="1"/><rect x="3" y="11" width="2" height="1"/><rect x="7" y="11" width="1" height="1"/><rect x="9" y="11" width="2" height="1"/><rect x="12" y="11" width="1" height="1"/><rect x="14" y="11" width="1" height="1"/><rect x="16" y="11" width="3" height="1"/><rect x="21" y="11" width="1" height="1"/><rect x="24" y="11" width="1" height="1"/><rect x="2" y="12" width="2" height="1"/><rect x="6" y="12" width="1" height="1"/><rect x="8" y="12" width="1" height="1"/><rect x="13" y="12" width="2" height="1"/><rect x="16" y="12" width="3" height="1"/><rect x="20" y="12" width="1" height="1"/><rect x="22" y="12" width="1" height="1"/><rect x="24" y="12" width="1" height="1"/><rect x="0" y="13" width="1" height="1"/><rect x="3" y="13" width="2" height="1"/><rect x="7" y="13" width="2" height="1"/><rect x="11" y="13" width="1" height="1"/><rect x="19" y="13" width="1" height="1"/><rect x="21" y="13" width="1" height="1"/><rect x="24" y="13" width="1" height="1"/><rect x="2" y="14" width="1" height="1"/><rect x="5" y="14" width="2" height="1"/><rect x="8" y="14" width="2" height="1"/><rect x="15" y="14" width="1" height="1"/><rect x="17" y="14" width="6" height="1"/><rect x="2" y="15" width="1" height="1"/><rect x="12" y="15" width="1" height="1"/><rect x="14" y="15" width="2" height="1"/><rect x="18" y="15" width="1" height="1"/><rect x="20" y="15" width="1" height="1"/><rect x="22" y="15" width="1" height="1"/><rect x="24" y="15" width="1" height="1"/><rect x="0" y="16" width="2" height="1"/><rect x="5" y="16" width="3" height="1"/><rect x="11" y="16" width="2" height="1"/><rect x="14" y="16" width="8" height="1"/><rect x="24" y="16" width="1" height="1"/><rect x="8" y="17" width="3" height="1"/><rect x="12" y="17" width="1" height="1"/><rect x="15" y="17" width="2" height="1"/><rect x="20" y="17" width="2" height="1"/><rect x="23" y="17" width="2" height="1"/><rect x="0" y="18" width="7" height="1"/><rect x="9" y="18" width="3" height="1"/><rect x="14" y="18" width="3" height="1"/><rect x="18" y="18" width="1" height="1"/><rect x="20" y="18" width="3" height="1"/><rect x="0" y="19" width="1" height="1"/><rect x="6" y="19" width="1" height="1"/><rect x="11" y="19" width="1" height="1"/><rect x="13" y="19" width="2" height="1"/><rect x="16" y="19" width="1" height="1"/><rect x="20" y="19" width="2" height="1"/><rect x="24" y="19" width="1" height="1"/><rect x="0" y="20" width="1" height="1"/><rect x="2" y="20" width="3" height="1"/><rect x="6" y="20" width="1" height="1"/><rect x="8" y="20" width="1" height="1"/><rect x="11" y="20" width="12" height="1"/><rect x="0" y="21" width="1" height="1"/><rect x="2" y="21" width="3" height="1"/><rect x="6" y="21" width="1" height="1"/><rect x="9" y="21" width="1" height="1"/><rect x="13" y="21" width="2" height="1"/><rect x="16" y="21" width="1" height="1"/><rect x="18" y="21" width="3" height="1"/><rect x="24" y="21" width="1" height="1"/><rect x="0" y="22" width="1" height="1"/><rect x="2" y="22" width="3" height="1"/><rect x="6" y="22" width="1" height="1"/><rect x="9" y="22" width="1" height="1"/><rect x="13" y="22" width="2" height="1"/><rect x="19" y="22" width="1" height="1"/><rect x="23" y="22" width="1" height="1"/><rect x="0" y="23" width="1" height="1"/><rect x="6" y="23" width="1" height="1"/><rect x="8" y="23" width="1" height="1"/><rect x="10" y="23" width="2" height="1"/><rect x="13" y="23" width="2" height="1"/><rect x="18" y="23" width="2" height="1"/><rect x="22" y="23" width="3" height="1"/><rect x="0" y="24" width="7" height="1"/><rect x="9" y="24" width="4" height="1"/><rect x="14" y="24" width="2" height="1"/><rect x="17" y="24" width="4" height="1"/><rect x="24" y="24" width="1" height="1"/></g></svg>`;
+const PERIODS={
+  daily:{
+    key:'daily', tab:'Daily', per:'Daily card', range:'Wed 22 Jul 2026', label:'Wed 22 Jul 2026', hold:21,
+    net:1085, trades:3, wins:2, losses:1, be:0, win:67, best:900, worstR:-1.00, bestR:2.10,
+    days:1, avgR:0.83, pf:3.58,
+    /* cumulative through the session, trade by trade */
+    viz:{cum:[0,900,475,1085], from:'09:32', to:'11:02', note:'3 trades'}
+  },
+  weekly:{
+    key:'weekly', tab:'Weekly', per:'Weekly card', range:'Jul 19 – 25, 2026', label:'Week of Jul 19, 2026', hold:19,
+    net:1645, trades:10, wins:7, losses:3, be:0, win:70, best:1085, worstR:-1.10, bestR:2.40,
+    days:3, avgR:0.92, pf:2.60,
+    viz:{cum:[0,740,560,1645], from:'Mon 20', to:'Wed 22', note:'3 sessions'}
+  },
+  monthly:{
+    key:'monthly', tab:'Monthly', per:'Monthly card', range:'July 2026', label:'July 2026', hold:18,
+    net:4835, trades:53, wins:31, losses:15, be:7, win:67, best:1180, worstR:-1.40, bestR:2.80,
+    days:15, avgR:0.86, pf:1.80,
+    viz:{cum:[0,420,110,960,1200,680,1785,2175,1495,1805,2730,2730,3190,3930,3750,4835], from:'Jul 01', to:'Jul 22', note:'15 sessions'}
+  },
+  alltime:{
+    key:'alltime', tab:'All-time', per:'All-time card', range:'Apr 2026 – Jul 2026', label:'All time', hold:20,
+    net:14206, trades:214, wins:121, losses:68, be:25, win:64, best:1180, worstR:-1.80, bestR:2.80,
+    days:58, avgR:0.71, pf:1.72,
+    viz:{cum:[0,820,1640,2210,3020,3980,4610,5540,6180,7020,7880,8640,9371,10620,11540,12380,13210,14206], from:'Apr', to:'Jul', note:'58 sessions'}
+  }
+};
+
+/* achievements are computed against the all-time record */
+const A=PERIODS.alltime, MO=PERIODS.monthly;
+const ACHIEVEMENTS=[
+  {n:'First hundred',   d:'Log 100 trades with a chart attached.',            have:A.trades, need:100, unit:'trades', on:'12 Jun 2026'},
+  {n:'Two hundred',     d:'Log 200 trades.',                                   have:A.trades, need:200, unit:'trades', on:'19 Jul 2026'},
+  {n:'Sixty sessions',  d:'Log 60 separate trading sessions.',                 have:A.days,   need:60,  unit:'sessions'},
+  {n:'Green week',      d:'Close a full week in profit.',                      have:1,        need:1,   unit:'weeks',   on:'25 Jul 2026'},
+  {n:'Green month',     d:'Close a full month in profit.',                     have:1,        need:1,   unit:'months',  on:'31 Jul 2026'},
+  {n:'Five in a row',   d:'Five consecutive green sessions.',                  have:5,        need:5,   unit:'days',    on:'10 Jul 2026'},
+  {n:'Three R',         d:'Close a single trade at 3R or better.',             have:A.bestR,  need:3,   unit:'R',       dec:true},
+  {n:'Factor of two',   d:'Hold a monthly profit factor above 2.00.',          have:MO.pf,    need:2,   unit:'PF',      dec:true},
+  {n:'Discipline',      d:'Twenty sessions with no trade beyond the stop.',    have:14,       need:20,  unit:'sessions'},
+  {n:'Five figures',    d:'Reach $10,000 net all-time.',                       have:A.net,    need:10000, unit:'$',     on:'16 Jul 2026'},
+  {n:'Twenty five k',   d:'Reach $25,000 net all-time.',                       have:A.net,    need:25000, unit:'$'},
+  {n:'Full notes',      d:'Write a note on 50 trades.',                        have:38,       need:50,  unit:'notes'}
+];
+
+const SAVED=[
+  {t:'Monthly · July 2026', net:4835, when:'2h ago', fmt:'Post'},
+  {t:'Weekly · Jul 19–25',  net:1645, when:'Yesterday', fmt:'Story'},
+  {t:'Daily · Wed 22 Jul',  net:1085, when:'Yesterday', fmt:'Post'},
+  {t:'Weekly · Jul 12–18',  net:1207, when:'6d ago', fmt:'Post'},
+  {t:'Daily · Thu 09 Jul',  net:1105, when:'15d ago', fmt:'Portrait'},
+  {t:'Monthly · June 2026', net:3572, when:'24d ago', fmt:'Post'}
+];
+
+/* ---------- helpers ---------- */
+const signed=n=>n===0?'$0':(n<0?'−$':'+$')+Math.abs(Math.round(n)).toLocaleString();
+const money=n=>'$'+Math.abs(Math.round(n)).toLocaleString();
+const cls=n=>n>0?'up':n<0?'dn':'';
+
+/* ---------- state ---------- */
+let TAB='monthly', FMT='post';
+const SHOW={trades:true, sessions:true, win:true, avgR:true, best:true, ticks:true, handle:true, seal:true};
+
+/* ---------- tabs ---------- */
+function renderTabs(){
+  const keys=[...Object.keys(PERIODS),'ach'];
+  const L={...Object.fromEntries(Object.values(PERIODS).map(p=>[p.key,p.tab])), ach:'Achievements'};
+  document.getElementById('tabs').innerHTML=keys.map(k=>
+    `<button class="${TAB===k?'on':''}" data-t="${k}">${L[k]}</button>`).join('');
+  document.querySelectorAll('#tabs button').forEach(b=>b.addEventListener('click',()=>{
+    TAB=b.dataset.t; renderTabs(); renderAll();
+  }));
+}
+
+/* ---------- the card ---------- */
+function cardHTML(p){
+  /* one short line of stats — capped so it can never wrap or clip */
+  const all=[];
+  if(SHOW.trades)   all.push(p.trades+' trades');
+  if(SHOW.win)      all.push(p.win+'% win');
+
+  if(SHOW.avgR)     all.push((p.avgR>=0?'+':'−')+Math.abs(p.avgR).toFixed(2)+' RR');
+  if(SHOW.sessions) all.push(p.days+(p.days===1?' session':' sessions'));
+  if(SHOW.best)     all.push('best '+signed(p.best));
+  const bits=all.slice(0,3);
+  const TALL = FMT!=='post';
+
+  const fig=signed(p.net);
+  /* one optical width for every figure: Azeret advances ~0.567em per character
+     at this tracking, so solve for the size that fills the content box */
+  const content = FMT==='post' ? 0.912 : FMT==='story' ? 0.84 : 0.90;
+  /* landscape is the shortest card, so it fills a little less of the measure */
+  const fill = FMT==='post' ? 0.62 : 0.94;
+  const figCqw = Math.min(FMT==='post'?13.5:21, content*100*fill/(fig.length*0.567)).toFixed(2);
+
+  return `<div class="card ${FMT}">
+    <div class="bloom"></div><div class="ribs"></div><div class="vign"></div><div class="grain"></div>
+    <span class="cspine"></span>
+    <span class="cvert">${p.label}</span>
+    <div class="body">
+
+      <div class="ctop">
+        <span class="cmark">
+          <span class="g g3">Rewind</span><span class="g g2">Rewind</span><span class="g g1">Rewind</span>
+          <span class="n">Rewind<em>Traderewindjournal.com</em></span>
+        </span>
+        <span class="cwhen">${p.label}</span>
+      </div>
+
+      <div class="chero">
+        <div class="cfig num ${cls(p.net)}" style="font-size:${figCqw}cqw">
+          <span class="gho">${fig}</span>${fig}
+        </div>
+        ${SHOW.ticks?`<div class="cbase"><i></i><span>${p.net>0?'Net profit':p.net<0?'Net loss':'Break even'}</span><i></i></div>`:''}
+        ${TALL?`<div class="cline">${bits.join('  ·  ')}</div>`:''}
+      </div>
+
+
+      <div class="cbot">
+        <span class="cbl">${[SHOW.handle?'@'+HANDLE:'', TALL?'':bits.join('  ·  ')].filter(Boolean).join('  ·  ')}</span>
+        ${SHOW.seal?`<span class="cqr">${QR}</span>`:'<span></span>'}
+      </div>
+
+    </div>
+  </div>`;
+}
+
+/* ---------- options ---------- */
+const OPT_LABEL={trades:'Trades',sessions:'Sessions',win:'Win rate',avgR:'Average RR',best:'Best trade',ticks:'Base rule',handle:'Your handle',seal:'QR code'};
+function renderOpts(){
+  document.getElementById('opts').innerHTML=Object.keys(SHOW).map(k=>
+    `<div class="orow"><span class="tog ${SHOW[k]?'on':''}" data-k="${k}" role="switch" aria-checked="${SHOW[k]}"></span><span>${OPT_LABEL[k]}</span></div>`).join('');
+  document.querySelectorAll('#opts .tog').forEach(t=>t.addEventListener('click',()=>{
+    SHOW[t.dataset.k]=!SHOW[t.dataset.k]; renderOpts(); renderStage();
+  }));
+}
+const DIMS={post:'1200 × 628',portrait:'1080 × 1350',story:'1080 × 1920'};
+function renderStage(){
+  const p=PERIODS[TAB]; if(!p) return;
+  document.getElementById('stage').innerHTML=cardHTML(p);
+  document.getElementById('dims').textContent=DIMS[FMT];
+}
+
+/* ---------- gallery ---------- */
+function renderGal(){
+  document.getElementById('savedN').textContent=SAVED.length+' saved';
+  document.getElementById('gal').innerHTML=SAVED.map(c=>
+    `<div class="gcard">
+      <div class="mini"><span class="bl2"></span><span class="rb"></span>
+        <span class="n num ${cls(c.net)}"><span class="gh2">${signed(c.net)}</span>${signed(c.net)}</span>
+        <span class="d">${c.t}</span></div>
+      <div class="meta"><span>${c.fmt}</span><span>${c.when}</span></div>
+    </div>`).join('');
+}
+
+/* ---------- achievements ---------- */
+function renderAch(){
+  const done=ACHIEVEMENTS.filter(a=>a.have>=a.need).length;
+  document.getElementById('achCount').innerHTML=`<b>${done}</b> of ${ACHIEVEMENTS.length} unlocked`;
+  document.getElementById('ach').innerHTML=ACHIEVEMENTS.map(a=>{
+    const ok=a.have>=a.need, pctv=Math.min(a.have/a.need,1)*100;
+    const fmtv=v=>a.unit==='$'?money(v):a.dec?v.toFixed(2):Math.round(v);
+    return `<div class="ac ${ok?'done':'locked'}">
+      <div class="head">
+        <span class="badge">${ok?'✓':fmtv(a.need).replace('$','')}</span>
+        <span><span class="name">${a.n}</span><div class="desc">${a.d}</div></span>
+      </div>
+      <div class="bar"><i style="width:${pctv}%"></i></div>
+      <div class="prog"><span><b>${fmtv(a.have)}</b> of ${fmtv(a.need)} ${a.unit==='$'?'':a.unit}</span><span>${Math.round(pctv)}%</span></div>
+      ${ok&&a.on?`<div class="when">Unlocked ${a.on}</div>`:ok?`<div class="when">Unlocked</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+/* ---------- switch views ---------- */
+function renderAll(){
+  const isAch=TAB==='ach';
+  document.getElementById('studioWrap').style.display=isAch?'none':'block';
+  document.getElementById('achWrap').style.display=isAch?'block':'none';
+  if(isAch){
+    const done=ACHIEVEMENTS.filter(a=>a.have>=a.need).length;
+    document.getElementById('mastr').innerHTML=`${done} of ${ACHIEVEMENTS.length} unlocked<br>from ${A.trades} logged trades`;
+    renderAch();
+  }else{
+    document.getElementById('mastr').innerHTML=`${SAVED.length} cards saved<br>every figure from your ledger`;
+    renderStage(); renderOpts(); renderGal();
+  }
+}
+document.querySelectorAll('#fmt button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#fmt button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); FMT=b.dataset.f; renderStage(); renderOpts();
+}));
+
+renderTabs(); renderAll();
+</script>
+</body>
+</html>
