@@ -217,7 +217,7 @@ body{min-height:100vh;background:var(--black);color:var(--text);font-family:var(
       <div class="card done">
         <div class="g" id="gTitle">You're in</div>
         <p id="gLead">Your ledger is ready.</p>
-        <button class="btn solid">Open Rewind</button>
+        <button class="btn solid" onclick="location.href='/v2/rewind-calendar.html'">Open Rewind</button>
       </div>
     </div>
 
@@ -225,8 +225,25 @@ body{min-height:100vh;background:var(--black);color:var(--text);font-family:var(
 </div>
 
 <script>
-const RETURNING = false;
-const SIMULATE  = null;     // null | 'denied' | 'no-membership' | 'timeout'
+/* ============================================================
+   REAL OAUTH. His vercel.json rewrites /oauth/discord/start ->
+   /api/oauth/discord/start, so this page hands off to the flow
+   that already exists rather than reimplementing it.
+
+   Add ?sim=1 to the URL to run the old design simulation instead
+   (handle claim, welcome, the three error states) without touching
+   the live flow. ?sim=denied | no-membership | timeout jumps straight
+   to an error state.
+   ============================================================ */
+const OAUTH_START = '/oauth/discord/start';
+
+const _q = new URLSearchParams(location.search);
+const SIM_MODE  = _q.has('sim');
+const RETURNING = _q.get('sim') === 'returning';
+const SIMULATE  = ['denied','no-membership','timeout'].includes(_q.get('sim')) ? _q.get('sim') : null;
+
+/* his callback can hand errors back as ?error= — surface them properly */
+const INBOUND_ERROR = _q.get('error');
 const taken = ['nq_operator','jt_futures','christian','admin','rewind'];
 const S={1:s1,2:s2,3:s3,err:sErr};
 const go=n=>{Object.values(S).forEach(x=>x.classList.remove('on'));S[n].classList.add('on');};
@@ -258,6 +275,15 @@ authBtn.addEventListener('click',()=>{
   authBtn.classList.add('busy'); authBtn.innerHTML='Authorizing…';
   sub1.style.display='none'; log.style.display='block';
   ['g1','g2'].forEach((id,i)=>setTimeout(()=>document.getElementById(id).classList.add('hit'),300+i*620));
+
+  /* LIVE: leave for Discord. no timers, no fake states. */
+  if(!SIM_MODE){
+    const back = new URLSearchParams({ return_to: '/v2/rewind-calendar.html' });
+    location.href = `${OAUTH_START}?${back}`;
+    return;
+  }
+
+  /* SIMULATION: the design flow, for review only */
   setTimeout(()=>{
     resetAuthBtn();
     if(SIMULATE){ showError(SIMULATE); return; }
@@ -265,6 +291,12 @@ authBtn.addEventListener('click',()=>{
     else { go(2); setTimeout(()=>handle.focus(),240); }
   },1900);
 });
+
+/* if the callback bounced back with an error, show it on arrival */
+if(INBOUND_ERROR){
+  const map={ access_denied:'denied', no_membership:'no-membership', timeout:'timeout' };
+  showError(map[INBOUND_ERROR] || 'denied');
+}
 
 const hst=document.getElementById('hst'), claimBtn=document.getElementById('claimBtn');
 handle.addEventListener('input',()=>{

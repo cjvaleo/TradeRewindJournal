@@ -248,6 +248,13 @@ select option{background:var(--raise);color:#FFF;}
 .plateband .fade{position:absolute;inset:0;
   background:linear-gradient(180deg, rgba(14,17,20,.45) 0%, rgba(14,17,20,.78) 55%, var(--black) 100%);}
 .wrap{position:relative;}
+
+/* state band */
+.notice{display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:11px 16px;
+  border:1px solid var(--edge);border-radius:3px;background:rgba(255,255,255,.04);
+  font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;}
+.notice i{width:4px;height:4px;background:#FFF;flex:none;}
+.notice a{color:#FFF;text-decoration:underline;}
 </style>
 </head>
 <body>
@@ -327,11 +334,12 @@ select option{background:var(--raise);color:#FFF;}
   </div>
 
   <!-- filtered totals -->
+  <div id="notice"></div>
   <div class="summary" id="summary"></div>
 
   <!-- the tape -->
   <div class="thead">
-    <div>Time</div><div>Sym</div><div>Side</div><div>Model</div>
+    <div>Logged</div><div>Sym</div><div>Side</div><div>Model</div>
     <div class="rhead">−3R &nbsp;·&nbsp; 0 &nbsp;·&nbsp; +3R</div>
     <div>Gr</div><div class="n">R</div><div class="n">P&amp;L</div><div class="n last"></div>
   </div>
@@ -340,55 +348,16 @@ select option{background:var(--raise);color:#FFF;}
   <div class="foot"><span>Rewind · Members' ledger</span><span>Log · Review · Repeat</span></div>
 </div>
 
-<script>
+<script type="module">
+import { loadTrades } from './rewind-data.js';
+
 /* ============================================================
    THE TAPE — one entry per trade.
    Day subtotals here must equal the calendar's day cells.
    ============================================================ */
-const T=[
-  /* Jul 22 · +$1,085 */
-  {id:'T-0271',d:'2026-07-22',t:'09:32',sym:'NQ',side:'Long', model:'OTE',        acct:'Funded',sess:'NY AM',entry:18240,exit:18412,stop:18183,size:2,r:2.10,pnl:900, grade:'A',hold:28,conf:[['1H','FVG'],['15m','Order block'],['5m','Liquidity sweep']],note:'Waited for the 5m CISD to confirm before entry. Left the runner alone.'},
-  {id:'T-0272',d:'2026-07-22',t:'10:14',sym:'NQ',side:'Short',model:'CISD',       acct:'Eval',  sess:'NY AM',entry:18398,exit:18441,stop:18441,size:2,r:-1.00,pnl:-425,grade:'C',hold:7, conf:[['5m','CISD']],note:'Countertrend against the 5m. Stopped at the plan, no complaints.'},
-  {id:'T-0273',d:'2026-07-22',t:'11:02',sym:'ES',side:'Long', model:'FVG',        acct:'Funded',sess:'NY AM',entry:6081,exit:6093,stop:6072,size:3,r:1.40,pnl:610, grade:'B',hold:19,conf:[['15m','FVG'],['5m','Retest']],note:''},
-
-  /* Jul 21 · −$180 */
-  {id:'T-0268',d:'2026-07-21',t:'09:41',sym:'NQ',side:'Long', model:'OTE',        acct:'Funded',sess:'NY AM',entry:18190,exit:18246,stop:18160,size:2,r:1.20,pnl:320, grade:'B',hold:22,conf:[['1H','OTE'],['5m','Displacement']],note:''},
-  {id:'T-0269',d:'2026-07-21',t:'10:58',sym:'NQ',side:'Short',model:'Silver Bullet',acct:'Funded',sess:'NY AM',entry:18262,exit:18291,stop:18291,size:2,r:-1.00,pnl:-250,grade:'C',hold:11,conf:[['5m','Silver Bullet']],note:'Silver Bullet window but no displacement. Should not have taken it.'},
-  {id:'T-0270',d:'2026-07-21',t:'13:24',sym:'NQ',side:'Long', model:'Silver Bullet',acct:'Eval',  sess:'NY PM',entry:18248,exit:18219,stop:18219,size:2,r:-1.00,pnl:-250,grade:'D',hold:9, conf:[['5m','Silver Bullet']],note:'Second attempt at the same idea. Revenge entry.'},
-
-  /* Jul 20 · +$740 */
-  {id:'T-0264',d:'2026-07-20',t:'10:02',sym:'NQ',side:'Long', model:'OTE',        acct:'Funded',sess:'NY AM',entry:18102,exit:18268,stop:18043,size:2,r:2.80,pnl:1180,grade:'A',hold:41,conf:[['1H','OTE'],['15m','FVG'],['5m','Displacement']],note:'Best entry of the week. Full position held to the 1H objective.'},
-  {id:'T-0265',d:'2026-07-20',t:'10:47',sym:'NQ',side:'Short',model:'CISD',       acct:'Funded',sess:'NY AM',entry:18251,exit:18294,stop:18294,size:2,r:-1.00,pnl:-430,grade:'C',hold:8, conf:[['5m','CISD']],note:''},
-  {id:'T-0266',d:'2026-07-20',t:'11:18',sym:'ES',side:'Long', model:'FVG',        acct:'Eval',  sess:'NY AM',entry:6058,exit:6062,stop:6051,size:2,r:0.60,pnl:200, grade:'B',hold:14,conf:[['15m','FVG']],note:''},
-  {id:'T-0267',d:'2026-07-20',t:'14:06',sym:'NQ',side:'Short',model:'Turtle Soup',acct:'Paper', sess:'NY PM',entry:18266,exit:18288,stop:18288,size:1,r:-1.00,pnl:-210,grade:'C',hold:12,conf:[['5m','Turtle Soup']],note:'Paper account. Testing the afternoon reversal idea — still not there.'},
-
-  /* Jul 17 · +$460 */
-  {id:'T-0261',d:'2026-07-17',t:'09:39',sym:'ES',side:'Long', model:'FVG',        acct:'Eval',  sess:'NY AM',entry:6041,exit:6053,stop:6032,size:3,r:1.30,pnl:460, grade:'B',hold:24,conf:[['15m','FVG'],['5m','Retest']],note:''},
-  {id:'T-0262',d:'2026-07-17',t:'10:22',sym:'NQ',side:'Long', model:'OTE',        acct:'Funded',sess:'NY AM',entry:18014,exit:18049,stop:17988,size:2,r:1.10,pnl:250, grade:'B',hold:18,conf:[['1H','OTE']],note:''},
-  {id:'T-0263',d:'2026-07-17',t:'03:55',sym:'NQ',side:'Short',model:'2022 Model', acct:'Funded',sess:'London',entry:17962,exit:17990,stop:17990,size:2,r:-1.00,pnl:-250,grade:'C',hold:16,conf:[['15m','2022 Model']],note:'London session attempt. Thin liquidity, wide stop.'},
-
-  /* Jul 16 · $0 */
-  {id:'T-0260',d:'2026-07-16',t:'09:48',sym:'NQ',side:'Long', model:'OTE',        acct:'Paper', sess:'NY AM',entry:17940,exit:17940,stop:17912,size:1,r:0.00,pnl:0,   grade:'B',hold:31,conf:[['1H','OTE']],note:'Moved stop to break even and got tapped out. Correct process.'},
-
-  /* Jul 15 · +$925 */
-  {id:'T-0256',d:'2026-07-15',t:'09:36',sym:'NQ',side:'Long', model:'OTE',        acct:'Funded',sess:'NY AM',entry:17862,exit:17944,stop:17820,size:2,r:1.90,pnl:540, grade:'A',hold:33,conf:[['1H','OTE'],['5m','Displacement']],note:''},
-  {id:'T-0257',d:'2026-07-15',t:'10:11',sym:'ES',side:'Long', model:'FVG',        acct:'Funded',sess:'NY AM',entry:6012,exit:6027,stop:6002,size:3,r:1.50,pnl:610, grade:'A',hold:27,conf:[['15m','FVG'],['5m','Retest']],note:''},
-  {id:'T-0258',d:'2026-07-15',t:'11:04',sym:'NQ',side:'Short',model:'CISD',       acct:'Eval',  sess:'NY AM',entry:17951,exit:17974,stop:17974,size:2,r:-0.80,pnl:-225,grade:'C',hold:9, conf:[['5m','CISD']],note:''},
-  {id:'T-0259',d:'2026-07-15',t:'13:41',sym:'NQ',side:'Long', model:'Unicorn',    acct:'Paper', sess:'NY PM',entry:17948,exit:17948,stop:17930,size:1,r:0.00,pnl:0,   grade:'B',hold:22,conf:[['5m','Unicorn']],note:''},
-
-  /* Jul 14 · +$310 */
-  {id:'T-0254',d:'2026-07-14',t:'09:44',sym:'NQ',side:'Long', model:'OTE',        acct:'Eval',  sess:'NY AM',entry:17784,exit:17858,stop:17742,size:2,r:1.70,pnl:530, grade:'A',hold:29,conf:[['1H','OTE'],['15m','Order block']],note:''},
-  {id:'T-0255',d:'2026-07-14',t:'10:52',sym:'NQ',side:'Short',model:'Turtle Soup',acct:'Eval',  sess:'NY AM',entry:17861,exit:17885,stop:17885,size:2,r:-0.90,pnl:-220,grade:'C',hold:10,conf:[['5m','Turtle Soup']],note:''},
-
-  /* Jul 13 · −$680 */
-  {id:'T-0247',d:'2026-07-13',t:'09:33',sym:'NQ',side:'Short',model:'CISD',       acct:'Funded',sess:'NY AM',entry:17720,exit:17776,stop:17776,size:2,r:-1.40,pnl:-540,grade:'D',hold:6, conf:[['5m','CISD']],note:'Shorted into the open drive. Worst entry of the month.'},
-  {id:'T-0248',d:'2026-07-13',t:'09:58',sym:'NQ',side:'Long', model:'OTE',        acct:'Funded',sess:'NY AM',entry:17758,exit:17802,stop:17730,size:2,r:1.20,pnl:310, grade:'B',hold:21,conf:[['1H','OTE']],note:''},
-  {id:'T-0249',d:'2026-07-13',t:'10:26',sym:'NQ',side:'Short',model:'Silver Bullet',acct:'Eval', sess:'NY AM',entry:17796,exit:17826,stop:17826,size:2,r:-1.00,pnl:-280,grade:'C',hold:8, conf:[['5m','Silver Bullet']],note:''},
-  {id:'T-0250',d:'2026-07-13',t:'10:49',sym:'ES',side:'Short',model:'CISD',       acct:'Eval',  sess:'NY AM',entry:5981,exit:5988,stop:5988,size:2,r:-0.80,pnl:-190,grade:'C',hold:7, conf:[['5m','CISD']],note:''},
-  {id:'T-0251',d:'2026-07-13',t:'11:15',sym:'NQ',side:'Long', model:'FVG',        acct:'Funded',sess:'NY AM',entry:17790,exit:17826,stop:17766,size:2,r:1.10,pnl:260, grade:'B',hold:17,conf:[['15m','FVG']],note:''},
-  {id:'T-0252',d:'2026-07-13',t:'13:32',sym:'NQ',side:'Short',model:'Silver Bullet',acct:'Funded',sess:'NY PM',entry:17818,exit:17872,stop:17872,size:2,r:-1.40,pnl:-540,grade:'D',hold:9, conf:[['5m','Silver Bullet']],note:'Third Silver Bullet attempt in a day. This is the leak.'},
-  {id:'T-0253',d:'2026-07-13',t:'14:48',sym:'NQ',side:'Long', model:'OTE',        acct:'Paper', sess:'NY PM',entry:17856,exit:17898,stop:17832,size:1,r:1.30,pnl:300, grade:'B',hold:23,conf:[['1H','OTE']],note:''}
-];
+/* Loaded live from Supabase and mapped onto the field names this page
+   already uses, so every filter, sort and render below is untouched. */
+let T = [];
 
 /* the calendar's day cells — History must agree with them */
 const CAL_DAY_NET={'2026-07-13':-680,'2026-07-14':310,'2026-07-15':925,'2026-07-16':0,
@@ -654,7 +623,70 @@ document.getElementById('fSymbol').addEventListener('change',e=>{F.sym=e.target.
 document.getElementById('sort').addEventListener('change',e=>{F.sort=e.target.value;render();});
 
 syncOutcome();
-render();
+
+/* ============================================================
+   LOAD
+   Maps the adapted trade onto this page's existing field names.
+   Fields that do not exist in trade_data degrade honestly:
+     model -> '—'  (no setup field is logged yet)
+     hold  -> 0    (no entry/exit timestamps exist)
+     t     -> the time the row was LOGGED, not the trade time
+   ============================================================ */
+function toRow(x){
+  const hhmm = x.loggedAt ? new Date(x.loggedAt).toTimeString().slice(0,5) : '—';
+  return {
+    id: x.id, d: x.date, t: hhmm,
+    sym: x.symbol, side: x.side,
+    model: x.model && x.model !== 'Unspecified' ? x.model : '—',
+    acct: x.account, sess: x.session,
+    entry: x.entry, exit: x.exit, stop: x.stop,
+    size: x.contracts, r: x.r, pnl: x.pnl,
+    grade: x.grade || '—', hold: x.holdMin || 0,
+    conf: (x.confluences||[]).map(c => [c.timeframe || '', c.name]),
+    note: x.note || '',
+    images: x.images || [], points: x.points, tvLink: x.tvLink,
+  };
+}
+
+function banner(source){
+  const box=document.getElementById('notice'); if(!box) return;
+  const msg = source==='demo' ? 'Demo data — set your Supabase keys to read your own ledger'
+           : source==='no-session' ? 'Signed out — <a href="rewind-login-echo.html">sign in with Discord</a> to see your ledger'
+           : source==='error' ? 'Could not reach your ledger — showing demo data' : '';
+  box.innerHTML = msg ? `<div class="notice"><i></i><span>${msg}</span></div>` : '';
+}
+
+(async () => {
+  const { trades, source } = await loadTrades(scopeRange());
+  banner(source);
+  T = trades.map(toRow);
+  buildSelects();
+  render();
+})();
+
+/* the URL scope decides how much to fetch */
+function scopeRange(){
+  if(F.date)  return { from:F.date, to:F.date };
+  if(F.from||F.to) return { from:F.from||undefined, to:F.to||undefined };
+  if(F.month) return { from:F.month+'-01', to:F.month+'-31' };
+  return {};
+}
+
+/* the four selects are populated FROM THE DATA, so they can't offer
+   a filter that returns nothing */
+function buildSelects(){
+  const fill=(id,vals,label)=>{
+    const el=document.getElementById(id); if(!el) return;
+    const cur=el.value;
+    el.innerHTML=`<option value="">${label}</option>`+
+      [...new Set(vals)].filter(Boolean).sort().map(v=>`<option value="${v}">${v}</option>`).join('');
+    if([...el.options].some(o=>o.value===cur)) el.value=cur;
+  };
+  fill('fAccount', T.map(t=>t.acct), 'All accounts');
+  fill('fModel',   T.map(t=>t.model), 'All models');
+  fill('fSession', T.map(t=>t.sess),  'All sessions');
+  fill('fSymbol',  T.map(t=>t.sym),   'All symbols');
+}
 </script>
 </body>
 </html>
