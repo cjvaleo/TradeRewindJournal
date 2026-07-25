@@ -204,6 +204,12 @@ tbody tr:hover .arrow{opacity:.7;}
 .plateband .fade{position:absolute;inset:0;
   background:linear-gradient(180deg, rgba(14,17,20,.45) 0%, rgba(14,17,20,.78) 55%, var(--black) 100%);}
 .wrap{position:relative;}
+
+.notice{display:flex;align-items:center;gap:12px;margin:0 0 14px;padding:11px 16px;
+  border:1px solid var(--edge);border-radius:3px;background:rgba(255,255,255,.04);
+  font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#FFF;}
+.notice i{width:4px;height:4px;background:#FFF;flex:none;}
+.notice a{color:#FFF;text-decoration:underline;}
 </style>
 </head>
 <body>
@@ -220,7 +226,7 @@ tbody tr:hover .arrow{opacity:.7;}
     </nav>
     <div class="tools">
       <span class="tstamp">NY · 16:42 · Closed</span>
-      <button class="btn-w">Log trade</button>
+      <button class="btn-w" id="logBtn">Log trade</button>
       <span class="avatar"></span>
     </div>
   </div>
@@ -251,6 +257,7 @@ tbody tr:hover .arrow{opacity:.7;}
       <span class="q" id="statnote"></span>
     </div>
     <div id="thin"></div>
+    <div id="notice"></div>
     <div class="stats" id="stats"></div>
   </div>
 
@@ -301,91 +308,17 @@ tbody tr:hover .arrow{opacity:.7;}
   <div class="foot"><span>Rewind · Members' ledger</span><span>Log · Review · Repeat</span></div>
 </div>
 
-<script>
+<script src="rewind-config.js?v=3"></script>
+<script type="module">
 /* ============================================================
    RAW AGGREGATES — the only hand-entered numbers on the page.
    Everything displayed is derived from these.
    `prior` may be null: the page then says there's no comparison
    instead of inventing one.
    ============================================================ */
-const RAW = {
-  day:{
-    name:'Day', range:'Wed 22 Jul', cmpLabel:'Tue 21 Jul', scope:'date=2026-07-22',
-    trades:3, wins:2, losses:1, be:0,
-    grossProfit:1522, grossLoss:425, fees:12,
-    tradingDays:1, greenDays:1,
-    maxDD:425, ddFrom:'10:14', ddTo:'10:41',
-    holdAvg:21, holdWin:28, holdLoss:7,
-    series:[['09:32',900],['10:14',475],['11:02',1085]],
-    prior:{trades:3, wins:1, losses:2, be:0, grossProfit:260, grossLoss:428, fees:12,
-           tradingDays:1, greenDays:0, maxDD:428, holdAvg:15},
-    /* row aggregates: [key, trades, wins, losses, grossProfit, grossLoss, sumR] */
-    breakdown:{
-      model:  [['OTE',1,1,0,912,0,2.10],['FVG',1,1,0,610,0,1.40],['CISD',1,0,1,0,425,-1.00]],
-      session:[['NY AM',3,2,1,1522,425,2.50]],
-      account:[['Funded',2,2,0,1522,0,3.50],['Eval',1,0,1,0,425,-1.00]],
-      symbol: [['NQ',2,1,1,912,425,1.10],['ES',1,1,0,610,0,1.40]]
-    },
-    records:[
-      ['Best trade','+$900','OTE · +2.1R','up','sort=pnl_desc'],
-      ['Worst trade','−$425','CISD · −1.0R','dn','sort=pnl_asc'],
-      ['Largest size','2 contracts','NQ · 09:32','','sort=size_desc'],
-      ['Longest hold','28m','09:32 → 10:00','','sort=hold_desc'],
-      ['Shortest hold','7m','10:14 → 10:21','','sort=hold_asc']
-    ]
-  },
-  week:{
-    name:'Week', range:'Jul 19 – 25', cmpLabel:'Jul 12 – 18', scope:'from=2026-07-19&to=2026-07-25',
-    trades:10, wins:7, losses:3, be:0,
-    grossProfit:2735, grossLoss:1050, fees:40,
-    tradingDays:3, greenDays:2,
-    maxDD:180, ddFrom:'Jul 20', ddTo:'Jul 21',
-    holdAvg:19, holdWin:25, holdLoss:8,
-    series:[['Jul 20',740],['Jul 21',560],['Jul 22',1645]],
-    prior:{trades:16, wins:9, losses:6, be:1, grossProfit:2890, grossLoss:1620, fees:63,
-           tradingDays:5, greenDays:3, maxDD:680, holdAvg:17},
-    breakdown:{
-      model:  [['OTE',5,4,1,1780,345,9.50],['CISD',3,2,1,560,370,2.10],['FVG',2,1,1,395,335,0.60]],
-      session:[['NY AM',8,6,2,2340,780,11.20],['NY PM',2,1,1,395,270,1.00]],
-      account:[['Funded',6,5,1,2035,690,9.60],['Eval',3,2,1,560,280,1.80],['Paper',1,0,1,140,80,0.80]],
-      symbol: [['NQ',8,6,2,2280,855,10.40],['ES',2,1,1,455,195,1.80]]
-    },
-    records:[
-      ['Best day','+$1,085','Wed · Jul 22','up','cal:2026-07-22'],
-      ['Worst day','−$180','Tue · Jul 21','dn','cal:2026-07-21'],
-      ['Largest win','+$1,085','OTE · +2.4R','up','sort=pnl_desc'],
-      ['Largest loss','−$430','CISD · −1.1R','dn','sort=pnl_asc'],
-      ['Green days','2 of 3','67% of sessions','','cal:range']
-    ]
-  },
-  month:{
-    name:'Month', range:'July 2026', cmpLabel:'June 2026', scope:'month=2026-07',
-    trades:53, wins:31, losses:15, be:7,
-    grossProfit:11317, grossLoss:6270, fees:212,
-    tradingDays:15, greenDays:10,
-    maxDD:680, ddFrom:'Jul 10', ddTo:'Jul 13',
-    holdAvg:18, holdWin:24, holdLoss:9,
-    series:[['Jul 01',420],['Jul 02',110],['Jul 06',960],['Jul 07',1200],['Jul 08',680],
-            ['Jul 09',1785],['Jul 10',2175],['Jul 13',1495],['Jul 14',1805],['Jul 15',2730],
-            ['Jul 16',2730],['Jul 17',3190],['Jul 20',3930],['Jul 21',3750],['Jul 22',4835]],
-    prior:{trades:47, wins:26, losses:16, be:5, grossProfit:9180, grossLoss:5420, fees:188,
-           tradingDays:14, greenDays:8, maxDD:1180, holdAvg:21},
-    breakdown:{
-      model:  [['OTE',21,14,4,5010,1690,31.50],['CISD',14,8,4,3020,1930,7.20],
-               ['FVG',11,6,4,2410,1470,8.40],['Silver Bullet',7,3,3,877,1180,-1.60]],
-      session:[['NY AM',34,21,9,7460,3430,42.10],['NY PM',12,6,4,2380,1720,3.60],['London',7,4,2,1477,1120,2.80]],
-      account:[['Funded',31,19,8,7060,3560,33.60],['Eval',16,9,5,3260,1990,12.10],['Paper',6,3,2,997,720,1.20]],
-      symbol: [['NQ',41,24,12,8940,4830,38.60],['ES',12,7,3,2377,1440,8.30]]
-    },
-    records:[
-      ['Best day','+$1,105','Thu · Jul 09','up','cal:2026-07-09'],
-      ['Worst day','−$680','Mon · Jul 13','dn','cal:2026-07-13'],
-      ['Largest win','+$1,180','OTE · +2.8R','up','sort=pnl_desc'],
-      ['Largest loss','−$540','CISD · −1.4R','dn','sort=pnl_asc'],
-      ['Longest green run','5 days','Jul 06 – Jul 10','','cal:range']
-    ]
-  }
-};
+/* Built live from Supabase. Shape is unchanged, so every render function
+   below works untouched — only the source of the aggregates changed. */
+let RAW = { day:null, week:null, month:null };
 
 /* ---- ratio statistics need a sample to mean anything ---- */
 const MIN_SAMPLE = 20;
@@ -672,8 +605,125 @@ document.querySelectorAll('#dims button').forEach(b=>b.addEventListener('click',
   document.querySelectorAll('#dims button').forEach(x=>x.classList.remove('on'));
   b.classList.add('on'); DIM=b.dataset.d; renderBreakdown();
 }));
-renderAll();
 let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(renderCurve,120);});
+
+/* ============================================================
+   LOAD — one fetch, three periods, everything derived
+   ============================================================ */
+import { loadTrades, aggregate, deriveDays, deriveBreakdown, assertConsistent } from './rewind-data.js';
+import { openLogTrade } from './rewind-log.js';
+
+const _lb=document.getElementById('logBtn');
+if(_lb) _lb.addEventListener('click', openLogTrade);
+
+const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const nice = v => { const [y,m,dd]=v.split('-'); return `${+dd} ${MON[+m-1]}`; };
+
+/* the three windows, and the window each is compared against */
+function windows(ref = new Date()){
+  const wkStart = new Date(ref); wkStart.setDate(ref.getDate() - ref.getDay());   /* Sunday */
+  const wkEnd   = new Date(wkStart); wkEnd.setDate(wkStart.getDate()+6);
+  const moStart = new Date(ref.getFullYear(), ref.getMonth(), 1);
+  const moEnd   = new Date(ref.getFullYear(), ref.getMonth()+1, 0);
+  const pDay    = new Date(ref); pDay.setDate(ref.getDate()-1);
+  const pwStart = new Date(wkStart); pwStart.setDate(wkStart.getDate()-7);
+  const pwEnd   = new Date(wkEnd);   pwEnd.setDate(wkEnd.getDate()-7);
+  const pmStart = new Date(ref.getFullYear(), ref.getMonth()-1, 1);
+  const pmEnd   = new Date(ref.getFullYear(), ref.getMonth(), 0);
+  return {
+    day:  { name:'Day', from:iso(ref), to:iso(ref), range:nice(iso(ref)),
+            cmpLabel:nice(iso(pDay)), scope:`date=${iso(ref)}`, pFrom:iso(pDay), pTo:iso(pDay) },
+    week: { name:'Week', from:iso(wkStart), to:iso(wkEnd),
+            range:`${nice(iso(wkStart))} – ${nice(iso(wkEnd))}`,
+            cmpLabel:`${nice(iso(pwStart))} – ${nice(iso(pwEnd))}`,
+            scope:`from=${iso(wkStart)}&to=${iso(wkEnd)}`, pFrom:iso(pwStart), pTo:iso(pwEnd) },
+    month:{ name:'Month', from:iso(moStart), to:iso(moEnd),
+            range:`${MON[ref.getMonth()]} ${ref.getFullYear()}`,
+            cmpLabel:`${MON[pmStart.getMonth()]} ${pmStart.getFullYear()}`,
+            scope:`month=${iso(moStart).slice(0,7)}`, pFrom:iso(pmStart), pTo:iso(pmEnd) },
+  };
+}
+const inRange = (ts,from,to) => ts.filter(t => t.date>=from && t.date<=to);
+
+/* [key, trades, wins, losses, grossProfit, grossLoss, sumR] — the shape
+   renderBreakdown already reconciles against */
+function rows(ts, dim){
+  return deriveBreakdown(ts, dim).map(r => {
+    const sub = ts.filter(t => (t[dim] ?? 'Unspecified') === r.key);
+    return [r.key, r.trades, r.wins, r.losses, r.grossProfit, r.grossLoss,
+            sub.reduce((s,t)=>s+(t.r||0),0)];
+  });
+}
+function records(ts){
+  if(!ts.length) return [];
+  const pick=(f,dir)=>[...ts].sort((a,b)=>dir*(f(a)-f(b)))[0];
+  const m=n=>(n<0?'−$':'+$')+Math.abs(Math.round(n)).toLocaleString();
+  const tag=t=>[t.symbol, t.model!=='Unspecified'?t.model:null,
+                t.r!=null?((t.r>=0?'+':'−')+Math.abs(t.r).toFixed(1)+'R'):null].filter(Boolean).join(' · ');
+  const best=pick(t=>t.pnl,-1), worst=pick(t=>t.pnl,1), big=pick(t=>t.contracts,-1);
+  const out=[
+    ['Best trade', m(best.pnl), tag(best), 'up', 'sort=pnl_desc'],
+    ['Worst trade', m(worst.pnl), tag(worst), 'dn', 'sort=pnl_asc'],
+    ['Largest size', big.contracts+' contract'+(big.contracts>1?'s':''), tag(big), '', 'sort=size_desc'],
+  ];
+  const days=deriveDays(ts);
+  if(days.length>1){
+    const bd=[...days].sort((a,b)=>b.net-a.net)[0], wd=[...days].sort((a,b)=>a.net-b.net)[0];
+    out.push(['Best day', m(bd.net), nice(bd.date)+' · '+bd.trades+' trades','up',`date=${bd.date}`]);
+    out.push(['Worst day', m(wd.net), nice(wd.date)+' · '+wd.trades+' trades','dn',`date=${wd.date}`]);
+  }
+  return out;
+}
+function block(ts, w){
+  const a=aggregate(ts), holds=ts.map(t=>t.holdMin).filter(Boolean);
+  let run=0;
+  return {
+    name:w.name, range:w.range, cmpLabel:w.cmpLabel, scope:w.scope,
+    trades:a.trades, wins:a.wins, losses:a.losses, be:a.bes,
+    grossProfit:a.grossProfit, grossLoss:a.grossLoss, fees:a.fees,
+    tradingDays:a.tradingDays, greenDays:a.greenDays,
+    maxDD:Math.abs(a.maxDrawdown), ddFrom:null, ddTo:null,
+    holdAvg: holds.length ? Math.round(holds.reduce((x,y)=>x+y,0)/holds.length) : 0,
+    /* running total, so the curve ends exactly on the period net */
+    series: deriveDays(ts).map(d => { run += d.net; return [nice(d.date), Math.round(run)]; }),
+    breakdown:{ model:rows(ts,'model'), session:rows(ts,'session'),
+                account:rows(ts,'account'), symbol:rows(ts,'symbol') },
+    records: records(ts),
+    prior: null,
+  };
+}
+
+(async () => {
+  const w = windows();
+  const { trades, source } = await loadTrades({ from:w.month.pFrom, to:w.month.to });
+
+  const nb=document.getElementById('notice');
+  if(nb){
+    const msg = source==='demo' ? 'Demo data — set your Supabase keys to read your own ledger'
+             : source==='no-session' ? 'Signed out — <a href="rewind-login-echo.html">sign in with Discord</a> to see your ledger'
+             : source==='error' ? 'Could not reach your ledger — showing demo data' : '';
+    nb.innerHTML = msg ? `<div class="notice"><i></i><span>${msg}</span></div>` : '';
+  }
+
+  for(const k of ['day','week','month']){
+    const cur = inRange(trades, w[k].from, w[k].to);
+    RAW[k] = block(cur, w[k]);
+
+    const prev = inRange(trades, w[k].pFrom, w[k].pTo);
+    if(prev.length){
+      const pa=aggregate(prev), ph=prev.map(t=>t.holdMin).filter(Boolean);
+      RAW[k].prior = { trades:pa.trades, wins:pa.wins, losses:pa.losses, be:pa.bes,
+        grossProfit:pa.grossProfit, grossLoss:pa.grossLoss, fees:pa.fees,
+        tradingDays:pa.tradingDays, greenDays:pa.greenDays,
+        maxDD:Math.abs(pa.maxDrawdown),
+        holdAvg: ph.length ? Math.round(ph.reduce((x,y)=>x+y,0)/ph.length) : 0 };
+    }
+    assertConsistent(cur, { label:`${w[k].name} ${w[k].range}` });
+  }
+
+  renderAll();
+})();
 </script>
 </body>
 </html>
