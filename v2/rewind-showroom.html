@@ -132,8 +132,8 @@ body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opa
 /* FOUR TINY MARKS AND ONE HERO — the login's discipline */
 .card .body{position:relative;height:100%;padding:3.4% 4.4%;}
 .card.portrait .body{padding:4% 5%;}
-.card.portrait .card.portrait .card.story .body{padding:3.6% 9.5% 3.6% 6.5%;}
-.card.story .card.story 
+.card.story .body{padding:3.6% 9.5% 3.6% 6.5%;}
+
 /* top edge */
 .cmark{position:relative;font-family:var(--brand);font-weight:800;font-size:2.4cqw;
   letter-spacing:-.035em;text-transform:uppercase;color:#FFF;line-height:1;white-space:nowrap;
@@ -348,9 +348,10 @@ body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opa
         <div class="panel">
           <div class="phead"><span class="t">Share</span><span class="lab" id="dims"></span></div>
           <div class="acts">
-            <button class="abtn solid">Download PNG</button>
-            <button class="abtn">Copy image</button>
-              <button class="abtn">Save to Showroom</button>
+            <button class="abtn solid" id="btnPng">Download PNG</button>
+            <button class="abtn" id="btnCopy">Copy image</button>
+            <button class="abtn" id="btnSave">Save to Showroom</button>
+            <span class="lab" id="shareMsg" style="display:none;line-height:1.5;"></span>
           </div>
         </div>
       </div>
@@ -375,6 +376,7 @@ body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opa
 </div>
 
 <script src="rewind-config.js?v=3"></script>
+<script src="html-to-image.js?v=1"></script>
 <script type="module">
 /* ============================================================
    ONE data source. Reconciles with Calendar / Overview / History.
@@ -454,7 +456,7 @@ function cardHTML(p){
 
 
       <div class="cbot">
-        <span class="cbl">${[SHOW.handle?'@'+HANDLE:'', TALL?'':bits.join('  ·  ')].filter(Boolean).join('  ·  ')}</span>
+        <span class="cbl">${[SHOW.handle?'@'+HANDLE_REAL:'', TALL?'':bits.join('  ·  ')].filter(Boolean).join('  ·  ')}</span>
         ${SHOW.seal?`<span class="cqr">${QR}</span>`:'<span></span>'}
       </div>
 
@@ -479,6 +481,13 @@ function renderStage(){
 }
 
 /* ---------- gallery ---------- */
+/* age is derived from the saved timestamp, never stored as text */
+const cardAge=c=>{
+  if(c.when) return c.when;
+  if(!c.at) return '';
+  const d=Math.floor((Date.now()-new Date(c.at).getTime())/86400000);
+  return d<=0?'Today':d===1?'Yesterday':d<7?d+' days ago':d<30?Math.floor(d/7)+'w ago':Math.floor(d/30)+'mo ago';
+};
 function renderGal(){
   document.getElementById('savedN').textContent=SAVED.length+' saved';
   document.getElementById('gal').innerHTML=SAVED.map(c=>
@@ -486,7 +495,7 @@ function renderGal(){
       <div class="mini"><span class="bl2"></span><span class="rb"></span>
         <span class="n num ${cls(c.net)}"><span class="gh2">${signed(c.net)}</span>${signed(c.net)}</span>
         <span class="d">${c.t}</span></div>
-      <div class="meta"><span>${c.fmt}</span><span>${c.when}</span></div>
+      <div class="meta"><span>${c.fmt}</span><span>${cardAge(c)}</span></div>
     </div>`).join('');
 }
 
@@ -527,6 +536,133 @@ document.querySelectorAll('#fmt button').forEach(b=>b.addEventListener('click',(
   document.querySelectorAll('#fmt button').forEach(x=>x.classList.remove('on'));
   b.classList.add('on'); FMT=b.dataset.f; renderStage(); renderOpts();
 }));
+
+/* ============================================================
+   EXPORT — the card on the stage IS the card that gets posted.
+   No second implementation, so the export can never drift from
+   the preview.
+   ============================================================ */
+const EXPORT={post:[1200,628], portrait:[1080,1350], story:[1080,1920]};
+const FMT_LABEL={post:'Post 1.91:1', portrait:'Portrait 4:5', story:'Story 9:16'};
+
+function say(msg, hold){
+  const el=document.getElementById('shareMsg'); if(!el) return;
+  el.textContent=msg||'';
+  el.style.display=msg?'block':'none';
+  if(msg && !hold) setTimeout(()=>{ if(el.textContent===msg){ el.textContent=''; el.style.display='none'; } }, 2600);
+}
+function busy(b, label, fn){
+  const was=b.textContent;
+  b.textContent=label;
+  return fn().finally(()=>{ b.textContent=was; });
+}
+
+/* Webfonts are the one thing that reliably breaks a DOM export: the clone
+   is rasterised inside an SVG foreignObject, which cannot reach out to
+   Google Fonts, so Syne and Azeret would silently fall back. html-to-image
+   inlines them as base64 — expensive, so resolve once and reuse. */
+let FONT_CSS=null;
+async function fontCSS(card){
+  if(FONT_CSS!==null) return FONT_CSS;
+  try{ FONT_CSS=await htmlToImage.getFontEmbedCSS(card); }
+  catch(e){ console.warn('[showroom] font embed failed — export may fall back', e); FONT_CSS=''; }
+  return FONT_CSS;
+}
+
+/* The card is laid out entirely in cqw units off its own width, so going
+   from a 780px preview to a 1200px export is a pixelRatio problem, not a
+   re-layout problem — every proportion holds at any size. */
+async function renderCard(){
+  if(typeof htmlToImage==='undefined') throw new Error('html-to-image.js did not load — is it in this folder?');
+  const card=document.querySelector('#stage .card');
+  if(!card) throw new Error('no card on the stage');
+  const w=card.offsetWidth, h=card.offsetHeight;
+  if(!w||!h) throw new Error('card has no size yet');
+  const blob=await htmlToImage.toBlob(card,{
+    canvasWidth:w, canvasHeight:h,
+    pixelRatio:EXPORT[FMT][0]/w,
+    backgroundColor:'#0A0C0F',
+    fontEmbedCSS:await fontCSS(card),
+  });
+  if(!blob) throw new Error('the browser returned an empty image');
+  return blob;
+}
+
+const slug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+
+document.getElementById('btnPng').addEventListener('click', function(){
+  say(''); busy(this,'Rendering…', async () => {
+    try{
+      const blob=await renderCard();
+      const [tw,th]=EXPORT[FMT];
+      const p=PERIODS[TAB];
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      a.download=`rewind-${TAB}-${slug(p?p.label:'card')}-${tw}x${th}.png`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 4000);
+      say(`Downloaded · ${tw} × ${th}`);
+    }catch(e){
+      console.error('[showroom] export failed', e);
+      say('Export failed — '+((e&&e.message)||e), true);
+    }
+  });
+});
+
+document.getElementById('btnCopy').addEventListener('click', function(){
+  say('');
+  if(!navigator.clipboard || typeof ClipboardItem==='undefined'){
+    say('This browser cannot copy images — use Download PNG', true); return;
+  }
+  busy(this,'Copying…', async () => {
+    try{
+      /* pass the PROMISE, not the resolved blob — Safari revokes the
+         clipboard permission if you await anything before writing */
+      await navigator.clipboard.write([new ClipboardItem({'image/png':renderCard()})]);
+      say('Copied to clipboard');
+    }catch(e){
+      console.warn('[showroom] promise-clipboard failed, retrying with a blob', e);
+      try{
+        await navigator.clipboard.write([new ClipboardItem({'image/png':await renderCard()})]);
+        say('Copied to clipboard');
+      }catch(e2){
+        console.error('[showroom] copy failed', e2);
+        say('Copy failed — '+((e2&&e2.message)||e2)+' · use Download PNG', true);
+      }
+    }
+  });
+});
+
+document.getElementById('btnSave').addEventListener('click', function(){
+  say(''); busy(this,'Saving…', async () => {
+    try{
+      const c=client(), u=await currentUser();
+      if(!c||!u) throw new Error('signed out — sign in to save cards');
+      const p=PERIODS[TAB];
+      if(!p) throw new Error('no period selected');
+      const next=[{net:p.net, t:p.label, fmt:FMT_LABEL[FMT], at:new Date().toISOString()}, ...SAVED].slice(0,24);
+      /* user_settings is a key/value table and no unique constraint on
+         (user_id,key) is guaranteed, so read-then-write beats upsert */
+      const { data:row, error:readErr } = await c.from('user_settings')
+        .select('user_id').eq('user_id',u.id).eq('key','showroom_saved').maybeSingle();
+      if(readErr) throw new Error(readErr.message);
+      const { error } = row
+        ? await c.from('user_settings').update({value:next, updated_at:new Date().toISOString()})
+            .eq('user_id',u.id).eq('key','showroom_saved')
+        : await c.from('user_settings').insert({user_id:u.id, key:'showroom_saved', value:next});
+      if(error) throw new Error(error.message);
+      SAVED=next;
+      renderGal();
+      const m=document.getElementById('mastr');
+      if(m && TAB!=='ach') m.innerHTML=`${SAVED.length} cards saved<br>every figure from your ledger`;
+      say('Saved to Showroom');
+    }catch(e){
+      console.error('[showroom] save failed', e);
+      say('Save failed — '+((e&&e.message)||e), true);
+    }
+  });
+});
 
 /* ============================================================
    LOAD
