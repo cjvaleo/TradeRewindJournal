@@ -309,6 +309,8 @@ const money  = n => (n<0?'−$':'$')+Math.abs(Math.round(n)).toLocaleString();
 const signed = n => n===0?'$0':(n<0?'−$':'+$')+Math.abs(Math.round(n)).toLocaleString();
 const cls    = n => n>0?'up':n<0?'dn':'';
 const init   = h => (h||'?')[0].toUpperCase();
+const uuid   = () => (globalThis.crypto&&crypto.randomUUID)?crypto.randomUUID()
+  :'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c==='x'?r:(r&0x3|0x8)).toString(16);});
 const esc    = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 /* relative time from a timestamp — the mockup stored '2h' as text */
@@ -494,7 +496,7 @@ async function toggleProp(id){
   p.propped=!was; p.props+= was?-1:1; renderFeed();          // optimistic
   const { error } = was
     ? await c.from('community_post_likes').delete().eq('post_id',id).eq('user_id',MY_ID)
-    : await c.from('community_post_likes').insert({ post_id:id, user_id:MY_ID });
+    : await c.from('community_post_likes').insert({ id:uuid(), post_id:id, user_id:MY_ID, community_id:COMMUNITY_ID });
   if(error){
     p.propped=was; p.props+= was?1:-1; renderFeed();          // roll back
     note('Could not save that reaction — '+error.message);
@@ -505,7 +507,7 @@ async function postReply(id, text){
   const p=POSTS.find(x=>x.id===id); if(!p) return;
   const c=client(); if(!c||!MY_ID){ note('Sign in to reply.'); return; }
   const { data, error } = await c.from('community_post_replies')
-    .insert({ post_id:id, user_id:MY_ID, username:ME, content:text }).select();
+    .insert({ id:uuid(), post_id:id, user_id:MY_ID, username:ME, content:text, community_id:COMMUNITY_ID }).select();
   if(error){ note('Reply failed — '+error.message); return; }
   p.cm.push((data&&data[0])||{username:ME,content:text,created_at:new Date().toISOString()});
   OPEN.add(id); renderFeed();
