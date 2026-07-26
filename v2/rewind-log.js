@@ -73,6 +73,19 @@ const CSS = `
 .lt-seg.lose button.on{background:#DE6B62;color:#150807;}
 
 .lt-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.lt-shot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.lt-shot input[type=file]{display:none;}
+.lt-shotbtn{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.16);border-radius:2px;
+  color:#FFF;font-family:"JetBrains Mono",monospace;font-size:8px;letter-spacing:.14em;
+  text-transform:uppercase;padding:9px 13px;cursor:pointer;}
+.lt-shotbtn:hover{border-color:rgba(255,255,255,.42);}
+.lt-thumb{position:relative;width:104px;height:60px;border:1px solid rgba(255,255,255,.16);border-radius:2px;overflow:hidden;}
+.lt-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.lt-thumb button{position:absolute;top:3px;right:3px;width:17px;height:17px;line-height:1;
+  background:#0E1114;border:1px solid rgba(255,255,255,.28);border-radius:2px;color:#FFF;
+  font-size:11px;cursor:pointer;padding:0;}
+.lt-shotmsg{font-family:"JetBrains Mono",monospace;font-size:8px;letter-spacing:.14em;
+  text-transform:uppercase;color:#FFF;}
 .lt-chip{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.16);border-radius:2px;
   color:#FFF;font-family:"JetBrains Mono",monospace;font-size:8px;letter-spacing:.14em;
   text-transform:uppercase;padding:8px 11px;cursor:pointer;}
@@ -287,6 +300,16 @@ function renderForm(){
         </div>
 
         <div class="lt-row">
+          <span class="lt-lab">Chart screenshot</span>
+          <div class="lt-shot">
+            <input type="file" id="ltShotIn" accept="image/png,image/jpeg,image/webp,image/gif">
+            <button type="button" class="lt-shotbtn" id="ltShotBtn">${S.images.length?'Replace':'Attach chart'}</button>
+            ${S.images.map((u,i)=>`<span class="lt-thumb"><img src="${u}" alt=""><button type="button" data-shotdel="${i}">×</button></span>`).join('')}
+            <span class="lt-shotmsg" id="ltShotMsg"></span>
+          </div>
+        </div>
+
+        <div class="lt-row">
           <span class="lt-lab">TradingView link</span>
           <input data-f="tv" value="${S.tv}" placeholder="https://www.tradingview.com/x/...">
         </div>
@@ -358,6 +381,15 @@ function wire(){
     const i = +e.target.closest('[data-i]').dataset.i;
     S.conf[i][e.target.dataset.cf] = e.target.value;
   }));
+  const shotBtn = document.getElementById('ltShotBtn');
+  const shotIn  = document.getElementById('ltShotIn');
+  if (shotBtn && shotIn){
+    shotBtn.addEventListener('click', () => shotIn.click());
+    shotIn.addEventListener('change', () => { if (shotIn.files && shotIn.files[0]) uploadShot(shotIn.files[0]); });
+  }
+  $('.lt [data-shotdel]').forEach(b => b.addEventListener('click', () => {
+    S.images.splice(+b.dataset.shotdel, 1); renderForm();
+  }));
   document.getElementById('ltX').addEventListener('click', close);
   document.getElementById('ltCancel').addEventListener('click', close);
   document.getElementById('ltSave').addEventListener('click', save);
@@ -386,6 +418,47 @@ function refresh(){
 /* ---------------------------------------------------------------------------
    SAVE
    ------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------
+   CHART SCREENSHOT
+   Uploads straight to the existing public `trade-images` bucket — the same
+   one the old app uses — and stores the public URL in S.images. The upload
+   happens on FILE SELECT, not on save, so the URL is already in state by the
+   time the row is written. UPLOADING guards save() against the race.
+   ------------------------------------------------------------------------- */
+const SHOT_MAX  = 5 * 1024 * 1024;                       /* bucket's own limit */
+const SHOT_MIME = ['image/png','image/jpeg','image/jpg','image/webp','image/gif'];
+let UPLOADING = false;
+
+function shotMsg(t){ const el = document.getElementById('ltShotMsg'); if (el) el.textContent = t || ''; }
+
+async function uploadShot(file){
+  if (!SHOT_MIME.includes(file.type)) return shotMsg('PNG, JPEG, WEBP or GIF only');
+  if (file.size > SHOT_MAX)           return shotMsg('Too large — 5 MB maximum');
+
+  const c = client();
+  const user = await currentUser();
+  if (!c || !user) return shotMsg('Signed out');
+
+  UPLOADING = true; shotMsg('Uploading…');
+  try{
+    /* userId/ prefix: the standard Supabase convention, and what a
+       foldername[1] = auth.uid() storage policy expects */
+    const ext  = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g,'');
+    const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2,7)}.${ext}`;
+    const { error } = await c.storage.from('trade-images')
+      .upload(path, file, { upsert: true, contentType: file.type });
+    if (error) throw new Error(error.message);
+    const { data } = c.storage.from('trade-images').getPublicUrl(path);
+    if (!data || !data.publicUrl) throw new Error('no public URL returned');
+    S.images = [data.publicUrl];        /* one chart per trade, replaces */
+    UPLOADING = false;
+    renderForm();
+  }catch(e){
+    UPLOADING = false;
+    shotMsg('Upload failed — ' + ((e && e.message) || e));
+  }
+}
+
 async function save(){
   const err = document.getElementById('ltErr');
   const btn = document.getElementById('ltSave');
@@ -393,6 +466,7 @@ async function save(){
 
   err.classList.remove('on'); btn.disabled = true; btn.textContent = 'Saving…';
 
+  if (UPLOADING) return fail('The chart is still uploading — one moment.');
   const d = derive();
   if (d.entry === null || d.exit === null) return fail('Entry and exit are required.');
   if (d.pnl === null)                      return fail('Net could not be computed — enter it by hand.');
