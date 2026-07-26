@@ -31639,9 +31639,9 @@ function renderStarkRules() {
     var isAuto = (typeof r === 'object' && r.auto) ||
       /max trade|max loss|loss limit|stop|killzone|session|flat by|no trading after|max daily/i.test(text);
     var autoTag = isAuto
-      ? '<span style="font-family:'Archivo',sans-serif;font-size:7.5px;letter-spacing:.06em;color:var(--ink45);border:1px solid var(--hair);border-radius:3px;padding:1px 5px;margin-left:6px">AUTO</span>'
+      ? '<span style="font-family:Archivo,sans-serif;font-size:7.5px;letter-spacing:.06em;color:var(--ink45);border:1px solid var(--hair);border-radius:3px;padding:1px 5px;margin-left:6px">AUTO</span>'
       : '';
-    html += '<div class="rule" onclick="this.classList.toggle('done');_starkUpdateRuleCount()">';
+    html += '<div class="rule" onclick="this.classList.toggle(\'done\');_starkUpdateRuleCount()">';
     html += '<span class="box"></span>';
     html += '<span class="txt">' + _escHtml(text) + autoTag + '</span>';
     html += '</div>';
