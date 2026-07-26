@@ -289,194 +289,369 @@ body::after{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;opa
   <div class="foot"><span>Rewind · Members' ledger</span><span>Log · Review · Repeat</span></div>
 </div>
 
-<script>
-const ME='christian';
-const MEMBERS=[
-  {h:'jt_futures', tier:'Elite',   today: 1240, month:8202, trades:48, win:74},
-  {h:'christian',  tier:'Elite',   today: 1085, month:4835, trades:53, win:67},
-  {h:'tape_reader',tier:'Premium', today:  620, month:3536, trades:39, win:69},
-  {h:'gc_gold',    tier:'Premium', today:  410, month:3172, trades:35, win:66},
-  {h:'nas_scalps', tier:'Premium', today: -380, month:2159, trades:66, win:54},
-  {h:'torres_nq',  tier:'Pro',     today:  260, month:1554, trades:35, win:59},
-  {h:'es_mornings',tier:'Pro',     today: -145, month:1102, trades:34, win:61},
-  {h:'liq_hunter', tier:'Pro',     today:  195, month: 868, trades:33, win:56},
-  {h:'fvg_only',   tier:'Free',    today:  330, month: 812, trades:32, win:59},
-  {h:'orb_trader', tier:'Free',    today: null, month: 474, trades:18, win:61},
-  {h:'open_drive', tier:'Pro',     today:  -90, month: 284, trades:30, win:52},
-  {h:'sunday_open',tier:'Free',    today: null, month:-458, trades:25, win:44}
-];
-const TODAY=[
-  {m:'OTE',           members:14, trades:31, net: 4820},
-  {m:'FVG',           members: 9, trades:18, net: 1240},
-  {m:'CISD',          members: 8, trades:21, net: -310},
-  {m:'Silver Bullet', members: 4, trades: 9, net:-1180}
-];
-const ONLINE=8;
-/* your own tape today, so a post can quietly reference it */
-const MY_TODAY=[{model:'OTE',pnl:900,r:2.10},{model:'CISD',pnl:-425,r:-1.00},{model:'FVG',pnl:610,r:1.40}];
+<script src="rewind-config.js?v=3"></script>
+<script type="module">
+import { loadTrades, client, currentUser } from './rewind-data.js';
+import { openLogTrade } from './rewind-log.js';
 
-const POSTS=[
-  {id:'P1',h:'jt_futures',t:'2h',kind:'trade',auto:true,
-   tr:{sym:'NQ',side:'Long',model:'OTE',acct:'Funded',r:2.80,pnl:1240,hold:41},
-   note:'Waited for the 5m CISD to confirm, then left the runner alone until the 1H objective.',
-   props:18,propped:false,
-   cm:[{h:'torres_nq',t:'1h',b:'Textbook. That 09:40 sweep was the tell.'},
-       {h:'gc_gold',t:'52m',b:'How long were you sat on your hands before the entry?'}]},
+/* The one Trading Ark floor. Everything on this page is scoped to it. */
+const COMMUNITY_ID = '70e8e0b5-9079-4929-9744-6a803179cdfc';
 
-  {id:'M1',h:'gc_gold',t:'3h',kind:'mile',big:'30 sessions',
-   note:'@gc_gold has logged thirty consecutive sessions without a gap.',
-   props:24,propped:false,cm:[]},
+/* ---------- state, all of it filled from the database ---------- */
+let ME = '', MY_ID = null, MY_INITIALS = '?', MY_COLOR = null;
+let TODAY_AGG = null;     // group-stats period=today
+let MONTH_AGG = null;     // group-stats period=month
+let POSTS = [];           // community_posts + replies + likes, joined
+let MY_TODAY = [];        // my own trades today, for the cross-reference line
+let TIERS = {};           // user_id -> plan
 
-  {id:'P2',h:'nas_scalps',t:'4h',kind:'trade',
-   tr:{sym:'NQ',side:'Short',model:'Silver Bullet',acct:'Funded',r:-1.40,pnl:-380,hold:9},
-   note:'Chased the second leg after 11am again. Posting the L so I stop doing it — my own stats say I am net negative after 11:00 and I keep ignoring them.',
-   props:31,propped:false,
-   cm:[{h:'christian',t:'3h',b:'Respect for posting it. A hard cutoff alert fixed the same leak for me.'},
-       {h:'es_mornings',t:'2h',b:'Same pattern here. The 11:00 line is real.'}]},
+const money  = n => (n<0?'−$':'$')+Math.abs(Math.round(n)).toLocaleString();
+const signed = n => n===0?'$0':(n<0?'−$':'+$')+Math.abs(Math.round(n)).toLocaleString();
+const cls    = n => n>0?'up':n<0?'dn':'';
+const init   = h => (h||'?')[0].toUpperCase();
+const esc    = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-  {id:'P3',h:'gc_gold',t:'6h',kind:'ask',
-   note:'How is everyone handling eval versus funded sizing? I keep passing evals then shrinking on the funded account and leaving most of the move behind.',
-   props:9,propped:false,
-   cm:[{h:'jt_futures',t:'5h',b:'Same size, same rules — or the eval taught you nothing.'},
-       {h:'liq_hunter',t:'4h',b:'Funded at 80% of eval size for the first month, then match.'}]},
+/* relative time from a timestamp — the mockup stored '2h' as text */
+function ago(ts){
+  if(!ts) return '';
+  const s=Math.floor((Date.now()-new Date(ts).getTime())/1000);
+  if(s<60) return 'just now';
+  const m=Math.floor(s/60); if(m<60) return m+'m';
+  const h=Math.floor(m/60); if(h<24) return h+'h';
+  const d=Math.floor(h/24); if(d<7)  return d+'d';
+  const w=Math.floor(d/7);  if(w<5)  return w+'w';
+  return Math.floor(d/30)+'mo';
+}
 
-  {id:'P4',h:'tape_reader',t:'7h',kind:'trade',auto:true,
-   tr:{sym:'ES',side:'Long',model:'FVG',acct:'Eval',r:1.40,pnl:620,hold:19},
-   note:'Clean 15m FVG retest. Took it off at the first opposing order block rather than pushing for the full leg.',
-   props:12,propped:false,cm:[]}
-];
+function note(msg){
+  let el=document.getElementById('cnotice');
+  if(!el){
+    el=document.createElement('div');
+    el.className='card'; el.id='cnotice';
+    el.style.cssText='padding:11px 16px;margin:0 0 14px;font-size:11px;line-height:1.5;';
+    const stack=document.querySelector('.grid2 .stack');
+    stack.insertBefore(el, stack.firstChild);
+  }
+  el.textContent=msg;
+}
 
-const money=n=>(n<0?'−$':'$')+Math.abs(Math.round(n)).toLocaleString();
-const signed=n=>n===0?'$0':(n<0?'−$':'+$')+Math.abs(Math.round(n)).toLocaleString();
-const cls=n=>n>0?'up':n<0?'dn':'';
-const init=h=>h[0].toUpperCase();
-const M=Object.fromEntries(MEMBERS.map(m=>[m.h,m]));
-
-/* ---- banner: one quiet line, derived ---- */
+/* ---------- banner ---------- */
 function renderBline(){
-  const logged=MEMBERS.filter(m=>m.today!==null);
-  const net=logged.reduce((s,m)=>s+m.today,0);
-  const green=logged.filter(m=>m.today>0).length;
-  document.getElementById('bline').innerHTML=
-    `<span><b class="${cls(net)}">${signed(net)}</b>floor today</span>
-     <span><b>${logged.length}</b>logged</span>
-     <span><b>${Math.round(green/logged.length*100)}%</b>green</span>
-     <span class="live"><i></i>${ONLINE} on now</span>`;
+  const el=document.getElementById('bline');
+  if(!TODAY_AGG){ el.innerHTML='<span>The floor has not reported today</span>'; return; }
+  const lb    = TODAY_AGG.leaderboard||[];
+  const net   = TODAY_AGG.net_pnl||0;
+  const green = lb.filter(r=>(r.gross_total||0)>0).length;
+  /* `logged` is leaderboard.length — the members who actually traded.
+     trader_count is the whole roster and would read as a lie here. */
+  el.innerHTML = lb.length
+    ? `<span><b class="${cls(net)}">${signed(net)}</b>floor today</span>
+       <span><b>${lb.length}</b>logged</span>
+       <span><b>${Math.round(green/lb.length*100)}%</b>green</span>
+       <span><b>${TODAY_AGG.trader_count||0}</b>members</span>`
+    : `<span>Nothing logged on the floor today</span>
+       <span><b>${TODAY_AGG.trader_count||0}</b>members</span>`;
 }
 
-/* ---- rail ---- */
+/* ---------- rail: standings ---------- */
 function renderBoard(){
-  [...MEMBERS].sort((a,b)=>b.month-a.month).slice(0,6).forEach((m,i)=>{
-    document.getElementById('board').insertAdjacentHTML('beforeend',
-      `<div class="lb ${m.h===ME?'you':''}">
-        <span class="rk num">${i+1}</span>
-        <span class="nm">${m.h===ME?'You':'@'+m.h}</span>
-        <span class="amt ${cls(m.month)}">${signed(m.month)}</span>
-      </div>`);
-  });
-}
-function renderTrend(){
-  document.getElementById('trend').innerHTML=TODAY.map(x=>
-    `<div class="trow">
-      <span class="tn">${x.m}<em>${x.members} members</em></span>
-      <span class="tv ${cls(x.net)}">${signed(x.net)}</span>
+  const box=document.getElementById('board');
+  const lb=(MONTH_AGG&&MONTH_AGG.leaderboard)||[];
+  if(!lb.length){
+    box.innerHTML='<div class="note2" style="border:0;padding:18px 0 6px;">No trades logged this month.</div>';
+    return;
+  }
+  /* the route does NOT slice, despite its comment — slice here */
+  box.innerHTML=lb.slice(0,6).map((m,i)=>`
+    <div class="lb ${m.user_id===MY_ID?'you':''}">
+      <span class="rk num">${i+1}</span>
+      <span class="nm">${m.user_id===MY_ID?'You':'@'+esc(m.username||'trader')}</span>
+      <span class="amt ${cls(m.gross_total)}">${signed(m.gross_total||0)}</span>
     </div>`).join('');
 }
 
-/* ---- feed ---- */
+/* ---------- rail: floor today ----------
+   The mockup broke this down per MODEL. That needs every member's trades
+   grouped by model and no route returns it — aggGroupStats has no model
+   breakdown, and deriving it from posts would only ever show winners,
+   because only wins auto-post. These four figures are the real ones the
+   endpoint does return for today. */
+function renderTrend(){
+  const box=document.getElementById('trend');
+  if(!TODAY_AGG || !TODAY_AGG.total_trades){
+    box.innerHTML='<div class="note2" style="border:0;padding:18px 0 6px;">Nothing on the tape yet today.</div>';
+    return;
+  }
+  const a=TODAY_AGG;
+  const row=(n,sub,v,c)=>`<div class="trow"><span class="tn">${n}<em>${sub}</em></span><span class="tv ${c||''}">${v}</span></div>`;
+  box.innerHTML=
+    row('Trades','across the floor', a.total_trades)+
+    row('Win rate','of those trades', (a.win_rate||0)+'%')+
+    row('Average','R multiple', (a.avg_rr>0?'+':'')+(a.avg_rr||0).toFixed(1)+'R')+
+    row('Points','net on the day', (a.total_points>0?'+':'')+(a.total_points||0).toLocaleString(), cls(a.total_points));
+}
+
+/* ---------- feed ---------- */
 let F='all';
-const match=p=>F==='all'?true:F==='trades'?p.kind==='trade':F==='asks'?p.kind==='ask':p.kind==='mile';
+/* Milestones are gone from the filter bar: nothing computes streaks across
+   members, so that tab could only ever be empty. */
+const match=p=>F==='all'?true:F==='trades'?p.kind==='trade':p.kind==='ask';
+
 function renderBar(){
-  const L={all:'All',trades:'Trades',asks:'Questions',miles:'Milestones'};
+  const L={all:'All',trades:'Trades',asks:'Questions'};
   document.getElementById('fbar').innerHTML=Object.keys(L).map(k=>
     `<button class="${F===k?'on':''}" data-f="${k}">${L[k]}</button>`).join('');
   document.querySelectorAll('#fbar button').forEach(b=>b.addEventListener('click',()=>{
     F=b.dataset.f; renderBar(); renderFeed();
   }));
 }
+
 const OPEN=new Set();
-const CANDLES=`<svg width="146" height="58" viewBox="0 0 146 58"><g stroke-width="4.5" stroke-linecap="round">
- <line x1="10" y1="48" x2="10" y2="33" stroke="#57BE8B"/><line x1="29" y1="43" x2="29" y2="23" stroke="#57BE8B"/>
- <line x1="48" y1="37" x2="48" y2="47" stroke="#DE6B62"/><line x1="67" y1="40" x2="67" y2="19" stroke="#57BE8B"/>
- <line x1="86" y1="30" x2="86" y2="13" stroke="#57BE8B"/><line x1="105" y1="26" x2="105" y2="35" stroke="#DE6B62"/>
- <line x1="124" y1="23" x2="124" y2="8" stroke="#57BE8B"/></g></svg>`;
 
 function renderFeed(){
   const set=POSTS.filter(match);
   const box=document.getElementById('feed');
   if(!set.length){
-    box.innerHTML=`<div class="card"><div style="padding:44px 20px;text-align:center;font-size:13px;color:#FFF;">Nothing under this filter.</div></div>`;
+    box.innerHTML=`<div class="card"><div style="padding:44px 20px;text-align:center;font-size:13px;color:#FFF;">${
+      POSTS.length?'Nothing under this filter.':'The floor is quiet. Log a win or ask the room something.'}</div></div>`;
     return;
   }
   box.innerHTML=set.map(p=>{
     const open=OPEN.has(p.id);
-    /* only render the cross-reference when you actually traded the same setup */
+    const m=p.meta||{};
+
+    /* cross-reference only when you actually traded the same model today */
     let mine='';
-    if(p.kind==='trade'){
-      const x=MY_TODAY.find(y=>y.model===p.tr.model);
-      if(x) mine=`<div class="mine">You traded ${p.tr.model} today —
-        <b class="${cls(x.pnl)}">${signed(x.pnl)}</b> at <b>${x.r>0?'+':'−'}${Math.abs(x.r).toFixed(2)}R</b></div>`;
+    if(p.kind==='trade' && m.model){
+      const x=MY_TODAY.find(y=>y.model===m.model);
+      if(x && p.user_id!==MY_ID) mine=`<div class="mine">You traded ${esc(m.model)} today —
+        <b class="${cls(x.pnl)}">${signed(x.pnl)}</b>${x.r!=null?` at <b>${x.r>0?'+':'−'}${Math.abs(x.r).toFixed(2)}R</b>`:''}</div>`;
     }
+
+    /* hold minutes are not captured anywhere, so that chip is gone */
     const chips = p.kind==='trade' ? `<span class="chips">
-        <span class="chip k">${p.tr.sym} ${p.tr.side}</span>
-        <span class="chip">${p.tr.model}</span>
-        <span class="chip">${p.tr.r>0?'+':'−'}${Math.abs(p.tr.r).toFixed(2)}R</span>
-        <span class="chip">${p.tr.hold}m</span>
-        <span class="chip">${p.tr.acct}</span>
+        ${m.sym?`<span class="chip k">${esc(m.sym)} ${m.side==='short'?'Short':'Long'}</span>`:''}
+        ${m.model?`<span class="chip">${esc(m.model)}</span>`:''}
+        ${m.rr!=null?`<span class="chip">${m.rr>0?'+':'−'}${Math.abs(m.rr).toFixed(2)}R</span>`:''}
+        ${m.grade?`<span class="chip">${esc(m.grade)}</span>`:''}
+        ${m.account_type?`<span class="chip">${esc(m.account_type[0].toUpperCase()+m.account_type.slice(1))}</span>`:''}
       </span>` : '';
+
+    const tier=TIERS[p.user_id];
+    const meta=[tier?tier[0].toUpperCase()+tier.slice(1):null, ago(p.created_at)+' ago',
+                m.source==='win_auto'?'auto-posted':null].filter(Boolean).join(' · ');
+
     const head=`<div class="phead">
-      <span class="av">${init(p.h)}</span>
-      <span class="who"><b>${p.h===ME?'You':'@'+p.h}</b>
-        <span>${M[p.h].tier} · ${p.t} ago${p.auto?' · auto-posted':''}</span></span>
+      <span class="av">${esc(init(p.username))}</span>
+      <span class="who"><b>${p.user_id===MY_ID?'You':'@'+esc(p.username)}</b><span>${esc(meta)}</span></span>
       ${chips}
-      ${p.kind==='trade'?`<span class="pnet ${cls(p.tr.pnl)}">${signed(p.tr.pnl)}</span>`:''}
+      ${p.kind==='trade'&&p.pnl_today!=null?`<span class="pnet ${cls(p.pnl_today)}">${signed(p.pnl_today)}</span>`:''}
     </div>`;
 
-    const body = p.kind==='mile'
-      ? `<div class="mile"><span class="big num">${p.big}</span>
-           <p>${p.note}<span class="auto">Generated from @${p.h}'s ledger</span></p></div>`
-      : (p.kind==='trade'
-          ? `<div class="pmain">
-               <div><p class="pbody p0">${p.note}</p>${mine}</div>
-               <div class="chart"><div class="ribs"></div><span class="vfd">Verified from ledger</span>${CANDLES}</div>
-             </div>`
-          : `<div class="pmain solo"><p class="pbody p0">${p.note}</p></div>`);
+    const chart = p.image_url
+      ? `<div class="chart"><div class="ribs"></div><span class="vfd">Verified from ledger</span>
+           <img src="${esc(p.image_url)}" alt="" style="width:100%;height:100%;object-fit:contain;display:block;">
+         </div>`
+      : '';
+
+    /* trade posts carry no note by design, so the two-column layout would
+       leave an empty cell — the chart runs full width and the
+       cross-reference sits under it, which is what .mine's margins expect */
+    const body = p.kind==='trade'
+      ? (chart||mine ? `${chart?`<div class="pmain solo">${chart}</div>`:''}${mine}`
+                     : `<div class="pmain solo"><p class="pbody p0">Posted from the ledger.</p></div>`)
+      : `<div class="pmain solo"><p class="pbody p0">${esc(p.content)}</p></div>`;
 
     return `<div class="post">
       ${head}${body}
       <div class="pacts">
         <button class="act props ${p.propped?'on':''}" data-id="${p.id}">▲ ${p.props}</button>
-        <button class="act thr" data-id="${p.id}">${open?'Hide replies':(p.cm.length?p.cm.length+' replies':'Reply')}</button>
-        <button class="act save" data-id="${p.id}">Save</button>
+        <button class="act thr" data-id="${p.id}">${open?'Hide replies':(p.cm.length?(p.cm.length===1?'1 reply':p.cm.length+' replies'):'Reply')}</button>
       </div>
       <div class="thread ${open?'on':''}">
-        ${p.cm.map(c=>`<div class="cmt"><span class="cav">${init(c.h)}</span>
-          <div class="cb"><b>@${c.h}</b><time>${c.t} ago</time><p>${c.b}</p></div></div>`).join('')}
-        <div class="creply"><span class="cav">C</span><input placeholder="Reply…"></div>
+        ${p.cm.map(c=>`<div class="cmt"><span class="cav">${esc(init(c.username))}</span>
+          <div class="cb"><b>@${esc(c.username)}</b><time>${ago(c.created_at)} ago</time><p>${esc(c.content)}</p></div></div>`).join('')}
+        <div class="creply"><span class="cav">${esc(MY_INITIALS[0]||'?')}</span>
+          <input placeholder="Reply…" data-reply="${p.id}"></div>
       </div>
     </div>`;
   }).join('');
 
-  box.querySelectorAll('.props').forEach(b=>b.addEventListener('click',()=>{
-    const p=POSTS.find(x=>x.id===b.dataset.id);
-    p.propped=!p.propped; p.props+=p.propped?1:-1; renderFeed();
-  }));
+  box.querySelectorAll('.props').forEach(b=>b.addEventListener('click',()=>toggleProp(b.dataset.id)));
   box.querySelectorAll('.thr').forEach(b=>b.addEventListener('click',()=>{
     const id=b.dataset.id; OPEN.has(id)?OPEN.delete(id):OPEN.add(id); renderFeed();
   }));
-  box.querySelectorAll('.save').forEach(b=>b.addEventListener('click',()=>{
-    b.classList.toggle('on'); b.textContent=b.classList.contains('on')?'Saved':'Save';
+  box.querySelectorAll('input[data-reply]').forEach(inp=>inp.addEventListener('keydown',e=>{
+    if(e.key==='Enter' && inp.value.trim()) postReply(inp.dataset.reply, inp.value.trim());
   }));
 }
 
+/* ---------- writes ---------- */
+async function toggleProp(id){
+  const p=POSTS.find(x=>x.id===id); if(!p) return;
+  const c=client(); if(!c||!MY_ID){ note('Sign in to react.'); return; }
+  const was=p.propped;
+  p.propped=!was; p.props+= was?-1:1; renderFeed();          // optimistic
+  const { error } = was
+    ? await c.from('community_post_likes').delete().eq('post_id',id).eq('user_id',MY_ID)
+    : await c.from('community_post_likes').insert({ post_id:id, user_id:MY_ID });
+  if(error){
+    p.propped=was; p.props+= was?1:-1; renderFeed();          // roll back
+    note('Could not save that reaction — '+error.message);
+  }
+}
+
+async function postReply(id, text){
+  const p=POSTS.find(x=>x.id===id); if(!p) return;
+  const c=client(); if(!c||!MY_ID){ note('Sign in to reply.'); return; }
+  const { data, error } = await c.from('community_post_replies')
+    .insert({ post_id:id, user_id:MY_ID, username:ME, content:text }).select();
+  if(error){ note('Reply failed — '+error.message); return; }
+  p.cm.push((data&&data[0])||{username:ME,content:text,created_at:new Date().toISOString()});
+  OPEN.add(id); renderFeed();
+}
+
+async function postAsk(text){
+  const c=client(); if(!c||!MY_ID){ note('Sign in to post.'); return false; }
+  const row={
+    id:`${Date.now()}.${Math.random().toString().slice(2,6)}`,
+    user_id:MY_ID, username:ME, initials:MY_INITIALS, avatar_color:MY_COLOR,
+    content:text, community_id:COMMUNITY_ID, likes_count:0, liked_by:[],
+    metadata:{ source:'ask' },
+  };
+  const { error } = await c.from('community_posts').insert(row);
+  if(error){ note('Post failed — '+error.message); return false; }
+  POSTS.unshift({ ...row, meta:row.metadata, kind:'ask', props:0, propped:false, cm:[],
+                  created_at:new Date().toISOString() });
+  renderFeed(); return true;
+}
+
+/* ---------- auto-post toggle, persisted ---------- */
 const at=document.getElementById('autotog'), att=document.getElementById('autotxt');
-at.addEventListener('click',()=>{
-  const on=at.classList.toggle('on'); at.setAttribute('aria-checked',on);
+function paintTog(on){
+  at.classList.toggle('on',on); at.setAttribute('aria-checked',on);
   att.textContent = on ? 'Auto-post my trades — every trade you log lands here with its chart'
                        : 'Auto-post off — your trades stay private until you post them';
+}
+at.addEventListener('click', async () => {
+  const on=!at.classList.contains('on');
+  paintTog(on);
+  const c=client(); if(!c||!MY_ID) return;
+  const { data:row } = await c.from('user_settings').select('user_id')
+    .eq('user_id',MY_ID).eq('key','community_autopost').maybeSingle();
+  const { error } = row
+    ? await c.from('user_settings').update({value:on, updated_at:new Date().toISOString()})
+        .eq('user_id',MY_ID).eq('key','community_autopost')
+    : await c.from('user_settings').insert({user_id:MY_ID, key:'community_autopost', value:on});
+  if(error) note('Could not save that preference — '+error.message);
 });
 
-renderBline(); renderBoard(); renderTrend(); renderBar(); renderFeed();
+/* composer + log button */
+const comp=document.querySelector('.composer input');
+const compBtn=document.querySelector('.composer .go');
+async function submitAsk(){
+  const t=(comp.value||'').trim(); if(!t) return;
+  compBtn.textContent='Posting…';
+  if(await postAsk(t)) comp.value='';
+  compBtn.textContent='Post';
+}
+compBtn.addEventListener('click',submitAsk);
+comp.addEventListener('keydown',e=>{ if(e.key==='Enter') submitAsk(); });
+document.querySelector('.btn-w').addEventListener('click',()=>openLogTrade());
+
+/* ---------- load ---------- */
+async function groupStats(period, token){
+  const tz=new Date().getTimezoneOffset();
+  const r=await fetch(`/api/community/group-stats?community_id=${COMMUNITY_ID}&period=${period}&tz_offset=${tz}`,
+    { headers:{ Authorization:'Bearer '+token } });
+  if(!r.ok){
+    let d=''; try{ d=(await r.text()).slice(0,160); }catch(_){}
+    throw new Error(`group-stats ${period} → ${r.status} ${d}`);
+  }
+  return r.json();
+}
+
+(async function load(){
+  renderBar();
+  const c=client();
+  const u=c?await currentUser():null;
+  if(!c||!u){ note('Signed out — sign in to see the floor.'); renderBline(); renderBoard(); renderTrend(); renderFeed(); return; }
+  MY_ID=u.id;
+
+  /* who I am */
+  try{
+    const { data:p }=await c.from('profiles')
+      .select('username, display_name, initials, color').eq('id',MY_ID).maybeSingle();
+    ME=(p&&(p.username||p.display_name))||'you';
+    MY_INITIALS=(p&&p.initials)||ME.slice(0,1).toUpperCase();
+    MY_COLOR=(p&&p.color)||null;
+  }catch(e){ ME='you'; }
+
+  /* make sure I'm on the floor, or group-stats returns 403 not_a_member */
+  try{
+    const { data:comm }=await c.from('communities').select('members').eq('id',COMMUNITY_ID).maybeSingle();
+    const mem=(comm&&comm.members)||[];
+    if(!mem.includes(MY_ID)){
+      const { error }=await c.from('communities').update({members:[...mem,MY_ID]}).eq('id',COMMUNITY_ID);
+      if(error) note('Could not join the floor — '+error.message);
+    }
+  }catch(e){ note('Floor lookup failed — '+e.message); }
+
+  /* saved auto-post preference */
+  try{
+    const { data }=await c.from('user_settings').select('value')
+      .eq('user_id',MY_ID).eq('key','community_autopost').maybeSingle();
+    if(data && typeof data.value==='boolean') paintTog(data.value);
+  }catch(e){}
+
+  /* the two aggregates */
+  const { data:{ session } }=await c.auth.getSession();
+  const token=session&&session.access_token;
+  try{
+    const [t,m]=await Promise.all([groupStats('today',token), groupStats('month',token)]);
+    TODAY_AGG=t; MONTH_AGG=m;
+  }catch(e){ note('Floor figures unavailable — '+e.message); }
+
+  /* my own trades today, for the cross-reference line */
+  try{
+    const { trades }=await loadTrades();
+    const today=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+    MY_TODAY=(trades||[]).filter(t=>t.date===today).map(t=>({model:t.model,pnl:t.pnl,r:t.r}));
+  }catch(e){}
+
+  /* the feed */
+  try{
+    const { data:rows, error }=await c.from('community_posts').select('*')
+      .eq('community_id',COMMUNITY_ID).order('created_at',{ascending:false}).limit(50);
+    if(error) throw new Error(error.message);
+    const ids=(rows||[]).map(r=>r.id);
+    let reps=[], likes=[];
+    if(ids.length){
+      const [a,b]=await Promise.all([
+        c.from('community_post_replies').select('*').in('post_id',ids).order('created_at'),
+        c.from('community_post_likes').select('post_id,user_id').in('post_id',ids),
+      ]);
+      reps=(a&&a.data)||[]; likes=(b&&b.data)||[];
+    }
+    /* tier badges — profiles.plan is still client-readable after the lockdown */
+    const authors=[...new Set((rows||[]).map(r=>r.user_id).filter(Boolean))];
+    if(authors.length){
+      const { data:pf }=await c.from('profiles').select('id, plan').in('id',authors);
+      (pf||[]).forEach(p=>{ if(p.plan) TIERS[p.id]=p.plan; });
+    }
+    POSTS=(rows||[]).map(r=>{
+      const meta=r.metadata||{};
+      const mine=likes.filter(l=>l.post_id===r.id);
+      return { ...r, meta,
+        kind: meta.source==='win_auto' ? 'trade' : 'ask',
+        props: mine.length,
+        propped: mine.some(l=>l.user_id===MY_ID),
+        cm: reps.filter(x=>x.post_id===r.id) };
+    });
+  }catch(e){ note('Feed unavailable — '+e.message); }
+
+  renderBline(); renderBoard(); renderTrend(); renderFeed();
+})();
 </script>
 </body>
 </html>
