@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rewind · Today</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Syne:wght@700;800&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#0E1114; --ink:#14171B; --panel:#181C20; --raise:#1E2227;
+  --edge:rgba(255,255,255,.17); --rule:rgba(255,255,255,.12); --hair:rgba(255,255,255,.07);
+  --white:#FFFFFF;
+  /* v3: result is encoded by weight and outline, never by hue */
+  --smoke:rgba(255,255,255,.42);
+  --fig:"Azeret Mono",ui-monospace,monospace;
+  --disp:"Instrument Sans",system-ui,sans-serif;
+  --brand:"Syne",Helvetica,sans-serif;
+  --ui:"Inter Tight",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+  --rail:206px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{background:var(--black);color:#FFF;font-family:var(--ui);font-size:14px;-webkit-font-smoothing:antialiased;}
+/* vertical scan lines over the whole application */
+body::before{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:repeating-linear-gradient(90deg, rgba(255,255,255,.028) 0 1px, transparent 1px 9px);}
+.lab{font-family:var(--mono);font-size:8px;letter-spacing:.26em;text-transform:uppercase;color:#FFF;}
+.dim{color:var(--smoke);}
+
+/* ─── shell ─────────────────────────────────────────────────────────── */
+.app{display:grid;grid-template-columns:var(--rail) 1fr;min-height:100%;position:relative;z-index:2;}
+
+.top{position:fixed;top:0;left:0;right:0;height:52px;z-index:40;display:flex;align-items:center;
+  background:rgba(14,17,20,.92);backdrop-filter:blur(18px);box-shadow:inset 0 -1px 0 var(--hair);}
+.top .mark{width:var(--rail);padding-left:22px;display:flex;align-items:baseline;gap:9px;flex:none;}
+.top .mark b{font-family:var(--brand);font-weight:800;font-size:15px;letter-spacing:-.02em;text-transform:uppercase;}
+.top .mark span{font-family:var(--mono);font-size:7.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--smoke);}
+.topbar{flex:1;display:flex;align-items:center;gap:26px;padding:0 22px;}
+.mkt{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;}
+.mkt i{width:4px;height:4px;background:#FFF;border-radius:50%;flex:none;}
+.mkt.shut i{background:transparent;box-shadow:inset 0 0 0 1px var(--smoke);}
+.mkt.shut{color:var(--smoke);}
+.srch{flex:1;max-width:320px;}
+.srch button{width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--hair);
+  color:var(--smoke);font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;
+  padding:7px 0;cursor:pointer;transition:border-color .18s,color .18s;}
+.srch button:hover{border-color:var(--edge);color:#FFF;}
+.tacts{margin-left:auto;display:flex;align-items:center;gap:16px;}
+.blog{background:#FFF;color:var(--black);border:0;font-family:var(--mono);font-size:8.5px;font-weight:500;
+  letter-spacing:.2em;text-transform:uppercase;padding:9px 15px;cursor:pointer;}
+.blog:hover{opacity:.86;}
+.act{font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--smoke);}
+.me{width:26px;height:26px;background:var(--raise);box-shadow:inset 0 0 0 1px var(--edge);
+  display:grid;place-items:center;font-family:var(--fig);font-size:9px;letter-spacing:.02em;cursor:pointer;}
+
+/* narrow, dark, almost hidden */
+.rail{grid-column:1;padding:74px 0 30px;box-shadow:inset -1px 0 0 var(--hair);position:fixed;top:0;bottom:0;
+  width:var(--rail);overflow-y:auto;}
+.rgrp{font-family:var(--mono);font-size:7.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--smoke);
+  padding:0 22px 11px;}
+.rgrp+.rgrp{padding-top:0;}
+.nav{display:block;position:relative;padding:8px 22px;font-family:var(--mono);font-size:9.5px;letter-spacing:.19em;
+  text-transform:uppercase;color:var(--smoke);text-decoration:none;transition:color .16s;}
+.nav:hover{color:#FFF;}
+.nav.on{color:#FFF;}
+.nav.on::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:11px;height:1px;background:#FFF;}
+.rsep{height:1px;background:var(--hair);margin:22px 22px;}
+.room{padding:0 22px;font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;line-height:2.1;color:var(--smoke);}
+.room b{color:#FFF;font-weight:400;display:flex;align-items:center;gap:7px;}
+.room b i{width:4px;height:4px;background:#FFF;border-radius:50%;}
+.room a{color:var(--smoke);text-decoration:none;}
+.room a:hover{color:#FFF;}
+
+.main{grid-column:2;padding:52px 0 0;min-width:0;}
+.phead{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;
+  padding:30px 44px 22px;box-shadow:inset 0 -1px 0 var(--hair);}
+.phead h1{font-family:var(--disp);font-size:15px;font-weight:600;letter-spacing:.01em;}
+.phead p{font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--smoke);margin-top:6px;}
+.phead .rt{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--smoke);text-align:right;}
+.foot{display:flex;justify-content:space-between;padding:16px 44px;margin-top:56px;
+  box-shadow:inset 0 1px 0 var(--hair);font-family:var(--mono);font-size:7.5px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--smoke);}
+
+/* ─── today ─────────────────────────────────────────────────────────── */
+.brief{position:relative;padding:66px 44px 60px;overflow:hidden;}
+/* the signature: the day's equity trace runs through the figure, not beside it */
+.trace{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:210px;pointer-events:none;}
+.trace svg{width:100%;height:100%;display:block;}
+.bloom{position:absolute;left:44px;width:520px;height:230px;top:50%;transform:translateY(-50%);pointer-events:none;
+  background:radial-gradient(ellipse at 22% 50%, rgba(255,255,255,.16), transparent 68%);filter:blur(30px);}
+.stamp{position:relative;font-family:var(--mono);font-size:8.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--smoke);}
+.figure{position:relative;font-family:var(--fig);font-weight:500;font-size:104px;line-height:.94;letter-spacing:-.045em;
+  margin:16px 0 0;display:flex;align-items:baseline;gap:2px;}
+.figure .c{font-size:40px;opacity:.5;letter-spacing:-.02em;}
+.figure.loss{color:var(--smoke);-webkit-text-stroke:1px rgba(255,255,255,.62);}
+.swap{position:relative;margin-top:20px;display:inline-flex;gap:0;box-shadow:inset 0 0 0 1px var(--hair);}
+.swap button{background:transparent;border:0;color:var(--smoke);font-family:var(--mono);font-size:8px;
+  letter-spacing:.2em;text-transform:uppercase;padding:7px 13px;cursor:pointer;}
+.swap button.on{background:#FFF;color:var(--black);}
+.line1{position:relative;margin-top:26px;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;
+  text-transform:uppercase;display:flex;flex-wrap:wrap;gap:0 14px;}
+.line1 s{text-decoration:none;color:var(--smoke);}
+
+.cols{display:grid;grid-template-columns:1fr 300px;gap:0;box-shadow:inset 0 1px 0 var(--hair);}
+.cols>section{padding:26px 44px 30px;}
+.cols>section+section{box-shadow:inset 1px 0 0 var(--hair);padding-left:30px;padding-right:44px;}
+.chead{font-family:var(--mono);font-size:8px;letter-spacing:.26em;text-transform:uppercase;color:var(--smoke);margin-bottom:18px;}
+
+.tl{display:flex;flex-direction:column;}
+.tr{display:grid;grid-template-columns:34px 52px 44px 1fr 74px 58px;gap:12px;align-items:center;
+  padding:13px 0;box-shadow:inset 0 -1px 0 var(--hair);position:relative;text-decoration:none;color:#FFF;}
+.tr:hover::after{content:"";position:absolute;inset:0 -44px 0 -44px;pointer-events:none;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.055) 42%, transparent);}
+.tr .no{font-family:var(--fig);font-size:10px;color:var(--smoke);letter-spacing:.04em;}
+.tr .sy{font-family:var(--fig);font-size:12px;letter-spacing:.02em;}
+.tr .sd{font-family:var(--mono);font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--smoke);}
+.tr .st{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--smoke);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tr .rr{font-family:var(--fig);font-size:12.5px;text-align:right;letter-spacing:-.01em;}
+.tr .nt{font-family:var(--fig);font-size:12.5px;text-align:right;letter-spacing:-.02em;}
+.tr .rr.loss,.tr .nt.loss{color:var(--smoke);-webkit-text-stroke:.5px rgba(255,255,255,.5);}
+.tr.broke{box-shadow:inset 0 -1px 0 var(--hair), inset 2px 0 0 rgba(255,255,255,.55);padding-left:10px;}
+
+.rows{display:flex;flex-direction:column;gap:0;}
+.row{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:11px 0;box-shadow:inset 0 -1px 0 var(--hair);}
+.row span{font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--smoke);}
+.row b{font-family:var(--fig);font-size:14px;font-weight:500;letter-spacing:-.02em;}
+.row b.loss{color:var(--smoke);-webkit-text-stroke:.5px rgba(255,255,255,.5);}
+.unset{margin-top:16px;font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--smoke);line-height:1.9;}
+.unset a{color:#FFF;text-decoration:none;box-shadow:inset 0 -1px 0 var(--edge);}
+
+.refl{padding:34px 44px 0;}
+.refl textarea{width:100%;background:transparent;border:0;border-bottom:1px solid var(--hair);color:#FFF;
+  font-family:var(--ui);font-size:19px;line-height:1.7;padding:14px 0 16px;resize:none;outline:none;min-height:88px;}
+.refl textarea::placeholder{color:var(--smoke);}
+.refl textarea:focus{border-color:var(--edge);}
+.rfoot{display:flex;align-items:center;gap:18px;margin-top:14px;}
+.commit{background:transparent;color:#FFF;box-shadow:inset 0 0 0 1px var(--edge);border:0;font-family:var(--mono);
+  font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;padding:10px 16px;cursor:pointer;transition:background .18s,color .18s;}
+.commit:hover{background:#FFF;color:var(--black);}
+.rmsg{font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--smoke);}
+
+.silence{padding:78px 44px;text-align:center;}
+.silence h2{font-family:var(--disp);font-size:13px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;}
+.silence p{font-family:var(--ui);font-size:15px;color:var(--smoke);margin-top:12px;}
+
+.notice{margin:0 44px 22px;padding:11px 15px;box-shadow:inset 0 0 0 1px var(--edge);
+  font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;line-height:1.9;}
+
+/* tape-rewind reveal: blur to sharp, slight settle */
+@keyframes rew{from{opacity:0;filter:blur(9px);transform:translateY(7px);}to{opacity:1;filter:blur(0);transform:none;}}
+.rw{animation:rew .62s cubic-bezier(.2,.7,.2,1) both;}
+.rw2{animation-delay:.09s;} .rw3{animation-delay:.17s;} .rw4{animation-delay:.25s;}
+@media (prefers-reduced-motion:reduce){.rw{animation:none;}}
+
+@media (max-width:980px){
+  .app{grid-template-columns:1fr;}
+  .rail{display:none;}
+  .main{grid-column:1;}
+  .top .mark{width:auto;padding-left:18px;}
+  .cols{grid-template-columns:1fr;}
+  .cols>section+section{box-shadow:inset 0 1px 0 var(--hair);padding-left:22px;padding-right:22px;}
+  .brief,.phead,.refl,.foot{padding-left:22px;padding-right:22px;}
+  .bloom{left:22px;width:300px;}
+  .figure{font-size:62px;} .figure .c{font-size:25px;}
+  .tr{grid-template-columns:26px 44px 1fr 62px;}
+  .tr .sd,.tr .st{display:none;}
+  .notice{margin-left:22px;margin-right:22px;}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="mark"><b>Rewind</b><span>Private Ledger</span></div>
+  <div class="topbar">
+    <div class="mkt" id="mkt"><i></i><span>—</span></div>
+    <div class="srch"><button id="btnSearch">Search the record</button></div>
+    <div class="tacts">
+      <span class="act" id="actCount"></span>
+      <button class="blog" id="btnLog">+ Log trade</button>
+      <div class="me" id="meAv">—</div>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+  <nav class="rail">
+    <div class="rgrp">Private</div>
+    <a class="nav on" href="#today">Today</a>
+    <a class="nav" href="rewind-history.html">Ledger</a>
+    <a class="nav" href="rewind-calendar.html">Calendar</a>
+    <a class="nav" href="rewind-overview.html">Analytics</a>
+    <a class="nav" href="#playbook">Playbook</a>
+    <a class="nav" href="#reviews">Reviews</a>
+
+    <div class="rsep"></div>
+    <div class="rgrp">Community</div>
+    <a class="nav" href="rewind-community.html">Feed</a>
+    <a class="nav" href="#standings">Standings</a>
+    <a class="nav" href="#events">Events</a>
+    <a class="nav" href="#challenges">Challenges</a>
+    <a class="nav" href="#members">Members</a>
+
+    <div class="rsep"></div>
+    <div class="room">
+      <b><i></i>Rewind room</b>
+      <div id="roomN">—</div>
+      <a href="https://discord.gg/" target="_blank" rel="noopener">Open Discord ↗</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="phead rw">
+      <div><h1>Today</h1><p>Your session at a glance</p></div>
+      <div class="rt" id="pdate">—</div>
+    </div>
+
+    <div id="notice"></div>
+    <div id="view"></div>
+
+    <div class="foot">
+      <span>Futures journal</span>
+      <span>Log · Review · Repeat</span>
+    </div>
+  </main>
+</div>
+
+<script src="rewind-config.js?v=3"></script>
+<script type="module">
+import { loadTrades, client, currentUser } from './rewind-data.js';
+import { openLogTrade } from './rewind-log.js';
+
+/* ── state ─────────────────────────────────────────────────────────── */
+let TR = [];            /* today's trades, in logged order */
+let UNIT = 'net';       /* the doc leaves the hero unit to the trader */
+let MY_ID = null;
+
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nf  = n => Math.abs(Math.round(n)).toLocaleString();
+const isL = n => Number(n) < 0;
+
+/* Eastern-time facts — the market's clock, not the browser's */
+const et = () => new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+function etDate(){ const d=et(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function session(){
+  const d=et(), m=d.getHours()*60+d.getMinutes(), wd=d.getDay();
+  if(wd===0||wd===6) return 'Weekend';
+  if(m>=480 && m<720)  return 'New York AM';
+  if(m>=720 && m<1020) return 'New York PM';
+  if(m>=180 && m<480)  return 'London';
+  return 'Asia';
+}
+function market(){
+  const d=et(), m=d.getHours()*60+d.getMinutes(), wd=d.getDay();
+  if(wd===0||wd===6) return {t:'Closed', open:false};
+  if(m>=570 && m<960)  return {t:'NY Open', open:true};
+  if(m>=240 && m<570)  return {t:'Pre-market', open:false};
+  return {t:'After hours', open:false};
+}
+
+/* ── chrome ────────────────────────────────────────────────────────── */
+function paintChrome(){
+  const d=et(), M=market();
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('pdate').textContent = `${mo[d.getMonth()]} ${d.getDate()} · ${d.getFullYear()}`;
+  const el=document.getElementById('mkt');
+  el.className = 'mkt'+(M.open?'':' shut');
+  el.innerHTML = `<i></i><span>Market: ${esc(M.t)}</span>`;
+  document.getElementById('btnLog').addEventListener('click',()=>openLogTrade());
+  document.getElementById('btnSearch').addEventListener('click',()=>note('Search is not built yet.'));
+}
+
+function note(msg){
+  document.getElementById('notice').innerHTML = msg ? `<div class="notice">${esc(msg)}</div>` : '';
+}
+
+/* ── the equity trace, drawn through the figure ─────────────────────── */
+function trace(){
+  if(TR.length < 1) return '';
+  let run=0; const pts=[{x:0,y:0}];
+  TR.forEach(t=>{ run += Number(t.pnl)||0; pts.push({x:pts.length,y:run}); });
+  const ys=pts.map(p=>p.y), lo=Math.min(...ys,0), hi=Math.max(...ys,0);
+  const span=(hi-lo)||1, W=1000, H=210, pad=26;
+  const X=i=>(i/(pts.length-1||1))*W;
+  const Y=v=>H-pad-((v-lo)/span)*(H-pad*2);
+  const d=pts.map((p,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(p.y).toFixed(1)}`).join('');
+  const zero=Y(0).toFixed(1);
+  return `<div class="trace"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+    <line x1="0" y1="${zero}" x2="${W}" y2="${zero}" stroke="rgba(255,255,255,.10)" stroke-width="1"/>
+    <path d="${d}" fill="none" stroke="rgba(255,255,255,.30)" stroke-width="1.25"
+      vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+  </svg></div>`;
+}
+
+/* ── today ─────────────────────────────────────────────────────────── */
+function figure(){
+  if(UNIT==='r'){
+    const rs=TR.map(t=>Number(t.r)).filter(Number.isFinite);
+    if(!rs.length) return {big:'—', cents:'', loss:false};
+    const tot=rs.reduce((a,b)=>a+b,0);
+    return { big:(tot>0?'+':tot<0?'−':'')+Math.abs(tot).toFixed(1)+'R', cents:'', loss:tot<0 };
+  }
+  const net=TR.reduce((a,t)=>a+(Number(t.pnl)||0),0);
+  const abs=Math.abs(net);
+  return { big:(net>0?'+$':net<0?'−$':'$')+Math.floor(abs).toLocaleString(),
+           cents:'.'+abs.toFixed(2).split('.')[1], loss:net<0 };
+}
+
+function summary(){
+  const n=TR.length;
+  if(!n) return '';
+  const w=TR.filter(t=>Number(t.pnl)>0).length;
+  const rs=TR.map(t=>Number(t.r)).filter(Number.isFinite);
+  const avg=rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:null;
+  const bits=[`${String(n).padStart(2,'0')} ${n===1?'trade':'trades'}`, `${Math.round(w/n*100)}% win`];
+  if(avg!==null) bits.push(`${avg>0?'+':avg<0?'−':''}${Math.abs(avg).toFixed(1)}R avg`);
+  return bits.map(b=>`<span>${esc(b)}</span>`).join('<s>·</s>');
+}
+
+function timeline(){
+  if(!TR.length) return '<div class="chead">Today\'s record</div><div class="unset">Nothing logged yet.</div>';
+  return '<div class="chead">Today\'s record</div><div class="tl">'+TR.map((t,i)=>{
+    const L=isL(t.pnl);
+    const r=Number.isFinite(Number(t.r)) ? `${t.r>0?'+':t.r<0?'−':''}${Math.abs(t.r).toFixed(2)}R` : '—';
+    return `<a class="tr" href="rewind-history.html">
+      <span class="no">${String(i+1).padStart(2,'0')}</span>
+      <span class="sy">${esc(t.sym||'—')}</span>
+      <span class="sd">${esc(t.side==='short'?'Short':'Long')}</span>
+      <span class="st">${esc(t.model||'Unclassified')}</span>
+      <span class="rr${L?' loss':''}">${esc(r)}</span>
+      <span class="nt${L?' loss':''}">${(Number(t.pnl)>0?'+$':Number(t.pnl)<0?'−$':'$')+nf(t.pnl)}</span>
+    </a>`;
+  }).join('')+'</div>';
+}
+
+function exposure(){
+  if(!TR.length) return '<div class="chead">Exposure</div><div class="unset">Nothing at risk today.</div>';
+  const losses=TR.map(t=>Number(t.pnl)||0).filter(v=>v<0);
+  const worst=losses.length?Math.min(...losses):0;
+  const gross=TR.reduce((a,t)=>a+Math.abs(Number(t.pnl)||0),0);
+  const accts=[...new Set(TR.map(t=>t.acct||t.account_type).filter(Boolean))];
+  const rows=[
+    ['Trades taken', String(TR.length).padStart(2,'0'), false],
+    ['Largest single loss', worst?('−$'+nf(worst)):'None', !!worst],
+    ['Gross turnover', '$'+nf(gross), false],
+  ];
+  return '<div class="chead">Exposure</div><div class="rows">'+
+    rows.map(([k,v,L])=>`<div class="row"><span>${esc(k)}</span><b class="${L?'loss':''}">${esc(v)}</b></div>`).join('')+
+    (accts.length?`<div class="row"><span>Accounts</span><b style="font-size:10px;letter-spacing:.14em;">${esc(accts.join(' · ').toUpperCase())}</b></div>`:'')+
+    '</div><div class="unset">No risk limits recorded.<br>Protocol is not built yet — daily loss, max trades and stop-after rules will read here.</div>';
+}
+
+function render(){
+  const f=figure();
+  const view=document.getElementById('view');
+
+  if(!TR.length){
+    view.innerHTML = `<div class="silence rw rw2">
+      <h2>Nothing recorded today</h2>
+      <p>The record begins with the first honest entry.</p>
+    </div>` + reflection();
+    wireReflection();
+    return;
+  }
+
+  view.innerHTML = `
+    <div class="brief">
+      <div class="bloom"></div>
+      ${trace()}
+      <div class="stamp rw">${esc(new Date(etDate()+'T12:00:00Z').toLocaleDateString('en-US',{weekday:'long',timeZone:'UTC'}))} · ${esc(new Date(etDate()+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}))} · ${esc(session())} session</div>
+      <div class="figure rw rw2${f.loss?' loss':''}">${esc(f.big)}${f.cents?`<span class="c">${esc(f.cents)}</span>`:''}</div>
+      <div class="swap rw rw2">
+        <button data-u="net" class="${UNIT==='net'?'on':''}">Dollars</button>
+        <button data-u="r" class="${UNIT==='r'?'on':''}">R</button>
+      </div>
+      <div class="line1 rw rw3">${summary()}</div>
+    </div>
+    <div class="cols rw rw3">
+      <section>${timeline()}</section>
+      <section>${exposure()}</section>
+    </div>
+    ${reflection()}`;
+
+  view.querySelectorAll('.swap button').forEach(b=>b.addEventListener('click',()=>{
+    UNIT=b.dataset.u; render();
+  }));
+  wireReflection();
+}
+
+function reflection(){
+  return `<div class="refl rw rw4">
+    <div class="chead">Reflection</div>
+    <textarea id="rfl" placeholder="What did the market teach you today?"></textarea>
+    <div class="rfoot">
+      <button class="commit" id="rflSave">Commit to the record</button>
+      <span class="rmsg" id="rflMsg"></span>
+    </div>
+  </div>`;
+}
+
+/* the reflection persists in user_settings, keyed by the trading day —
+   no reviews table exists yet, and this needs no schema change */
+function wireReflection(){
+  const ta=document.getElementById('rfl'), btn=document.getElementById('rflSave'), msg=document.getElementById('rflMsg');
+  if(!ta) return;
+  const key='reflection:'+etDate();
+  (async()=>{
+    const c=client(); if(!c||!MY_ID) return;
+    try{
+      const { data }=await c.from('user_settings').select('value').eq('user_id',MY_ID).eq('key',key).maybeSingle();
+      if(data && typeof data.value==='string'){ ta.value=data.value; msg.textContent='Saved earlier today'; }
+    }catch(e){}
+  })();
+  btn.addEventListener('click', async () => {
+    const c=client();
+    if(!c||!MY_ID){ msg.textContent='Signed out'; return; }
+    const val=ta.value.trim();
+    btn.textContent='Committing…';
+    try{
+      const { data:row }=await c.from('user_settings').select('user_id')
+        .eq('user_id',MY_ID).eq('key',key).maybeSingle();
+      const { error } = row
+        ? await c.from('user_settings').update({value:val, updated_at:new Date().toISOString()})
+            .eq('user_id',MY_ID).eq('key',key)
+        : await c.from('user_settings').insert({user_id:MY_ID, key, value:val});
+      msg.textContent = error ? ('Failed — '+error.message) : 'Committed';
+    }catch(e){ msg.textContent='Failed — '+((e&&e.message)||e); }
+    btn.textContent='Commit to the record';
+  });
+}
+
+/* ── load ──────────────────────────────────────────────────────────── */
+(async function(){
+  paintChrome();
+  const c=client();
+  const u=c?await currentUser():null;
+  if(!c||!u){ note('Signed out — sign in to open the ledger.'); render(); return; }
+  MY_ID=u.id;
+
+  try{
+    const { data:p }=await c.from('profiles').select('username, display_name, initials').eq('id',MY_ID).maybeSingle();
+    const h=(p&&(p.username||p.display_name))||'';
+    document.getElementById('meAv').textContent=((p&&p.initials)||h.slice(0,2)||'—').toUpperCase();
+  }catch(e){}
+
+  try{
+    const { trades }=await loadTrades();
+    const day=etDate();
+    TR=(trades||[]).filter(t=>t.date===day);
+  }catch(e){ note('Ledger unavailable — '+((e&&e.message)||e)); }
+
+  render();
+})();
+</script>
+</body>
+</html>
