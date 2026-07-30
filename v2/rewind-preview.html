@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rewind · Design preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Syne:wght@700;800&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="rewind-ds.css?v=1">
+<style>
+/* ── shell only. Everything else lives in the design system. ─────────── */
+.app{display:grid;grid-template-columns:var(--rail) 1fr;min-height:100%;position:relative;z-index:2;}
+.top{position:fixed;top:0;left:0;right:0;height:var(--topbar);z-index:40;display:flex;align-items:center;
+  background:rgba(14,17,20,.92);backdrop-filter:blur(18px);box-shadow:inset 0 -1px 0 var(--hair);}
+.top .mark{width:var(--rail);padding-left:22px;display:flex;align-items:baseline;gap:9px;flex:none;}
+.top .mark b{font-family:var(--brand);font-weight:800;font-size:15px;letter-spacing:-.02em;text-transform:uppercase;}
+.topbar{flex:1;display:flex;align-items:center;gap:24px;padding:0 22px;min-width:0;}
+.mkt{display:flex;align-items:center;gap:7px;flex:none;}
+.mkt i{width:4px;height:4px;background:var(--white);border-radius:50%;}
+.srch{flex:1;max-width:300px;min-width:80px;}
+.srch button{width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--hair);
+  color:var(--smoke);font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;
+  padding:7px 0;cursor:pointer;transition:border-color .18s,color .18s;}
+.srch button:hover{border-color:var(--edge);color:var(--white);}
+.tacts{margin-left:auto;display:flex;align-items:center;gap:15px;flex:none;}
+.pvtag{font-family:var(--mono);font-size:7px;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--black);background:var(--smoke);padding:3px 6px;}
+.rail{grid-column:1;padding:70px 0 40px;box-shadow:inset -1px 0 0 var(--hair);position:fixed;top:0;bottom:0;
+  width:var(--rail);overflow-y:auto;scrollbar-width:thin;z-index:30;}
+.rgrp{font-family:var(--mono);font-size:7.5px;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--smoke);padding:16px 22px 9px;}
+.rail .rgrp:first-child{padding-top:0;}
+.nav{display:block;position:relative;padding:7px 22px;font-family:var(--mono);font-size:9px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--smoke);cursor:pointer;transition:color .16s;}
+.nav:hover{color:var(--white);}
+.nav.on{color:var(--white);}
+.nav.on::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:11px;height:1px;background:var(--white);}
+.rsep{height:1px;background:var(--hair);margin:16px 22px;}
+.main{grid-column:2;padding:var(--topbar) 0 0;min-width:0;}
+.foot{display:flex;justify-content:space-between;padding:16px var(--gut);margin-top:60px;
+  box-shadow:inset 0 1px 0 var(--hair);font-family:var(--mono);font-size:7.5px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--smoke);}
+.two{display:grid;grid-template-columns:1fr 306px;box-shadow:inset 0 1px 0 var(--hair);}
+.two>section{padding:26px var(--gut) 40px;}
+.two>section+section{box-shadow:inset 1px 0 0 var(--hair);padding-left:30px;}
+@media (max-width:1000px){
+  .app{grid-template-columns:1fr;} .rail{display:none;} .main{grid-column:1;}
+  .top .mark{width:auto;padding-left:16px;}
+  .two{grid-template-columns:1fr;}
+  .two>section+section{box-shadow:inset 0 1px 0 var(--hair);padding-left:var(--gut);}
+}
+</style>
+</head>
+<body>
+<div class="app-bg"></div>
+
+<header class="top">
+  <div class="mark"><b>Rewind</b><span class="tl dim sm">Private Ledger</span></div>
+  <div class="topbar">
+    <div class="mkt"><i></i><span class="tl">Market: NY Open</span></div>
+    <div class="srch"><button data-go="search">Search the record</button></div>
+    <div class="tacts">
+      <span class="pvtag">Preview</span>
+      <button class="rb solid sm" data-go="log">+ Log trade</button>
+      <div class="av" data-go="profile" style="width:26px;height:26px;font-size:9px;cursor:pointer;">CV</div>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+  <nav class="rail" id="rail"></nav>
+  <main class="main">
+    <div id="page"></div>
+    <div class="foot"><span>Futures journal</span><span>Log · Review · Repeat</span></div>
+  </main>
+</div>
+
+<script>
+/* ===================================================================
+   REWIND — DESIGN PREVIEW
+   Every colour, type, border, motion and component decision comes from
+   rewind-ds.css. Only layout geometry (grid columns, spacing) is inline.
+   All content is SAMPLE. Nothing reads the database.
+   =================================================================== */
+const E = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => (n>0?'+$':n<0?'−$':'$')+Math.abs(n).toLocaleString();
+const rr = n => (n>0?'+':n<0?'−':'')+Math.abs(n).toFixed(2)+'R';
+const L = n => n<0 ? ' loss' : '';
+const pad = (n,w=2) => String(n).padStart(w,'0');
+
+/* ── component helpers ──────────────────────────────────────────────── */
+const cph = (title, sub, meta, cls='') =>
+  `<div class="cph rw"><div><h1 class="${cls}">${E(title)}</h1>
+   ${sub?`<div class="sub">${E(sub)}</div>`:''}</div>
+   <div class="meta">${meta||''}</div></div>`;
+
+const section = (h, body, cls='') =>
+  `<div class="section rw ${cls}">${h?`<div class="section-h">${E(h)}</div>`:''}${body}</div>`;
+
+const metrics = (items, three) =>
+  `<div class="md${three?' three':''}">${items.map(([k,v,l])=>
+    `<div><em>${E(k)}</em><b class="${l?'loss':''}" ${/^[+−$\-\d]/.test(String(v))?'data-count':''}>${E(v)}</b></div>`).join('')}</div>`;
+
+const row = (k,v,cls='') =>
+  `<div class="md-row"><span>${E(k)}</span><b class="${cls}">${E(v)}</b></div>`;
+
+const chips = (items, onIdx) =>
+  `<div class="chips">${items.map((x,i)=>`<span class="chip${(Array.isArray(onIdx)?onIdx.includes(i):i===onIdx)?' on':''}">${E(x)}</span>`).join('')}</div>`;
+
+const frame = (label, h=150, extra='') =>
+  `<div class="ef brackets" style="height:${h}px;">${extra}<span class="placeholder">${E(label)}</span></div>`;
+
+const empty = (h,p,btns) =>
+  `<div class="er"><h3>${E(h)}</h3><p>${E(p)}</p>
+   ${btns&&btns.length?`<div class="chips" style="justify-content:center;margin-top:26px;">
+   ${btns.map(b=>`<button class="rb">${E(b)}</button>`).join('')}</div>`:''}</div>`;
+
+const backtype = (text, css, fig) =>
+  `<div class="backtype${fig?' fig':''}" style="${css}">${E(text)}</div>`;
+
+/* a line chart that draws itself */
+function line(vals, w, h, fill){
+  const lo=Math.min(...vals,0), hi=Math.max(...vals,0), span=(hi-lo)||1;
+  const X=i=>(i/(vals.length-1||1))*w, Y=v=>h-((v-lo)/span)*h;
+  const d=vals.map((v,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join('');
+  const z=Y(0).toFixed(1);
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="width:100%;height:${h}px;display:block;">
+    <line x1="0" y1="${z}" x2="${w}" y2="${z}" stroke="var(--hair)"/>
+    ${fill?`<path d="${d}L${w},${z}L0,${z}Z" fill="rgba(255,255,255,.05)"/>`:''}
+    <path class="draw" pathLength="1" d="${d}" fill="none" stroke="var(--bright)" stroke-width="1.25"
+      vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
+}
+
+/* ── sample record ──────────────────────────────────────────────────── */
+const TRADES=[
+ {no:184,d:'JUL 29',t:'09:42',sym:'NQ',side:'LONG',setup:'OTE',net:562,r:1.27,g:'A',broke:false,shared:true},
+ {no:183,d:'JUL 29',t:'10:18',sym:'NQ',side:'SHORT',setup:'CISD',net:-218,r:-0.50,g:'C',broke:true,shared:false},
+ {no:182,d:'JUL 29',t:'11:06',sym:'ES',side:'LONG',setup:'FVG',net:310,r:0.92,g:'B',broke:false,shared:false},
+ {no:181,d:'JUL 28',t:'14:22',sym:'NQ',side:'SHORT',setup:'Silver Bullet',net:740,r:1.85,g:'A',broke:false,shared:true},
+ {no:180,d:'JUL 28',t:'09:51',sym:'NQ',side:'LONG',setup:'OTE',net:-95,r:-0.31,g:'B',broke:false,shared:false},
+ {no:179,d:'JUL 25',t:'10:04',sym:'GC',side:'LONG',setup:'Turtle Soup',net:428,r:1.14,g:'B',broke:false,shared:false},
+];
+const SETUPS=[
+ {n:'01',name:'OTE',obs:42,wr:64,exp:0.58},{n:'02',name:'CISD',obs:31,wr:61,exp:0.44},
+ {n:'03',name:'FVG',obs:18,wr:44,exp:-0.12},{n:'04',name:'Silver Bullet',obs:12,wr:75,exp:0.91},
+];
+const MEMBERS=[
+ {r:'01',h:'mason',dis:94,rev:'5 / 5',st:12,con:328,inst:'NQ',ses:'NY AM'},
+ {r:'02',h:'lena',dis:92,rev:'5 / 5',st:18,con:286,inst:'ES',ses:'London'},
+ {r:'03',h:'jacob',dis:89,rev:'4 / 5',st:7,con:240,inst:'NQ',ses:'NY AM'},
+ {r:'04',h:'nqryan',dis:87,rev:'5 / 5',st:9,con:218,inst:'NQ',ses:'NY PM'},
+ {r:'05',h:'tradesbymia',dis:84,rev:'4 / 5',st:5,con:194,inst:'CL',ses:'NY AM'},
+];
+
+/* ── nav ────────────────────────────────────────────────────────────── */
+const NAV=[
+ ['Private',[['today','Today'],['log','Log trade'],['ledger','Ledger'],['calendar','Calendar'],
+   ['analytics','Analytics'],['playbook','Playbook'],['review','Daily review'],['retro','Weekly review'],
+   ['protocol','Protocol'],['goals','Goals']]],
+ ['Community',[['room','The room'],['feed','Feed'],['standings','Standings'],['gcal','Group calendar'],
+   ['members','Members'],['profile','Member profile']]],
+ ['Account',[['locker','Bookmarks'],['tape','Notifications'],['search','Search'],['settings','Settings']]],
+ ['Operations',[['control','Moderator'],['onboard','Onboarding'],['silence','Empty states']]],
+];
+
+/* =================================================================== */
+/*  TODAY — the daily briefing                                          */
+/* =================================================================== */
+function pgToday(){
+  const t=TRADES.slice(0,3);
+  let run=0; const pts=[0]; t.forEach(x=>{run+=x.net;pts.push(run);});
+  return cph('Today','Your session at a glance','Jul 29 · 2026<br>New York AM')+`
+  <div class="focal">
+    <div class="bloom" style="left:var(--gut);width:520px;height:230px;top:50%;transform:translateY(-50%);"></div>
+    <div class="traceline">${line(pts,1000,210,false)}</div>
+    <div class="tl dim wide rw" style="position:relative;">Wednesday · Jul 29 · New York AM session</div>
+    <div class="fig rw d2">+$654<span class="c">.00</span></div>
+    <div class="chips rw d2" style="position:relative;margin-top:20px;">
+      <span class="chip on">Dollars</span><span class="chip">R</span></div>
+    <div class="line rw d3">
+      <span>03 trades</span><s>·</s><span>67% win</span><s>·</s><span>+0.6R avg</span>
+      <s>·</s><span>87 discipline</span><s>·</s><span>Plan followed</span></div>
+  </div>
+  <div class="two rw d3">
+    <section>
+      <div class="section-h" style="padding-left:0;">Today's record</div>
+      <div class="at">${t.map(x=>`<div class="at-row${x.broke?' violation':''}"
+        style="grid-template-columns:46px 50px 46px 1fr 74px 68px;">
+        <span class="no">${E(x.t)}</span>
+        <span class="sym">${E(x.sym)}</span>
+        <span class="tl dim sm">${E(x.side)}</span>
+        <span class="tl dim md">${E(x.setup)}</span>
+        <span class="num${L(x.r)}" style="font-size:12.5px;">${rr(x.r)}</span>
+        <span class="num${L(x.net)}">${money(x.net)}</span>
+      </div>`).join('')}</div>
+    </section>
+    <section>
+      <div class="section-h" style="padding-left:0;">Risk status</div>
+      ${row('Daily loss used','$218 / $1,000')}
+      <div class="sd animate" style="margin:2px 0 0;"><div style="width:22%;height:1px;background:var(--white);"></div></div>
+      <div style="margin-top:12px;">
+        ${row('Trades taken','03 / 06')}${row('Consecutive losses','01 / 02')}${row('Max contracts','02 / 04')}
+      </div>
+      <div class="tl dim" style="margin-top:18px;letter-spacing:.16em;">All limits respected.</div>
+    </section>
+  </div>
+  ${section('Reflection',`
+    <textarea class="field ed" placeholder="What did the market teach you today?" style="font-size:19px;min-height:86px;"></textarea>
+    <div class="chips" style="margin-top:18px;"><button class="rb" data-stamp>Commit to the record</button>
+      <span class="ls" id="stamp1" style="display:none;">Committed · 21:42 ET</span></div>`,'d4')}`;
+}
+
+/* =================================================================== */
+/*  LOG TRADE — the black box recorder                                  */
+/* =================================================================== */
+function stepbar(i){
+  const s=['01 / Details','02 / Execution','03 / Review'];
+  return `<div class="chips" style="gap:12px;">${s.map((x,j)=>
+    `<span class="tl ${j===i?'':'dim'}">${E(x)}</span>${j<2?'<i style="width:56px;height:1px;background:var(--hair);"></i>':''}`
+  ).join('')}</div>`;
+}
+function pgLog(){
+  const rate=[['Entry quality',4],['Exit quality',3],['Emotional control',5]];
+  return cph('Log trade','Recording the event while it is fresh','Record no. 0185')+`
+  ${section('',stepbar(0))}
+  ${section('',`
+    <div class="fgrid" style="grid-template-columns:1.4fr 1fr 1fr;">
+      ${[['Instrument','NQ · E-mini Nasdaq'],['Direction','Long'],['Quantity','2']]
+        .map(([k,v])=>`<label class="fl"><span class="tl">${E(k)}</span><input class="field" value="${E(v)}"></label>`).join('')}
+    </div>
+    <div class="fgrid" style="grid-template-columns:repeat(4,1fr);margin-top:30px;">
+      ${[['Date','Jul 29 2026'],['Entry time','09:42:18'],['Exit time','09:51:06'],['Session','New York AM']]
+        .map(([k,v])=>`<label class="fl"><span class="tl">${E(k)}</span><input class="field" value="${E(v)}"></label>`).join('')}
+    </div>
+    <div class="fgrid" style="grid-template-columns:repeat(4,1fr);margin-top:30px;">
+      ${[['Entry price','21,486.25'],['Exit price','21,522.50'],['Initial stop','21,472.00'],['Target','21,530.00']]
+        .map(([k,v])=>`<label class="fl"><span class="tl">${E(k)}</span><input class="field" value="${E(v)}"></label>`).join('')}
+    </div>
+    <div class="fgrid" style="grid-template-columns:1fr 1fr;margin-top:30px;">
+      ${[['Setup','OTE'],['Account','Funded']]
+        .map(([k,v])=>`<label class="fl"><span class="tl">${E(k)}</span><input class="field" value="${E(v)}"></label>`).join('')}
+    </div>
+    <div class="chips" style="margin-top:38px;"><button class="rb">Save draft</button>
+      <button class="rb solid">Next · Execution →</button></div>`,'d2')}
+  <div class="section"><div class="sd animate"></div></div>
+  ${section('',stepbar(1)+`
+    <div style="display:grid;grid-template-columns:1fr 1.25fr;gap:36px;margin-top:30px;">
+      <div>${[['Gross P&L','+$580',0],['Commissions','−$18',1],['Net P&L','+$562',0],['R multiple','+1.27R',0],
+              ['Max favourable','+1.61R',0],['Max adverse','−0.22R',1],['Time in trade','8m 48s',0]]
+        .map(([k,v,l])=>row(k,v,l?'loss':'')).join('')}</div>
+      <div><div class="tl dim" style="margin-bottom:12px;">Chart</div>
+        ${frame('Drop the chart here · or upload',240)}</div>
+    </div>
+    <div style="margin-top:32px;"><span class="tl dim">Entry thesis</span>
+      <textarea class="field ed" placeholder="What the market was offering, and why you took it…" style="min-height:62px;"></textarea></div>
+    <div style="margin-top:26px;"><span class="tl dim">Exit reason</span>
+      <textarea class="field ed" placeholder="Why you closed it…" style="min-height:62px;"></textarea></div>`,'d3')}
+  <div class="section"><div class="sd animate"></div></div>
+  ${section('',stepbar(2)+`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:44px;margin-top:30px;">
+      <div>
+        <div class="tl dim" style="margin-bottom:14px;">Plan followed</div>
+        ${chips(['Yes','Partially','No'],0)}
+        ${rate.map(([k,v])=>`<div style="margin-top:24px;">
+          <div class="tl dim" style="margin-bottom:10px;">${E(k)}</div>
+          <div class="chips" style="gap:0;">${[1,2,3,4,5].map(i=>
+            `<span class="val" style="font-size:11px;width:26px;text-align:center;${i<=v?'':'color:var(--ghost);'}">${i}</span>`
+          ).join('<i style="width:14px;height:1px;background:var(--hair);"></i>')}</div></div>`).join('')}
+      </div>
+      <div>
+        <div class="tl dim" style="margin-bottom:14px;">Emotion</div>
+        ${chips(['Calm','FOMO','Hesitant','Revenge','Confident'],0)}
+        <div class="tl dim" style="margin:26px 0 14px;">Mistakes</div>
+        ${chips(['Early exit','Oversized','Chased entry','Moved stop'],-1)}
+        <div class="tl dim" style="margin:26px 0 14px;">Visibility</div>
+        ${chips(['Private','Community','Selected room'],0)}
+      </div>
+    </div>
+    <div style="margin-top:34px;"><span class="tl dim">Lesson</span>
+      <textarea class="field ed" placeholder="What should be repeated or corrected next time?" style="font-size:19px;min-height:70px;"></textarea></div>
+    <div class="chips" style="margin-top:34px;"><button class="rb solid" data-stamp>Commit to the record</button>
+      <span class="ls" id="stamp2" style="display:none;">Record 0185 committed</span></div>`,'d4')}`;
+}
+
+/* =================================================================== */
+/*  LEDGER — the numbered archive                                       */
+/* =================================================================== */
+function pgLedger(){
+  const cols='72px 62px 52px 46px 54px 1fr 86px 72px 40px 26px';
+  return cph('Ledger','The private record','184 total records')+`
+  ${section('',`<div class="chips">
+    ${['All','NQ','NY AM','OTE','Plan followed','July'].map((x,i)=>`<span class="chip${i===0?' on':''}">${E(x)}</span>`).join('')}
+    <span style="margin-left:auto;"></span>
+    ${['Table','Charts','By day','By setup'].map(x=>`<span class="chip">${E(x)}</span>`).join('')}
+  </div>`)}
+  ${section('',`<div class="at">
+    <div class="at-head" style="grid-template-columns:${cols};">
+      ${['No.','Date','Time','Sym','Side','Setup','Net','R','Grade',''].map(h=>`<span>${E(h)}</span>`).join('')}
+    </div>
+    ${TRADES.map(x=>`<div class="at-row${x.broke?' violation':''}" style="grid-template-columns:${cols};">
+      <span class="no">${pad(x.no,4)}</span>
+      <span class="tl" style="font-size:8.5px;">${E(x.d)}</span>
+      <span class="no">${E(x.t)}</span>
+      <span class="sym">${E(x.sym)}</span>
+      <span class="tl dim sm">${E(x.side)}</span>
+      <span class="tl dim md">${E(x.setup)}</span>
+      <span class="num${L(x.net)}">${money(x.net)}</span>
+      <span class="num${L(x.r)}" style="font-size:12px;">${rr(x.r)}</span>
+      <span class="val" style="font-size:11px;text-align:center;">${E(x.g)}</span>
+      <span class="tl dim" style="text-align:right;">${x.shared?'◈':''}</span>
+    </div>`).join('')}
+    <div class="at-foot"><span class="tl dim">1–06 of 184</span>
+      <span class="chips"><span class="chip">← Previous</span><span class="chip">Next →</span></span></div>
+  </div>`,'d2')}`;
+}
+
+/* =================================================================== */
+/*  CALENDAR — the contact sheet                                        */
+/* =================================================================== */
+function pgCalendar(){
+  const days=[null,null,{d:1,n:320,t:3,rev:1},{d:2,n:-185,t:2,rev:1},{d:3,n:740,t:4,rev:1},null,null,
+   {d:6,n:120,t:2,rev:1},{d:7,n:480,t:3,rev:1},{d:8,n:0,t:0,rev:0},{d:9,n:-360,t:5,rev:0,broke:1},{d:10,n:910,t:4,rev:1},null,null,
+   {d:13,n:-210,t:3,rev:1},{d:14,n:625,t:2,rev:1},{d:15,n:185,t:1,rev:1},{d:16,n:430,t:3,rev:1},{d:17,n:-95,t:2,rev:0},null,null,
+   {d:20,n:840,t:4,rev:1},{d:21,n:220,t:2,rev:1},{d:22,n:-515,t:6,rev:0,broke:1},{d:23,n:385,t:3,rev:1},{d:24,n:710,t:3,rev:1},null,null,
+   {d:27,n:300,t:2,rev:1},{d:28,n:830,t:4,rev:1},{d:29,n:654,t:3,rev:0},null,null,null,null];
+  return cph('Calendar','The month as a contact sheet','July 2026')+`
+  <div style="position:relative;overflow:hidden;">
+    ${backtype('JULY','left:36px;top:-30px;font-size:190px;')}
+    ${section('',`
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:9px;">
+        ${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<span class="tl dim">${E(d)}</span>`).join('')}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:7px;">
+        ${days.map(c=>{
+          if(!c) return `<div style="aspect-ratio:1;box-shadow:inset 0 0 0 1px rgba(255,255,255,.03);"></div>`;
+          const win=c.n>0, flat=c.n===0;
+          return `<div style="aspect-ratio:1;position:relative;padding:9px 10px;display:flex;flex-direction:column;
+            justify-content:space-between;box-shadow:inset 0 0 0 1px ${win?'var(--hair)':'rgba(255,255,255,.05)'};
+            ${win?`background:radial-gradient(ellipse at 50% 50%, rgba(255,255,255,${Math.min(.02+Math.abs(c.n)/14000,.085).toFixed(3)}), transparent 72%);`:''}
+            ${c.broke?'background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.055) 0 1px,transparent 1px 7px);':''}">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <span class="no">${pad(c.d)}</span>
+              <span class="tl dim sm">${c.rev?'◆':'◇'}</span></div>
+            <div class="val${c.n<0?' loss':''}${flat?' flat':''}" style="font-size:15px;">${flat?'$0':money(c.n)}</div>
+            <span class="tl dim sm">${c.t?pad(c.t)+' trades':'—'}</span>
+          </div>`;}).join('')}
+      </div>`)}
+  </div>
+  ${section('',`<div style="display:grid;grid-template-columns:1fr 1fr;gap:44px;">
+    <div><div class="section-h" style="padding-left:0;">July</div>
+      ${row('Net','+$6,135')}${row('Green days','18')}${row('Red days','05','loss')}${row('Reviews completed','21 / 23')}</div>
+    <div><div class="section-h" style="padding-left:0;">Selected · Jul 29</div>
+      <div class="val" style="font-size:44px;margin:4px 0 14px;" data-count>+$654</div>
+      <div class="tl dim" style="letter-spacing:.18em;line-height:2;">03 trades · 67% win · +0.6R avg<br>Review not completed</div>
+      <div style="margin-top:20px;"><button class="rb" data-go="review">Open daily review →</button></div></div>
+  </div>`,'d3')}`;
+}
+
+/* =================================================================== */
+/*  ANALYTICS — the telemetry room                                      */
+/* =================================================================== */
+function pgAnalytics(){
+  const cum=[0,320,135,875,995,1475,1475,1115,2025,1815,2440,2625,3055,2960,3800,4020,3505,3890,4600,4900,5730,6384];
+  const dist=[-2,-1,1,4,6,3,1];
+  return cph('Analytics','Telemetry from the record','Last 30 days · All accounts')+`
+  ${section('',metrics([['Net','+18.4R'],['Win rate','58.4%'],['Profit factor','1.84'],['Discipline','87']]))}
+  ${section('',`<div style="display:grid;grid-template-columns:1.45fr 1fr;gap:40px;">
+    <div><div class="section-h" style="padding-left:0;">Performance / cumulative</div>${line(cum,700,150,true)}</div>
+    <div><div class="section-h" style="padding-left:0;">Performance / distribution</div>
+      <div style="display:flex;align-items:flex-end;gap:7px;height:150px;">
+        ${dist.map(v=>`<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;">
+          <div style="height:${Math.abs(v)/6*100}%;${v<0?'box-shadow:inset 0 0 0 1px var(--smoke);':'background:rgba(255,255,255,.5);'}"></div></div>`).join('')}
+      </div>
+      <div class="tl dim" style="margin-top:9px;letter-spacing:.16em;">−3R · 0 · +3R</div></div>
+  </div>`,'d2')}
+  ${section('',`<p class="ed big">Trades taken after 12:00 produced 68% of this month's losses.</p>`,'d3')}
+  ${section('',`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:44px;">
+    <div><div class="section-h" style="padding-left:0;">Performance / setup</div>
+      ${SETUPS.map(s=>row(s.name,(s.exp>0?'+':'−')+Math.abs(s.exp).toFixed(2)+'R',s.exp<0?'loss':'')).join('')}</div>
+    <div><div class="section-h" style="padding-left:0;">Performance / time</div>
+      ${[['09:30–10:30',1850],['10:30–11:30',2120],['11:30–12:30',-320],['12:30–close',-980]]
+        .map(([k,v])=>row(k,money(v),v<0?'loss':'')).join('')}</div>
+    <div><div class="section-h" style="padding-left:0;">Performance / session</div>
+      ${[['New York AM',4210],['New York PM',-640],['London',980],['Asia',-120]]
+        .map(([k,v])=>row(k,money(v),v<0?'loss':'')).join('')}</div>
+    <div><div class="section-h" style="padding-left:0;">Performance / behaviour</div>
+      ${row('Plan followed','+$7,420')}${row('Plan broken','−$1,285','loss')}
+      ${row('Long','63% win')}${row('Short','52% win')}</div>
+  </div>`,'d3')}`;
+}
+
+/* =================================================================== */
+/*  PLAYBOOK — the field manual                                         */
+/* =================================================================== */
+function pgPlaybook(){
+  return cph('Playbook','Your repeatable edges','04 setups on file')+`
+  ${section('',`<div class="rp-grid" style="grid-template-columns:repeat(auto-fit,minmax(228px,1fr));">
+    ${SETUPS.map(s=>`<div class="rp" style="position:relative;overflow:hidden;min-height:216px;padding:26px 24px 30px;">
+      ${backtype(s.n,'right:-14px;bottom:-46px;font-size:132px;',1)}
+      <div class="ef" style="position:absolute;inset:0;opacity:.5;box-shadow:none;min-height:0;"></div>
+      <div style="position:relative;">
+        <span class="tl dim">Setup ${E(s.n)}</span>
+        <div style="font-family:var(--disp);font-size:19px;font-weight:600;margin:12px 0 22px;line-height:1.25;">${E(s.name)}</div>
+        <div class="tl dim" style="line-height:2.1;letter-spacing:.16em;">
+          ${s.obs} observations<br>${s.wr}% win<br>
+          <span class="${s.exp<0?'val loss':''}" style="${s.exp<0?'':'color:var(--white);'}">${s.exp>0?'+':'−'}${Math.abs(s.exp).toFixed(2)}R expectancy</span></div>
+      </div>
+    </div>`).join('')}
+    <div class="rp" style="display:grid;place-items:center;min-height:216px;"><button class="rb">+ New setup</button></div>
+  </div>`)}`;
+}
+
+/* =================================================================== */
+/*  DAILY REVIEW — the debrief                                          */
+/* =================================================================== */
+function pgReview(){
+  const qs=[['01','What was the market offering?','Structure, volatility and the levels that mattered…',0],
+            ['02','Which execution was your strongest, and why?','',1],
+            ['03','Which one should have been done differently?','',1],
+            ['05','One behaviour to repeat or correct tomorrow','',0]];
+  return cph('Daily review','Jul 29 2026','03 trades · +0.6R avg')+`
+  ${qs.map(([n,q,ph,pick],i)=>`<div class="section rw d${Math.min(i+1,4)}" style="padding-top:${i?48:34}px;">
+    <div style="display:grid;grid-template-columns:96px 1fr;align-items:start;">
+      <div class="val" style="font-size:var(--t-giant);color:rgba(255,255,255,.10);line-height:.9;">${E(n)}</div>
+      <div>
+        <div class="ed" style="font-size:22px;max-width:40ch;">${E(q)}</div>
+        ${pick?`<div class="chips" style="margin-top:18px;">${TRADES.slice(0,3).map((t,j)=>
+          `<span class="chip${j===0&&i===1?' on':''}">No. ${pad(t.no,4)} · ${E(t.sym)} ${rr(t.r)}</span>`).join('')}</div>`:''}
+        <textarea class="field ed" placeholder="${E(ph)}" style="margin-top:14px;min-height:72px;"></textarea>
+      </div>
+    </div></div>`).join('')}
+  <div class="section rw d4" style="padding-top:48px;">
+    <div style="display:grid;grid-template-columns:96px 1fr;">
+      <div class="val" style="font-size:var(--t-giant);color:rgba(255,255,255,.10);line-height:.9;">04</div>
+      <div><div class="ed" style="font-size:22px;">Were the rules respected?</div>
+        <div style="margin-top:20px;">
+          ${[['Daily loss limit','Yes',0],['Maximum size','Yes',0],['Approved setups only','No',1]]
+            .map(([k,v,off])=>`<div class="md-row"><span>${E(k)}</span>
+              <b class="state${off?' off':''}">${E(v)}</b></div>`).join('')}
+        </div></div></div>
+  </div>
+  <div class="section rw d4" style="padding-top:48px;">
+    <div class="chips">
+      <button class="rb solid" data-stamp>Close the daily record</button>
+      <span class="chip">Share the lesson, not the numbers</span>
+      <span class="ls" id="stamp3" style="display:none;margin-left:auto;">Daily record closed · 21:42 ET</span>
+    </div>
+  </div>`;
+}
+
+/* =================================================================== */
+/*  WEEKLY REVIEW — the retrospective                                   */
+/* =================================================================== */
+function pgRetro(){
+  return `<div style="position:relative;overflow:hidden;">
+    ${backtype('WEEK 31','right:24px;top:6px;font-size:168px;')}
+    ${cph('Weekly review','Jul 27 — 31','Week score 82 / 100')}
+    ${section('',metrics([['Net','+$2,450'],['R total','+7.1R'],['Win rate','58%'],['Reviews','4 / 5']]))}
+  </div>
+  ${section('',`<div style="display:grid;grid-template-columns:1fr 1fr;gap:44px;">
+    <div><div class="section-h" style="padding-left:0;">What worked</div>
+      <textarea class="field ed" placeholder="…" style="min-height:80px;"></textarea></div>
+    <div><div class="section-h" style="padding-left:0;">What cost you money</div>
+      <textarea class="field ed" placeholder="…" style="min-height:80px;"></textarea></div>
+  </div>`,'d2')}
+  ${section('Patterns detected',[['Pattern 01','Your first trade of the day has a 71% win rate.'],
+     ['Pattern 02','Trades after 12:00 lost a combined $620.'],
+     ['Pattern 03','Rule-followed trades created 92% of weekly profit.']]
+    .map(([k,v])=>`<div style="display:grid;grid-template-columns:104px 1fr;padding:18px 0;box-shadow:inset 0 -1px 0 var(--hair);">
+      <span class="tl dim">${E(k)}</span><span class="ed sm">${E(v)}</span></div>`).join(''),'d3')}
+  ${section('Next week\'s operating order',`
+    <p class="ed big">Stop trading after two consecutive losses.</p>
+    <div class="chips" style="margin-top:28px;"><button class="rb solid" data-stamp>Sign and save</button>
+      <button class="rb">Share the lesson</button>
+      <span class="ls" id="stamp4" style="display:none;margin-left:auto;">Signed · Jul 31 2026</span></div>`,'d4')}`;
+}
+
+/* =================================================================== */
+/*  PROTOCOL — the operating protocol                                   */
+/* =================================================================== */
+function pgProtocol(){
+  const rules=[['01','Maximum daily loss','$1,000','$218 used'],['02','Risk per trade','$300','within'],
+   ['03','Maximum trades per day','06','03 taken'],['04','Stop after consecutive losses','02','01 so far'],
+   ['05','Maximum contracts','04','02 held'],['06','Add to a losing position','Prohibited','—'],
+   ['07','Minimum reward to risk','2 : 1','—']];
+  return `<div style="position:relative;overflow:hidden;">
+    ${backtype('PROTOCOL','left:36px;top:-18px;font-size:172px;')}
+    ${cph('Protocol','The rules you trade under','Signed Jul 28 2026')}
+  </div>
+  ${section('',rules.map(([n,name,val,state],i)=>`<div class="at-row"
+    style="grid-template-columns:52px 1fr 150px 108px;padding:19px 0;${i===0?'box-shadow:inset 0 -2px 0 var(--rule);':''}">
+    <span class="no" style="font-size:11px;">${E(n)}</span>
+    <span class="tl md">${E(name)}</span>
+    <b class="val" style="font-size:19px;text-align:right;">${E(val)}</b>
+    <span class="tl dim" style="text-align:right;">${E(state)}</span>
+  </div>`).join(''))}
+  ${section('Pre-trade checklist',['Setup is inside the playbook','Key levels are marked',
+    'Stop is defined before entry','News schedule is checked','Position size is valid']
+    .map(x=>`<div style="display:flex;gap:14px;align-items:center;padding:11px 0;box-shadow:inset 0 -1px 0 var(--hair);">
+      <span style="width:10px;height:10px;box-shadow:inset 0 0 0 1px var(--edge);flex:none;"></span>
+      <span class="tl" style="font-size:8.5px;letter-spacing:.18em;">${E(x)}</span></div>`).join(''),'d2')}
+  ${section('Current commitment',`
+    <p class="ed big">"I will not trade outside the New York morning session."</p>
+    <div class="chips" style="margin-top:26px;"><button class="rb">Edit the protocol</button>
+      <span class="ls on" style="margin-left:auto;">Signed · Jul 28 2026</span></div>`,'d3')}`;
+}
+
+/* =================================================================== */
+/*  GOALS — the mission board                                           */
+/* =================================================================== */
+function pgGoals(){
+  const g=[['01','Hold consistency score above 90','82','%','Due Aug 31 · based on rule-following',.82],
+           ['02','No trades outside the session','02','this month','Target 0',.6],
+           ['03','Complete 20 daily reviews','13 / 20','','Stamped Jul 29',.65],
+           ['04','Net +40R for the quarter','+18.4R','','Secondary to behaviour',.46]];
+  return cph('Goals','Active missions','04 in progress')+`
+  ${section('',g.map(([n,name,val,unit,note,pct],i)=>`
+    <div class="rw d${Math.min(i+1,4)}" style="padding:26px 0 24px;box-shadow:inset 0 -1px 0 var(--hair);">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:20px;">
+        <div><span class="tl dim">Mission ${E(n)}</span>
+          <div style="font-family:var(--disp);font-size:${i<2?'19px':'16px'};font-weight:600;margin-top:9px;">${E(name)}</div></div>
+        <div style="text-align:right;flex:none;">
+          <b class="val" style="font-size:${i<2?'26px':'20px'};" data-count>${E(val)}</b>
+          <span class="tl dim" style="margin-left:6px;">${E(unit)}</span></div>
+      </div>
+      <div class="sd" style="margin:18px 0 9px;position:relative;">
+        <div class="sd animate" style="position:absolute;left:0;top:0;width:${pct*100}%;background:var(--white);"></div>
+        <div style="position:absolute;left:${pct*100}%;top:-2px;width:1px;height:5px;background:var(--white);"></div>
+      </div>
+      <span class="tl dim">${E(note)}</span>
+    </div>`).join('')+`<div style="padding-top:26px;"><button class="rb">+ New mission</button></div>`)}`;
+}
+
+/* =================================================================== */
+/*  THE ROOM — community home                                           */
+/* =================================================================== */
+function record(p){
+  return `<article class="rp" style="padding:22px 24px 20px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span class="av" style="width:28px;height:28px;font-size:10px;">${E(p.h[0].toUpperCase())}</span>
+      <div style="min-width:0;">
+        <div class="tl md">@${E(p.h)}</div>
+        <div class="tl dim sm" style="margin-top:4px;">${E(p.kind)} · ${E(p.ago)}</div></div>
+      ${p.r!=null?`<span class="val${L(p.r)}" style="margin-left:auto;font-size:15px;">${rr(p.r)}</span>`:''}
+    </div>
+    ${p.chips?`<div class="chips" style="margin-top:16px;">${p.chips.map(c=>`<span class="chip">${E(c)}</span>`).join('')}</div>`:''}
+    ${p.chart?`<div style="margin-top:16px;">${frame('Chart',150)}</div>`:''}
+    ${p.body?`<p class="ed ${p.big?'':'sm'}" style="margin-top:16px;${p.big?'font-size:21px;':''}">${E(p.body)}</p>`:''}
+    <div class="chips" style="gap:22px;margin-top:20px;">
+      <span class="tl dim">Respect ${E(p.up)}</span>
+      <span class="tl dim">Discuss ${pad(p.cm)}</span>
+      <span class="tl dim">Save</span></div>
+  </article>`;
+}
+const POSTS=[
+ {h:'nqryan',kind:'Trade record',ago:'18 min',r:1.80,chips:['NQ Long','OTE','Funded'],chart:1,
+  body:'Waited for the retest instead of chasing the first break.',up:24,cm:8},
+ {h:'tradesbymia',kind:'Daily review',ago:'42 min',r:0.60,
+  body:'Five trades, rules followed on all of them. The discipline is finally boring.',up:31,cm:4},
+ {h:'lena',kind:'Lesson',ago:'2 h',r:null,big:1,
+  body:'Every loss I took this week came after I moved a stop. Not one came from the setup being wrong.',up:58,cm:16},
+ {h:'jacob',kind:'Question',ago:'3 h',r:null,big:1,
+  body:'How are you sizing on eval accounts versus funded? Same risk per trade, or scaled?',up:11,cm:22},
+];
+function pgRoom(){
+  return `<div class="focal" style="padding-bottom:44px;">
+    <div class="bloom" style="left:var(--gut);width:560px;height:200px;top:50%;transform:translateY(-50%);"></div>
+    <div class="tl dim wide rw" style="position:relative;">Trading Ark</div>
+    <div class="rw d2" style="position:relative;font-family:var(--disp);font-weight:600;font-size:40px;
+      letter-spacing:-.01em;margin-top:14px;line-height:1.1;">The room is live</div>
+    <div class="line rw d3"><span>126 members present</span><s>·</s><span>842 on the register</span></div>
+  </div>
+  <div class="two rw d3">
+    <section>
+      ${chips(['All','Trades','Reviews','Lessons','Questions'],0)}
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:22px;">${POSTS.map(record).join('')}</div>
+    </section>
+    <section>
+      <div class="section-h" style="padding-left:0;">Today in the room</div>
+      ${row('Trades logged','148')}${row('Reviews completed','62')}${row('Rules-followed rate','71%')}
+      <div class="section-h" style="padding:30px 0 16px;">Live now</div>
+      ${[['NY open voice','34 members'],['Market review','Begins in 24 min']]
+        .map(([k,v])=>`<div style="display:flex;align-items:center;gap:9px;padding:10px 0;box-shadow:inset 0 -1px 0 var(--hair);">
+          <i style="width:4px;height:4px;background:var(--white);border-radius:50%;flex:none;"></i>
+          <span class="tl" style="font-size:8.5px;">${E(k)}</span>
+          <span class="tl dim" style="margin-left:auto;">${E(v)}</span></div>`).join('')}
+      <div class="section-h" style="padding:30px 0 16px;">Weekly leaders</div>
+      ${MEMBERS.slice(0,3).map(m=>`<div style="display:flex;align-items:baseline;gap:12px;padding:10px 0;box-shadow:inset 0 -1px 0 var(--hair);">
+        <span class="no">${E(m.r)}</span><span class="tl" style="font-size:8.5px;">@${E(m.h)}</span>
+        <span class="val" style="margin-left:auto;font-size:13px;">${m.dis}</span></div>`).join('')}
+      <div style="margin-top:22px;"><button class="rb" data-go="standings">Full standings →</button></div>
+    </section>
+  </div>`;
+}
+
+/* =================================================================== */
+/*  FEED — the signal stream                                            */
+/* =================================================================== */
+function pgFeed(){
+  const times=['18:32','17:48','16:10','15:02','12:20','09:44'];
+  return cph('Feed','The signal stream','Sorted by journal quality')+`
+  ${section('',`<div class="chips">
+    ${['All','Following','Trades','Reviews','Lessons','Questions','Moderator'].map((x,i)=>
+      `<span class="chip${i===0?' on':''}">${E(x)}</span>`).join('')}
+    <span class="tl dim" style="margin-left:auto;">Sort: relevant</span></div>`)}
+  ${section('',`<div style="display:grid;grid-template-columns:1fr 250px;gap:40px;">
+    <div style="position:relative;padding-left:34px;">
+      <div class="sd animate" style="position:absolute;left:5px;top:8px;bottom:8px;width:1px;height:auto;
+        transform-origin:top center;"></div>
+      ${POSTS.concat(POSTS.slice(0,2)).map((p,i)=>`<div style="position:relative;margin-bottom:16px;">
+        <span style="position:absolute;left:-34px;top:24px;width:11px;height:1px;background:var(--hair);"></span>
+        <span style="position:absolute;left:-37px;top:21px;width:7px;height:7px;background:var(--black);
+          box-shadow:inset 0 0 0 1px var(--edge);"></span>
+        <span class="tl dim sm" style="position:absolute;left:-34px;top:-2px;">${E(times[i])}</span>
+        ${record(p)}</div>`).join('')}
+    </div>
+    <div>
+      <div class="section-h" style="padding-left:0;">Trending tags</div>
+      ${['#OTE','#discipline','#NQ','#dailyrewind','#NYopen'].map(t=>
+        `<div style="padding:9px 0;box-shadow:inset 0 -1px 0 var(--hair);"><span class="tl" style="font-size:8.5px;">${E(t)}</span></div>`).join('')}
+      <div class="section-h" style="padding:30px 0 16px;">Suggested members</div>
+      ${MEMBERS.slice(0,3).map(m=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;box-shadow:inset 0 -1px 0 var(--hair);">
+        <span class="av" style="width:22px;height:22px;font-size:8px;">${E(m.h[0].toUpperCase())}</span>
+        <span class="tl" style="font-size:8.5px;">@${E(m.h)}</span></div>`).join('')}
+    </div>
+  </div>`,'d2')}`;
+}
+
+/* =================================================================== */
+/*  STANDINGS — the honor board                                         */
+/* =================================================================== */
+function pgStandings(){
+  const cols='52px 1fr 90px 82px 92px 96px';
+  return cph('Standings','Process over profit','This week<br>All members')+`
+  ${section('',`<div class="rp-grid" style="grid-template-columns:repeat(3,1fr);">
+    ${MEMBERS.slice(0,3).map(m=>`<div class="rp" style="position:relative;overflow:hidden;min-height:190px;padding:30px 26px 28px;">
+      ${backtype(m.r,'right:-6px;bottom:-38px;font-size:132px;',1)}
+      <span class="av" style="position:relative;width:42px;height:42px;font-size:14px;">${E(m.h[0].toUpperCase())}</span>
+      <div style="position:relative;margin-top:18px;">
+        <div class="tl md" style="font-size:9.5px;">@${E(m.h)}</div>
+        <div class="val" style="font-size:30px;margin-top:10px;" data-count>${m.dis}</div>
+        <span class="tl dim">Discipline</span></div>
+    </div>`).join('')}
+  </div>`)}
+  ${section('',`
+    ${chips(['Discipline','Consistency','Review streak','Most improved','Most helpful','Challenges'],0)}
+    <div class="at" style="margin-top:20px;">
+      <div class="at-head" style="grid-template-columns:${cols};">
+        ${['Rank','Member','Discipline','Reviews','Streak','Contribution'].map(h=>`<span>${E(h)}</span>`).join('')}</div>
+      ${MEMBERS.map(m=>`<div class="at-row" style="grid-template-columns:${cols};">
+        <span class="no">${E(m.r)}</span>
+        <span class="tl" data-go="profile" style="font-size:8.5px;cursor:pointer;">@${E(m.h)}</span>
+        <span class="val" style="font-size:13px;">${m.dis}</span>
+        <span class="tl dim">${E(m.rev)}</span>
+        <span class="no" style="font-size:11px;">${m.st} days</span>
+        <span class="val" style="font-size:12px;">${m.con}</span></div>`).join('')}
+      <div class="at-row" style="grid-template-columns:${cols};box-shadow:inset 0 2px 0 var(--rule);margin-top:8px;padding-top:18px;">
+        <span class="val" style="font-size:10.5px;">28</span><span class="tl" style="font-size:8.5px;">You</span>
+        <span class="val" style="font-size:13px;">81</span><span class="tl dim">4 / 5</span>
+        <span class="no" style="font-size:11px;">6 days</span><span class="val" style="font-size:12px;">146</span></div>
+    </div>`,'d2')}`;
+}
+
+/* =================================================================== */
+/*  GROUP CALENDAR — the operations schedule                            */
+/* =================================================================== */
+function pgGcal(){
+  const ev=[['Aug 04','08:30','Data','CPI release',''],['Aug 05','19:00','Review','Group review','Discord'],
+   ['Aug 06','09:30','Live','New York open','Discord'],['Aug 07','16:30','Review','Weekly rewind',''],
+   ['Aug 12','19:00','Edu','Setup lab','Discord'],['Aug 13','09:30','Live','Live room','Discord']];
+  return cph('Group calendar','What the room is doing next','August 2026')+`
+  ${section('',`<div style="display:grid;grid-template-columns:1fr 292px;gap:40px;">
+    <div>
+      ${chips(['All','Live','Review','Edu','Data'],0)}
+      <div class="at" style="margin-top:22px;">
+      ${ev.map(([d,t,cat,name,sync])=>`<div class="at-row" style="grid-template-columns:64px 52px 62px 1fr 62px;">
+        <span class="tl">${E(d)}</span>
+        <span class="no">${E(t)}</span>
+        <span class="chip" style="justify-self:start;">${E(cat)}</span>
+        <span class="tl md">${E(name)}</span>
+        <span class="tl dim sm" style="text-align:right;">${sync?'◈ synced':''}</span></div>`).join('')}
+      </div>
+    </div>
+    <div>
+      <div class="section-h" style="padding-left:0;">Next briefing</div>
+      <div style="font-family:var(--disp);font-size:19px;font-weight:600;">Community market review</div>
+      <div class="tl dim" style="margin-top:10px;letter-spacing:.18em;">Wed · Jul 29 · 7:00 PM ET</div>
+      <div class="val" style="font-size:40px;margin:22px 0 8px;">00:24:18</div>
+      <span class="tl dim">Begins in</span>
+      <div class="chips" style="margin-top:24px;"><button class="rb solid">RSVP</button>
+        <button class="rb">Add to calendar</button></div>
+    </div>
+  </div>`)}`;
+}
+
+/* =================================================================== */
+/*  MEMBERS — the registry                                              */
+/* =================================================================== */
+function pgMembers(){
+  const cols='34px 1fr 96px 54px 78px 78px 62px';
+  return cph('Members','The register','842 members · 126 present')+`
+  ${section('',`
+    <div class="chips">
+      ${['All','Present','NQ','NY AM','Mentors'].map((x,i)=>`<span class="chip${i===0?' on':''}">${E(x)}</span>`).join('')}
+      <input class="field" placeholder="Search the register" style="max-width:200px;font-family:var(--mono);
+        font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;width:auto;"></div>
+    <div class="at" style="margin-top:22px;">
+      <div class="at-head" style="grid-template-columns:${cols};">
+        ${['','Member','Role','Inst','Session','Discipline','Status'].map(h=>`<span>${E(h)}</span>`).join('')}</div>
+      ${MEMBERS.concat(MEMBERS.slice(0,3)).map((m,i)=>`<div class="at-row" data-go="profile"
+        style="grid-template-columns:${cols};cursor:pointer;">
+        <span class="av" style="width:26px;height:26px;font-size:9px;">${E(m.h[0].toUpperCase())}</span>
+        <span class="tl" style="font-size:8.5px;">@${E(m.h)}</span>
+        <span class="tl dim sm">${i===0?'Mentor':'Member'}</span>
+        <span class="val" style="font-size:11px;">${E(m.inst)}</span>
+        <span class="tl dim sm">${E(m.ses)}</span>
+        <span class="val" style="font-size:12px;">${m.dis}</span>
+        <span class="tl dim sm">${i<3?'Present':'—'}</span></div>`).join('')}
+    </div>`)}`;
+}
+
+/* =================================================================== */
+/*  MEMBER PROFILE — the trader dossier                                 */
+/* =================================================================== */
+function pgProfile(){
+  return `${section('',`<div style="display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap;">
+    <span class="av" style="width:84px;height:84px;font-size:28px;">M</span>
+    <div>
+      <div style="font-family:var(--disp);font-size:26px;font-weight:600;">@mason</div>
+      <div class="tl dim" style="margin-top:9px;letter-spacing:.18em;">Community mentor · NQ · New York AM</div>
+      ${chips(['Member','NQ trader','Mentor'],-1)}
+    </div></div>`)}
+  ${section('',metrics([['Discipline','92'],['Review streak','12'],['Contribution','328'],['Shared records','41']]),'d2')}
+  ${section('Public setups',`<div class="rp-grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));">
+    ${SETUPS.slice(0,3).map(s=>`<div class="rp" style="padding:22px 20px 24px;">
+      <span class="tl dim">Setup ${E(s.n)}</span>
+      <div style="font-family:var(--disp);font-size:16px;font-weight:600;margin:10px 0 14px;">${E(s.name)}</div>
+      <span class="tl dim">${s.obs} observations · ${s.wr}% win</span></div>`).join('')}
+  </div>`,'d3')}
+  ${section('Released records',`<div style="display:flex;flex-direction:column;gap:14px;">
+    ${POSTS.slice(0,2).map(record).join('')}</div>`,'d4')}`;
+}
+
+/* =================================================================== */
+/*  BOOKMARKS — the evidence locker                                     */
+/* =================================================================== */
+function pgLocker(){
+  const lockers=[['01','ORB examples',7],['02','Mentor notes',12],['03','Execution mistakes',5],['04','Setup lab clips',3]];
+  return cph('Bookmarks','Everything you kept','27 items in 04 lockers')+`
+  ${section('',`<div class="rp-grid" style="grid-template-columns:repeat(auto-fit,minmax(206px,1fr));">
+    ${lockers.map(([n,name,c])=>`<div class="rp" style="position:relative;overflow:hidden;padding:26px 24px 28px;">
+      ${backtype(n,'right:-8px;bottom:-34px;font-size:112px;',1)}
+      <div style="position:relative;">
+        <span class="tl dim">Locker ${E(n)}</span>
+        <div style="font-family:var(--disp);font-size:17px;font-weight:600;margin:11px 0 18px;">${E(name)}</div>
+        <span class="tl dim">${pad(c)} items</span></div>
+    </div>`).join('')}
+  </div>`)}
+  ${section('Recently saved',[['REF-0271','Trade record','@mason · NQ +2.10R','Jul 29'],
+     ['REF-0270','Lesson','@lena on moving stops','Jul 28'],
+     ['REF-0269','Setup','OTE · community example','Jul 26']]
+    .map(([ref,kind,what,d])=>`<div class="at-row" style="grid-template-columns:88px 96px 1fr 62px;">
+      <span class="no" style="font-size:10px;">${E(ref)}</span>
+      <span class="tl dim sm">${E(kind)}</span>
+      <span class="tl md">${E(what)}</span>
+      <span class="tl dim" style="text-align:right;">${E(d)}</span></div>`).join(''),'d2')}`;
+}
+
+/* =================================================================== */
+/*  NOTIFICATIONS — the activity tape                                   */
+/* =================================================================== */
+function pgTape(){
+  const items=[['18:32','@lena commented on record 0184',1],['17:04','@mason respected your lesson',1],
+   ['16:10','Market review begins in 30 minutes',1],['14:22','Campaign · day 06 logged',0],
+   ['11:48','@jacob asked about eval sizing',0],['09:31','New York open · room is live',0],
+   ['Jul 28','Weekly rewind is ready to sign',0]];
+  return cph('Notifications','The activity tape','03 unread')+`
+  ${section('',`<div style="max-width:520px;">
+    ${items.map(([t,body,unread])=>`<div class="at-row" style="grid-template-columns:60px 1fr;
+      ${unread?'':'opacity:.5;'}">
+      <span class="no" style="font-size:10px;">${E(t)}</span>
+      <span class="tl md" style="line-height:1.8;">${E(body)}</span></div>`).join('')}
+    <div style="padding-top:22px;"><button class="rb">Mark the tape as read</button></div>
+  </div>`)}`;
+}
+
+/* =================================================================== */
+/*  SEARCH — the command line                                           */
+/* =================================================================== */
+function pgSearch(){
+  return `<div style="padding:100px var(--gut) 60px;position:relative;">
+    <div class="bloom center" style="left:50%;transform:translate(-50%,-50%);width:640px;height:220px;top:38%;"></div>
+    <div style="position:relative;max-width:620px;margin:0 auto;">
+      <div class="tl dim wide rw" style="text-align:center;">Search the record</div>
+      <input class="field big rw d2" placeholder="_" style="text-align:center;margin-top:24px;border-bottom-color:var(--edge);">
+      <div class="rw d3" style="margin-top:44px;">
+        ${[['Private records',['No. 0184 · NQ Long · OTE · +1.27R','No. 0179 · GC Long · Turtle Soup · +1.14R']],
+           ['Playbook',['Setup 01 · OTE','Setup 04 · Silver Bullet']],
+           ['Community',['@lena on moving stops','Market review · Jul 29']],
+           ['Members',['@mason','@nqryan']],
+           ['Events',['Community market review · tonight']]]
+          .map(([g,items])=>`<div style="margin-bottom:26px;">
+            <div class="tl dim" style="margin-bottom:10px;">${E(g)}</div>
+            ${items.map(x=>`<div style="padding:10px 0;box-shadow:inset 0 -1px 0 var(--hair);">
+              <span class="tl md">${E(x)}</span></div>`).join('')}</div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* =================================================================== */
+/*  SETTINGS — the system console                                       */
+/* =================================================================== */
+function pgSettings(){
+  const cats=['Profile','Discord','Trading accounts','Instruments','Tags','Community','Privacy',
+              'Notifications','Appearance','Security','Billing'];
+  return cph('Settings','System console','')+`
+  ${section('',`<div style="display:grid;grid-template-columns:196px 1fr;">
+    <div style="box-shadow:inset -1px 0 0 var(--hair);padding-right:22px;">
+      ${cats.map((c,i)=>`<div class="nav ${i===1?'on':''}" style="padding-left:0;padding-right:0;">${E(c)}</div>`).join('')}
+    </div>
+    <div style="padding-left:34px;">
+      <div class="section-h" style="padding-left:0;">Connected account</div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <span class="av" style="width:42px;height:42px;font-size:14px;">CV</span>
+        <div><div class="tl md" style="font-size:9px;">@nqryan</div>
+          <div class="tl dim sm" style="margin-top:5px;">Rewind trading · verified · synced 4 min ago</div></div>
+      </div>
+      <div style="margin-top:28px;">
+        ${[['Username and avatar','On',0],['Discord roles','On',0],['Server membership','On',0],
+           ['Scheduled events','On',0],['Online status','Off',1]]
+          .map(([k,v,off])=>`<div class="md-row"><span>${E(k)}</span><b class="state${off?' off':''}">${E(v)}</b></div>`).join('')}
+      </div>
+      <div class="chips" style="margin-top:26px;"><button class="rb">Sync now</button></div>
+      <div class="section-h" style="padding:38px 0 16px;">Default visibility</div>
+      ${chips(['Private','Community','Selected rooms'],0)}
+      <div class="section-h" style="padding:38px 0 16px;">When sharing a trade</div>
+      ${[['Hide dollar P&L','On',0],['Hide account balance','On',0],['Hide position size','On',0],
+         ['Hide entry and exit prices','Off',1]]
+        .map(([k,v,off])=>`<div class="md-row"><span>${E(k)}</span><b class="state${off?' off':''}">${E(v)}</b></div>`).join('')}
+      <div style="margin-top:52px;padding-top:26px;box-shadow:inset 0 1px 0 var(--rule);">
+        <div class="section-h" style="padding-left:0;">Irreversible</div>
+        <div class="chips"><button class="rb">Disconnect Discord</button>
+          <button class="rb">Export the record</button><button class="rb">Delete everything</button></div>
+      </div>
+    </div>
+  </div>`)}`;
+}
+
+/* =================================================================== */
+/*  MODERATOR — the control room                                        */
+/* =================================================================== */
+function pgControl(){
+  return cph('Control room','07 items require review','Moderator · @nqryan')+`
+  ${section('',metrics([['Open reports','07'],['New members','14'],['Events this week','05'],['Rules-followed','71%']]))}
+  ${section('Reported content',[['RPT-0042','@user_118','Shared another member\'s dollar P&L','Privacy · redaction required'],
+     ['RPT-0041','@user_204','Promotional link in a trade record','No advertising in the room']]
+    .map(([ref,who,what,rule])=>`<div class="rp" style="padding:20px 22px;margin-bottom:14px;">
+      <div style="display:flex;gap:16px;align-items:baseline;flex-wrap:wrap;">
+        <span class="no" style="font-size:10px;">${E(ref)}</span>
+        <span class="tl" style="font-size:8.5px;">${E(who)}</span>
+        <span class="tl dim" style="margin-left:auto;">Jul 29 · 16:04</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:16px;">
+        <div><div class="tl dim" style="margin-bottom:8px;">Reported</div><span class="ed sm">${E(what)}</span></div>
+        <div><div class="tl dim" style="margin-bottom:8px;">Possible violation</div><span class="ed sm">${E(rule)}</span></div></div>
+      <div class="chips" style="margin-top:20px;">
+        ${['Clear report','Issue warning','Lock record','Remove from room']
+          .map(b=>`<button class="rb sm">${E(b)}</button>`).join('')}</div>
+    </div>`).join(''),'d2')}
+  ${section('Decision log',[['Jul 29 · 15:12','@mason','Cleared RPT-0040'],
+     ['Jul 28 · 19:44','@nqryan','Issued warning · @user_091'],['Jul 28 · 11:03','@mason','Locked record 0166']]
+    .map(([t,who,what])=>`<div class="at-row" style="grid-template-columns:130px 92px 1fr;">
+      <span class="no" style="font-size:10px;">${E(t)}</span>
+      <span class="tl sm">${E(who)}</span>
+      <span class="tl dim md">${E(what)}</span></div>`).join(''),'d3')}`;
+}
+
+/* =================================================================== */
+/*  ONBOARDING — identity calibration                                   */
+/* =================================================================== */
+function pgOnboard(){
+  const steps=['Identity','Profile','Risk','Privacy','Ready'];
+  const bar = i => `<div class="chips" style="gap:12px;justify-content:center;">${steps.map((s,j)=>
+    `<span class="tl ${j===i?'':'dim'}" style="${j>i?'color:var(--ghost);':''}">${E(s)}</span>${
+      j<4?'<i style="width:44px;height:1px;background:var(--hair);"></i>':''}`).join('')}</div>`;
+  const card = (i,inner) => `<div class="rw d${Math.min(i+1,4)}" style="max-width:640px;margin:0 auto 60px;">
+    ${bar(i)}<div style="margin-top:34px;">${inner}</div></div>`;
+  return `<div class="section rw" style="padding-top:48px;">
+  ${card(0,`<div style="text-align:center;padding:20px 0 8px;">
+    <div style="position:relative;width:96px;height:96px;margin:0 auto;">
+      <span class="av" style="position:absolute;inset:0;border-radius:50%;font-size:30px;">R</span>
+      <svg viewBox="0 0 100 100" style="position:absolute;inset:-9px;width:114px;height:114px;">
+        <circle cx="50" cy="50" r="47" fill="none" stroke="var(--hair)" stroke-width=".7"/>
+        <circle cx="50" cy="50" r="47" fill="none" stroke="var(--bright)" stroke-width=".7"
+          stroke-dasharray="42 253" stroke-linecap="round">
+          <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="3.6s" repeatCount="indefinite"/>
+        </circle></svg>
+    </div>
+    <div class="tl md" style="margin-top:26px;font-size:9.5px;">@nqryan</div>
+    <div class="tl dim" style="margin-top:8px;">Verified member · Rewind trading</div>
+    <div class="chips" style="justify-content:center;margin-top:18px;">
+      ${['Member','NQ trader','New York session'].map(x=>`<span class="chip">${E(x)}</span>`).join('')}</div>
+    <label class="fl" style="margin-top:34px;text-align:left;"><span class="tl">Display name</span>
+      <input class="field" value="Ryan"></label>
+    <div style="margin-top:30px;"><button class="rb solid">Continue →</button></div>
+  </div>`)}
+  ${card(1,`
+    <div class="tl dim" style="margin-bottom:14px;">Primary instruments</div>${chips(['NQ','ES','YM','RTY','CL','GC'],0)}
+    <div class="tl dim" style="margin:26px 0 14px;">Primary session</div>${chips(['New York AM','New York PM','London','Asia'],0)}
+    <div class="tl dim" style="margin:26px 0 14px;">Experience</div>${chips(['New','Developing','Experienced','Professional'],2)}
+    <label class="fl" style="margin-top:30px;"><span class="tl">Time zone</span><input class="field" value="Eastern Time"></label>
+    <div class="chips" style="margin-top:32px;"><button class="rb">Back</button><button class="rb solid">Continue →</button></div>`)}
+  ${card(2,`
+    ${[['Maximum daily loss','$1,000'],['Risk per trade','$300'],['Maximum trades per day','6'],
+       ['Stop after consecutive losses','2'],['Maximum contracts','4']]
+      .map(([k,v])=>`<label class="fl" style="display:grid;grid-template-columns:1fr 150px;gap:20px;align-items:baseline;
+        padding:14px 0;box-shadow:inset 0 -1px 0 var(--hair);">
+        <span class="tl md">${E(k)}</span><input class="field" value="${E(v)}" style="text-align:right;"></label>`).join('')}
+    <div class="tl dim" style="margin-top:20px;line-height:1.9;">These values stay private unless you choose to share them.</div>
+    <div class="chips" style="margin-top:32px;"><button class="rb">Back</button><button class="rb solid">Continue →</button></div>`)}
+  ${card(3,`
+    <div class="tl dim" style="margin-bottom:14px;">Journal entries</div>
+    ${chips(['Private by default','Share with the room'],0)}
+    <div class="tl dim" style="margin:26px 0 14px;">When sharing</div>
+    ${[['Hide dollar P&L',1],['Hide account balance',1],['Hide contract quantity',1],['Hide entry and exit prices',0]]
+      .map(([k,on])=>`<div class="md-row"><span>${E(k)}</span><b class="state${on?'':' off'}">${on?'On':'Off'}</b></div>`).join('')}
+    <div class="tl dim" style="margin:26px 0 14px;">Profile</div>
+    ${[['Show discipline score',1],['Show review streak',1],['Show win rate',0]]
+      .map(([k,on])=>`<div class="md-row"><span>${E(k)}</span><b class="state${on?'':' off'}">${on?'On':'Off'}</b></div>`).join('')}
+    <div class="chips" style="margin-top:32px;"><button class="rb">Back</button><button class="rb solid">Continue →</button></div>`)}
+  ${card(4,`<div style="text-align:center;position:relative;padding:40px 0 20px;">
+    <div class="bloom center" style="left:50%;transform:translate(-50%,-50%);width:440px;height:170px;top:50%;"></div>
+    <div class="tl dim wide" style="position:relative;">Ledger initialized</div>
+    <div class="tl dim wide" style="position:relative;margin-top:8px;">Membership verified</div>
+    <div style="position:relative;font-family:var(--disp);font-weight:600;font-size:32px;margin-top:26px;">Welcome to the room</div>
+    <p class="ed dim" style="position:relative;margin:20px auto 0;font-size:17px;max-width:38ch;">
+      Your journal is private. Your lessons can strengthen the room.</p>
+    <div style="position:relative;margin-top:34px;"><button class="rb solid" data-go="today">Enter the private ledger</button></div>
+  </div>`)}
+  </div>`;
+}
+
+/* =================================================================== */
+/*  EMPTY STATES — silence in the record                                */
+/* =================================================================== */
+function pgSilence(){
+  const s=[['No trades recorded','The record begins with the first honest entry.',['Log first trade','Import trades']],
+           ['Nothing shared','This member has kept their record private.',[]],
+           ['No events scheduled','The room is quiet.',[]],
+           ['No setups on file','A playbook is built one observation at a time.',['New setup']],
+           ['The tape is clear','Nothing has happened since you last looked.',[]]];
+  return cph('Empty states','Silence in the record','05 states')+`
+  ${section('',s.map(([h,p,b],i)=>`<div class="rw d${Math.min(i+1,4)}" style="margin-bottom:16px;">${empty(h,p,b)}</div>`).join(''))}`;
+}
+
+/* ── router + motion helpers ────────────────────────────────────────── */
+const PAGES={today:pgToday,log:pgLog,ledger:pgLedger,calendar:pgCalendar,analytics:pgAnalytics,
+  playbook:pgPlaybook,review:pgReview,retro:pgRetro,protocol:pgProtocol,goals:pgGoals,
+  room:pgRoom,feed:pgFeed,standings:pgStandings,gcal:pgGcal,members:pgMembers,profile:pgProfile,
+  locker:pgLocker,tape:pgTape,search:pgSearch,settings:pgSettings,control:pgControl,
+  onboard:pgOnboard,silence:pgSilence};
+
+/* numerical count-up on anything marked data-count */
+function countUp(root){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  root.querySelectorAll('[data-count]').forEach(el=>{
+    const txt=el.textContent;
+    const m=txt.match(/-?[\d,]+\.?\d*/);
+    if(!m) return;
+    const target=parseFloat(m[0].replace(/,/g,''));
+    if(!isFinite(target)||Math.abs(target)<2) return;
+    const t0=performance.now(), dur=760;
+    const step=now=>{
+      const k=Math.min((now-t0)/dur,1);
+      const eased=1-Math.pow(1-k,3);
+      const v=target*eased;
+      const shown=Math.abs(target)>=1000 ? Math.round(v).toLocaleString()
+        : (target%1?v.toFixed(1):String(Math.round(v)));
+      el.textContent=txt.replace(m[0],shown);
+      if(k<1) requestAnimationFrame(step); else el.textContent=txt;
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+function paintRail(){
+  document.getElementById('rail').innerHTML=NAV.map(([g,items])=>
+    `<div class="rgrp">${E(g)}</div>`+items.map(([k,t])=>`<a class="nav" data-go="${k}">${E(t)}</a>`).join('')
+  ).join('<div class="rsep"></div>');
+}
+function go(key){
+  const fn=PAGES[key];
+  const host=document.getElementById('page');
+  host.innerHTML=fn?fn():`<div class="cph"><div><h1>${E(key)}</h1><div class="sub">Not drawn</div></div></div>`;
+  document.querySelectorAll('.nav[data-go]').forEach(n=>n.classList.toggle('on',n.dataset.go===key));
+  location.hash=key;
+  window.scrollTo(0,0);
+  countUp(host);
+}
+document.addEventListener('click',e=>{
+  const s=e.target.closest('[data-stamp]');
+  if(s){
+    const st=s.parentElement.querySelector('.ls');
+    if(st){ st.style.display='inline-block'; st.classList.remove('stamped');
+      void st.offsetWidth; st.classList.add('stamped','on'); }
+    return;
+  }
+  const t=e.target.closest('[data-go]');
+  if(t){ e.preventDefault(); go(t.dataset.go); }
+});
+paintRail();
+go((location.hash||'#today').slice(1));
+
+</script>
+</body>
+</html>
