@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- BUILD:SELFCONTAINED-A1 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -7,7 +8,361 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Syne:wght@700;800&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rewind-ds.css?v=1">
+<style>
+/* ======= REWIND DESIGN SYSTEM — inlined so this page can never
+   render unstyled because a second file did not arrive ======= */
+/* ── tokens ───────────────────────────────────────────────────────────── */
+:root{
+  /* surface — graphite, transparent, never opaque cards */
+  --black:#0E1114;
+  --ink:#14171B;
+  --panel:rgba(255,255,255,.017);
+  --raise:rgba(255,255,255,.04);
+
+  /* line weights, thinnest to heaviest */
+  --hair:rgba(255,255,255,.07);
+  --rule:rgba(255,255,255,.12);
+  --edge:rgba(255,255,255,.17);
+  --bright:rgba(255,255,255,.34);
+
+  /* text — result is encoded by weight and outline, never by hue */
+  --white:#FFFFFF;
+  --smoke:rgba(255,255,255,.42);
+  --ghost:rgba(255,255,255,.20);
+  --trace:rgba(255,255,255,.055);
+
+  /* type */
+  --fig:"Azeret Mono",ui-monospace,monospace;      /* mechanical values     */
+  --disp:"Instrument Sans",system-ui,sans-serif;   /* display + headings    */
+  --brand:"Syne",Helvetica,sans-serif;             /* the mark, used once   */
+  --ui:"Inter Tight",system-ui,sans-serif;         /* editorial reading     */
+  --mono:"JetBrains Mono",ui-monospace,monospace;  /* technical metadata    */
+
+  /* scale */
+  --t-focal:104px; --t-giant:56px; --t-large:31px; --t-mid:19px;
+  --t-read:17px;   --t-body:14px;  --t-tech:8px;
+
+  /* rhythm */
+  --gut:44px; --rail:212px; --topbar:52px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  background:var(--black);
+  color:var(--white);
+  font-family:var(--ui);
+  font-size:var(--t-body);
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none;}
+button{font:inherit;}
+::selection{background:rgba(255,255,255,.16);}
+:focus-visible{outline:1px solid var(--bright);outline-offset:2px;}
+
+/* ── AppBackground ────────────────────────────────────────────────────────
+   Three stacked fixed layers: vertical scan lines, film grain, edge vignette.
+   All pointer-events:none so nothing interferes with the interface.        */
+.app-bg,.app-bg::before,.app-bg::after{
+  position:fixed;inset:0;pointer-events:none;z-index:1;
+}
+.app-bg{
+  background:repeating-linear-gradient(90deg,
+    rgba(255,255,255,.028) 0 1px, transparent 1px 9px);
+}
+.app-bg::before{
+  content:"";
+  /* feTurbulence grain, held at a whisper */
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23g)' opacity='.5'/></svg>");
+  opacity:.055;
+  mix-blend-mode:overlay;
+}
+.app-bg::after{
+  content:"";
+  background:radial-gradient(ellipse 130% 100% at 50% 42%,
+    transparent 44%, rgba(0,0,0,.42) 88%, rgba(0,0,0,.66) 100%);
+}
+
+/* soft monochrome bloom, placed behind focal elements */
+.bloom{
+  position:absolute;pointer-events:none;
+  background:radial-gradient(ellipse at 22% 50%, rgba(255,255,255,.15), transparent 68%);
+  filter:blur(30px);
+}
+.bloom.center{background:radial-gradient(ellipse at 50% 50%, rgba(255,255,255,.14), transparent 66%);}
+
+/* oversized faint typography set behind page content */
+.backtype{
+  position:absolute;pointer-events:none;line-height:1;
+  font-family:var(--brand);font-weight:800;letter-spacing:-.05em;
+  color:rgba(255,255,255,.034);
+}
+.backtype.fig{font-family:var(--fig);font-weight:500;letter-spacing:-.06em;color:rgba(255,255,255,.04);}
+
+/* ── TechnicalLabel ─────────────────────────────────────────────────────── */
+.tl{
+  font-family:var(--mono);font-size:var(--t-tech);
+  letter-spacing:.26em;text-transform:uppercase;color:var(--white);
+}
+.tl.dim{color:var(--smoke);}
+.tl.wide{letter-spacing:.3em;}
+.tl.sm{font-size:7px;}
+.tl.md{font-size:9px;letter-spacing:.18em;}
+.tl.lg{font-size:10px;letter-spacing:.24em;}
+
+/* ── result encoding — white for wins, outlined smoke for losses ───────── */
+.val{font-family:var(--fig);font-weight:500;letter-spacing:-.02em;}
+.val.loss{color:var(--smoke);-webkit-text-stroke:.5px rgba(255,255,255,.5);}
+.val.loss.heavy{-webkit-text-stroke:1px rgba(255,255,255,.6);}
+.val.flat{color:var(--ghost);}
+/* rule violation — a thin stripe, never a colour */
+.violation{box-shadow:inset 2px 0 0 rgba(255,255,255,.55);padding-left:12px;}
+
+/* ── CinematicPageHeader ───────────────────────────────────────────────── */
+.cph{
+  position:relative;display:flex;align-items:flex-end;justify-content:space-between;
+  gap:24px;padding:34px var(--gut) 24px;box-shadow:inset 0 -1px 0 var(--hair);
+}
+.cph h1{font-family:var(--disp);font-size:15px;font-weight:600;letter-spacing:.01em;}
+.cph h1.big{font-size:26px;letter-spacing:-.01em;}
+.cph h1.fig{font-family:var(--fig);font-size:20px;letter-spacing:-.03em;}
+.cph .sub{
+  font-family:var(--mono);font-size:var(--t-tech);letter-spacing:.2em;
+  text-transform:uppercase;color:var(--smoke);margin-top:7px;
+}
+.cph .meta{
+  font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--smoke);text-align:right;line-height:1.9;flex:none;
+}
+
+/* ── Focal — the one oversized element per page ────────────────────────── */
+.focal{position:relative;padding:66px var(--gut) 58px;overflow:hidden;}
+.focal .fig{
+  position:relative;font-family:var(--fig);font-weight:500;
+  font-size:var(--t-focal);line-height:.92;letter-spacing:-.045em;
+  display:flex;align-items:baseline;gap:2px;margin-top:16px;
+}
+.focal .fig .c{font-size:.385em;opacity:.5;letter-spacing:-.02em;}
+.focal .fig.loss{color:var(--smoke);-webkit-text-stroke:1px rgba(255,255,255,.62);}
+.focal .line{
+  position:relative;margin-top:26px;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.2em;text-transform:uppercase;display:flex;flex-wrap:wrap;gap:0 13px;
+}
+.focal .line s{text-decoration:none;color:var(--ghost);}
+/* the trace layer — an equity line drawn through the figure */
+.focal .traceline{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:210px;}
+.focal .traceline svg{width:100%;height:100%;display:block;}
+
+/* ── RecordPanel — square-edged, transparent, thin graphite border ─────── */
+.rp{
+  position:relative;background:var(--panel);
+  box-shadow:inset 0 0 0 1px var(--hair);padding:24px 26px 26px;
+}
+.rp.pad-lg{padding:30px 30px 32px;}
+.rp.flush{padding:0;}
+.rp>.tl:first-child{color:var(--smoke);display:block;margin-bottom:16px;}
+/* panel grid that shares hairlines instead of gaps */
+.rp-grid{display:grid;gap:1px;background:var(--hair);}
+.rp-grid>*{background:var(--black);}
+
+/* corner brackets, for anything that frames evidence */
+.brackets::before,.brackets::after{
+  content:"";position:absolute;width:9px;height:9px;pointer-events:none;
+}
+.brackets::before{left:-1px;top:-1px;border-left:1px solid var(--edge);border-top:1px solid var(--edge);}
+.brackets::after{right:-1px;bottom:-1px;border-right:1px solid var(--edge);border-bottom:1px solid var(--edge);}
+
+/* ── EvidenceFrame — chart and image containers ────────────────────────── */
+.ef{
+  position:relative;box-shadow:inset 0 0 0 1px var(--hair);
+  background-image:
+    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+  background-size:34px 34px;
+  min-height:150px;display:grid;place-items:center;
+}
+.ef .placeholder{
+  font-family:var(--mono);font-size:var(--t-tech);letter-spacing:.24em;
+  text-transform:uppercase;color:var(--smoke);text-align:center;
+}
+.ef img{width:100%;height:100%;object-fit:contain;display:block;}
+.ef .annot{
+  position:absolute;left:0;right:0;height:1px;background:rgba(255,255,255,.22);
+}
+.ef .annot .tl{
+  position:absolute;right:14px;top:-14px;background:var(--black);padding:0 6px;color:var(--white);
+}
+
+/* ── MetricDisplay ─────────────────────────────────────────────────────── */
+.md{display:grid;grid-template-columns:repeat(4,1fr);box-shadow:inset 0 -1px 0 var(--hair);}
+.md>div{padding:24px 0 26px;}
+.md>div+div{box-shadow:inset 1px 0 0 var(--hair);padding-left:26px;}
+.md em{
+  font-family:var(--mono);font-size:7.5px;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--smoke);font-style:normal;display:block;margin-bottom:11px;
+}
+.md b{font-family:var(--fig);font-size:var(--t-large);font-weight:500;letter-spacing:-.04em;}
+.md b.loss{color:var(--smoke);-webkit-text-stroke:.5px rgba(255,255,255,.5);}
+.md.three{grid-template-columns:repeat(3,1fr);}
+
+/* label/value rows inside panels */
+.md-row{
+  display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+  padding:12px 0;box-shadow:inset 0 -1px 0 var(--hair);
+}
+.md-row span{
+  font-family:var(--mono);font-size:var(--t-tech);letter-spacing:.18em;
+  text-transform:uppercase;color:var(--smoke);
+}
+.md-row b{font-family:var(--fig);font-size:14px;font-weight:500;letter-spacing:-.02em;}
+.md-row b.loss{color:var(--smoke);-webkit-text-stroke:.5px rgba(255,255,255,.5);}
+.md-row b.state{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;}
+.md-row b.state.off{color:var(--smoke);}
+
+/* ── SectionDivider — extends on reveal ────────────────────────────────── */
+.sd{height:1px;background:var(--hair);transform-origin:left center;}
+.sd.animate{animation:extend .82s var(--ease) both;}
+.sd.rule{background:var(--rule);}
+.section{padding:34px var(--gut) 0;}
+.section-h{
+  font-family:var(--mono);font-size:var(--t-tech);letter-spacing:.26em;
+  text-transform:uppercase;color:var(--smoke);padding-bottom:16px;
+}
+
+/* ── ArchiveTable — numbered records with a hover light sweep ───────────── */
+.at{display:block;}
+.at-head{
+  display:grid;gap:14px;padding-bottom:11px;box-shadow:inset 0 -1px 0 var(--rule);
+}
+.at-head span{
+  font-family:var(--mono);font-size:var(--t-tech);letter-spacing:.26em;
+  text-transform:uppercase;color:var(--smoke);
+}
+.at-row{
+  display:grid;gap:14px;align-items:center;position:relative;
+  padding:14px 0;box-shadow:inset 0 -1px 0 var(--hair);
+}
+.at-row::after{
+  content:"";position:absolute;top:0;bottom:0;left:calc(var(--gut) * -1);right:calc(var(--gut) * -1);
+  pointer-events:none;opacity:0;transition:opacity .24s var(--ease);
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.055) 42%, transparent);
+}
+.at-row:hover::after{opacity:1;}
+.at-row .no{font-family:var(--fig);font-size:10.5px;color:var(--smoke);letter-spacing:.04em;}
+.at-row .sym{font-family:var(--fig);font-size:12px;letter-spacing:.02em;}
+.at-row .num{font-family:var(--fig);font-size:13px;text-align:right;letter-spacing:-.02em;}
+.at-row .num.loss{color:var(--smoke);-webkit-text-stroke:.5px rgba(255,255,255,.5);}
+.at-foot{display:flex;justify-content:space-between;align-items:center;padding:22px 0 0;}
+
+/* ── LedgerStamp — archival status, and the save confirmation ───────────── */
+.ls{
+  display:inline-block;font-family:var(--mono);font-size:7.5px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--smoke);
+  box-shadow:inset 0 0 0 1px var(--hair);padding:7px 11px;
+}
+.ls.on{color:var(--white);box-shadow:inset 0 0 0 1px var(--edge);}
+.ls.stamped{animation:stamp .42s var(--ease) both;}
+
+/* chips — filters, selections, tags */
+.chip{
+  display:inline-flex;align-items:center;font-family:var(--mono);font-size:7.5px;
+  letter-spacing:.18em;text-transform:uppercase;padding:5px 9px;
+  box-shadow:inset 0 0 0 1px var(--hair);color:var(--smoke);cursor:pointer;
+  transition:box-shadow .18s,color .18s;
+}
+.chip:hover{color:var(--white);box-shadow:inset 0 0 0 1px var(--edge);}
+.chip.on{box-shadow:inset 0 0 0 1px var(--white);color:var(--white);}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+
+/* ── RewindButton ──────────────────────────────────────────────────────── */
+.rb{
+  background:transparent;color:var(--white);box-shadow:inset 0 0 0 1px var(--edge);
+  border:0;font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;
+  text-transform:uppercase;padding:12px 20px;cursor:pointer;
+  transition:background .2s var(--ease),color .2s var(--ease);
+}
+.rb:hover{background:var(--white);color:var(--black);}
+.rb.solid{background:var(--white);color:var(--black);box-shadow:none;font-weight:500;}
+.rb.solid:hover{opacity:.86;}
+.rb.sm{padding:9px 14px;}
+.rb:disabled{opacity:.5;cursor:default;}
+
+/* ── editorial reading ─────────────────────────────────────────────────── */
+.ed{font-family:var(--ui);font-size:20px;line-height:1.62;max-width:56ch;}
+.ed.big{font-size:26px;line-height:1.5;}
+.ed.sm{font-size:16px;}
+.ed.dim{color:rgba(255,255,255,.72);}
+
+/* ── inputs — long underlined fields, never rounded boxes ──────────────── */
+.field{
+  background:transparent;border:0;border-bottom:1px solid var(--hair);color:var(--white);
+  font-family:var(--fig);font-size:var(--t-read);letter-spacing:-.02em;
+  padding:8px 0 9px;width:100%;outline:none;transition:border-color .2s;
+}
+.field:focus{border-color:var(--edge);}
+.field::placeholder{color:var(--ghost);}
+.field.ed{font-family:var(--ui);letter-spacing:0;}
+.field.big{font-size:34px;}
+textarea.field{resize:none;line-height:1.75;min-height:72px;font-family:var(--ui);letter-spacing:0;}
+.fl{display:block;}
+.fl>.tl{color:var(--smoke);display:block;margin-bottom:2px;}
+.fgrid{display:grid;gap:26px 30px;}
+
+/* ── EmptyRecord — silence, not illustration ───────────────────────────── */
+.er{
+  position:relative;overflow:hidden;box-shadow:inset 0 0 0 1px var(--hair);
+  padding:64px 30px;text-align:center;
+}
+.er::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 7px);
+}
+.er h3{
+  position:relative;font-family:var(--mono);font-size:10px;letter-spacing:.28em;
+  text-transform:uppercase;font-weight:400;
+}
+.er p{position:relative;font-family:var(--ui);font-size:var(--t-read);color:var(--smoke);
+  margin:16px auto 0;max-width:40ch;line-height:1.6;}
+
+/* ── avatars — grayscale, square, never circular except identity ───────── */
+.av{
+  background:var(--raise);box-shadow:inset 0 0 0 1px var(--edge);
+  display:grid;place-items:center;font-family:var(--fig);filter:grayscale(1);flex:none;
+}
+
+/* ── motion ────────────────────────────────────────────────────────────── */
+@keyframes rew{from{opacity:0;filter:blur(9px);transform:translateY(7px);}to{opacity:1;filter:blur(0);transform:none;}}
+@keyframes extend{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+@keyframes draw{from{stroke-dashoffset:1;}to{stroke-dashoffset:0;}}
+@keyframes stamp{0%{opacity:0;transform:scale(1.14);}60%{opacity:1;}100%{opacity:1;transform:scale(1);}}
+@keyframes scan{0%{top:0;}100%{top:100%;}}
+
+.rw{animation:rew .55s var(--ease) both;}
+.d2{animation-delay:.07s;} .d3{animation-delay:.14s;} .d4{animation-delay:.21s;} .d5{animation-delay:.28s;}
+/* chart lines draw themselves */
+.draw{stroke-dasharray:1;stroke-dashoffset:1;
+  animation:draw 1.5s var(--ease) .18s both;
+  /* pathLength=1 must be set on the element */}
+
+@media (prefers-reduced-motion:reduce){
+  .rw,.sd.animate,.draw,.ls.stamped{animation:none !important;}
+  .draw{stroke-dashoffset:0;}
+  .app-bg::before{display:none;}
+}
+
+/* ── responsive ────────────────────────────────────────────────────────── */
+@media (max-width:1000px){
+  :root{--gut:20px;}
+  :root{--t-focal:62px;--t-giant:38px;--t-large:24px;}
+  .md{grid-template-columns:repeat(2,1fr);}
+  .md>div+div{padding-left:20px;}
+  .cph{flex-direction:column;align-items:flex-start;gap:12px;}
+  .cph .meta{text-align:left;}
+  .ed{font-size:17px;} .ed.big{font-size:20px;}
+}
+
+</style>
 <style>
 /* ── shell only. Everything else lives in the design system. ─────────── */
 .app{display:grid;grid-template-columns:var(--rail) 1fr;min-height:100%;position:relative;z-index:2;}
@@ -62,7 +417,7 @@
     <div class="mkt"><i></i><span class="tl">Market: NY Open</span></div>
     <div class="srch"><button data-go="search">Search the record</button></div>
     <div class="tacts">
-      <span class="pvtag">Preview</span>
+      <span class="pvtag">Preview A1</span>
       <button class="rb solid sm" data-go="log">+ Log trade</button>
       <div class="av" data-go="profile" style="width:26px;height:26px;font-size:9px;cursor:pointer;">CV</div>
     </div>
