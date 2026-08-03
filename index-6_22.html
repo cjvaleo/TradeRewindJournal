@@ -3603,34 +3603,23 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 #pg-community #comm-feed-view{
   flex:1;display:flex;min-width:0;height:100%;overflow:hidden;
-  /* Center the feed+rail cluster now that the communities sub-sidebar is
-     gone — without this the feed hugs the left edge on wide screens and
-     dead space piles up before the rail. */
-  justify-content:center;
 }
+/* True 50/50 split — feed fills the left half, group dashboard +
+   calendar fill the right half, edge to edge. */
 #pg-community .feed{
-  flex:1;min-width:0;max-width:860px;padding:32px 36px;
+  flex:1 1 50%;min-width:0;padding:32px 40px;
   border-right:1px solid var(--n-border);
   overflow-y:auto;height:100%;background:transparent;
 }
-/* Cap the post list + filter pill row at 640px (Twitter-style focus
-   column) so posts feel filled, not stretched. Hero P&L + period
-   tabs stay at full feed-column width — the hero is meant to feel
-   grand. */
-#pg-community .filters,
-#pg-community #comm-feed-posts{
-  max-width:640px;margin-left:auto;margin-right:auto;
-}
 #pg-community .rail{
-  width:390px;padding:32px 24px;
-  display:flex;flex-direction:column;gap:18px;flex-shrink:0;
+  flex:1 1 50%;min-width:0;width:auto;padding:32px 40px;
+  display:flex;flex-direction:column;gap:18px;
   background:transparent;overflow-y:auto;height:100%;
 }
-/* Tablet — keep the two-column layout but tighten it so the feed
-   doesn't get crushed between the rail and the window edge. */
+/* Tablet — same split, tighter breathing room. */
 @media (max-width:1100px){
-  #pg-community .rail{width:330px;padding:28px 16px}
-  #pg-community .feed{padding:28px 22px}
+  #pg-community .feed{padding:28px 24px}
+  #pg-community .rail{padding:28px 24px}
 }
 /* ≤1024px the desktop-rec banner becomes visible; stack it above the
    feed instead of letting it join the page's flex row (where it would
@@ -4797,10 +4786,9 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   font-size:38px;text-align:center;display:block;
 }
 #pg-community .gd-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:12px 8px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:12px 8px;
   margin-top:18px;padding-top:16px;border-top:1px solid var(--n-border);
 }
-#pg-community .gd-grid .gd-span{grid-column:1/-1}
 
 /* Community calendar — same cell design as the personal calendar
    (#pg-calendar #big-cal), compacted for the 390px column. */
@@ -4820,16 +4808,16 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-2);
 }
 #pg-community .comm-cal-card .cal-dow-row{
-  display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:5px;
+  display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px;
 }
 #pg-community .comm-cal-card .cal-dow{
-  text-align:center;font-family:var(--n-font-mono);font-size:9px;
-  letter-spacing:0.14em;text-transform:uppercase;color:var(--n-text-4);padding:3px 0;
+  text-align:center;font-family:var(--n-font-mono);font-size:9.5px;
+  letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-4);padding:4px 0;
 }
-#pg-community #comm-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+#pg-community #comm-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 #pg-community #comm-cal .cc{
-  min-height:56px;background:var(--n-surface-2);border:1px solid var(--n-border);
-  border-radius:5px;padding:5px;display:flex;flex-direction:column;cursor:pointer;
+  min-height:104px;background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:5px;padding:8px;display:flex;flex-direction:column;cursor:pointer;
   transition:border-color .12s,background .12s;position:relative;height:auto;box-shadow:none;
 }
 #pg-community #comm-cal .cc:hover{border-color:var(--n-border-2);background:var(--n-surface-3)}
@@ -4849,29 +4837,31 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-community #comm-cal .cc.be{background:var(--n-surface-2);border-color:var(--n-border-2)}
 #pg-community #comm-cal .cc.selected{border-color:var(--n-text);background:var(--n-surface-3)}
 #pg-community #comm-cal .cc-n{
-  font-family:var(--n-font-mono);font-size:9px;font-weight:500;
+  font-family:var(--n-font-mono);font-size:10.5px;font-weight:500;
   color:var(--n-text-3);line-height:1;text-shadow:none;
 }
 #pg-community #comm-cal .cc.profit .cc-n{color:var(--n-profit);opacity:0.85}
 #pg-community #comm-cal .cc.loss .cc-n{color:var(--n-loss);opacity:0.85}
 #pg-community #comm-cal .cc-body{
   flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  text-align:center;gap:1px;
+  text-align:center;gap:2px;
 }
 #pg-community #comm-cal .cc-pnl{
   font-family:var(--n-font-display);font-style:italic;font-weight:400;
-  font-size:12.5px;line-height:1;letter-spacing:-0.01em;margin:0;
+  font-size:18px;line-height:1;letter-spacing:-0.01em;margin:0;
   white-space:nowrap;
 }
 @media (max-width:1100px){
-  #pg-community #comm-cal .cc-pnl{font-size:11px}
+  #pg-community #comm-cal .cc{min-height:84px}
+  #pg-community #comm-cal .cc-pnl{font-size:15px}
 }
 #pg-community #comm-cal .cc-pnl.pos{color:var(--n-profit)}
 #pg-community #comm-cal .cc-pnl.neg{color:var(--n-loss)}
 #pg-community #comm-cal .cc-pnl.zero{color:var(--n-text-3)}
 #pg-community #comm-cal .cc-tcount{
-  font-family:var(--n-font-mono);font-size:7.5px;letter-spacing:0.05em;
+  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.05em;
   color:var(--n-text-4);text-transform:uppercase;margin-top:1px;
+  white-space:nowrap;
 }
 
 /* Day detail panel */
@@ -5205,7 +5195,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     display:flex!important;width:100%!important;height:auto!important;
     overflow:visible!important;padding:0 0 24px!important;
   }
-  #pg-community #comm-cal .cc{min-height:52px}
+  #pg-community #comm-cal .cc{min-height:64px}
   #pg-community .feed-title{font-size:24px}
   #pg-community .hero-pnl{padding:20px 16px;margin:14px 0 18px}
   #pg-community .hero-pnl-value{font-size:42px}
@@ -6666,7 +6656,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
             <div class="hero-stat"><span class="hero-stat-label">Win Rate</span><span class="hero-stat-value" id="comm-hero-winrate">0%</span></div>
             <div class="hero-stat"><span class="hero-stat-label">Avg Trade</span><span class="hero-stat-value" id="comm-hero-avg">+$0</span></div>
             <div class="hero-stat"><span class="hero-stat-label">Best Trade</span><span class="hero-stat-value" id="comm-hero-best">+$0</span></div>
-            <div class="hero-stat gd-span"><span class="hero-stat-label">Top Trader</span><span class="hero-stat-value" id="comm-hero-top">&mdash;</span></div>
+            <div class="hero-stat"><span class="hero-stat-label">Top Trader</span><span class="hero-stat-value" id="comm-hero-top">&mdash;</span></div>
           </div>
         </div>
 
