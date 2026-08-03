@@ -11,6 +11,8 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Bebas+Neue&family=Orbitron:wght@400;700;900&family=Chakra+Petch:wght@300;400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<!-- "The Echo" login (v2/rewind-login-echo.html design) -->
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter+Tight:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 @font-face {
   font-family: 'FreeLine';
@@ -6027,7 +6029,134 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   <div class="n-auth-pattern"></div>
   <div class="n-auth-grain"></div>
 
-  <div style="position:relative;z-index:10;width:100%;padding:20px;display:flex;align-items:center;justify-content:center">
+<!-- ════════════════════════════════════════════════════════════════
+     DISCORD-ONLY LOGIN — "THE ECHO"
+     Design lifted from v2/rewind-login-echo.html @ 88b4a4b, scoped
+     under #rw-echo so its generic class names can't leak into the app.
+     The email/password card below (#rw-email-layer) stays as the
+     secondary path for existing accounts.
+     ════════════════════════════════════════════════════════════════ -->
+<style>
+#rw-echo{
+  --rwe-black:#080A0C; --rwe-raise:#181D22; --rwe-line:#252B31; --rwe-line-2:#333A42;
+  --rwe-white:#FFFFFF; --rwe-soft:#D6DADE; --rwe-quiet:#AEB4BA;
+  --rwe-disp:"Syne",Helvetica,sans-serif;
+  --rwe-ui:"Inter Tight",system-ui,sans-serif;
+  --rwe-mono:"JetBrains Mono",ui-monospace,monospace;
+  position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;
+  padding:70px 24px;overflow:hidden;color:var(--rwe-white);font-family:var(--rwe-ui);
+}
+#rw-echo *{margin:0;padding:0;box-sizing:border-box;}
+#rw-echo .bloom{position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(52% 40% at 22% 26%, rgba(255,255,255,.11), transparent 66%),
+    radial-gradient(46% 36% at 80% 32%, rgba(255,255,255,.07), transparent 68%),
+    radial-gradient(60% 44% at 54% 88%, rgba(255,255,255,.05), transparent 70%),
+    radial-gradient(78% 60% at 50% 44%, #101318 0%, #0A0C0F 58%, #06070A 100%);}
+#rw-echo .flute{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.42;
+  background:repeating-linear-gradient(90deg,
+    rgba(255,255,255,.045) 0px, rgba(255,255,255,.045) 1px,
+    rgba(255,255,255,.012) 2px, rgba(0,0,0,.16) 7px, rgba(0,0,0,.16) 11px);}
+#rw-echo .vign{position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(96% 78% at 50% 46%, transparent 40%, rgba(4,5,7,.78) 100%);}
+#rw-echo .grain{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:.075;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>");}
+#rw-echo .mk{position:absolute;font-family:var(--rwe-mono);font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--rwe-quiet);z-index:6;line-height:1.9;}
+#rw-echo .mk b{color:var(--rwe-white);font-weight:500;display:block;}
+#rw-echo .tl{top:30px;left:34px;} #rw-echo .tr{top:30px;right:34px;text-align:right;}
+#rw-echo .bl{bottom:30px;left:34px;} #rw-echo .br{bottom:30px;right:34px;text-align:right;}
+#rw-echo .stage{width:min(900px,100%);text-align:center;position:relative;z-index:5;}
+#rw-echo .echo{position:relative;height:clamp(88px,15vw,190px);margin-top:0;}
+#rw-echo .echo span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--rwe-disp);font-weight:800;font-size:clamp(56px,11.5vw,150px);line-height:1;
+  letter-spacing:-.02em;text-transform:uppercase;white-space:nowrap;}
+#rw-echo .echo .g4{transform:translateX(-118px);filter:blur(15px);opacity:.09;color:#FFFFFF;}
+#rw-echo .echo .g3{transform:translateX(-80px); filter:blur(10px);opacity:.15;color:#F0F2F4;}
+#rw-echo .echo .g2{transform:translateX(-50px); filter:blur(6px); opacity:.24;color:#EDEFF2;}
+#rw-echo .echo .g1{transform:translateX(-22px); filter:blur(2.5px);opacity:.38;color:#F6F8FA;}
+#rw-echo .echo .now{color:var(--rwe-white);text-shadow:0 0 60px rgba(255,255,255,.26), 0 0 140px rgba(255,255,255,.12);}
+#rw-echo .what{margin-top:26px;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--rwe-quiet);}
+#rw-echo .auth{margin:30px auto 0;width:min(322px,100%);}
+#rw-echo .step{display:none;} #rw-echo .step.on{display:block;}
+#rw-echo .btn{width:100%;display:flex;align-items:center;justify-content:center;gap:11px;border:none;cursor:pointer;border-radius:2px;
+  font-family:var(--rwe-mono);font-size:10.5px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;padding:17px 20px;transition:all .18s;}
+#rw-echo .btn svg{width:18px;height:18px;flex:none;}
+#rw-echo .solid{background:var(--rwe-white);color:#08090C;}
+#rw-echo .solid:hover{transform:translateY(-1px);box-shadow:0 12px 34px rgba(255,255,255,.13);}
+#rw-echo .solid.busy{background:var(--rwe-raise);color:var(--rwe-soft);cursor:default;transform:none;box-shadow:none;}
+#rw-echo .hollow{background:transparent;border:1px solid var(--rwe-line-2);color:var(--rwe-soft);margin-top:9px;}
+#rw-echo .hollow:hover{color:var(--rwe-white);border-color:var(--rwe-white);}
+#rw-echo .sub{margin-top:15px;font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--rwe-quiet);}
+#rw-echo .sub a{color:var(--rwe-white);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.45);cursor:pointer;}
+#rw-echo .sub a:hover{border-color:var(--rwe-white);}
+#rw-echo .log{margin-top:16px;}
+#rw-echo .log div{display:flex;align-items:center;justify-content:center;gap:9px;padding:5px 0;font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--rwe-soft);opacity:.35;transition:opacity .3s;font-family:var(--rwe-mono);}
+#rw-echo .log div.hit{opacity:1;color:var(--rwe-white);}
+#rw-echo .log i{width:3px;height:3px;background:var(--rwe-white);box-shadow:0 0 8px rgba(255,255,255,.5);flex:none;}
+#rw-echo .card{background:rgba(12,15,18,.9);backdrop-filter:blur(18px);border:1px solid var(--rwe-line-2);border-radius:3px;padding:22px;text-align:left;}
+#rw-echo .err .badge{display:inline-flex;align-items:center;gap:7px;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--rwe-white);border:1px solid rgba(255,255,255,.42);padding:5px 10px;margin-bottom:14px;font-family:var(--rwe-mono);}
+#rw-echo .err .badge i{width:3px;height:3px;background:var(--rwe-white);}
+#rw-echo .err .g{font-family:var(--rwe-disp);font-weight:800;font-size:18px;letter-spacing:-.02em;text-transform:uppercase;color:var(--rwe-white);margin-bottom:9px;}
+#rw-echo .err p{font-family:var(--rwe-ui);font-size:12.5px;color:var(--rwe-soft);line-height:1.7;margin-bottom:18px;}
+@media(max-width:760px){
+  #rw-echo .mk{font-size:7px;letter-spacing:.16em;}
+  #rw-echo .tl,#rw-echo .bl{left:20px;} #rw-echo .tr,#rw-echo .br{right:20px;}
+  #rw-echo .echo .g4,#rw-echo .echo .g3{display:none;}
+}
+</style>
+
+<div id="rw-echo">
+  <div class="bloom"></div>
+  <div class="flute"></div>
+  <div class="vign"></div>
+  <div class="grain"></div>
+
+  <span class="mk tl"><b>Rewind</b>Members only</span>
+  <span class="mk tr"><b>No. 001</b>Est. 2026</span>
+  <span class="mk bl"><b>Futures journal</b>NQ · ES</span>
+  <span class="mk br"><b>Traderewindjournal.com</b>Log · Review · Repeat</span>
+
+  <div class="stage">
+    <div class="echo">
+      <span class="g4">Rewind</span>
+      <span class="g3">Rewind</span>
+      <span class="g2">Rewind</span>
+      <span class="g1">Rewind</span>
+      <span class="now">Rewind</span>
+    </div>
+    <div class="what">A private journal for day traders</div>
+
+    <div class="auth">
+
+      <div class="step on" id="rw-s1">
+        <button class="btn solid" id="rw-discord-btn" onclick="doDiscordLogin()">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.57A19.8 19.8 0 0 0 15.45 3c-.2.36-.43.85-.6 1.24a14.9 14.9 0 0 0-4.43 0c-.16-.39-.4-.88-.6-1.24a19.7 19.7 0 0 0-4.88 1.58C1.83 9.05 1.1 13.4 1.46 17.7A19.9 19.9 0 0 0 7.5 20.8c.33-.45.62-.93.87-1.43-.48-.18-.94-.4-1.37-.66.11-.08.23-.17.34-.26 2.64 1.23 5.5 1.23 8.11 0 .12.09.23.18.35.26-.44.26-.9.48-1.38.66.25.5.54.98.87 1.43a19.85 19.85 0 0 0 6.05-3.1c.43-5-.73-9.3-2.02-13.13ZM8.35 15.1c-1.18 0-2.15-1.08-2.15-2.4 0-1.32.94-2.4 2.15-2.4 1.2 0 2.17 1.08 2.15 2.4 0 1.32-.95 2.4-2.15 2.4Zm7.3 0c-1.18 0-2.15-1.08-2.15-2.4 0-1.32.94-2.4 2.15-2.4 1.2 0 2.17 1.08 2.15 2.4 0 1.32-.95 2.4-2.15 2.4Z"/></svg>
+          Sign in with Discord
+        </button>
+        <div class="log" id="rw-log" style="display:none;">
+          <div id="rw-log1"><i></i>Authorizing</div>
+          <div id="rw-log2"><i></i>Reading membership</div>
+        </div>
+        <div class="sub" id="rw-sub1">No passwords · <a href="https://discord.gg/tradingark" target="_blank" rel="noopener">not a member yet?</a></div>
+        <div class="sub" id="rw-sub2"><a onclick="rwShowEmail();return false">Existing account? Sign in with email</a></div>
+      </div>
+
+      <div class="step" id="rw-serr">
+        <div class="card err">
+          <div class="badge"><i></i><span id="rw-err-kind">Access denied</span></div>
+          <div class="g" id="rw-err-title">Authorization cancelled</div>
+          <p id="rw-err-body">Discord didn't complete the handshake. Nothing was saved — try again when you're ready.</p>
+          <button class="btn solid" onclick="rwBackToStart()">Try again</button>
+          <button class="btn hollow" onclick="rwShowEmail()">Sign in with email instead</button>
+        </div>
+        <div class="sub" id="rw-err-join" style="display:none;">Need access? <a href="https://discord.gg/tradingark" target="_blank" rel="noopener">join the Trading Ark Discord</a></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+  <div id="rw-email-layer" style="position:relative;z-index:10;width:100%;padding:20px;display:none;align-items:center;justify-content:center">
 
     <div class="n-auth-card n-glass n-fade-up d1">
 
@@ -6096,7 +6225,8 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       <!-- TABS -->
       <div class="n-tabs n-fade-up d3">
         <button id="auth-tab-login" class="n-tab active" onclick="switchAuthTab('login')">Sign in</button>
-        <button id="auth-tab-signup" class="n-tab" onclick="switchAuthTab('signup')">Create account</button>
+        <!-- Discord-only signup: email/password remains for existing accounts only -->
+        <button id="auth-tab-signup" class="n-tab" onclick="switchAuthTab('signup')" style="display:none">Create account</button>
       </div>
 
       <!-- ERROR/SUCCESS MSG -->
@@ -6119,7 +6249,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
         </div>
         <button id="login-btn" class="n-btn-primary" onclick="doLogin()">Sign in</button>
         <div class="n-foot">
-          New to Rewind? <button onclick="switchAuthTab('signup')">Create an account</button>
+          New to Rewind? <button onclick="rwShowEcho()">Sign in with Discord</button>
         </div>
       </div>
 
@@ -7963,7 +8093,11 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
           <div class="av-form-grid">
             <div class="av-field">
               <span class="av-field-label">Display Name</span>
-              <input class="av-field-input f-input" id="p-name" type="text" placeholder="Your name"/>
+              <input class="av-field-input f-input" id="p-name" type="text" placeholder="Synced from Discord" readonly
+                tabindex="-1" style="opacity:.55;cursor:default;pointer-events:none"/>
+              <span style="display:block;margin-top:6px;font-size:10px;line-height:1.5;color:rgba(255,255,255,.45)">
+                Syncs from your Discord server nickname — change it in Trading Ark.
+              </span>
             </div>
             <div class="av-field">
               <span class="av-field-label">Username</span>
@@ -15110,13 +15244,13 @@ function refreshAcctUI(){
   }
   var n=document.getElementById('sb-name');if(n)n.textContent=acct.name||'My Account';
   var su=document.getElementById('sb-username');if(su)su.textContent=acct.username?'@'+acct.username.replace('@',''):'@username';
-  var planMap={free:'Free Plan',pro:'Pro — $19/mo',elite:'Elite — $39/mo'};
+  var planMap={free:'Free Plan',pro:'Pro — $19/mo',elite:'Elite — $39/mo',premium:'Premium — Trading Ark',direct:'Pro · Direct — $19/mo'};
   var planTxt=planMap[acct.plan]||'Free Plan';
   var an=document.getElementById('ap-name');if(an)an.textContent=acct.name||'My Account';
   var ae=document.getElementById('ap-email');if(ae)ae.textContent=acct.email||'Not signed in';
   var ab=document.getElementById('ap-badge');if(ab){
     ab.textContent = planTxt;
-    ab.classList.toggle('pro', acct.plan === 'pro' || acct.plan === 'elite');
+    ab.classList.toggle('pro', acct.plan === 'pro' || acct.plan === 'elite' || acct.plan === 'premium' || acct.plan === 'direct');
   }
   var scl=document.getElementById('sub-current-lbl');if(scl)scl.textContent='Current: '+(acct.plan.charAt(0).toUpperCase()+acct.plan.slice(1));
   var bpl=document.getElementById('billing-plan-lbl');if(bpl)bpl.textContent=planTxt;
@@ -15267,18 +15401,18 @@ function clearAvatarImage(){
   if(typeof saveAcct === 'function') saveAcct();
 }
 function _doSaveProfile() {
-  var nameEl = document.getElementById('p-name');
+  /* Display name is read-only — it syncs from Discord (server nickname,
+     falling back to the Discord username) via /api/auth/gate and the
+     nightly role-check cron. Only username/initials/avatar save here. */
   var userEl = document.getElementById('p-username');
   var initEl = document.getElementById('p-initials');
-  var name  = nameEl ? nameEl.value.trim() : '';
   var uname = userEl ? userEl.value.trim().replace('@','') : '';
   var init  = initEl ? (initEl.value||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,2) : '';
-  if (name)  acct.name     = name;
   if (uname) acct.username = uname;
   if (init){ acct.initials = init; acct.avatar_initials = init; }
-  else if (name){
-    var derived = name.split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
-    acct.initials = derived; acct.avatar_initials = derived;
+  else if (!acct.initials || acct.initials === '?'){
+    var derived = (acct.name||'').split(' ').map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,2);
+    if (derived){ acct.initials = derived; acct.avatar_initials = derived; }
   }
   saveAcct();
   refreshAcctUI();
@@ -15372,8 +15506,34 @@ async function checkSession() {
   if (!_sb) { showAuth('login'); return; }
   var { data: { session } } = await _sb.auth.getSession();
   if (session && session.user) {
+    /* Fresh return from Discord OAuth? Ask the gate BEFORE letting the
+       session into the app. The gate (/api/auth/gate) is the only thing
+       that decides access — this page just renders its answer. */
+    var gatePending = false;
+    try { gatePending = sessionStorage.getItem('rw_gate_pending') === '1'; } catch(e) {}
+    if (gatePending) {
+      try { sessionStorage.removeItem('rw_gate_pending'); } catch(e) {}
+      showAuth('login');
+      rwSetBusy('Checking your membership…');
+      var verdict = await rwRunGate(session);
+      if (verdict && verdict.allowed) {
+        await onSignedIn(session.user);
+        return;
+      }
+      /* NOT ALLOWED — kill the session so a refresh can't sneak past,
+         then route on the gate's reason. */
+      try { await _sb.auth.signOut(); } catch(e) {}
+      rwResetEcho();
+      var reason = verdict && verdict.reason;
+      if (reason === 'no_role')             { location.href = '/oauth-no-access'; return; }
+      if (reason === 'discord_unreachable') { location.href = '/oauth-error?reason=discord_unreachable'; return; }
+      if (reason === 'not_in_server')       { rwShowError('no-membership'); return; }
+      rwShowError('denied');                /* scope_missing / no_discord_token / … */
+      return;
+    }
     await onSignedIn(session.user);
   } else {
+    try { sessionStorage.removeItem('rw_gate_pending'); } catch(e) {}
     // SECURITY: no auth session = don't trust the cache. The previous
     // user's localStorage could otherwise drive a "zombie" signed-in
     // UI on a device with stale tr1_* keys but no backing JWT, and
@@ -15393,7 +15553,128 @@ async function checkSession() {
 function showAuth(tab) {
   document.getElementById('auth-screen').style.display = 'flex';
   document.querySelector('.wrap').style.display = 'none';
-  switchAuthTab(tab || 'login');
+  /* Discord ("The Echo") is the front door; the email/password card is
+     the secondary path for existing accounts (tab === 'email'). */
+  var useEmail = tab === 'email';
+  document.getElementById('rw-echo').style.display        = useEmail ? 'none' : 'flex';
+  document.getElementById('rw-email-layer').style.display = useEmail ? 'flex' : 'none';
+  if (!useEmail) rwResetEcho();
+  switchAuthTab('login');
+  /* if the OAuth callback bounced back with an error, surface it */
+  rwHandleInboundOAuthError();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DISCORD-ONLY SIGN-IN
+   Discord button → Supabase OAuth (identify email guilds.members.read)
+   → back here with a provider_token → POST it to /api/auth/gate →
+   route on the verdict. Access is NEVER decided client-side.
+   The `email` scope is required so Supabase can link the Discord
+   identity to an existing account with the same verified email.
+   ══════════════════════════════════════════════════════════════════ */
+var RW_DISCORD_SCOPES = 'identify email guilds.members.read';
+
+function rwShowEmail() { showAuth('email'); }
+function rwShowEcho()  { rwResetEcho(); showAuth('login'); }
+
+function rwGo(step) {
+  document.getElementById('rw-s1').classList.toggle('on', step === 's1');
+  document.getElementById('rw-serr').classList.toggle('on', step === 'err');
+}
+
+function rwSetBusy(label) {
+  rwGo('s1');
+  var btn = document.getElementById('rw-discord-btn');
+  if (!btn._rwHTML) btn._rwHTML = btn.innerHTML;
+  btn.classList.add('busy');
+  btn.textContent = label;
+  document.getElementById('rw-sub1').style.display = 'none';
+  document.getElementById('rw-sub2').style.display = 'none';
+  document.getElementById('rw-log').style.display = 'block';
+  ['rw-log1','rw-log2'].forEach(function(id, i){
+    setTimeout(function(){ document.getElementById(id).classList.add('hit'); }, 300 + i*620);
+  });
+}
+
+function rwResetEcho() {
+  var btn = document.getElementById('rw-discord-btn');
+  if (!btn._rwHTML) return;                      /* never went busy */
+  btn.classList.remove('busy');
+  btn.innerHTML = btn._rwHTML;
+  document.getElementById('rw-sub1').style.display = 'block';
+  document.getElementById('rw-sub2').style.display = 'block';
+  document.getElementById('rw-log').style.display = 'none';
+  ['rw-log1','rw-log2'].forEach(function(id){ document.getElementById(id).classList.remove('hit'); });
+}
+
+function rwBackToStart() { rwResetEcho(); rwGo('s1'); }
+
+var RW_ERRORS = {
+  'denied': { kind:'Access denied', title:'Authorization cancelled',
+    body:"Discord didn't complete the handshake. Nothing was saved — try again when you're ready.", join:false },
+  'no-membership': { kind:'No membership found', title:'Not in the club yet',
+    body:"That Discord account isn't in the Trading Ark server, so there's no membership to read. Join the server, then sign in again — your tier applies automatically.", join:true }
+};
+function rwShowError(kind) {
+  var e = RW_ERRORS[kind] || RW_ERRORS['denied'];
+  document.getElementById('rw-err-kind').textContent  = e.kind;
+  document.getElementById('rw-err-title').textContent = e.title;
+  document.getElementById('rw-err-body').textContent  = e.body;
+  document.getElementById('rw-err-join').style.display = e.join ? 'block' : 'none';
+  rwGo('err');
+}
+
+async function doDiscordLogin() {
+  if (!_sb) { rwShowError('denied'); return; }
+  rwSetBusy('Authorizing…');
+  try { sessionStorage.setItem('rw_gate_pending', '1'); } catch(e) {}
+  var r = await _sb.auth.signInWithOAuth({
+    provider: 'discord',
+    options: { scopes: RW_DISCORD_SCOPES, redirectTo: location.origin + '/' }
+  });
+  /* on success the browser leaves for Discord; we only land here on failure */
+  if (r && r.error) {
+    console.error('[discord login]', r.error.message);
+    try { sessionStorage.removeItem('rw_gate_pending'); } catch(e) {}
+    rwResetEcho();
+    rwShowError('denied');
+  }
+}
+
+/* POST the Discord provider token to the authoritative gate. A network
+   failure reads the same as a Discord outage: fail closed. */
+async function rwRunGate(session) {
+  try {
+    var r = await fetch('/api/auth/gate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token
+      },
+      body: JSON.stringify({
+        provider_token: session.provider_token || null,
+        provider_refresh_token: session.provider_refresh_token || null
+      })
+    });
+    return await r.json();
+  } catch(e) {
+    console.error('[gate] unreachable:', e && e.message);
+    return { allowed: false, tier: null, reason: 'discord_unreachable' };
+  }
+}
+
+/* Discord/Supabase can bounce back with ?error= or #error= instead of a
+   session (e.g. the user hit Cancel on the consent screen). */
+function rwHandleInboundOAuthError() {
+  var q = new URLSearchParams(location.search);
+  var h = new URLSearchParams((location.hash || '').replace(/^#/, ''));
+  var err = q.get('error') || q.get('error_code') || h.get('error') || h.get('error_code');
+  if (!err) return;
+  try { sessionStorage.removeItem('rw_gate_pending'); } catch(e) {}
+  window.history.replaceState({}, document.title, window.location.pathname);
+  document.getElementById('rw-echo').style.display = 'flex';
+  document.getElementById('rw-email-layer').style.display = 'none';
+  rwShowError('denied');
 }
 
 async function loadPendingInvitesFromDB(user) {
@@ -17435,8 +17716,9 @@ async function saveProfileToDB() {
   if (!currentUser || !_sb) return;
 
   // The codebase's profiles table uses `id` as the FK to auth.users.
+  // display_name is intentionally absent: it's server-owned, synced from
+  // Discord by /api/auth/gate and the nightly role-check cron.
   var payload = {
-    display_name: acct.name,
     email: acct.email,
     username: acct.username,
     initials: acct.initials,

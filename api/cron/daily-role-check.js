@@ -212,10 +212,16 @@ async function processProfile(sb, profile, env) {
   }
 
   // Still Premium — extend the Pro window (MAX-guarded).
+  // Also refresh the display name: it's read-only in the app and owned by
+  // Discord (server nickname, falling back to the Discord username).
+  const displayName = member.nick
+    || (member.user && member.user.username)
+    || null;
   const finalIso = maxProActiveUntil(profile.pro_active_until, PRO_WINDOW_DAYS);
   const { error: upErr } = await sb.from('profiles').update({
     pro_active_until: finalIso,
     last_role_check:  nowIso(),
+    ...(displayName ? { display_name: displayName } : {}),
   }).eq('id', userId);
   if (upErr) throw new Error(`extend update failed: ${upErr.message}`);
   console.log('[cron] extended', { user_id: userId, pro_active_until: finalIso });
