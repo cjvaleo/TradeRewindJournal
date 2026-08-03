@@ -5326,21 +5326,48 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-calendar #big-cal .cc,#pg-community #comm-cal .cc,
 #pg-calendar .day-summary-cell,#pg-community .comm-day-summary .day-summary-cell{border-radius:2px}
 
-/* Syne display numerals want weight + tighter tracking */
+/* Display type = the login wordmark's exact treatment:
+   Syne 800, uppercase, -0.02em (see #rw-echo .echo span). */
 .hero-amount,
 .hero-pnl-value,
 .n-stat-card .stat-value,
+.n-trade-row .t-pnl,
 #pg-community .fstat-val,
 #pg-calendar .day-summary-cell .val,
-#pg-community .comm-day-summary .val{
-  font-weight:700;letter-spacing:-0.03em;
+#pg-calendar #big-cal .cc-pnl,
+#pg-community #comm-cal .cc-pnl,
+#pg-community .comm-day-summary .val,
+#pg-community .comm-day-trade .pnl{
+  font-weight:800;letter-spacing:-0.02em;
 }
 .dash-head-left .h-title,
 #pg-analytics .an-head .h-title,
 #pg-calendar .cal-head-left .h-title,
 #pg-history .h-head .h-title,
 #pg-community .ftitle,
-#pg-legal .ftitle{font-weight:700;letter-spacing:-0.02em}
+#pg-legal .ftitle{
+  font-weight:800;letter-spacing:-0.02em;text-transform:uppercase;
+  font-size:30px;
+}
+#pg-analytics .panel-intro h2,
+#pg-calendar .day-panel-title,
+#pg-community .comm-day-title,
+#pg-community .empty-title,
+#pg-legal .legal-content h1{
+  font-weight:800;letter-spacing:-0.02em;text-transform:uppercase;
+}
+#pg-analytics .panel-intro h2{font-size:19px}
+#pg-calendar .day-panel-title{font-size:19px}
+#pg-community .comm-day-title{font-size:17px}
+#pg-community .empty-title{font-size:26px}
+#pg-legal .legal-content h1{font-size:24px}
+.sb-logo-text,.mt-brand{
+  font-weight:800!important;letter-spacing:-0.02em!important;
+  text-transform:uppercase;font-style:normal!important;
+  font-family:var(--n-font-display)!important;
+}
+.sb-logo-text{font-size:19px!important}
+.mt-brand{font-size:17px!important}
 
 /* ── Dashboard: even 12px rhythm + smaller hero ── */
 #pg-dashboard.page.on{padding:28px 40px 48px}
