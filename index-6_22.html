@@ -3605,20 +3605,32 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   flex:1;display:flex;min-width:0;height:100%;overflow:hidden;
 }
 /* True 50/50 split — feed fills the left half, group dashboard +
-   calendar fill the right half, edge to edge. */
+   calendar fill the right half, edge to edge.
+   Only the post list scrolls: the feed is a flex column whose header
+   and filter chips are pinned while #comm-feed-posts scrolls beneath
+   them; the rail is fully locked (the calendar flexes to absorb the
+   leftover height so nothing needs to scroll). The page already sits
+   in a calc(100vh - var(--topbar-h)) box, so both halves inherit the
+   top-bar offset. */
 #pg-community .feed{
-  flex:1 1 50%;min-width:0;padding:32px 40px;
+  flex:1 1 50%;min-width:0;padding:32px 40px 0;
   border-right:1px solid var(--n-border);
-  overflow-y:auto;height:100%;background:transparent;
+  overflow:hidden;height:100%;background:transparent;
+  display:flex;flex-direction:column;
+}
+#pg-community .fhead,
+#pg-community .filters{flex-shrink:0}
+#pg-community #comm-feed-posts{
+  flex:1;min-height:0;overflow-y:auto;padding-bottom:32px;
 }
 #pg-community .rail{
   flex:1 1 50%;min-width:0;width:auto;padding:32px 40px;
   display:flex;flex-direction:column;gap:18px;
-  background:transparent;overflow-y:auto;height:100%;
+  background:transparent;overflow:hidden;height:100%;
 }
 /* Tablet — same split, tighter breathing room. */
 @media (max-width:1100px){
-  #pg-community .feed{padding:28px 24px}
+  #pg-community .feed{padding:28px 24px 0}
   #pg-community .rail{padding:28px 24px}
 }
 /* ≤1024px the desktop-rec banner becomes visible; stack it above the
@@ -4778,6 +4790,25 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
 /* ── COMMUNITY RIGHT COLUMN — group dashboard + calendar ── */
 
+/* Rail is a locked (non-scrolling) column: stats keep their natural
+   height and the calendar card flexes to absorb whatever remains. The
+   day panel floats OVER the calendar (absolute) so opening it doesn't
+   squeeze the month grid; long trade lists scroll inside the panel. */
+#pg-community .rail{position:relative}
+#pg-community .comm-stats-card{flex-shrink:0}
+#pg-community .comm-cal-card{
+  flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;
+}
+#pg-community #comm-day-panel{
+  position:absolute;left:40px;right:40px;bottom:32px;z-index:5;
+  max-height:60%;overflow-y:auto;
+  box-shadow:0 24px 64px -12px rgba(0,0,0,0.8);
+  border-color:var(--n-border-2);
+}
+@media (max-width:1100px){
+  #pg-community #comm-day-panel{left:24px;right:24px;bottom:28px}
+}
+
 /* Group dashboard card */
 #pg-community .comm-stats-card .period-tabs{display:flex;width:100%;margin:2px 0 16px}
 #pg-community .comm-stats-card .period-tab{flex:1;text-align:center;padding:6px 4px}
@@ -4814,9 +4845,14 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   text-align:center;font-family:var(--n-font-mono);font-size:9.5px;
   letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-4);padding:4px 0;
 }
-#pg-community #comm-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+/* Rows split the card's leftover height evenly (1fr) so the month
+   always fits without scrolling; min-height is just a floor. */
+#pg-community #comm-cal{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:4px;
+  flex:1;min-height:0;grid-auto-rows:1fr;
+}
 #pg-community #comm-cal .cc{
-  min-height:104px;background:var(--n-surface-2);border:1px solid var(--n-border);
+  min-height:56px;background:var(--n-surface-2);border:1px solid var(--n-border);
   border-radius:5px;padding:8px;display:flex;flex-direction:column;cursor:pointer;
   transition:border-color .12s,background .12s;position:relative;height:auto;box-shadow:none;
 }
@@ -4852,7 +4888,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   white-space:nowrap;
 }
 @media (max-width:1100px){
-  #pg-community #comm-cal .cc{min-height:84px}
   #pg-community #comm-cal .cc-pnl{font-size:15px}
 }
 #pg-community #comm-cal .cc-pnl.pos{color:var(--n-profit)}
@@ -5190,12 +5225,20 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   #pg-community.on{flex-direction:column!important;height:auto!important;max-height:none!important}
   #pg-community #comm-main{padding:14px 12px;height:auto!important;overflow:visible!important}
   #pg-community #comm-feed-view{flex-direction:column!important;height:auto!important;overflow:visible!important}
-  #pg-community .feed{height:auto!important;overflow:visible!important;border-right:none!important;max-width:none}
+  #pg-community .feed{height:auto!important;overflow:visible!important;border-right:none!important;max-width:none;padding-bottom:0}
+  #pg-community #comm-feed-posts{flex:none!important;min-height:0;overflow:visible!important;padding-bottom:8px}
   #pg-community .rail{
     display:flex!important;width:100%!important;height:auto!important;
     overflow:visible!important;padding:0 0 24px!important;
   }
+  /* mobile: calendar back to content-driven rows in the normal flow */
+  #pg-community .comm-cal-card{flex:none!important;overflow:visible!important;display:block!important}
+  #pg-community #comm-cal{flex:none!important;grid-auto-rows:auto!important}
   #pg-community #comm-cal .cc{min-height:64px}
+  #pg-community #comm-day-panel{
+    position:static!important;max-height:none!important;overflow:visible!important;
+    box-shadow:none!important;
+  }
   #pg-community .feed-title{font-size:24px}
   #pg-community .hero-pnl{padding:20px 16px;margin:14px 0 18px}
   #pg-community .hero-pnl-value{font-size:42px}
