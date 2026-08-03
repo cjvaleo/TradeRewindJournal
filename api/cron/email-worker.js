@@ -100,112 +100,21 @@ function renderBody(templateId, ctx) {
 function _renderBodyRaw(templateId, ctx) {
   switch (templateId) {
 
-    case 'subscription-canceled':
-      return `Hey ${ctx.firstName},
-
-Your Rewind subscription is canceled. Your Pro features have ended.
-
-What this means:
-  · Your trade history, journal entries, and all your data are 100% safe
-  · You're back on the free plan: still log trades, still see stats, just with the free-tier limits
-  · You can resubscribe any time — your data picks up right where you left off
-
-Two things might be useful:
-  · If this was an accident, restart in two clicks:
-    → ${ctx.siteUrl}/upgrade
-  · If something about Rewind didn't work for you, hit reply and tell me. I read everything.
-
-Thanks for trying Rewind. Hope to see you back.
-
-Manage your account anytime: ${ctx.siteUrl}/account
-
-— Christian
-  Rewind`;
-
-    case 'payment-failed':
-      return `Hey ${ctx.firstName},
-
-Stripe tried to charge your Rewind subscription but the payment didn't go through. Usually this is an expired card or insufficient funds.
-
-We'll retry automatically over the next few days, but you can fix it now in about 30 seconds:
-
-  → ${ctx.siteUrl}/upgrade
-
-Your Pro features stay active for now. If we can't collect within a few days, Pro will pause until payment succeeds. Your trades and data stay safe regardless — nothing gets deleted.
-
-If you wanted to cancel, no worries — just reply to this email.
-
-— Christian
-  Rewind`;
-
-    case 'role-upgraded':
-      return `Hey ${ctx.firstName},
-
-We just spotted your new Trading Ark Elite role on Discord. Nice.
-
-What's changing automatically:
-
-  · Your $9/mo Stripe subscription is being canceled today
-  · You'll get a prorated refund for the unused portion of this month — usually shows up within 5–10 business days
-  · Rewind Pro stays active, completely free, paid by Whop via your Elite membership
-
-Nothing to do on your end. Enjoy.
-
-— Christian
-  Rewind`;
-
-    case 'role-lost-elite':
-      return `Hey ${ctx.firstName},
-
-Our daily Discord check didn't find your Trading Ark Elite role today.
-
-What this means: your Rewind Pro features have paused. Your trades and data stay safe — nothing's deleted.
-
-How to fix it:
-
-  1. Did you cancel Whop? Re-subscribe to Elite:
-     → ${ctx.whopEliteUrl}
-
-  2. Downgraded to Premium on Whop? Re-OAuth on Rewind to switch to Pro · Premium ($9/mo):
-     → ${ctx.siteUrl}/upgrade
-
-  3. Still subscribed but role missing? Ping Whop support — usually a Discord sync issue they can fix fast.
-
-— Christian
-  Rewind`;
-
     case 'role-lost-premium':
       return `Hey ${ctx.firstName},
 
 Our daily Discord check didn't find your Trading Ark Premium role today, so a heads-up.
 
 What's happening:
-  · Your Rewind Pro · Premium has paused (your trades and data stay safe)
-  · You can re-subscribe on Whop to get the role back, or switch to Pro · Direct
+  · Your Rewind access has paused (your trades and data stay safe)
+  · Rewind access comes with the Trading Ark Premium role — get the role back and sign in again
 
-Three ways to fix it:
+Two ways to fix it:
 
   1. Did you cancel Whop? Re-subscribe at Premium:
      → ${ctx.whopPremiumUrl}
 
-  2. Want to switch to a Rewind-paid plan instead? Pro · Direct is $19/mo:
-     → ${ctx.siteUrl}/upgrade
-
-  3. Still subscribed but role missing? Ping Whop support.
-
-— Christian
-  Rewind`;
-
-    case 'role-downgraded-elite-to-premium':
-      return `Hey ${ctx.firstName},
-
-You no longer have Elite access in Trading Ark Discord, but we noticed you still have the Premium role. Your Pro features will continue for 7 more days while you set up Premium billing.
-
-  → Set up Premium ($9/mo): ${ctx.siteUrl}/upgrade
-
-Or, if you'd like to upgrade back to Elite, rejoin via Whop: ${ctx.whopEliteUrl}
-
-Questions? Just reply to this email.
+  2. Still subscribed but role missing? Ping Whop support — usually a Discord sync issue they can fix fast.
 
 — Christian
   Rewind`;

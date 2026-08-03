@@ -1,14 +1,10 @@
 import { sbAnon, sbService } from './_lib/supabase.js';
 
 // Maps profiles.pro_source → public tier label returned to the SPA.
-// Valid pro_source values (post May-2026 consolidation):
-//   stripe_direct   → pro_direct   ($19/mo Stripe — the only paid path)
-//   discord_premium → pro_premium  (Trading Ark Premium role — free Pro)
-//   discord_elite   → pro_elite    (Elite role retired; kept for safety)
-// `stripe_premium` was removed — the $9/mo Premium-via-Stripe path is gone
-// and the DB CHECK constraint never allowed that value anyway.
+// Access comes solely from the Discord role gate (Stripe removed Aug 2026):
+//   discord_premium → pro_premium  (Trading Ark Premium role)
+//   discord_elite   → pro_elite    (OG/Elite role)
 const TIER_MAP = {
-  stripe_direct:   'pro_direct',
   discord_premium: 'pro_premium',
   discord_elite:   'pro_elite',
 };
@@ -42,7 +38,7 @@ export default async function handler(req, res) {
   const sb = sbService();
   const { data: profile, error: readErr } = await sb
     .from('profiles')
-    .select('is_pro, pro_source, pro_active_until, stripe_subscription_id, discord_user_id')
+    .select('is_pro, pro_source, pro_active_until, discord_user_id')
     .eq('id', user.id)
     .maybeSingle();
   if (readErr) {
@@ -66,10 +62,9 @@ export default async function handler(req, res) {
     tier = isActive ? (TIER_MAP[profile.pro_source] || 'free') : 'free';
   }
   const hasDiscord = !!(profile && profile.discord_user_id);
-  const hasStripe  = !!(profile && profile.stripe_subscription_id);
 
-  // ── Respond (no-store: SPA polls this after checkout, never serve stale) ──
+  // ── Respond (no-store: welcome pages poll this, never serve stale) ──
   res.setHeader('Cache-Control', 'no-store');
   console.log('[api/me] queried', { user_id: user.id, tier, isActive });
-  res.status(200).json({ tier, isActive, activeUntil, hasDiscord, hasStripe });
+  res.status(200).json({ tier, isActive, activeUntil, hasDiscord });
 }

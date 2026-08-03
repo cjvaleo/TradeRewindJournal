@@ -16,9 +16,7 @@
      5. cache the result on profiles, return { allowed, tier }
 
    Body:  { provider_token, provider_refresh_token? }
-   Reply: { allowed: bool, tier: 'premium'|'og'|'direct'|null, reason?: string }
-   ('direct' = no qualifying Discord role, but an active stripe_direct sub
-    already grants Pro — never lock a paying subscriber out.)
+   Reply: { allowed: bool, tier: 'premium'|'og'|null, reason?: string }
    ========================================================================== */
 
 import { createClient } from '@supabase/supabase-js';
@@ -79,22 +77,6 @@ export default async function handler(req, res) {
 
   const admin = createClient(url, service, { auth: { persistSession: false } });
 
-  /* A paying stripe_direct subscriber must never be locked out (or have
-     their tier clobbered to free) just because their Discord holds no
-     Trading Ark role. Their access doesn't come from Discord. */
-  let stripeActive = false;
-  try {
-    const { data: existing } = await admin.from('profiles')
-      .select('pro_source, pro_active_until')
-      .eq('id', userId).maybeSingle();
-    stripeActive = !!(existing
-      && existing.pro_source === 'stripe_direct'
-      && existing.pro_active_until
-      && new Date(existing.pro_active_until) > new Date());
-  } catch (e) {
-    console.warn('[gate] profile pre-read failed:', e && e.message);
-  }
-
   /* ---- 3 · ask Discord about this user's membership --------------------- */
   let member, discordUserId = null, discordUsername = null;
   try {
@@ -116,11 +98,6 @@ export default async function handler(req, res) {
     if (r.status === 404) {
       /* not in the server → no nickname exists; the Discord username is
          still the profile's display name */
-      if (stripeActive) {
-        await cacheTokens(admin, userId, discordUserId, providerToken, providerRefresh, discordUsername);
-        res.status(200).json({ allowed: true, tier: 'direct' });
-        return;
-      }
       await cacheDenial(admin, userId, discordUserId, providerToken, providerRefresh, discordUsername);
       res.status(200).json({ allowed: false, tier: null, reason: 'not_in_server' });
       return;
@@ -152,13 +129,6 @@ export default async function handler(req, res) {
     || (member.user && member.user.username)
     || discordUsername
     || null;
-
-  /* in the server but no qualifying role — a stripe_direct sub still gets in */
-  if (!allowed && stripeActive) {
-    await cacheTokens(admin, userId, discordUserId, providerToken, providerRefresh, displayName);
-    res.status(200).json({ allowed: true, tier: 'direct', nickname: member.nick || null });
-    return;
-  }
 
   /* ---- 5 · cache it so the app doesn't re-ask Discord on every page -----
      Upsert, not update: on a brand-new Discord sign-in the SPA creates the
@@ -211,20 +181,5 @@ async function cacheDenial(admin, userId, discordUserId, tok, refresh, displayNa
       pro_active_until: new Date().toISOString(),
       ...(displayName ? { display_name: displayName } : {}),
     });
-  } catch { /* non-fatal */ }
-}
-
-/* store the fresh Discord tokens without touching tier fields — used when
-   access is granted by an active Stripe sub, not a Discord role */
-async function cacheTokens(admin, userId, discordUserId, tok, refresh, displayName) {
-  try {
-    await admin.from('profiles').update({
-      discord_user_id: discordUserId,
-      discord_access_token: tok,
-      discord_refresh_token: refresh,
-      discord_token_expires: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString(),
-      last_role_check: new Date().toISOString(),
-      ...(displayName ? { display_name: displayName } : {}),
-    }).eq('id', userId);
   } catch { /* non-fatal */ }
 }

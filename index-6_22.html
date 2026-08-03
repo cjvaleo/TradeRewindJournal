@@ -1658,7 +1658,6 @@ body::before,.bg-grid,.bg-horizon,.bg-horizon2{display:none}
 div[style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr!important}
 div[style*="grid-template-columns:repeat(3"]{grid-template-columns:1fr!important}
 div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
-#pg-account>div[style*="grid-template-columns"]{grid-template-columns:1fr!important}
 #pg-dashboard .ph{position:relative;flex-wrap:wrap}
 #pg-dashboard .ph>div:first-child{width:100%}
 #pg-dashboard .ph>div:last-child{position:static;width:100%;margin-top:4px}
@@ -3591,555 +3590,9 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   text-transform:uppercase;color:var(--n-text-4);
 }
 
-/* ── ACCOUNT REDESIGN ─────────────────────────────── */
-
-#pg-account.page.on{
-  padding:32px 40px 48px;
-  background:var(--n-bg);
-  position:relative;z-index:1;
-}
-#pg-account.on > .ph{display:none}
-
-#pg-account .acct-head{
-  display:flex;align-items:flex-start;justify-content:space-between;
-  margin-bottom:24px;border:none;padding:0;flex-wrap:wrap;gap:14px;
-}
-#pg-account .acct-head .h-title{
-  font-family:var(--n-font-display);font-style:italic;
-  font-size:38px;line-height:1;letter-spacing:-0.01em;color:var(--n-text);
-  text-shadow:none;
-}
-#pg-account .acct-head .h-sub{
-  margin-top:8px;font-family:var(--n-font-mono);font-size:10.5px;
-  letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);
-}
-#pg-account .signout-btn{
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.18em;
-  text-transform:uppercase;padding:9px 14px;border-radius:6px;
-  border:1px solid rgba(201,95,95,0.25);background:rgba(201,95,95,0.06);
-  color:var(--n-loss);cursor:pointer;transition:.12s;text-shadow:none;
-}
-#pg-account .signout-btn:hover{
-  border-color:rgba(201,95,95,0.5);background:rgba(201,95,95,0.10);
-}
-
-#pg-account .acct-grid{display:grid;grid-template-columns:240px 1fr;gap:20px;align-items:start}
-
-/* Left nav card */
-#pg-account .acct-nav-card{
-  background:var(--n-surface);border:1px solid var(--n-border);
-  border-radius:10px;overflow:hidden;position:sticky;top:32px;
-}
-#pg-account .acct-nav-head{
-  padding:22px 18px 18px;text-align:center;
-  border-bottom:1px solid var(--n-border);
-}
-#pg-account .acct-avatar{
-  width:64px;height:64px;border-radius:50%;
-  background:var(--n-chrome);
-  border:1px solid var(--n-border-2);
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--n-font-mono);font-size:18px;font-weight:600;
-  color:var(--n-bg);
-  margin:0 auto 12px;letter-spacing:1px;
-  /* Override any animation/glow set by the legacy synthwave .y2kavt class */
-  animation:none!important;box-shadow:none!important;
-}
-#pg-account .acct-nav-head .nm,
-#pg-account #ap-name{
-  font-family:var(--n-font-sans);font-size:14px;font-weight:500;color:var(--n-text);
-  text-shadow:none;letter-spacing:0;
-}
-#pg-account .acct-nav-head .em,
-#pg-account #ap-email{
-  font-family:var(--n-font-mono);font-size:10.5px;color:var(--n-text-3);
-  margin-top:3px;letter-spacing:0.02em;font-weight:400;text-shadow:none;
-}
-#pg-account #ap-badge{
-  display:inline-block;margin-top:10px;padding:3px 8px;border-radius:4px;
-  background:var(--n-surface-2);border:1px solid var(--n-border-2);
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
-  text-transform:uppercase;color:var(--n-text-2);font-weight:400;text-shadow:none;
-}
-#pg-account #ap-badge.pro{
-  background:rgba(110,168,255,0.10);border-color:rgba(110,168,255,0.25);
-  color:var(--n-accent-cool);
-}
-
-#pg-account .acct-nav-list{padding:8px 0}
-#pg-account .atl{
-  display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;
-  font-family:var(--n-font-sans)!important;font-size:13px!important;
-  font-weight:500!important;color:var(--n-text-2)!important;
-  border-left:2px solid transparent!important;transition:.12s;
-  letter-spacing:0!important;text-transform:none!important;text-shadow:none!important;
-}
-#pg-account .atl:hover{color:var(--n-text)!important;background:var(--n-surface-2)!important}
-#pg-account .atl.on{
-  color:var(--n-text)!important;background:var(--n-surface-2)!important;
-  border-left-color:var(--n-text)!important;
-}
-#pg-account .atl svg{
-  width:14px!important;height:14px!important;stroke:currentColor!important;
-  stroke-width:1.5!important;fill:none!important;opacity:0.85;
-}
-#pg-account .atl.dz{color:var(--n-loss)!important;border-left-color:transparent!important}
-#pg-account .atl.dz:hover{background:rgba(201,95,95,0.08)!important;color:var(--n-loss)!important}
-#pg-account .atl.dz.on{
-  background:rgba(201,95,95,0.12)!important;color:var(--n-loss)!important;
-  border-left-color:var(--n-loss)!important;
-}
-#pg-account .atl-divider{margin:6px 14px;height:1px;background:var(--n-border)}
-
-/* Right panels */
-#pg-account .acct-tab{display:none}
-#pg-account .acct-tab.on{display:block}
-
-#pg-account .panel-card{
-  background:var(--n-surface);border:1px solid var(--n-border);
-  border-radius:10px;padding:24px;margin-bottom:16px;
-}
-#pg-account .panel-card-head{
-  margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--n-border);
-}
-#pg-account .panel-card-title{
-  font-family:var(--n-font-display);font-style:italic;
-  font-size:24px;line-height:1;letter-spacing:-0.01em;color:var(--n-text);
-  text-shadow:none;
-}
-#pg-account .panel-card-sub{
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.15em;
-  text-transform:uppercase;color:var(--n-text-3);margin-top:6px;
-}
-#pg-account .max-460{max-width:460px}
-
-/* PFP preview ID hook — keep .av base + .av.<finish> winning. The
-   old synthwave override (background:none/border:none/180px) was
-   stripping the gradient and killing layout. */
-#pg-account #pfp-preview{
-  flex-shrink:0;border:none!important;
-}
-#pg-account #pfp-preview > span#pfp-preview-txt{
-  font-family:var(--n-font-mono);font-weight:600;
-  letter-spacing:0.02em;text-shadow:none;color:inherit;
-  position:relative;z-index:1;
-}
-
-/* Avatar picker (account → profile tab) */
-#pg-account .av-picker{margin-bottom:22px}
-#pg-account .av-hero-card{
-  margin:14px 0 24px;display:flex;align-items:center;
-  justify-content:flex-start;gap:18px;padding:22px 24px;
-  border:1px solid var(--n-border);border-radius:12px;
-  background:radial-gradient(ellipse at 30% 20%,var(--n-surface-2) 0%,var(--n-bg) 80%);
-}
-#pg-account .av.hero-pfp{
-  width:96px!important;height:96px!important;font-size:32px!important;
-  animation:av-hero-bob 5s ease-in-out infinite;
-  filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));
-}
-@keyframes av-hero-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-#pg-account .av-hero-info{flex:1;min-width:0}
-#pg-account .av-hero-label{
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.2em;
-  text-transform:uppercase;color:var(--n-text-4);
-}
-#pg-account .av-hero-finish{
-  font-family:var(--n-font-display);font-style:italic;font-size:24px;
-  color:var(--n-text);line-height:1.1;margin-top:4px;text-transform:capitalize;
-}
-#pg-account .av-hero-initials{display:flex;align-items:center;gap:8px;margin-top:12px}
-#pg-account .av-hero-initials-label{
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
-  text-transform:uppercase;color:var(--n-text-3);
-}
-#pg-account .av-initials-field,
-#pg-account .av-hero-initials #p-initials{
-  width:54px!important;padding:6px 8px!important;
-  background:var(--n-surface)!important;
-  border:1px solid var(--n-border-2)!important;border-radius:6px!important;
-  text-align:center!important;
-  font-family:var(--n-font-mono)!important;font-size:11px!important;
-  letter-spacing:0.08em!important;
-  color:var(--n-text)!important;text-transform:uppercase!important;outline:none!important;
-}
-#pg-account .av-section-label{
-  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.2em;
-  text-transform:uppercase;color:var(--n-text-3);margin-bottom:12px;
-}
-#pg-account .av-palette{
-  display:grid!important;
-  grid-template-columns:repeat(4,1fr)!important;
-  gap:12px!important;margin-bottom:28px;
-}
-#pg-account .av-palette .swatch{
-  aspect-ratio:1!important;
-  width:auto!important;height:auto!important;
-  border-radius:10px!important;
-  display:flex!important;flex-direction:column;align-items:center;justify-content:center;
-  gap:8px;padding:12px 6px 10px;background:var(--n-surface)!important;
-  border:1px solid var(--n-border)!important;cursor:pointer;
-  transition:border-color .2s,transform .25s,background .15s;
-  position:relative;float:none!important;box-shadow:none!important;
-}
-#pg-account .av-palette .swatch-name{
-  position:static!important;float:none!important;
-  white-space:nowrap;
-}
-#pg-account .av-palette .swatch:hover{
-  border-color:var(--n-border-2);background:var(--n-surface-2);transform:translateY(-2px);
-}
-#pg-account .av-palette .swatch.selected{
-  border-color:rgba(255,255,255,0.4);background:var(--n-surface-2);
-  box-shadow:0 0 0 1px rgba(255,255,255,0.15),0 0 24px -8px rgba(255,255,255,0.15);
-}
-#pg-account .av-palette .swatch.selected::after{
-  content:'✓';position:absolute;top:6px;right:7px;font-size:10px;
-  color:var(--n-text);font-family:var(--n-font-mono);
-}
-#pg-account .av-palette .swatch .av{width:42px;height:42px;font-size:12px}
-#pg-account .av-palette .swatch-name{
-  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.15em;
-  text-transform:uppercase;color:var(--n-text-3);text-align:center;line-height:1.2;
-}
-#pg-account .av-palette .swatch:hover .swatch-name{color:var(--n-text-2)}
-#pg-account .av-palette .swatch.selected .swatch-name{color:var(--n-text)}
-
-/* Display name + username — 2-col grid with @ prefix on username */
-#pg-account .av-form-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;
-}
-#pg-account .av-field{display:flex;flex-direction:column;gap:6px}
-#pg-account .av-field-label{
-  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;
-  text-transform:uppercase;color:var(--n-text-3);
-}
-#pg-account .av-field-input{
-  padding:11px 12px!important;background:var(--n-surface)!important;
-  border:1px solid var(--n-border)!important;color:var(--n-text)!important;
-  font-family:var(--n-font-sans)!important;font-size:13px!important;
-  border-radius:7px!important;transition:.15s!important;width:100%;outline:none;
-}
-#pg-account .av-field-input:focus{border-color:var(--n-border-3)!important;background:var(--n-surface-2)!important}
-#pg-account .av-field-wrap{position:relative}
-#pg-account .av-field-at{
-  position:absolute;left:12px;top:50%;transform:translateY(-50%);
-  font-family:var(--n-font-mono);font-size:13px;color:var(--n-text-3);
-  pointer-events:none;z-index:1;
-}
-#pg-account .av-field-input-username{padding-left:30px!important}
-
-/* Actions row — right-aligned cancel + primary save */
-#pg-account .av-actions{
-  display:flex;justify-content:flex-end;gap:10px;margin-top:8px;
-}
-#pg-account .av-actions .btn-prim{
-  padding:11px 24px;border-radius:7px;
-  background:var(--n-text);color:#0a0a0a;
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;
-  text-transform:uppercase;border:none;cursor:pointer;font-weight:500;
-  transition:.2s;
-}
-#pg-account .av-actions .btn-prim:hover{background:#fff;transform:translateY(-1px)}
-#pg-account .av-actions .btn-sec{
-  padding:11px 24px;border-radius:7px;background:transparent;
-  color:var(--n-text-2);font-family:var(--n-font-mono);font-size:10px;
-  letter-spacing:0.16em;text-transform:uppercase;
-  border:1px solid var(--n-border-2);cursor:pointer;font-weight:500;
-  transition:.2s;
-}
-#pg-account .av-actions .btn-sec:hover{
-  color:var(--n-text);border-color:var(--n-border-3);background:var(--n-surface);
-}
-#pg-account .pfp-info{flex:1}
-#pg-account .pfp-info .display-name,
-#pg-account #pf-name-display{
-  font-family:var(--n-font-sans);font-size:16px;font-weight:500;
-  color:var(--n-text);letter-spacing:0;text-shadow:none;
-}
-#pg-account .pfp-info .display-user,
-#pg-account #pf-user-display{
-  font-family:var(--n-font-mono);font-size:11px;color:var(--n-text-3);
-  margin-top:3px;letter-spacing:0.02em;font-weight:400;text-shadow:none;
-}
-#pg-account .pfp-controls{
-  margin-top:14px;display:flex;flex-direction:column;gap:14px;
-}
-#pg-account .pfp-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-#pg-account .pfp-row .lbl{
-  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.15em;
-  text-transform:uppercase;color:var(--n-text-3);width:100px;
-}
-#pg-account .pfp-letters-input,
-#pg-account #p-initials{
-  width:64px!important;text-align:center!important;
-  background:var(--n-surface-2)!important;border:1px solid var(--n-border-2)!important;
-  border-radius:6px!important;padding:8px!important;
-  font-family:var(--n-font-mono)!important;font-size:14px!important;
-  color:var(--n-text)!important;letter-spacing:2px!important;
-  text-transform:uppercase;outline:none;text-shadow:none!important;
-  font-weight:500!important;
-}
-#pg-account .pfp-letters-input:focus,
-#pg-account #p-initials:focus{
-  border-color:var(--n-text-3)!important;background:var(--n-surface-3)!important;
-}
-/* Legacy synthwave .pfp-swatches / #pg-account .swatch rules removed
-   — they were forcing 24×24 circles with !important and breaking the
-   new 5×2 grid. The new picker uses #pg-account .av-palette .swatch. */
-
-/* Form fields */
-#pg-account .f-row{margin-bottom:14px}
-#pg-account .f-row label{
-  display:block;font-family:var(--n-font-mono);font-size:9.5px;
-  letter-spacing:0.15em;text-transform:uppercase;color:var(--n-text-3);
-  margin-bottom:6px;font-weight:400;text-shadow:none;
-}
-#pg-account .f-input,
-#pg-account .f-row input[type=text],
-#pg-account .f-row input[type=email],
-#pg-account .f-row input[type=password]{
-  width:100%;padding:11px 12px;background:var(--n-surface-2);
-  border:1px solid var(--n-border);border-radius:6px;color:var(--n-text);
-  font-family:var(--n-font-sans);font-size:13px;outline:none;transition:.12s;
-  font-weight:400;letter-spacing:0;text-shadow:none;
-}
-#pg-account .f-input:focus,
-#pg-account .f-row input[type=text]:focus,
-#pg-account .f-row input[type=email]:focus,
-#pg-account .f-row input[type=password]:focus{
-  border-color:var(--n-border-3);background:var(--n-surface-3);
-}
-#pg-account .f-input::placeholder{color:var(--n-text-4)}
-#pg-account .f-row input::placeholder{color:var(--n-text-4)}
-#pg-account .f-with-prefix{
-  display:flex;align-items:stretch;background:var(--n-surface-2);
-  border:1px solid var(--n-border);border-radius:6px;overflow:hidden;
-}
-#pg-account .f-with-prefix:focus-within{
-  border-color:var(--n-border-3);background:var(--n-surface-3);
-}
-#pg-account .f-with-prefix .prefix{
-  padding:0 6px 0 12px;display:flex;align-items:center;
-  font-family:var(--n-font-mono);font-size:13px;color:var(--n-text-3);
-}
-#pg-account .f-with-prefix input{
-  flex:1;padding:11px 12px 11px 0!important;background:transparent!important;
-  border:none!important;color:var(--n-text)!important;
-  font-family:var(--n-font-sans)!important;font-size:13px!important;
-  outline:none!important;
-}
-
-#pg-account .btn-primary{
-  width:100%;padding:12px;border-radius:7px;border:none;cursor:pointer;
-  background:var(--n-text);color:var(--n-bg);font-family:var(--n-font-sans);
-  font-size:13px;font-weight:500;transition:.12s;margin-top:6px;
-  letter-spacing:0;text-shadow:none;text-transform:none;
-}
-#pg-account .btn-primary:hover{background:#fff}
-#pg-account .btn-primary.ghost{
-  background:transparent;color:var(--n-text);border:1px solid var(--n-border-2);
-}
-#pg-account .btn-primary.ghost:hover{background:var(--n-surface-2);color:var(--n-text)}
-#pg-account .btn-primary.ghost-quiet{
-  background:transparent;color:var(--n-text-3);border:1px solid var(--n-border);
-}
-#pg-account .btn-danger{
-  width:100%;padding:12px;border-radius:7px;cursor:pointer;
-  border:1px solid rgba(201,95,95,0.3);background:rgba(201,95,95,0.08);
-  color:var(--n-loss);font-family:var(--n-font-mono);font-size:11px;
-  letter-spacing:0.15em;text-transform:uppercase;font-weight:500;
-  transition:.12s;text-shadow:none;
-}
-#pg-account .btn-danger:hover{
-  border-color:rgba(201,95,95,0.5);background:rgba(201,95,95,0.14);
-}
-
-#pg-account .form-divider{height:1px;background:var(--n-border);margin:18px 0}
-#pg-account .section-lbl{
-  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;
-  text-transform:uppercase;color:var(--n-text-3);margin-bottom:12px;
-}
-
-/* Subscription tiers */
-#pg-account .tier-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
-#pg-account .tier-card{
-  background:var(--n-surface-2);border:1px solid var(--n-border);
-  border-radius:8px;padding:18px;
-}
-#pg-account .tier-card.current{
-  border-color:var(--n-accent-cool);background:rgba(110,168,255,0.04);
-}
-#pg-account .tier-name{
-  font-family:var(--n-font-display);font-style:italic;
-  font-size:24px;color:var(--n-text);letter-spacing:-0.01em;text-shadow:none;
-}
-#pg-account .tier-price{
-  font-family:var(--n-font-display);font-style:italic;
-  font-size:32px;color:var(--n-text);margin:8px 0 14px;
-  letter-spacing:-0.02em;text-shadow:none;
-}
-#pg-account .tier-price .per{
-  font-size:0.45em;font-family:var(--n-font-mono);font-style:normal;
-  color:var(--n-text-3);letter-spacing:0.05em;margin-left:4px;
-}
-#pg-account .tier-features{list-style:none;margin-bottom:18px;padding:0}
-#pg-account .tier-features li{
-  display:flex;align-items:flex-start;gap:8px;padding:5px 0;
-  font-family:var(--n-font-sans);font-size:12px;color:var(--n-text-2);
-}
-#pg-account .tier-features li svg{
-  width:11px;height:11px;flex-shrink:0;margin-top:3px;
-  stroke:var(--n-profit);stroke-width:2;fill:none;
-}
-#pg-account .tier-current-badge{
-  display:inline-block;padding:3px 8px;border-radius:4px;
-  background:rgba(110,168,255,0.12);border:1px solid rgba(110,168,255,0.3);
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;
-  color:var(--n-accent-cool);text-transform:uppercase;margin-bottom:10px;
-}
-#pg-account .tier-btn{
-  width:100%;padding:11px;border-radius:6px;cursor:pointer;
-  font-family:var(--n-font-sans);font-size:13px;font-weight:500;transition:.12s;
-}
-#pg-account .tier-btn.current{
-  background:transparent;border:1px solid var(--n-border-2);
-  color:var(--n-text-3);cursor:default;
-}
-#pg-account .tier-btn.upgrade{
-  background:var(--n-text);color:var(--n-bg);border:none;
-}
-#pg-account .tier-btn.upgrade:hover{background:#fff}
-
-/* Billing rows */
-#pg-account .billing-row{
-  display:flex;justify-content:space-between;padding:14px 0;
-  border-bottom:1px solid var(--n-border);align-items:center;
-}
-#pg-account .billing-row:last-child{border-bottom:none}
-#pg-account .billing-label{
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.15em;
-  text-transform:uppercase;color:var(--n-text-3);
-}
-#pg-account .billing-value{
-  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);
-}
-#pg-account .billing-value.cool{color:var(--n-accent-cool)}
-
-/* Notifications */
-#pg-account .notif-row{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:14px 0;border-bottom:1px solid var(--n-border);gap:14px;
-}
-#pg-account .notif-row:last-child{border-bottom:none}
-#pg-account .notif-info{flex:1;min-width:0}
-#pg-account .notif-info .nm{
-  font-family:var(--n-font-sans);font-size:13px;font-weight:500;
-  color:var(--n-text);letter-spacing:0;text-shadow:none;
-}
-#pg-account .notif-info .desc{
-  font-family:var(--n-font-sans);font-size:11.5px;color:var(--n-text-3);
-  margin-top:3px;font-weight:400;text-shadow:none;
-}
-#pg-account .toggle{
-  width:34px;height:20px;border-radius:10px;background:var(--n-surface-3);
-  position:relative;cursor:pointer;transition:.15s;flex-shrink:0;
-  border:none!important;
-}
-#pg-account .toggle::after{
-  content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;
-  border-radius:50%;background:var(--n-text-3);transition:.15s;box-shadow:none;
-}
-#pg-account .toggle.on{background:var(--n-profit)}
-#pg-account .toggle.on::after{left:16px;background:#fff}
-
-/* Danger zone */
-#pg-account .danger-card{
-  background:rgba(201,95,95,0.04);border:1px solid rgba(201,95,95,0.20);
-  border-radius:8px;padding:18px;margin-bottom:12px;
-}
-#pg-account .danger-card:last-child{margin-bottom:0}
-#pg-account .danger-card .ttl{
-  font-family:var(--n-font-display);font-style:italic;
-  font-size:18px;color:var(--n-loss);letter-spacing:-0.01em;text-shadow:none;
-}
-#pg-account .danger-card .desc{
-  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);
-  margin-top:8px;line-height:1.5;letter-spacing:0;text-shadow:none;
-}
-#pg-account .danger-card.warn{
-  background:rgba(201,158,95,0.04);border-color:rgba(201,158,95,0.20);
-}
-#pg-account .danger-card.warn .ttl{color:#c99e5f}
-#pg-account .danger-card.info{
-  background:rgba(95,179,137,0.04);border-color:rgba(95,179,137,0.20);
-}
-#pg-account .danger-card.info .ttl{color:var(--n-profit)}
-
-/* Legal list */
-#pg-account .legal-list a{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 0;border-bottom:1px solid var(--n-border);
-  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);
-  text-decoration:none;transition:.12s;cursor:pointer;
-  letter-spacing:0;text-shadow:none;font-weight:400;
-}
-#pg-account .legal-list a:last-child{border-bottom:none}
-#pg-account .legal-list a:hover{color:var(--n-text)}
-#pg-account .legal-list a svg{
-  width:13px;height:13px;stroke:var(--n-text-3);stroke-width:1.5;fill:none;
-}
-
-/* In-card lock overlay */
-#pg-account .locked-tab{position:relative}
-#pg-account .locked-tab .panel-card{position:relative;overflow:hidden}
-#pg-account .locked-tab .peek-content{
-  filter:blur(4px);pointer-events:none;user-select:none;opacity:0.45;
-}
-#pg-account .locked-tab .tab-lock{
-  position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:14px;padding:30px;
-  background:radial-gradient(circle at center,rgba(18,18,18,0.5) 0%,rgba(18,18,18,0.92) 100%);
-  border-radius:10px;
-}
-#pg-account .tab-lock .icon-wrap{
-  width:54px;height:54px;border-radius:50%;background:var(--n-surface-2);
-  border:1px solid var(--n-border-2);
-  display:flex;align-items:center;justify-content:center;position:relative;
-}
-#pg-account .tab-lock .icon-wrap::before{
-  content:'';position:absolute;inset:-2px;border-radius:50%;
-  background:conic-gradient(from 0deg,transparent 0deg 270deg,
-    var(--n-accent-cool) 290deg 305deg,transparent 320deg 360deg);
-  opacity:0.4;z-index:-1;animation:lockSpin 8s linear infinite;
-}
+/* Lock keyframes — used by the Broker Sync lock overlay */
 @keyframes lockSpin{to{transform:rotate(360deg)}}
-#pg-account .tab-lock .icon-wrap svg{
-  width:20px;height:20px;stroke:var(--n-text-2);stroke-width:1.5;fill:none;
-}
-#pg-account .tab-lock .ttl{
-  font-family:var(--n-font-display);font-style:italic;
-  font-size:30px;line-height:1;letter-spacing:-0.01em;color:var(--n-text);
-  text-shadow:none;
-}
-#pg-account .tab-lock .status{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:5px 11px;border:1px solid rgba(110,168,255,0.25);
-  background:rgba(110,168,255,0.08);border-radius:20px;
-  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.2em;
-  text-transform:uppercase;color:var(--n-accent-cool);text-shadow:none;
-}
-#pg-account .tab-lock .status .pulse{
-  width:5px;height:5px;border-radius:50%;background:var(--n-accent-cool);
-  box-shadow:0 0 6px var(--n-accent-cool);
-  animation:lockPulse 2s ease-in-out infinite;
-}
 @keyframes lockPulse{0%,100%{opacity:1}50%{opacity:0.4}}
-#pg-account .tab-lock .desc{
-  font-family:var(--n-font-sans);font-size:13px;color:var(--n-text-2);
-  text-align:center;max-width:340px;line-height:1.55;
-  letter-spacing:0;text-shadow:none;
-}
 
 /* ── BROKER SYNC REDESIGN ─────────────────────────────── */
 
@@ -5978,15 +5431,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   #pg-community .post{padding:14px}
   #pg-community .trade-card{flex-wrap:wrap;gap:10px}
 
-  /* ACCOUNT — picker stacks */
-  #pg-account .av-hero-card{flex-direction:column;align-items:flex-start;text-align:left}
-  #pg-account .av-palette{grid-template-columns:repeat(4,1fr)!important}
-  #pg-account .av-form-grid{grid-template-columns:1fr!important}
-  #pg-account .av-actions{flex-direction:column-reverse}
-  #pg-account .av-actions .btn-prim,
-  #pg-account .av-actions .btn-sec{width:100%}
-  #pg-account .acct-tabs{flex-wrap:wrap}
-
   /* EQUITY / ANALYTICS — banner-only, tighter grids */
   #pg-equity .crd,
   #pg-analytics .crd{padding:14px}
@@ -6330,9 +5774,9 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
   </button>
   <div class="mt-brand">Rewind</div>
-  <button class="mt-avatar" id="mt-avatar" aria-label="Account" onclick="goTo('account')">
+  <div class="mt-avatar" id="mt-avatar" aria-label="Signed-in user">
     <div class="av chrome" id="mt-avatar-icon"><span style="position:relative;z-index:1" id="mt-avatar-txt">?</span></div>
-  </button>
+  </div>
 </div>
 <aside class="drawer" id="mobile-drawer" aria-hidden="true">
   <button class="drawer-close" id="drawer-close" aria-label="Close">
@@ -6363,15 +5807,22 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     <!-- Soft-removed nav items (Tools section + 4 features). Pages still exist in DOM
          and JS still works; just not reachable from nav. To restore, paste back. -->
   </div>
-  <!-- ACCOUNT BTN -->
+  <!-- SIGNED-IN USER — static label (name syncs from Discord; no account page) -->
   <div style="padding:10px 12px;border-top:1px solid var(--bord);flex-shrink:0">
-    <div onclick="openAccountSettings()" style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 10px;border-radius:8px;border:1px solid var(--bord);background:rgba(0,0,0,.2);transition:.15s" onmouseover="this.style.borderColor='rgba(255,0,170,.4)'" onmouseout="this.style.borderColor='var(--bord)'">
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;border:1px solid var(--bord);background:rgba(0,0,0,.2)">
       <div class="y2kavt av chrome" id="sb-avatar" style="width:32px;height:32px"><span style="font-size:14px;position:relative;z-index:1" id="sb-avatar-txt">?</span></div>
       <div style="flex:1;min-width:0">
         <div id="sb-name" style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">My Account</div>
         <div id="sb-username" style="font-family:'Orbitron',monospace;font-size:11px;color:rgba(255,255,255,.65);font-weight:600;letter-spacing:.5px">@username</div>
       </div>
-      <svg viewBox="0 0 16 16" style="width:11px;height:11px;stroke:rgba(255,255,255,.3);fill:none;stroke-width:1.8;stroke-linecap:round;flex-shrink:0"><polyline points="6,4 10,8 6,12"/></svg>
+    </div>
+    <!-- footer: legal + sign out -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.4)">
+      <a onclick="showLegal('terms')" style="color:rgba(255,255,255,.45);cursor:pointer;text-decoration:none">Terms</a>
+      <span>·</span>
+      <a onclick="showLegal('privacy')" style="color:rgba(255,255,255,.45);cursor:pointer;text-decoration:none">Privacy</a>
+      <span>·</span>
+      <a onclick="doSignOut()" style="color:rgba(255,255,255,.45);cursor:pointer;text-decoration:none">Sign out</a>
     </div>
   </div>
 </nav>
@@ -8016,347 +7467,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 </div>
 
 <!-- ACCOUNT PAGE -->
-<div id="pg-account" class="page">
-  <div class="desktop-rec-banner" data-banner-page="account"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span><b>Best on desktop.</b> This view is designed for a wider screen — some panels are hidden or simplified on mobile.</span><button class="drb-dismiss" onclick="dismissDesktopBanner()">Got it</button></div>
-
-  <!-- HEADER -->
-  <div class="acct-head">
-    <div>
-      <div class="h-title">Account</div>
-      <div class="h-sub">Manage your profile, plan and preferences</div>
-    </div>
-    <button class="signout-btn" onclick="doSignOut()">Sign Out</button>
-  </div>
-
-  <div class="acct-grid">
-
-    <!-- LEFT NAV -->
-    <div class="acct-nav-card">
-      <div class="acct-nav-head">
-        <div class="acct-avatar" id="ap-avatar"><span id="ap-avatar-txt">?</span></div>
-        <div class="nm" id="ap-name">My Account</div>
-        <div class="em" id="ap-email">Not signed in</div>
-        <div class="badge" id="ap-badge">Free Plan</div>
-      </div>
-      <div class="acct-nav-list">
-        <div class="atl on" id="atl-profile"       onclick="showTab('profile')"><svg viewBox="0 0 16 16"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>Profile</div>
-        <div class="atl"    id="atl-security"      onclick="showTab('security')"><svg viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>Email &amp; Password</div>
-        <div class="atl"    id="atl-subscription"  onclick="showTab('subscription')"><svg viewBox="0 0 16 16"><polygon points="8,1 10,6 15,6 11,9 13,14 8,11 3,14 5,9 1,6 6,6"/></svg>Subscription</div>
-        <div class="atl"    id="atl-billing"       onclick="showTab('billing')"><svg viewBox="0 0 16 16"><rect x="1" y="4" width="14" height="10" rx="1.5"/><line x1="1" y1="8" x2="15" y2="8"/></svg>Billing</div>
-        <div class="atl"    id="atl-notifications" onclick="showTab('notifications')"><svg viewBox="0 0 16 16"><path d="M8 1a5 5 0 0 1 5 5v3l1.5 2H1.5L3 9V6a5 5 0 0 1 5-5z"/><path d="M6.5 13a1.5 1.5 0 0 0 3 0"/></svg>Notifications</div>
-        <div class="atl-divider"></div>
-        <div class="atl dz" id="atl-danger"        onclick="showTab('danger')"><svg viewBox="0 0 16 16"><polyline points="1,4 3,4 15,4"/><path d="M5 4V2h6v2"/><path d="M13 4l-1 10H4L3 4"/></svg>Danger Zone</div>
-        <div class="atl"    id="atl-legal"         onclick="showTab('legal')"><svg viewBox="0 0 16 16"><rect x="3" y="1" width="10" height="14" rx="1.5"/><line x1="6" y1="5" x2="10" y2="5"/><line x1="6" y1="8" x2="10" y2="8"/><line x1="6" y1="11" x2="9" y2="11"/></svg>Legal</div>
-      </div>
-    </div>
-
-    <!-- RIGHT PANELS -->
-    <div>
-
-      <!-- PROFILE -->
-      <div class="acct-tab on" id="tab-profile">
-        <div class="panel-card max-460">
-          <div class="panel-card-head">
-            <div class="panel-card-title">Profile</div>
-            <div class="panel-card-sub">Avatar &middot; display name &middot; username</div>
-          </div>
-
-          <!-- Avatar picker (v5) — compact hero + 5-col grid -->
-          <div class="av-picker">
-            <div class="av-hero-card">
-              <div class="av hero-pfp chrome" id="pfp-preview"><span id="pfp-preview-txt">?</span></div>
-              <div class="av-hero-info">
-                <div class="av-hero-label">Selected Finish</div>
-                <div class="av-hero-finish" id="av-finish-label">Chrome</div>
-                <div class="av-hero-initials">
-                  <span class="av-hero-initials-label">Initials</span>
-                  <input class="av-initials-field" id="p-initials" maxlength="2" placeholder="TR" oninput="onPfpInput(this)"/>
-                </div>
-              </div>
-              <div class="display-name" id="pf-name-display" style="display:none">My Account</div>
-              <div class="display-user" id="pf-user-display" style="display:none">No username set</div>
-            </div>
-
-            <div class="av-section-label">Finish · Tints your community posts</div>
-            <div class="av-palette">
-              <div class="swatch" id="swatch-chrome"   onclick="setPfpColor('chrome')"   title="Chrome"  ><div class="av lg chrome shimmer"  ></div><span class="swatch-name">Chrome</span></div>
-              <div class="swatch" id="swatch-gold"     onclick="setPfpColor('gold')"     title="Gold"    ><div class="av lg gold shimmer"    ></div><span class="swatch-name">Gold</span></div>
-              <div class="swatch" id="swatch-rosegold" onclick="setPfpColor('rosegold')" title="Rose Gold"><div class="av lg rosegold shimmer"></div><span class="swatch-name">Rose Gold</span></div>
-              <div class="swatch" id="swatch-gunmetal" onclick="setPfpColor('gunmetal')" title="Gunmetal"><div class="av lg gunmetal shimmer"></div><span class="swatch-name">Gunmetal</span></div>
-              <div class="swatch" id="swatch-sapphire" onclick="setPfpColor('sapphire')" title="Sapphire"><div class="av lg sapphire shimmer"></div><span class="swatch-name">Sapphire</span></div>
-              <div class="swatch" id="swatch-emerald"  onclick="setPfpColor('emerald')"  title="Emerald" ><div class="av lg emerald shimmer" ></div><span class="swatch-name">Emerald</span></div>
-              <div class="swatch" id="swatch-amethyst" onclick="setPfpColor('amethyst')" title="Amethyst"><div class="av lg amethyst shimmer"></div><span class="swatch-name">Amethyst</span></div>
-              <div class="swatch" id="swatch-slate"    onclick="setPfpColor('slate')"    title="Slate"   ><div class="av lg slate shimmer"   ></div><span class="swatch-name">Slate</span></div>
-            </div>
-          </div>
-
-          <div class="av-form-grid">
-            <div class="av-field">
-              <span class="av-field-label">Display Name</span>
-              <input class="av-field-input f-input" id="p-name" type="text" placeholder="Synced from Discord" readonly
-                tabindex="-1" style="opacity:.55;cursor:default;pointer-events:none"/>
-              <span style="display:block;margin-top:6px;font-size:10px;line-height:1.5;color:rgba(255,255,255,.45)">
-                Syncs from your Discord server nickname — change it in Trading Ark.
-              </span>
-            </div>
-            <div class="av-field">
-              <span class="av-field-label">Username</span>
-              <div class="av-field-wrap">
-                <span class="av-field-at">@</span>
-                <input class="av-field-input av-field-input-username" id="p-username" type="text" placeholder="yourusername"/>
-              </div>
-            </div>
-          </div>
-          <div class="av-actions">
-            <button class="btn-sec" onclick="cancelProfileEdit()">Cancel</button>
-            <button class="btn-prim" onclick="saveProfile()">Save Profile</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECURITY -->
-      <div class="acct-tab" id="tab-security">
-        <div class="panel-card max-460">
-          <div class="panel-card-head">
-            <div class="panel-card-title">Email &amp; Password</div>
-            <div class="panel-card-sub">Login credentials</div>
-          </div>
-
-          <div class="f-row">
-            <label>Email Address</label>
-            <input class="f-input" id="s-email" type="email" placeholder="your@email.com"/>
-          </div>
-
-          <div class="form-divider"></div>
-          <div class="section-lbl">Change Password</div>
-
-          <div class="f-row">
-            <label>Current Password</label>
-            <input class="f-input" type="password" placeholder="Current password"/>
-          </div>
-          <div class="f-row">
-            <label>New Password</label>
-            <input class="f-input" id="s-pass" type="password" placeholder="Min 8 characters"/>
-          </div>
-          <div class="f-row">
-            <label>Confirm Password</label>
-            <input class="f-input" id="s-pass2" type="password" placeholder="Confirm new password"/>
-          </div>
-          <button class="btn-primary" onclick="saveSecurity()">Update Security</button>
-        </div>
-      </div>
-
-      <!-- SUBSCRIPTION (locked — in development) -->
-      <div class="acct-tab locked-tab" id="tab-subscription">
-        <div class="panel-card">
-          <div class="peek-content">
-            <div class="panel-card-head">
-              <div class="panel-card-title">Subscription</div>
-              <div class="panel-card-sub">Your current plan</div>
-            </div>
-            <div class="tier-grid">
-              <div class="tier-card current">
-                <span class="tier-current-badge">Current Plan</span>
-                <div class="tier-name">Free</div>
-                <div class="tier-price">$0<span class="per">/ month</span></div>
-                <ul class="tier-features">
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Manual trade logging</li>
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>CSV import</li>
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Up to 100 trades</li>
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Basic analytics</li>
-                </ul>
-                <button class="tier-btn current">Current Plan</button>
-              </div>
-              <div class="tier-card">
-                <div class="tier-name">Pro</div>
-                <div class="tier-price">$19<span class="per">/ month</span></div>
-                <ul class="tier-features">
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Unlimited trades</li>
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Full analytics suite</li>
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Broker sync (when live)</li>
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Community access</li>
-                  <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Priority support</li>
-                </ul>
-                <button class="tier-btn upgrade">Upgrade to Pro</button>
-              </div>
-            </div>
-          </div>
-          <div class="tab-lock">
-            <div class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
-            <div class="ttl">Subscription</div>
-            <div class="status"><span class="pulse"></span>In development</div>
-            <div class="desc">Plans and pricing are coming soon. Everything's free for now &mdash; enjoy.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- BILLING (locked — in development) -->
-      <div class="acct-tab locked-tab" id="tab-billing">
-        <div class="panel-card max-460">
-          <div class="peek-content">
-            <div class="panel-card-head">
-              <div class="panel-card-title">Billing</div>
-              <div class="panel-card-sub">Payment method &amp; history</div>
-            </div>
-            <div class="billing-row">
-              <span class="billing-label">Current Plan</span>
-              <span class="billing-value cool">Free</span>
-            </div>
-            <div class="billing-row">
-              <span class="billing-label">Payment Method</span>
-              <span class="billing-value">No card on file</span>
-            </div>
-            <div class="billing-row">
-              <span class="billing-label">Next Charge</span>
-              <span class="billing-value">&mdash;</span>
-            </div>
-            <div class="billing-row">
-              <span class="billing-label">Last Invoice</span>
-              <span class="billing-value">&mdash;</span>
-            </div>
-            <div class="form-divider"></div>
-            <button class="btn-primary ghost">Update Payment Method</button>
-            <button class="btn-primary ghost-quiet" style="margin-top:8px">View Invoice History</button>
-          </div>
-          <div class="tab-lock">
-            <div class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
-            <div class="ttl">Billing</div>
-            <div class="status"><span class="pulse"></span>In development</div>
-            <div class="desc">Billing isn't live yet. Will activate alongside paid plans.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- NOTIFICATIONS -->
-      <div class="acct-tab" id="tab-notifications">
-        <div class="panel-card max-460">
-          <div class="panel-card-head">
-            <div class="panel-card-title">Notifications</div>
-            <div class="panel-card-sub">What you want to hear about</div>
-          </div>
-
-          <div class="notif-row">
-            <div class="notif-info">
-              <div class="nm">Trade auto-journaled</div>
-              <div class="desc">Notified when a trade logs via broker sync</div>
-            </div>
-            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-          </div>
-          <div class="notif-row">
-            <div class="notif-info">
-              <div class="nm">Daily P&amp;L summary</div>
-              <div class="desc">End-of-day recap with total P&amp;L and trade count</div>
-            </div>
-            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-          </div>
-          <div class="notif-row">
-            <div class="notif-info">
-              <div class="nm">Weekly report</div>
-              <div class="desc">Your week in review every Monday morning</div>
-            </div>
-            <div class="toggle" onclick="this.classList.toggle('on')"></div>
-          </div>
-          <div class="notif-row">
-            <div class="notif-info">
-              <div class="nm">Streak alerts</div>
-              <div class="desc">Celebrate (or warn) on a winning or losing streak</div>
-            </div>
-            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-          </div>
-          <div class="notif-row">
-            <div class="notif-info">
-              <div class="nm">Community replies</div>
-              <div class="desc">When someone replies to your shared trades</div>
-            </div>
-            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-          </div>
-          <div class="notif-row">
-            <div class="notif-info">
-              <div class="nm">Product updates</div>
-              <div class="desc">New features and improvements</div>
-            </div>
-            <div class="toggle" onclick="this.classList.toggle('on')"></div>
-          </div>
-
-          <button class="btn-primary" style="margin-top:14px" onclick="toast('Preferences saved!')">Save Preferences</button>
-        </div>
-      </div>
-
-      <!-- DANGER ZONE -->
-      <div class="acct-tab" id="tab-danger">
-        <div class="panel-card max-460">
-          <div class="panel-card-head">
-            <div class="panel-card-title">Danger Zone</div>
-            <div class="panel-card-sub">Irreversible actions</div>
-          </div>
-
-          <div class="danger-card info">
-            <div class="ttl">Export All Data</div>
-            <div class="desc">Download all trades, journal entries and settings as a JSON file. Use this for backups or moving to another tool.</div>
-            <button class="btn-danger" style="margin-top:14px;border-color:rgba(95,179,137,0.3);background:rgba(95,179,137,0.08);color:var(--n-profit)" onclick="exportData()">Export Data</button>
-          </div>
-
-          <div class="danger-card warn">
-            <div class="ttl">Clear All Trades</div>
-            <div class="desc">Permanently delete every logged trade. Profile, journals, and settings stay. Cannot be undone.</div>
-            <button class="btn-danger" style="margin-top:14px;border-color:rgba(201,158,95,0.3);background:rgba(201,158,95,0.08);color:#c99e5f" onclick="if(confirm('Delete ALL trades? Cannot be undone.')){trades=[];save();renderAll();toast('All trades deleted');}">Clear All Trades</button>
-          </div>
-
-          <div class="danger-card">
-            <div class="ttl">Delete Account</div>
-            <div class="desc">Permanently delete your account and all associated data &mdash; trades, journals, communities, settings, everything. This cannot be undone.</div>
-            <button class="btn-danger" style="margin-top:14px" onclick="confirmDeleteAccount()">Delete My Account</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- LEGAL -->
-      <div class="acct-tab" id="tab-legal">
-        <div class="panel-card max-460">
-          <div class="panel-card-head">
-            <div class="panel-card-title">Legal</div>
-            <div class="panel-card-sub">Terms, privacy &amp; policies</div>
-          </div>
-          <div class="legal-list">
-            <a onclick="showLegal('terms')">Terms of Service<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
-            <a onclick="showLegal('privacy')">Privacy Policy<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
-            <a onclick="window.location.href='mailto:cjvaleo@gmail.com?subject=TradeRewind support'">Contact Support<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- end right -->
-  </div>
-</div>
-
-<!-- INVITE MODAL — search by @username, send a community invite -->
-<div id="invite-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(3px);z-index:9990;align-items:center;justify-content:center;padding:24px">
-  <div style="background:var(--n-surface);border:1px solid var(--n-border-2);border-radius:14px;width:100%;max-width:440px;max-height:calc(100vh - 100px);overflow-y:auto;box-shadow:0 32px 80px -16px rgba(0,0,0,0.85)">
-    <div style="padding:22px 26px;border-bottom:1px solid var(--n-border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
-      <div>
-        <div style="font-family:var(--n-font-display);font-style:italic;font-size:24px;color:var(--n-text);line-height:1.1;letter-spacing:-0.01em">Invite a member</div>
-        <div id="invite-modal-sub" style="font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);margin-top:6px"></div>
-      </div>
-      <button onclick="closeInviteModal()" style="width:30px;height:30px;border-radius:6px;border:1px solid var(--n-border);background:transparent;color:var(--n-text-3);cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
-    </div>
-
-    <div style="padding:22px 26px">
-      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
-        <span style="font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3)">Search by username</span>
-        <input id="invite-search" type="text" placeholder="@username" oninput="searchTrader()"
-          style="padding:11px 12px;background:var(--n-surface-2);border:1px solid var(--n-border);color:var(--n-text);font-family:var(--n-font-sans);font-size:14px;border-radius:7px;outline:none"/>
-      </div>
-      <div id="search-results" style="display:flex;flex-direction:column;gap:4px;max-height:240px;overflow-y:auto"></div>
-    </div>
-
-    <div style="padding:14px 26px;border-top:1px solid var(--n-border);display:flex;justify-content:flex-end;gap:8px">
-      <button onclick="closeInviteModal()" style="padding:10px 22px;border-radius:7px;background:transparent;color:var(--n-text-2);font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;border:1px solid var(--n-border-2);cursor:pointer;font-weight:500">Cancel</button>
-      <button onclick="sendInvite();closeInviteModal()" style="padding:10px 22px;border-radius:7px;background:var(--n-text);color:#0a0a0a;font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;border:none;cursor:pointer;font-weight:500">Send invite</button>
-    </div>
-  </div>
-</div>
-
-<!-- LEGAL PAGE — Terms of Service + Privacy Policy -->
 <div id="pg-legal" class="page">
   <div style="max-width:780px;margin:0 auto;padding:48px 32px">
     <a id="legal-back-to-auth" onclick="document.getElementById('pg-legal').classList.remove('on');document.getElementById('auth-screen').style.display='flex';return false" style="display:none;font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);text-decoration:none;cursor:pointer;margin-bottom:20px;display:none;align-items:center;gap:6px">← Back to sign in</a>
@@ -11216,10 +10326,9 @@ function goTo(pg){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
   pgEl.classList.add('on');
-  const map=['dashboard','log','history','calendar','equity','analytics','sync','community','risk','propfirms','rules','goals','account'];
+  const map=['dashboard','log','history','calendar','equity','analytics','sync','community','risk','propfirms','rules','goals'];
   document.querySelectorAll('.ni')[map.indexOf(pg)]?.classList.add('on');
   document.querySelector('.main').scrollTop=0;
-  if(pg==='account'){refreshAcctUI();showTab('profile');return;}
   if(pg==='dashboard'){renderDashboard();setTimeout(drawMiniChart,80);}
   if(pg==='history')renderHistory();if(pg==='propfirms')pfRender();if(pg==='calendar')renderCalPage();if(pg==='analytics')renderAnalytics();if(pg==='community')renderCommunity();if(pg==='rules')renderRules();if(pg==='goals')renderGoals();
   if(pg==='equity'){requestAnimationFrame(function(){requestAnimationFrame(function(){renderEquity();});});}
@@ -13442,15 +12551,6 @@ function discardAiScan(){
 function toBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});}
 function confirmAiScan(){}
 function logAiTrade(){}
-// ── ACCOUNT SETTINGS ─────────────────────────────────────
-function openAccountSettings(){
-  goTo('account');
-  showTab('profile');
-}
-function closeAccountSettings(){
-  document.getElementById('acct-settings-modal').style.display='none';
-}
-
 // ── THEME ─────────────────────────────────────────────────
 var LIGHT_CSS=`
   :root{
@@ -15198,14 +14298,14 @@ function refreshAcctUI(){
   }
   acct.initials=init;
   acct.avatar_initials=init;
-  var els=['sb-avatar-txt','ap-avatar-txt','pfp-preview-txt'];
+  var els=['sb-avatar-txt'];
   els.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=init;});
-  /* apply avatar finish + optional image to all avatar elements */
+  /* apply avatar finish + optional image to the sidebar avatar */
   var finishKey = normalizeFinish(acct.avatar_finish || acct.color);
   var col=pfpColors[finishKey];
   var hasImg = !!acct.avatar_image_url;
   var FINISHES=['chrome','gold','rosegold','gunmetal','sapphire','emerald','amethyst','slate','custom'];
-  ['sb-avatar','ap-avatar','pfp-preview'].forEach(function(id){
+  ['sb-avatar'].forEach(function(id){
     var el=document.getElementById(id);
     if(!el) return;
     /* Ensure .av base class + correct finish class */
@@ -15229,62 +14329,9 @@ function refreshAcctUI(){
       imgEl.src = acct.avatar_image_url;
     } else if(imgEl){ imgEl.remove(); }
   });
-  /* highlight active swatch via class (CSS handles the ring) */
-  Object.keys(pfpColors).forEach(function(k){
-    var sw=document.getElementById('swatch-'+k);
-    if(!sw) return;
-    sw.classList.toggle('selected', k === finishKey);
-    sw.style.borderColor = '';  // strip any legacy inline border
-  });
-  /* Update hero label */
-  var lbl=document.getElementById('av-finish-label');
-  if(lbl){
-    var name = finishKey.charAt(0).toUpperCase()+finishKey.slice(1);
-    lbl.textContent = hasImg ? ('Custom · '+name) : name;
-  }
+  /* static label in the sidebar — name syncs from Discord, no account page */
   var n=document.getElementById('sb-name');if(n)n.textContent=acct.name||'My Account';
   var su=document.getElementById('sb-username');if(su)su.textContent=acct.username?'@'+acct.username.replace('@',''):'@username';
-  var planMap={free:'Free Plan',pro:'Pro — $19/mo',elite:'Elite — $39/mo',premium:'Premium — Trading Ark',direct:'Pro · Direct — $19/mo'};
-  var planTxt=planMap[acct.plan]||'Free Plan';
-  var an=document.getElementById('ap-name');if(an)an.textContent=acct.name||'My Account';
-  var ae=document.getElementById('ap-email');if(ae)ae.textContent=acct.email||'Not signed in';
-  var ab=document.getElementById('ap-badge');if(ab){
-    ab.textContent = planTxt;
-    ab.classList.toggle('pro', acct.plan === 'pro' || acct.plan === 'elite' || acct.plan === 'premium' || acct.plan === 'direct');
-  }
-  var scl=document.getElementById('sub-current-lbl');if(scl)scl.textContent='Current: '+(acct.plan.charAt(0).toUpperCase()+acct.plan.slice(1));
-  var bpl=document.getElementById('billing-plan-lbl');if(bpl)bpl.textContent=planTxt;
-  var bnl=document.getElementById('billing-next-lbl');if(bnl)bnl.textContent=acct.plan==='free'?'No billing — upgrade to unlock features':'Next billing: May 14, 2026';
-  /* fill profile fields */
-  var pn=document.getElementById('p-name');if(pn)pn.value=acct.name||'';
-  var pu=document.getElementById('p-username');if(pu)pu.value=(acct.username||'').replace('@','');
-  var pi=document.getElementById('p-initials');if(pi)pi.value=init!='?'?init:'';
-  var pfd=document.getElementById('pf-name-display');if(pfd)pfd.textContent=acct.name||'My Account';
-  var pud=document.getElementById('pf-user-display');if(pud)pud.textContent=acct.username?'@'+acct.username.replace('@',''):'No username set';
-  /* fill security email */
-  var se=document.getElementById('s-email');if(se)se.value=acct.email||'';
-  /* highlight plan card */
-  ['free','pro','elite'].forEach(function(p){
-    var el=document.getElementById('pc-'+p);if(!el)return;
-    var cur=acct.plan===p;
-    var cols={free:'122,106,170',pro:'0,180,255',elite:'191,0,255'};
-    el.style.borderColor=cur?'rgba('+cols[p]+',.55)':'rgba('+cols[p]+',.18)';
-    el.style.background=cur?'rgba('+cols[p]+',.1)':'rgba('+cols[p]+',.04)';
-  });
-}
-function showTab(tab){
-  document.querySelectorAll('.acct-tab').forEach(function(el){el.classList.remove('on');});
-  document.querySelectorAll('.atl').forEach(function(el){el.classList.remove('on');});
-  var t=document.getElementById('tab-'+tab);if(t)t.classList.add('on');
-  var l=document.getElementById('atl-'+tab);if(l)l.classList.add('on');
-}
-function onPfpInput(el){
-  el.value=el.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,2);
-  var v = el.value || '?';
-  var sp=document.getElementById('pfp-preview-txt'); if(sp) sp.textContent=v;
-  var sb=document.getElementById('sb-avatar-txt');   if(sb) sb.textContent=v;
-  acct.avatar_initials = v;
-  acct.initials = v;
 }
 // Shared helper — returns {bg, border, text} for any avatar color key
 function getAvatarStyle(colorKey){
@@ -15382,99 +14429,6 @@ function renderGroupAvatar(community, sizeClass){
   var init = community.icon_initials ||
              (community.name ? community.name.slice(0,2).toUpperCase() : '??');
   return '<div class="gicon '+finish+' '+sizeClass+'">'+safe(init)+'</div>';
-}
-function setPfpColor(color){
-  color = normalizeFinish(color);
-  acct.color = color;
-  acct.avatar_finish = color;
-  // If switching to a finish, drop any pending custom image preview so the
-  // hero shows the gradient. We don't clear avatar_image_url from acct
-  // here — Save commits the choice; Cancel reverts via refreshAcctUI.
-  acct._pendingImage = null;
-  refreshAcctUI();
-  if(typeof saveAcct === 'function') saveAcct();
-}
-function clearAvatarImage(){
-  acct.avatar_image_url = null;
-  acct._pendingImage = null;
-  refreshAcctUI();
-  if(typeof saveAcct === 'function') saveAcct();
-}
-function _doSaveProfile() {
-  /* Display name is read-only — it syncs from Discord (server nickname,
-     falling back to the Discord username) via /api/auth/gate and the
-     nightly role-check cron. Only username/initials/avatar save here. */
-  var userEl = document.getElementById('p-username');
-  var initEl = document.getElementById('p-initials');
-  var uname = userEl ? userEl.value.trim().replace('@','') : '';
-  var init  = initEl ? (initEl.value||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,2) : '';
-  if (uname) acct.username = uname;
-  if (init){ acct.initials = init; acct.avatar_initials = init; }
-  else if (!acct.initials || acct.initials === '?'){
-    var derived = (acct.name||'').split(' ').map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,2);
-    if (derived){ acct.initials = derived; acct.avatar_initials = derived; }
-  }
-  saveAcct();
-  refreshAcctUI();
-  if (_sb && currentUser) {
-    saveProfileToDB().catch(function(e){
-      console.error('[profile save] failed:', e);
-      toast('Save failed: '+(e.message||'see console'));
-    });
-  }
-}
-
-function saveProfile() {
-  _doSaveProfile();
-  toast('Profile updated');
-}
-function cancelProfileEdit(){
-  refreshAcctUI();
-  toast('Changes discarded');
-}
-
-function confirmSaveProfile() {
-  _doSaveProfile();
-  toast('Profile saved!');
-  var btn = document.querySelector('[onclick="confirmSaveProfile()"]');
-  if (btn) {
-    clearTimeout(btn._revertTimer);
-    btn.textContent = 'Saved ✓';
-    btn.style.background  = 'rgba(0,255,136,.25)';
-    btn.style.borderColor = 'rgba(0,255,136,.5)';
-    btn.style.color       = 'var(--grn)';
-    btn.setAttribute('onclick', 'saveProfile()');
-    setTimeout(function() {
-      btn.textContent = 'Save Profile';
-      btn.style.background = ''; btn.style.borderColor = ''; btn.style.color = 'var(--cyan)';
-    }, 2000);
-  }
-}
-function saveSecurity(){
-  var email=document.getElementById('s-email').value.trim();
-  var p1=document.getElementById('s-pass').value;
-  var p2=document.getElementById('s-pass2').value;
-  if(!email){toast('Enter your email');return;}
-  if(p1&&p1!==p2){toast('Passwords do not match');return;}
-  if(p1&&p1.length<8){toast('Password needs 8+ characters');return;}
-  if(!_sb||!currentUser){acct.email=email;saveAcct();refreshAcctUI();toast('Saved locally');return;}
-  var updates={};
-  if(email!==currentUser.email)updates.email=email;
-  if(p1)updates.password=p1;
-  if(!Object.keys(updates).length){toast('Nothing changed');return;}
-  _sb.auth.updateUser(updates).then(function(r){
-    if(r.error){toast('Error: '+r.error.message);}
-    else{acct.email=email;saveAcct();refreshAcctUI();toast('Security updated!');
-      document.getElementById('s-pass').value='';
-      document.getElementById('s-pass2').value='';
-    }
-  }).catch(function(e){toast('Error: '+e.message);});
-}
-function selectPlan(plan){
-  acct.plan=plan;saveAcct();refreshAcctUI();
-  showTab('subscription');
-  var msgs={free:'Downgraded to Free',pro:'Upgraded to Pro!',elite:'Upgraded to Elite!'};
-  toast(msgs[plan]||'Plan updated');
 }
 function exportData(){
   var data={trades:trades,journal:jEntries,account:acct,exported:new Date().toISOString()};
@@ -15837,7 +14791,6 @@ async function onSignedIn(user) {
   try { await loadSentInvitesFromDB(user); } catch(e) { console.warn('Sent invites load skipped:', e.message); }
   init();
   goTo('dashboard');
-  handleStripeReturn();
 }
 
 /* ── Tab switching ── */
@@ -17561,57 +16514,6 @@ async function doForgotPassword() {
 }
 
 /* ── SUBSCRIPTION UI REFRESH ── */
-function refreshSubUI() {
-  var plan = acct.plan || 'free';
-  var isFree = plan === 'free';
-  var names = {free:'Free Plan', pro:'Pro', elite:'Elite'};
-  var prices = {free:'$0 / month', pro:'$19 / month', elite:'$39 / month'};
-  var icons = {free:'🆓', pro:'⚡', elite:'👑'};
-  var features = {
-    free: '✓ Manual trade logging<br>✓ 50 trade limit<br>✓ Basic analytics<br>✓ Calendar view',
-    pro:  '✓ Unlimited trades<br>✓ CSV broker import<br>✓ Full analytics<br>✓ 1 broker connection<br>✓ Priority support',
-    elite:'✓ Everything in Pro<br>✓ Tradovate live sync<br>✓ TopstepX live sync<br>✓ Multi-account dashboard<br>✓ Copy account tracking'
-  };
-  var chipColors = {free:'rgba(122,106,170,.15)',pro:'rgba(0,180,255,.12)',elite:'rgba(191,0,255,.12)'};
-  var chipBorders = {free:'rgba(122,106,170,.3)',pro:'rgba(0,180,255,.3)',elite:'rgba(191,0,255,.3)'};
-  var chipText = {free:'rgba(255,255,255,.6)',pro:'var(--cyan)',elite:'var(--purple)'};
-
-  var nm = document.getElementById('sub-plan-name'); if(nm) nm.textContent = names[plan];
-  var pr = document.getElementById('sub-plan-price'); if(pr) pr.textContent = prices[plan];
-  var ic = document.getElementById('sub-plan-icon'); if(ic) ic.textContent = icons[plan];
-  var ft = document.getElementById('sub-plan-features'); if(ft) ft.querySelector('div').innerHTML = features[plan];
-  var ch = document.getElementById('sub-status-chip');
-  if(ch) { ch.textContent = plan.toUpperCase(); ch.style.background = chipColors[plan]; ch.style.borderColor = chipBorders[plan]; ch.style.color = chipText[plan]; }
-  var fs = document.getElementById('sub-free-section'); if(fs) fs.style.display = isFree ? 'block' : 'none';
-  var ps = document.getElementById('sub-paid-section'); if(ps) ps.style.display = isFree ? 'none' : 'block';
-  var up = document.getElementById('sub-upgrade-preview'); if(up) up.style.display = isFree ? 'block' : 'none';
-}
-
-/* ── UPGRADE via Stripe Payment Links ── */
-function doUpgrade(plan) {
-  if (!currentUser) { toast('Please log in first'); return; }
-  var email = encodeURIComponent(currentUser.email || '');
-  var userId = encodeURIComponent(currentUser.id || '');
-  var urls = {
-    pro:   'https://buy.stripe.com/test_aFa00jagE10qglwfY067S00?prefilled_email=' + email + '&client_reference_id=' + userId,
-    elite: 'https://buy.stripe.com/test_bJeeVdcoMbF48T4dPS67S01?prefilled_email=' + email + '&client_reference_id=' + userId
-  };
-  window.location.href = urls[plan];
-}
-
-/* ── CANCEL ── */
-async function doCancelSubscription() {
-  if (!confirm('Cancel your subscription? You keep access until end of billing period.')) return;
-  acct.plan = 'free';
-  saveAcct();
-  if (_sb && currentUser) {
-    await _sb.from('profiles').update({plan:'free'}).eq('id', currentUser.id);
-  }
-  refreshAcctUI();
-  refreshSubUI();
-  toast('Subscription cancelled. Access continues until billing period ends.');
-}
-
 /* ── SIGN OUT ── */
 async function confirmDeleteAccount() {
   var first = confirm('Are you sure you want to permanently delete your account?\n\nThis will erase all your trades, journal entries, and profile data. This cannot be undone.');
@@ -17712,79 +16614,6 @@ async function loadProfileFromDB(user) {
   }
 }
 
-async function saveProfileToDB() {
-  if (!currentUser || !_sb) return;
-
-  // The codebase's profiles table uses `id` as the FK to auth.users.
-  // display_name is intentionally absent: it's server-owned, synced from
-  // Discord by /api/auth/gate and the nightly role-check cron.
-  var payload = {
-    email: acct.email,
-    username: acct.username,
-    initials: acct.initials,
-    color: acct.avatar_finish || acct.color || 'chrome',
-    avatar_finish: acct.avatar_finish || acct.color || 'chrome',
-    avatar_initials: acct.avatar_initials || acct.initials || null,
-    // Custom image uploads removed — always clear so saves don't carry
-    // a stale URL forward. Column kept in case uploads return later.
-    avatar_image_url: null,
-    plan: acct.plan || 'free',
-    updated_at: new Date().toISOString()
-  };
-
-  // Try UPDATE first with .select() so we can detect 0-row updates.
-  var upd = await _sb.from('profiles').update(payload).eq('id', currentUser.id).select();
-  console.log('[avatar save] update result:', { rows: upd.data, error: upd.error });
-
-  // Schema not migrated yet → strip new columns and retry. Catches both
-  // "column .. does not exist" (fresh schema) and PostgREST's
-  // "Could not find the 'X' column of 'profiles' in the schema cache"
-  // (migration ran but cache is still warming — usually clears in ~60s).
-  var schemaMiss = upd.error && (
-    /column .* does not exist/i.test(upd.error.message||'') ||
-    /could not find the .* column .* in the schema cache/i.test(upd.error.message||'')
-  );
-  if (schemaMiss) {
-    var legacy = Object.assign({}, payload);
-    delete legacy.avatar_finish; delete legacy.avatar_initials; delete legacy.avatar_image_url;
-    var upd2 = await _sb.from('profiles').update(legacy).eq('id', currentUser.id).select();
-    console.warn(
-      '[avatar save] avatar columns missing or cache cold — saved legacy fields only.\n' +
-      'Fix: run supabase-avatar-migration.sql (it ends with `notify pgrst, \'reload schema\';`),\n' +
-      'or wait ~60s for PostgREST auto-reload, or click Project Settings → API → Restart database.',
-      { rows: upd2.data, error: upd2.error, original: upd.error }
-    );
-    if (upd2.error) throw upd2.error;
-    var err = new Error('Avatar columns not visible to API yet — run the migration or wait 60s for cache reload');
-    err.code = 'SCHEMA_CACHE'; err.original = upd.error;
-    throw err;
-  }
-  if (upd.error) {
-    console.error('[avatar save] update failed:', {
-      message: upd.error.message, code: upd.error.code,
-      details: upd.error.details, hint: upd.error.hint, raw: upd.error
-    });
-    throw upd.error;
-  }
-
-  // Zero rows updated → row doesn't exist yet, INSERT.
-  if (!upd.data || upd.data.length === 0) {
-    var insertPayload = Object.assign({ id: currentUser.id }, payload);
-    var ins = await _sb.from('profiles').insert(insertPayload).select();
-    console.log('[avatar save] insert result:', { rows: ins.data, error: ins.error });
-    if (ins.error) {
-      console.error('[avatar save] insert failed:', {
-        message: ins.error.message, code: ins.error.code,
-        details: ins.error.details, hint: ins.error.hint, raw: ins.error
-      });
-      throw ins.error;
-    }
-    return ins.data;
-  }
-
-  return upd.data;
-}
-
 /* ── SUPABASE DB: TRADES ── */
 async function loadTradesFromDB(user) {
   var r = await _sb.from('trades').select('*').eq('user_id', user.id).eq('journal', activeJournal).order('created_at', {ascending: false});
@@ -17844,27 +16673,6 @@ async function saveTradeToSupa(trade) {
 
 /* ── Supabase sync is built into save() above ── */
 var _supaFlushTimer = null;
-
-/* ── Handle Stripe return ── */
-function handleStripeReturn() {
-  var params = new URLSearchParams(window.location.search);
-  var plan = params.get('plan');
-  var sessionId = params.get('session_id');
-  if (plan && sessionId) {
-    // Payment successful — update plan
-    acct.plan = plan;
-    saveAcct();
-    if (_sb && currentUser) {
-      _sb.from('profiles').update({ plan: plan }).eq('id', currentUser.id).then(function() {
-        refreshAcctUI();
-        refreshSubUI();
-        toast('🎉 Upgraded to ' + (plan === 'pro' ? 'Pro' : 'Elite') + '! Welcome.');
-      });
-    }
-    // Clean URL
-    window.history.replaceState({}, document.title, window.location.pathname);
-  }
-}
 
 /* ── Boot: poll until Supabase SDK is ready ── */
 function tryInitSupabase() {
@@ -17986,70 +16794,6 @@ if (document.readyState === 'loading') {
 
 
 <!-- ACCOUNT SETTINGS MODAL -->
-<div id="acct-settings-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9990;align-items:center;justify-content:center" onclick="closeAccountSettings()">
-  <div style="background:#0a0118;border:1px solid rgba(255,0,170,.25);border-radius:16px;padding:0;width:360px;max-height:88vh;overflow-y:auto;box-shadow:0 0 60px rgba(255,0,170,.15),0 0 20px rgba(0,0,0,.8)"
-       onclick="event.stopPropagation()">
-    
-    <!-- Header -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.07)">
-      <div>
-        <div style="font-size:14px;letter-spacing:2px;color:var(--n-text-2)">Settings</div>
-        <div id="as-username-lbl" style="font-size:14px;color:var(--n-text-2);margin-top:2px">@username</div>
-      </div>
-      <button onclick="closeAccountSettings()" style="background:none;border:none;color:var(--n-text-2);font-size:18px;cursor:pointer;line-height:1">✕</button>
-    </div>
-
-    <!-- APPEARANCE -->
-    <div style="padding:16px 20px 10px">
-      <div style="font-size:15px;color:var(--n-text-2);letter-spacing:2px;margin-bottom:12px">APPEARANCE</div>
-      
-      <!-- Theme toggle -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">
-        <div>
-          <div style="font-size:15px;letter-spacing:.5px;color:#fff">Theme</div>
-          <div style="font-size:14px;color:var(--n-text-2);margin-top:2px">Switch between dark synthwave and light mode</div>
-        </div>
-        <div style="display:flex;gap:0;border:1px solid rgba(255,255,255,.15);border-radius:8px;overflow:hidden;flex-shrink:0">
-          <button id="theme-dark-btn" onclick="setTheme('dark')" style="padding:7px 14px;background:rgba(255,0,170,.2);border:none;color:var(--n-text-2);font-size:14px;cursor:pointer;letter-spacing:1px;transition:.15s">🌙 Dark</button>
-          <button id="theme-light-btn" onclick="setTheme('light')" style="padding:7px 14px;background:transparent;border:none;color:var(--n-text-2);font-size:14px;cursor:pointer;letter-spacing:1px;transition:.15s">☀️ Light</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- DATA -->
-    <div style="padding:4px 20px 10px">
-      <div style="font-size:15px;color:var(--n-text-2);letter-spacing:2px;margin-bottom:12px">DATA</div>
-
-      <!-- Export CSV -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">
-        <div>
-          <div style="font-size:15px;letter-spacing:.5px;color:#fff">Export Trades</div>
-          <div style="font-size:14px;color:var(--n-text-2);margin-top:2px">Download full trade history as CSV</div>
-        </div>
-        <button onclick="exportTradesCSV()" style="padding:8px 16px;border-radius:7px;border:1px solid rgba(0,255,136,.3);background:rgba(0,255,136,.08);color:var(--n-profit);font-size:14px;letter-spacing:1px;cursor:pointer;flex-shrink:0">⬇ Export</button>
-      </div>
-
-      <!-- Export Journal -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">
-        <div>
-          <div style="font-size:15px;letter-spacing:.5px;color:#fff">Export Journal</div>
-          <div style="font-size:14px;color:var(--n-text-2);margin-top:2px">Download journal entries as text file</div>
-        </div>
-        <button onclick="exportJournalTxt()" style="padding:8px 16px;border-radius:7px;border:1px solid rgba(0,180,255,.3);background:rgba(0,180,255,.08);color:var(--n-text-2);font-size:14px;letter-spacing:1px;cursor:pointer;flex-shrink:0">⬇ Export</button>
-      </div>
-    </div>
-
-    <!-- ACCOUNT LINK -->
-    <div style="padding:4px 20px 18px">
-      <div style="font-size:15px;color:var(--n-text-2);letter-spacing:2px;margin-bottom:12px">ACCOUNT</div>
-      <button onclick="closeAccountSettings();goTo('account')" style="width:100%;padding:11px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--n-text-2);font-size:14px;letter-spacing:2px;cursor:pointer;text-align:left">
-        👤 &nbsp;View Full Account Page →
-      </button>
-    </div>
-
-  </div>
-</div>
-
 <!-- WEEKLY REPORT MODAL -->
 <div id="weekly-report-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9995;align-items:center;justify-content:center" onclick="document.getElementById('weekly-report-modal').style.display='none'">
   <div style="background:#0a0118;border:1px solid rgba(0,180,255,.3);border-radius:14px;width:540px;max-height:88vh;overflow-y:auto;box-shadow:0 0 60px rgba(0,180,255,.12)" onclick="event.stopPropagation()">
@@ -18068,7 +16812,7 @@ if (document.readyState === 'loading') {
 <div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(4,1,14,.97);border-top:1px solid rgba(0,180,255,.2);padding:14px 24px;z-index:99999;align-items:center;gap:16px;flex-wrap:wrap;backdrop-filter:blur(10px)">
   <div style="flex:1;min-width:260px">
     <div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;color:#fff;margin-bottom:3px">🍪 Cookie Notice</div>
-    <div style="font-family:'Orbitron',monospace;font-size:11px;color:rgba(255,255,255,.5);line-height:1.7">We use essential authentication cookies only — no tracking or advertising. By continuing you agree to their use. <button onclick="goTo('account');showTab('legal')" style="background:none;border:none;color:var(--cyan);font-family:'Orbitron',monospace;font-size:11px;cursor:pointer;text-decoration:underline;padding:0">Learn more</button></div>
+    <div style="font-family:'Orbitron',monospace;font-size:11px;color:rgba(255,255,255,.5);line-height:1.7">We use essential authentication cookies only — no tracking or advertising. By continuing you agree to their use. <button onclick="showLegal('privacy')" style="background:none;border:none;color:var(--cyan);font-family:'Orbitron',monospace;font-size:11px;cursor:pointer;text-decoration:underline;padding:0">Learn more</button></div>
   </div>
   <div style="display:flex;gap:8px;flex-shrink:0">
     <button onclick="cookieDecline()" style="padding:8px 18px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;cursor:pointer">Decline</button>
@@ -18112,7 +16856,6 @@ function cookieDecline(){
 <div class="mn" onclick="goTo('calendar');mNav(this)"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="1.5"/><line x1="5" y1="1" x2="5" y2="5"/><line x1="11" y1="1" x2="11" y2="5"/><line x1="2" y1="7" x2="14" y2="7"/></svg>Calendar</div>
 <div class="mn" onclick="goTo('analytics');mNav(this)"><svg viewBox="0 0 16 16"><rect x="2" y="8" width="3" height="5" rx=".5"/><rect x="6" y="5" width="3" height="8" rx=".5"/><rect x="10" y="2" width="3" height="11" rx=".5"/></svg>Stats</div>
 <div class="mn" onclick="goTo('community');mNav(this)"><svg viewBox="0 0 16 16"><circle cx="6" cy="5" r="2.5"/><path d="M2 13c0-2.2 1.8-4 4-4s4 1.8 4 4"/><circle cx="12" cy="6" r="2"/><path d="M14 13c0-1.7-1.3-3-2-3"/></svg>Group</div>
-<div class="mn" onclick="openAccountSettings();mNav(this)"><svg viewBox="0 0 16 16"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>You</div>
 </div>
 <script>function mNav(el){document.querySelectorAll('#mobile-nav .mn').forEach(function(m){m.classList.remove('on')});el.classList.add('on')}</script></body>
 </html>

@@ -5,15 +5,12 @@
     { "source": "/oauth/discord/start", "destination": "/api/oauth/discord/start" },
     { "source": "/oauth/discord/callback", "destination": "/api/oauth/discord/callback" },
     { "source": "/welcome/elite", "destination": "/welcome/elite.html" },
-    { "source": "/welcome/direct", "destination": "/welcome/direct.html" },
     { "source": "/welcome/premium", "destination": "/welcome/premium.html" },
     { "source": "/oauth-no-access", "destination": "/oauth-no-access.html" },
     { "source": "/oauth-error", "destination": "/oauth-error.html" },
-    { "source": "/account", "destination": "/index-6_22.html" },
     { "source": "/terms", "destination": "/terms.html" },
     { "source": "/privacy", "destination": "/privacy.html" },
-    { "source": "/refund", "destination": "/refund.html" },
-    { "source": "/upgrade", "destination": "/index-6_22.html" }
+    { "source": "/refund", "destination": "/refund.html" }
   ],
   "crons": [
     { "path": "/api/cron/daily-role-check", "schedule": "0 3 * * *" },
