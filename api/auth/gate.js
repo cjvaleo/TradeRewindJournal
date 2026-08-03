@@ -20,6 +20,7 @@
    ========================================================================== */
 
 import { createClient } from '@supabase/supabase-js';
+import { joinTradingArk } from '../../lib/community.js';
 
 /* ---- Trading Ark ---------------------------------------------------------
    Confirmed by Christian. Override via env if they ever change.           */
@@ -156,6 +157,17 @@ export default async function handler(req, res) {
   } catch (e) {
     /* a cache write failure must not change the verdict */
     console.warn('[gate] profile cache failed:', e && e.message);
+  }
+
+  /* Everyone with access is in the one community. Idempotent, and a
+     failure here must not block the sign-in. */
+  if (allowed) {
+    try {
+      const join = await joinTradingArk(admin, userId);
+      if (!join.ok) console.warn('[gate] trading-ark autojoin:', join.reason, join.error || '');
+    } catch (e) {
+      console.warn('[gate] trading-ark autojoin threw:', e && e.message);
+    }
   }
 
   res.status(200).json({
