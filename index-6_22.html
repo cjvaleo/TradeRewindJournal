@@ -1369,18 +1369,6 @@ tbody tr:hover td{background:rgba(0,180,255,.04)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 
-/* BROKER CARDS */
-.broker-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
-.broker-card{background:rgba(0,0,0,.4);border:1px solid var(--bord);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;transition:.15s}
-.broker-card:hover{border-color:rgba(0,180,255,.3)}
-.broker-icon{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Black Ops One',sans-serif;font-size:14px;flex-shrink:0;letter-spacing:1px}
-.broker-name{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px}
-.broker-status{font-family:'Orbitron',monospace;font-size:15px;margin-top:2px;letter-spacing:.5px}
-.broker-status.conn{color:var(--grn)}
-.broker-status.disc{color:rgba(255,255,255,.88)}
-.broker-btn{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;padding:4px 12px;border-radius:5px;border:1px solid var(--bord);background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap;transition:.15s}
-.broker-btn:hover{border-color:rgba(0,180,255,.4);color:var(--blue)}
-.broker-btn.connected{border-color:rgba(0,255,136,.4);color:var(--grn)}
 .acct-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bord)}
 .acct-row:last-child{border-bottom:none}
 .acct-dot{width:8px;height:8px;border-radius:50%;background:var(--grn);box-shadow:0 0 4px var(--grn);flex-shrink:0}
@@ -1458,13 +1446,6 @@ tbody tr:hover td{background:rgba(0,180,255,.04)}
 /* SECTION */
 .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .sec-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px}
-
-/* SYNC ROW */
-.sync-row{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--bord)}
-.sync-row:last-child{border-bottom:none}
-.sync-name{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px}
-.sync-info{font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.9);margin-top:2px;letter-spacing:.3px}
-.conn-btn{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;padding:3px 10px;border-radius:4px;border:1px solid rgba(0,180,255,.3);background:transparent;color:var(--blue);cursor:pointer;text-shadow:0 0 6px var(--blue)}
 
 .toast{
   position:fixed;bottom:24px;left:50%;
@@ -3509,137 +3490,9 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   text-transform:uppercase;color:var(--n-text-4);
 }
 
-/* Lock keyframes — used by the Broker Sync lock overlay */
+/* Lock keyframes — shared spin/pulse animations */
 @keyframes lockSpin{to{transform:rotate(360deg)}}
 @keyframes lockPulse{0%,100%{opacity:1}50%{opacity:0.4}}
-
-/* ── BROKER SYNC REDESIGN ─────────────────────────────── */
-
-#pg-sync.page.on{
-  display:block!important;
-  padding:32px 40px 48px;
-  background:var(--n-bg);
-  position:relative;z-index:1;
-  min-height:calc(100vh - 64px);overflow:hidden;
-}
-#pg-sync.on > .ph{display:none}
-
-/* Blurred peek under the lock */
-#pg-sync .peek{filter:blur(5px);pointer-events:none;user-select:none;opacity:0.45}
-#pg-sync .peek-head{margin-bottom:24px;border:none;padding:0}
-#pg-sync .peek-head .h-title{
-  font-family:var(--n-font-display);font-style:italic;
-  font-size:38px;line-height:1;letter-spacing:-0.01em;color:var(--n-text);
-  text-shadow:none;
-}
-#pg-sync .peek-head .h-sub{
-  margin-top:8px;font-family:var(--n-font-mono);font-size:10.5px;
-  letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-3);
-}
-#pg-sync .peek-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;
-}
-#pg-sync .peek-card{
-  background:var(--n-surface)!important;border:1px solid var(--n-border)!important;
-  border-radius:10px!important;padding:18px!important;
-  min-height:120px;display:flex;flex-direction:column;justify-content:space-between;
-  box-shadow:none!important;
-}
-#pg-sync .peek-card .name{
-  font-family:var(--n-font-display);font-style:italic;font-size:22px;
-  color:var(--n-text);letter-spacing:-0.01em;text-shadow:none;
-}
-#pg-sync .peek-card .meta{
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.15em;
-  text-transform:uppercase;color:var(--n-text-3);margin-top:3px;
-}
-#pg-sync .peek-card .status-row{
-  display:flex;align-items:center;justify-content:space-between;margin-top:auto;
-}
-#pg-sync .peek-card .conn-dot{display:flex;align-items:center;gap:7px}
-#pg-sync .peek-card .conn-dot .dot{
-  width:6px;height:6px;border-radius:50%;background:var(--n-text-4);
-  box-shadow:none;
-}
-#pg-sync .peek-card .conn-dot .lbl{
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.15em;
-  text-transform:uppercase;color:var(--n-text-3);
-}
-#pg-sync .peek-card .conn-btn{
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.15em;
-  text-transform:uppercase;padding:6px 12px;border:1px solid var(--n-border-2);
-  border-radius:5px;background:transparent;color:var(--n-text-2);
-  cursor:default;text-shadow:none;
-}
-
-/* Lock overlay */
-#pg-sync .lock-overlay{
-  position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:18px;padding:40px;
-  background:radial-gradient(circle at center,rgba(10,10,10,0.4) 0%,rgba(10,10,10,0.85) 100%);
-}
-#pg-sync .lock-icon-wrap{
-  width:64px;height:64px;border-radius:50%;
-  background:var(--n-surface);border:1px solid var(--n-border-2);
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 0 0 6px rgba(255,255,255,0.02),0 0 40px rgba(110,168,255,0.10);
-  position:relative;
-}
-#pg-sync .lock-icon-wrap::before{
-  content:'';position:absolute;inset:-2px;border-radius:50%;
-  background:conic-gradient(from 0deg,transparent 0deg 270deg,
-    var(--n-accent-cool) 290deg 305deg,transparent 320deg 360deg);
-  opacity:0.4;z-index:-1;animation:lockSpin 8s linear infinite;
-}
-#pg-sync .lock-icon-wrap svg{
-  width:24px;height:24px;stroke:var(--n-text-2);stroke-width:1.5;fill:none;
-}
-#pg-sync .lock-title{
-  font-family:var(--n-font-display);font-style:italic;font-size:42px;
-  line-height:1;letter-spacing:-0.01em;color:var(--n-text);text-shadow:none;
-}
-#pg-sync .lock-status{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:6px 12px;border:1px solid rgba(110,168,255,0.25);
-  background:rgba(110,168,255,0.08);border-radius:20px;
-  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.2em;
-  text-transform:uppercase;color:var(--n-accent-cool);text-shadow:none;
-}
-#pg-sync .lock-status .pulse{
-  width:5px;height:5px;border-radius:50%;background:var(--n-accent-cool);
-  box-shadow:0 0 6px var(--n-accent-cool);
-  animation:lockPulse 2s ease-in-out infinite;
-}
-#pg-sync .lock-desc{
-  font-family:var(--n-font-sans);font-size:14px;color:var(--n-text-2);
-  text-align:center;max-width:380px;line-height:1.6;font-weight:400;
-  letter-spacing:0;text-shadow:none;
-}
-#pg-sync .lock-desc strong{color:var(--n-text);font-weight:500}
-#pg-sync .lock-cta{
-  margin-top:8px;padding:11px 20px;border-radius:7px;
-  border:1px solid var(--n-border-2);background:var(--n-surface);
-  font-family:var(--n-font-sans);font-size:13px;font-weight:500;
-  color:var(--n-text-2);cursor:pointer;transition:.12s;
-  display:inline-flex;align-items:center;gap:8px;
-  letter-spacing:0;text-shadow:none;text-transform:none;
-}
-#pg-sync .lock-cta:hover{
-  border-color:var(--n-text-3);color:var(--n-text);background:var(--n-surface-2);
-}
-#pg-sync .lock-cta svg{
-  width:13px;height:13px;stroke:currentColor;stroke-width:1.5;fill:none;
-}
-#pg-sync .lock-supported{
-  margin-top:14px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;
-  max-width:480px;
-}
-#pg-sync .lock-pill{
-  font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.15em;
-  text-transform:uppercase;padding:5px 10px;border-radius:4px;
-  background:var(--n-surface);border:1px solid var(--n-border);
-  color:var(--n-text-3);
-}
 
 /* ── COMMUNITY REDESIGN v3 ─────────────────────────────── */
 
@@ -3702,9 +3555,13 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 #pg-community #comm-feed-view{
   flex:1;display:flex;min-width:0;height:100%;overflow:hidden;
+  /* Center the feed+rail cluster now that the communities sub-sidebar is
+     gone — without this the feed hugs the left edge on wide screens and
+     dead space piles up before the rail. */
+  justify-content:center;
 }
 #pg-community .feed{
-  flex:1;min-width:0;padding:32px 36px;
+  flex:1;min-width:0;max-width:860px;padding:32px 36px;
   border-right:1px solid var(--n-border);
   overflow-y:auto;height:100%;background:transparent;
 }
@@ -3717,9 +3574,22 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   max-width:640px;margin-left:auto;margin-right:auto;
 }
 #pg-community .rail{
-  width:300px;padding:32px 22px;
+  width:320px;padding:32px 24px;
   display:flex;flex-direction:column;gap:24px;flex-shrink:0;
   background:transparent;overflow-y:auto;height:100%;
+}
+/* Tablet — keep the two-column layout but tighten it so the feed
+   doesn't get crushed between the app sidebar and the rail. */
+@media (max-width:1100px){
+  #pg-community .rail{width:250px;padding:28px 16px}
+  #pg-community .feed{padding:28px 22px}
+}
+/* ≤1024px the desktop-rec banner becomes visible; stack it above the
+   feed instead of letting it join the page's flex row (where it would
+   render as a full-height column and crush the feed). */
+@media (max-width:1024px){
+  #pg-community.page.on{flex-direction:column!important}
+  #pg-community #comm-main{flex:1;min-height:0}
 }
 
 /* ── EMPTY STATE ── */
@@ -4869,6 +4739,16 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 
 /* ── LEGAL PAGE — Terms + Privacy ─────────────────────── */
+/* Own background + z-index like the other redesigned pages so the
+   legacy neon grid backdrop can't bleed through. Inner wrapper
+   carries the padding. */
+#pg-legal.page.on{
+  display:block!important;
+  padding:0;
+  background:var(--n-bg);
+  position:relative;z-index:1;
+  min-height:100vh;
+}
 #pg-legal .crumb{
   font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;
   text-transform:uppercase;color:var(--n-text-4);margin-bottom:8px;
@@ -5135,6 +5015,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   #pg-community .hero-pnl{padding:20px 16px;margin:14px 0 18px}
   #pg-community .hero-pnl-value{font-size:42px}
   #pg-community .hero-pnl-stats{flex-wrap:wrap;gap:14px;justify-content:flex-start}
+  #pg-community .fhead{flex-wrap:wrap}
   #pg-community .fhead-right{flex-wrap:wrap;width:100%}
   #pg-community .period-tabs{flex:1;width:100%}
   #pg-community .period-tab{flex:1}
@@ -5512,7 +5393,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     <div class="ni" onclick="goTo('equity')"><svg viewBox="0 0 16 16"><polyline points="2,13 5,8 8,10 11,5 14,7"/><line x1="2" y1="13" x2="14" y2="13"/></svg>Equity Curve</div>
     <div class="ni" onclick="goTo('analytics')"><svg viewBox="0 0 16 16"><rect x="2" y="8" width="3" height="5" rx=".5"/><rect x="6" y="5" width="3" height="8" rx=".5"/><rect x="10" y="2" width="3" height="11" rx=".5"/></svg>Analytics</div>
     <div class="sb-sec">Connect</div>
-    <div class="ni" onclick="goTo('sync')"><svg viewBox="0 0 16 16"><path d="M13 8A5 5 0 1 1 8 3"/><polyline points="13,3 13,7 9,7"/></svg>Broker Sync</div>
     <div class="ni" onclick="goTo('community')"><svg viewBox="0 0 16 16"><circle cx="6" cy="5" r="2.5"/><path d="M2 13c0-2.2 1.8-4 4-4s4 1.8 4 4"/><circle cx="12" cy="6" r="2"/><path d="M14 13c0-1.7-1.3-3-2-3"/></svg>Community</div>
     <!-- Soft-removed nav items (Tools section + 4 features). Pages still exist in DOM
          and JS still works; just not reachable from nav. To restore, paste back. -->
@@ -6535,114 +6415,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     </div>
   </div>
 </div>
-<!-- BROKER SYNC -->
-<div id="pg-sync" class="page">
-
-  <!-- BLURRED PEEK -->
-  <div class="peek">
-    <div class="peek-head">
-      <div class="h-title">Broker Sync</div>
-      <div class="h-sub">Auto-journal trades the second they fill</div>
-    </div>
-    <div class="peek-grid">
-      <div class="peek-card">
-        <div>
-          <div class="name">Apex Trader</div>
-          <div class="meta">Prop &middot; futures</div>
-        </div>
-        <div class="status-row">
-          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
-          <button class="conn-btn">Connect</button>
-        </div>
-      </div>
-      <div class="peek-card">
-        <div>
-          <div class="name">Tradovate</div>
-          <div class="meta">Direct &middot; futures</div>
-        </div>
-        <div class="status-row">
-          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
-          <button class="conn-btn">Connect</button>
-        </div>
-      </div>
-      <div class="peek-card">
-        <div>
-          <div class="name">TopstepX</div>
-          <div class="meta">Prop &middot; futures</div>
-        </div>
-        <div class="status-row">
-          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
-          <button class="conn-btn">Connect</button>
-        </div>
-      </div>
-      <div class="peek-card">
-        <div>
-          <div class="name">Rithmic</div>
-          <div class="meta">Direct &middot; futures</div>
-        </div>
-        <div class="status-row">
-          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
-          <button class="conn-btn">Connect</button>
-        </div>
-      </div>
-      <div class="peek-card">
-        <div>
-          <div class="name">Tradeify</div>
-          <div class="meta">Prop &middot; futures</div>
-        </div>
-        <div class="status-row">
-          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
-          <button class="conn-btn">Connect</button>
-        </div>
-      </div>
-      <div class="peek-card">
-        <div>
-          <div class="name">My Funded Futures</div>
-          <div class="meta">Prop &middot; futures</div>
-        </div>
-        <div class="status-row">
-          <div class="conn-dot"><span class="dot"></span><span class="lbl">Disconnected</span></div>
-          <button class="conn-btn">Connect</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- LOCK OVERLAY -->
-  <div class="lock-overlay">
-    <div class="lock-icon-wrap">
-      <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-    </div>
-
-    <div class="lock-title">Broker Sync</div>
-
-    <div class="lock-status">
-      <span class="pulse"></span>
-      In development
-    </div>
-
-    <div class="lock-desc">
-      Auto-journaling from <strong>Tradovate</strong>, <strong>TopstepX</strong>, <strong>Rithmic</strong> and major prop firms &mdash; coming soon. Trades will sync the second they fill, no manual entry needed.
-    </div>
-
-    <button class="lock-cta" onclick="goTo('log');setTimeout(function(){setMode('ai',document.querySelectorAll('.mode-tab')[1]);},100);">
-      Use CSV Import in the meantime
-      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-    </button>
-
-    <div class="lock-supported">
-      <span class="lock-pill">Apex</span>
-      <span class="lock-pill">Tradovate</span>
-      <span class="lock-pill">TopstepX</span>
-      <span class="lock-pill">Rithmic</span>
-      <span class="lock-pill">Tradeify</span>
-      <span class="lock-pill">My Funded Futures</span>
-      <span class="lock-pill">+ more</span>
-    </div>
-  </div>
-
-</div>
-
 
 <!-- COMMUNITY -->
 <div id="pg-community" class="page">
@@ -7045,7 +6817,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       <div><span class="legal-meta-label">Operator</span><span>Christian Valeo (individual)</span></div>
       <div><span class="legal-meta-label">Service</span><span>traderewindjournal.com</span></div>
       <div><span class="legal-meta-label">Contact</span><a href="mailto:cjvaleo@gmail.com">cjvaleo@gmail.com</a></div>
-      <div><span class="legal-meta-label">Last updated</span><span>May 9, 2026</span></div>
+      <div><span class="legal-meta-label">Last updated</span><span>August 3, 2026</span></div>
     </div>
 
     <div class="legal-tabs">
@@ -7076,7 +6848,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       <h2>4. Your account</h2>
       <ul>
         <li>You must be 18 years or older to use TradeRewind.</li>
-        <li>You must provide an accurate email and keep your password secure.</li>
+        <li>Sign-in is through Discord. Keep your Discord account secure — anyone who can access it can access your TradeRewind account.</li>
         <li>One account per person. No sharing, reselling, or automating account creation.</li>
         <li>You are responsible for everything that happens on your account.</li>
       </ul>
@@ -7101,7 +6873,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
       <h2>9. Termination</h2>
       <ul>
-        <li>You can delete your account anytime (Settings → Danger Zone). Deletion removes your data from our active database.</li>
+        <li>You can delete your account anytime by emailing <a href="mailto:cjvaleo@gmail.com">cjvaleo@gmail.com</a>. Deletion removes your data from our active database.</li>
         <li>We can suspend or terminate accounts for terms violations, illegal use, or extended inactivity.</li>
         <li>We may give notice before termination unless the situation requires immediate action.</li>
       </ul>
@@ -7128,7 +6900,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
       <h2>TL;DR</h2>
       <ul>
-        <li>We collect what's needed to run the app: your email, the trades you log, screenshots you upload, and profile settings.</li>
+        <li>We collect what's needed to run the app: your Discord account info (user ID, username, server nickname, role), the trades you log, screenshots you upload, and profile settings.</li>
         <li>We don't sell your data. Ever.</li>
         <li>We don't run advertising or third-party tracking.</li>
         <li>We use Supabase as our backend to store everything.</li>
@@ -7138,10 +6910,15 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       <h2>What we collect</h2>
 
       <h3>Account info</h3>
+      <p>You sign in with Discord (OAuth). When you authorize, Discord shares:</p>
       <ul>
-        <li>Email address</li>
-        <li>Hashed password (we never see your actual password)</li>
-        <li>Display name and username</li>
+        <li>Your Discord user ID and username</li>
+        <li>Your nickname and role in our Discord server (used to verify membership and access)</li>
+        <li>The email address on your Discord account (used to link your TradeRewind account — we never see a password)</li>
+      </ul>
+      <p>Inside the app we also store:</p>
+      <ul>
+        <li>Display name</li>
         <li>Avatar settings (color finish, optional uploaded photo, initials)</li>
       </ul>
 
@@ -7198,7 +6975,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
       <h2>Your rights</h2>
       <ul>
-        <li><strong>Delete your account:</strong> Settings → Danger Zone → Delete. This removes your account and all associated data.</li>
+        <li><strong>Delete your account:</strong> email <a href="mailto:cjvaleo@gmail.com">cjvaleo@gmail.com</a> to request deletion. This removes your account and all associated data.</li>
         <li><strong>Export your data:</strong> email <a href="mailto:cjvaleo@gmail.com">cjvaleo@gmail.com</a> to request a copy of your data. We'll send it within 30 days.</li>
         <li><strong>Correct your data:</strong> edit your profile, trades, and notes directly in the app.</li>
         <li><strong>Stop using the service:</strong> just stop. We don't lock you in.</li>
@@ -7228,7 +7005,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       <p><em>TradeRewind is operated by Christian Valeo as an individual, based in New Jersey, USA.</em></p>
     </div>
 
-    <div class="legal-footnote">Last Updated · May 9, 2026 · cjvaleo@gmail.com</div>
+    <div class="legal-footnote">Last Updated · August 3, 2026 · cjvaleo@gmail.com</div>
   </div>
 </div>
 
@@ -9204,7 +8981,7 @@ function goTo(pg){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
   pgEl.classList.add('on');
-  const map=['dashboard','log','history','calendar','equity','analytics','sync','community','risk','propfirms','rules','goals'];
+  const map=['dashboard','log','history','calendar','equity','analytics','community','risk','propfirms','rules','goals'];
   document.querySelectorAll('.ni')[map.indexOf(pg)]?.classList.add('on');
   document.querySelector('.main').scrollTop=0;
   if(pg==='dashboard'){renderDashboard();setTimeout(drawMiniChart,80);}
@@ -13102,61 +12879,6 @@ async function deleteTradeFromModal(id, ds){
 }
 
 function closeEditModal(){document.getElementById('edit-modal').style.display='none';}
-
-/* ── BROKER FIRM CONNECTIONS ── */
-const firmState={};
-const firms=['apex','lucid','alpha','tradeify','mff','tpt','topstep'];
-
-function toggleFirm(id){
-  const form=document.getElementById(id+'-form');
-  if(firmState[id]?.connected)return;
-  const isOpen=form.style.display==='block';
-  firms.forEach(f=>{const ff=document.getElementById(f+'-form');if(ff&&!firmState[f]?.connected)ff.style.display='none';});
-  form.style.display=isOpen?'none':'block';
-}
-
-function connectFirm(id,name){
-  const userEl=document.getElementById(id+'-user');
-  const passEl=document.getElementById(id+'-pass')||document.getElementById(id+'-key');
-  if(!userEl?.value.trim()||!passEl?.value.trim()){toast('Enter your credentials');return;}
-  const formEl=document.getElementById(id+'-form');
-  formEl.innerHTML=`<div style="text-align:center;padding:14px 0"><div style="width:24px;height:24px;border:2px solid rgba(0,180,255,.2);border-top-color:var(--cyan);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 10px"></div><div style="font-family:'Orbitron',monospace;font-size:14px;color:var(--cyan);letter-spacing:.5px">Connecting to ${name}…</div></div>`;
-  setTimeout(()=>{
-    firmState[id]={connected:true,name,user:userEl.value.trim()};
-    formEl.style.display='none';
-    document.getElementById(id+'-connected').style.display='block';
-    document.getElementById(id+'-status').textContent='Connected · '+userEl.value.trim();
-    document.getElementById(id+'-status').style.color='var(--grn)';
-    const chip=document.getElementById(id+'-chip');
-    chip.innerHTML='<span style="width:5px;height:5px;background:var(--grn);border-radius:50%;display:inline-block;animation:pulse 1.4s infinite;box-shadow:0 0 4px var(--grn);margin-right:4px"></span>Live';
-    chip.style.cssText='font-family:Orbitron,monospace;font-size:14px;padding:3px 8px;border-radius:3px;background:rgba(0,255,136,.1);color:var(--grn);border:1px solid rgba(0,255,136,.3)';
-    document.getElementById(id+'-accts').innerHTML=`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bord)"><div style="width:7px;height:7px;border-radius:50%;background:var(--grn);box-shadow:0 0 4px var(--grn);flex-shrink:0"></div><div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;flex:1">${name} — Account 1</div><div style="font-family:'Orbitron',monospace;font-size:14px;color:rgba(255,255,255,.9)">Live</div></div>`;
-    toast(name+' connected!');
-  },1600);
-}
-
-function disconnectFirm(id,name){
-  firmState[id]={connected:false};
-  document.getElementById(id+'-status').textContent='Not connected';
-  document.getElementById(id+'-status').style.color='rgba(255,255,255,.6)';
-  const chip=document.getElementById(id+'-chip');
-  chip.textContent='Off';
-  chip.style.cssText='font-family:Orbitron,monospace;font-size:14px;padding:3px 8px;border-radius:3px;background:rgba(122,106,170,.1);color:rgba(255,255,255,.95);font-weight:600;border:1px solid rgba(122,106,170,.2)';
-  document.getElementById(id+'-connected').style.display='none';
-  const isTS=id==='topstep';
-  document.getElementById(id+'-form').innerHTML=isTS?`
-    <div style="font-family:'Orbitron',monospace;font-size:15px;color:rgba(255,255,255,.9);line-height:1.8;margin-bottom:10px;padding:8px 10px;background:rgba(191,0,255,.06);border:1px solid rgba(191,0,255,.15);border-radius:5px">Requires a <span style="color:var(--yellow)">ProjectX API subscription</span> — get yours at <span style="color:var(--purple)">dashboard.projectx.com</span><br>Use code <span style="color:var(--yellow)">topstep</span> for 50% off</div>
-    <div class="f-row"><label>TopstepX Username</label><input type="text" id="topstep-user" placeholder="your@email.com"/></div>
-    <div class="f-row"><label>API Key</label><input type="text" id="topstep-key" placeholder="From dashboard.projectx.com → Settings → API"/></div>
-    <button onclick="connectFirm('topstep','TopstepX')" style="width:100%;padding:8px;border-radius:6px;background:rgba(191,0,255,.12);color:var(--purple);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer;border:1px solid rgba(191,0,255,.3)">Connect TopstepX</button>`:`
-    <div class="f-row"><label>${name} Username</label><input type="text" id="${id}-user" placeholder="your@email.com"/></div>
-    <div class="f-row"><label>Password</label><input type="password" id="${id}-pass" placeholder="••••••••"/></div>
-    <button onclick="connectFirm('${id}','${name}')" style="width:100%;padding:8px;border-radius:6px;background:rgba(0,180,255,.1);color:var(--cyan);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer;border:1px solid rgba(0,180,255,.25)">Connect ${name}</button>`;
-  document.getElementById(id+'-form').style.display='none';
-  toast(name+' disconnected');
-}
-
-function syncFirm(id){toast((firmState[id]?.name||id)+' synced!');}
 
 
 /* ── ACCOUNT ── */
