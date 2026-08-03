@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 # dev.sh — local dev runner for Rewind.
 #
-# Why this exists: `vercel dev` gives serverless functions the linked cloud
-# project's DEVELOPMENT environment — and every var on this project is
-# scoped to Production only, so functions received empty strings and every
-# route 500'd with "server misconfigured" (missing env). Exporting vars
-# into the parent shell (the old approach here) doesn't help: the injected
-# dev env wins, and the export loop also kept the surrounding quotes that
-# `vercel env pull` writes, corrupting any value that did get through.
+# Why this exists: `vercel dev` auto-links to a Vercel cloud project in
+# non-TTY mode (silently creates .vercel/) and then pulls env vars from
+# the cloud project, ignoring .env.local. Fresh cloud projects have no
+# env vars, so routes fail with 500 "server misconfigured".
 #
-# The one mechanism `vercel dev` honors locally is a root `.env` file
-# (dotenv format — quotes are stripped correctly). So: mirror .env.local
-# into .env before starting. Both files are gitignored.
+# Fix: pre-export .env.local into the shell BEFORE spawning vercel dev.
+# Node inherits the parent env, so process.env.X resolves to our local
+# values even though vercel dev links to an empty cloud project.
 #
-# Usage:   ./dev.sh [vercel dev args, e.g. --listen 3900]   (or)   npm run dev
+# Also handles values with spaces (e.g. EMAIL_FROM_NAME=Christian from
+# Rewind), which `source .env.local` botches.
+#
+# Usage:   ./dev.sh         (or)   npm run dev
 # Requires: .env.local in the worktree root (gitignored).
 
 set -e
@@ -23,6 +23,8 @@ if [[ ! -f .env.local ]]; then
   exit 1
 fi
 
-cp .env.local .env
+while IFS='=' read -r k v; do
+  [[ "$k" =~ ^[A-Z_][A-Z0-9_]*$ ]] && export "$k=$v"
+done < .env.local
 
-exec npx vercel dev "$@"
+exec npx vercel dev
