@@ -28,7 +28,7 @@
   --bg:#0a0118;--surf:#120028;--card:#160030;--bord:rgba(255,0,170,.25);
   --pink:#ff2d9b;--blue:#00b4ff;--cyan:#00ffe7;--purple:#cc00ff;
   --orange:#ff6b00;--yellow:#ffe600;
-  --txt:#ffffff;--muted:rgba(255,255,255,1);--grn:#00ff88;--red:#ff2255;--sw:210px;
+  --txt:#ffffff;--muted:rgba(255,255,255,1);--grn:#00ff88;--red:#ff2255;--topbar-h:54px;
 
   /* ─── NEW DESIGN SYSTEM (v2) ─── */
   /* Used by redesigned pages. Old tokens above stay until each legacy page is migrated. */
@@ -1133,22 +1133,16 @@
   border-color:rgba(110,168,255,0.25);
 }
 
-/* Profile chip at bottom */
-.sb > div:last-child{
-  border-top:1px solid var(--n-border)!important;
-  padding:12px!important;
+/* Right cluster: user label + legal/sign-out links */
+.sb-right{display:flex;flex-direction:column;gap:8px;padding:12px}
+.sb-user{display:flex;align-items:center;gap:9px;min-width:0}
+.sb-links{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-4);white-space:nowrap;
 }
-.sb > div:last-child > div{
-  background:var(--n-surface)!important;
-  border:1px solid var(--n-border)!important;
-  border-radius:6px!important;
-  padding:9px 11px!important;
-  transition:border-color .12s,background .12s!important;
-}
-.sb > div:last-child > div:hover{
-  border-color:var(--n-border-2)!important;
-  background:var(--n-surface-2)!important;
-}
+.sb-links a{color:var(--n-text-3);cursor:pointer;text-decoration:none;transition:color .12s}
+.sb-links a:hover{color:var(--n-text)}
 #sb-avatar{
   animation:none!important;
   border:1px solid var(--n-border-2);
@@ -1178,6 +1172,43 @@
   margin-top:2px;
 }
 
+/* ── TOP BAR layout — scoped to the real instance so the mobile
+      drawer's vertical clone keeps the list styles above ── */
+.wrap > .sb .sb-logo{padding:0!important;border-bottom:none!important;flex-shrink:0}
+.wrap > .sb .sb-logo-text{font-size:22px!important}
+.wrap > .sb .sb-nav{
+  flex:1;display:flex;flex-direction:row;align-items:center;gap:2px;
+  padding:0!important;overflow:visible;min-width:0;
+}
+.wrap > .sb .ni{
+  padding:7px 12px!important;
+  border-left:none!important;border-radius:7px;
+  white-space:nowrap;
+}
+.wrap > .sb .ni.on{
+  border-left:none!important;
+  background:var(--n-surface-2)!important;
+}
+.wrap > .sb .sb-right{
+  flex-direction:row;align-items:center;gap:16px;
+  padding:0;margin-left:auto;flex-shrink:0;
+}
+.wrap > .sb #sb-avatar{width:28px!important;height:28px!important}
+.wrap > .sb #sb-avatar span{font-size:10.5px!important}
+.wrap > .sb #sb-name{max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wrap > .sb #sb-username{margin-top:0}
+/* Squeeze tiers so the bar survives narrower desktop windows */
+@media (max-width:1240px){
+  .wrap > .sb{gap:14px;padding:0 14px}
+  .wrap > .sb #sb-username{display:none}
+  .wrap > .sb .sb-right{gap:12px}
+}
+@media (max-width:1080px){
+  .wrap > .sb .ni svg{display:none}
+  .wrap > .sb .ni{padding:7px 10px!important}
+  .wrap > .sb #sb-name{display:none}
+}
+
 html{background:var(--n-bg);color:var(--n-text);scrollbar-width:thin;scrollbar-color:var(--n-border-2) transparent}
 body{font-family:'Chakra Petch',sans-serif;background:var(--n-bg);color:var(--n-text);font-size:13px;min-height:100vh}
 body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,rgba(0,0,0,.08) 0px,rgba(0,0,0,.08) 1px,transparent 1px,transparent 4px);pointer-events:none;z-index:9999}
@@ -1187,10 +1218,19 @@ body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backg
 .bg-horizon{position:fixed;top:60%;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--pink),var(--cyan),var(--pink),transparent);opacity:.6;z-index:0;pointer-events:none}
 .bg-horizon2{position:fixed;top:calc(60% + 4px);left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.35;z-index:0;pointer-events:none}
 
-.wrap{display:none;min-height:100vh;position:relative;z-index:1;width:100%;overflow:visible}
+.wrap{display:none;min-height:100vh;position:relative;z-index:1;width:100%;overflow:visible;flex-direction:column}
 
-/* SIDEBAR */
-.sb{width:var(--sw);background:rgba(10,0,28,.97);border-right:1px solid rgba(255,45,155,.3);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh}
+/* TOP BAR (formerly left sidebar).
+   Base .sb stays a vertical column so the mobile drawer's clone of this
+   nav renders as a list; the horizontal bar treatment is scoped to the
+   real instance via `.wrap > .sb`. */
+.sb{background:var(--n-bg);display:flex;flex-direction:column;flex-shrink:0}
+.wrap > .sb{
+  flex-direction:row;align-items:center;gap:20px;
+  width:100%;height:var(--topbar-h);padding:0 20px;
+  position:sticky;top:0;z-index:300;
+  border-bottom:1px solid var(--n-border);
+}
 .sb-logo{padding:18px 18px 14px;border-bottom:1px solid var(--bord)}
 .sb-logo-text{font-family:'FreeLine',sans-serif;font-size:38px;color:#fff;text-shadow:-2px 0 rgba(255,0,170,.7),2px 0 rgba(0,255,231,.7),0 0 24px rgba(255,100,255,.4);letter-spacing:3px;line-height:.88;display:block}
 .sb-logo-text span{color:#00ffe7;text-shadow:-2px 0 rgba(255,0,170,.6),2px 0 rgba(0,255,231,.6),0 0 20px rgba(0,255,231,.5)}
@@ -1210,7 +1250,7 @@ body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backg
 .sb-sec{padding:5px 18px 3px;font-family:'Orbitron',monospace;font-size:15px;color:rgba(191,0,255,.9);letter-spacing:2px;text-transform:uppercase;margin-top:6px;font-weight:700;text-shadow:0 0 8px rgba(191,0,255,.6)}
 
 /* MAIN */
-.main{flex:1;min-width:0;overflow-y:auto;min-height:100vh}
+.main{flex:1;min-width:0;overflow-y:auto;min-height:100vh;background:var(--n-bg)}
 .page{display:none;padding:22px 26px;min-height:100%;box-sizing:border-box}
 #pg-log{display:none;padding:22px 26px;box-sizing:border-box}
 #pg-log.on{display:flex!important;flex-direction:column;height:100vh;overflow:hidden}
@@ -1538,9 +1578,17 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(0,180,255,.9);cursor:pointer;border:2px solid var(--cyan)}
 /* MOBILE */
 @media(max-width:768px){
-:root{--sw:0px}
 body::before,.bg-grid,.bg-horizon,.bg-horizon2{display:none}
 .sb{display:none!important}
+/* …but the copy cloned into the mobile drawer stays visible as a
+   vertical list (the base .sb styles are column-oriented). */
+#drawer-nav-mount .sb{
+  display:flex!important;flex-direction:column;
+  width:100%;height:auto;position:static;border:none;
+}
+#drawer-nav-mount .sb-logo{padding:4px 8px 14px!important;border-bottom:1px solid var(--n-border)!important}
+#drawer-nav-mount .sb-nav{padding:10px 0!important}
+#drawer-nav-mount .sb-right{border-top:1px solid var(--n-border);margin-top:10px;padding-top:14px}
 .wrap{flex-direction:column}
 .main{width:100%;padding-bottom:60px}
 .page{padding:14px 12px!important}
@@ -3500,7 +3548,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   display:flex!important;flex-direction:row!important;
   padding:0!important;margin:0!important;
   background:var(--n-bg);
-  height:calc(100vh - 0px);max-height:100vh;
+  height:calc(100vh - var(--topbar-h));max-height:calc(100vh - var(--topbar-h));
   overflow:hidden;width:100%;max-width:100%;position:relative;
 }
 #pg-community.on > .ph{display:none}
@@ -5008,7 +5056,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   #big-cal .cc{min-height:48px;font-size:11px}
 
   /* COMMUNITY — degrade gracefully */
-  #pg-community.on{flex-direction:column!important;height:auto!important}
+  #pg-community.on{flex-direction:column!important;height:auto!important;max-height:none!important}
   #pg-community .rail{display:none!important}
   #pg-community #comm-main{padding:14px 12px}
   #pg-community .feed-title{font-size:24px}
@@ -5380,39 +5428,34 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 <div class="wrap" style="display:flex">
 <nav class="sb">
   <div class="sb-logo">
-    <div class="sb-logo-text" style="font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:32px;letter-spacing:-0.01em;text-shadow:none;color:#fff">Rewind</div>
-    <div class="sb-stripes"><div class="sb-s"></div><div class="sb-s"></div><div class="sb-s"></div></div>
+    <div class="sb-logo-text" style="font-family:'Instrument Serif',Georgia,serif;font-style:italic;letter-spacing:-0.01em;text-shadow:none;color:#fff">Rewind</div>
   </div>
   <div class="sb-nav">
-    <div class="sb-sec">Main</div>
     <div class="ni on" onclick="goTo('dashboard')"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>Dashboard</div>
     <div class="ni" onclick="goTo('log')"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="11"/><line x1="5" y1="8" x2="11" y2="8"/></svg>Log Trade</div>
     <div class="ni" onclick="goTo('history')"><svg viewBox="0 0 16 16"><line x1="3" y1="5" x2="13" y2="5"/><line x1="3" y1="8" x2="13" y2="8"/><line x1="3" y1="11" x2="9" y2="11"/></svg>History</div>
-    <div class="sb-sec">Insights</div>
     <div class="ni" onclick="goTo('calendar')"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="1.5"/><line x1="5" y1="1" x2="5" y2="5"/><line x1="11" y1="1" x2="11" y2="5"/><line x1="2" y1="7" x2="14" y2="7"/></svg>Calendar</div>
     <div class="ni" onclick="goTo('equity')"><svg viewBox="0 0 16 16"><polyline points="2,13 5,8 8,10 11,5 14,7"/><line x1="2" y1="13" x2="14" y2="13"/></svg>Equity Curve</div>
     <div class="ni" onclick="goTo('analytics')"><svg viewBox="0 0 16 16"><rect x="2" y="8" width="3" height="5" rx=".5"/><rect x="6" y="5" width="3" height="8" rx=".5"/><rect x="10" y="2" width="3" height="11" rx=".5"/></svg>Analytics</div>
-    <div class="sb-sec">Connect</div>
     <div class="ni" onclick="goTo('community')"><svg viewBox="0 0 16 16"><circle cx="6" cy="5" r="2.5"/><path d="M2 13c0-2.2 1.8-4 4-4s4 1.8 4 4"/><circle cx="12" cy="6" r="2"/><path d="M14 13c0-1.7-1.3-3-2-3"/></svg>Community</div>
     <!-- Soft-removed nav items (Tools section + 4 features). Pages still exist in DOM
          and JS still works; just not reachable from nav. To restore, paste back. -->
   </div>
   <!-- SIGNED-IN USER — static label (name syncs from Discord; no account page) -->
-  <div style="padding:10px 12px;border-top:1px solid var(--bord);flex-shrink:0">
-    <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;border:1px solid var(--bord);background:rgba(0,0,0,.2)">
+  <div class="sb-right">
+    <div class="sb-user">
       <div class="y2kavt av chrome" id="sb-avatar" style="width:32px;height:32px"><span style="font-size:14px;position:relative;z-index:1" id="sb-avatar-txt">?</span></div>
-      <div style="flex:1;min-width:0">
-        <div id="sb-name" style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">My Account</div>
-        <div id="sb-username" style="font-family:'Orbitron',monospace;font-size:11px;color:rgba(255,255,255,.65);font-weight:600;letter-spacing:.5px">@username</div>
+      <div style="min-width:0">
+        <div id="sb-name">My Account</div>
+        <div id="sb-username">@username</div>
       </div>
     </div>
-    <!-- footer: legal + sign out -->
-    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.4)">
-      <a onclick="showLegal('terms')" style="color:rgba(255,255,255,.45);cursor:pointer;text-decoration:none">Terms</a>
+    <div class="sb-links">
+      <a onclick="showLegal('terms')">Terms</a>
       <span>·</span>
-      <a onclick="showLegal('privacy')" style="color:rgba(255,255,255,.45);cursor:pointer;text-decoration:none">Privacy</a>
+      <a onclick="showLegal('privacy')">Privacy</a>
       <span>·</span>
-      <a onclick="doSignOut()" style="color:rgba(255,255,255,.45);cursor:pointer;text-decoration:none">Sign out</a>
+      <a onclick="doSignOut()">Sign out</a>
     </div>
   </div>
 </nav>
@@ -8984,6 +9027,7 @@ function goTo(pg){
   const map=['dashboard','log','history','calendar','equity','analytics','community','risk','propfirms','rules','goals'];
   document.querySelectorAll('.ni')[map.indexOf(pg)]?.classList.add('on');
   document.querySelector('.main').scrollTop=0;
+  window.scrollTo(0,0);
   if(pg==='dashboard'){renderDashboard();setTimeout(drawMiniChart,80);}
   if(pg==='history')renderHistory();if(pg==='propfirms')pfRender();if(pg==='calendar')renderCalPage();if(pg==='analytics')renderAnalytics();if(pg==='community')renderCommunity();if(pg==='rules')renderRules();if(pg==='goals')renderGoals();
   if(pg==='equity'){requestAnimationFrame(function(){requestAnimationFrame(function(){renderEquity();});});}
