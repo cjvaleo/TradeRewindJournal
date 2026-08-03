@@ -1253,7 +1253,7 @@ body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backg
 .sb-sec{padding:5px 18px 3px;font-family:'Orbitron',monospace;font-size:15px;color:rgba(191,0,255,.9);letter-spacing:2px;text-transform:uppercase;margin-top:6px;font-weight:700;text-shadow:0 0 8px rgba(191,0,255,.6)}
 
 /* MAIN */
-.main{flex:1;min-width:0;overflow-y:auto;min-height:100vh;background:var(--n-bg)}
+.main{flex:1;min-width:0;overflow-y:auto;min-height:calc(100vh - var(--topbar-h));background:var(--n-bg)}
 .page{display:none;padding:22px 26px;min-height:100%;box-sizing:border-box}
 #pg-log{display:none;padding:22px 26px;box-sizing:border-box}
 #pg-log.on{display:flex!important;flex-direction:column;height:100vh;overflow:hidden}
@@ -5369,19 +5369,57 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 .sb-logo-text{font-size:19px!important}
 .mt-brand{font-size:17px!important}
 
-/* ── Dashboard: even 12px rhythm + smaller hero ── */
-#pg-dashboard.page.on{padding:28px 40px 48px}
-.dash-head{margin-bottom:22px;gap:10px}
-.hero-pnl{padding:26px 24px 22px;margin:0 auto 12px;max-width:none}
+/* ── Dashboard: two columns mirroring Community — full-width header,
+      hero + recent trades left, equity + mini calendar right. Locked
+      height; the recent-trades list is the left column's scroll
+      region, the right column fits (calendar scrolls as fallback). ── */
+#pg-dashboard.page.on{
+  display:flex;flex-direction:column;
+  padding:0;
+  height:calc(100vh - var(--topbar-h));max-height:calc(100vh - var(--topbar-h));
+  overflow:hidden;
+}
+#pg-dashboard .dash-head{margin:0;padding:28px 40px 18px;flex-shrink:0;gap:10px}
+#dash-cols{flex:1;min-height:0;display:flex}
+#pg-dashboard .dash-col-l{
+  flex:1 1 50%;min-width:0;display:flex;flex-direction:column;
+  padding:0 40px;border-right:1px solid var(--n-border);overflow:hidden;
+}
+#pg-dashboard .dash-col-r{
+  flex:1 1 50%;min-width:0;display:flex;flex-direction:column;gap:12px;
+  padding:0 40px 32px;overflow:hidden;
+}
+.hero-pnl{padding:26px 24px 22px;margin:0 0 12px;max-width:none;flex-shrink:0}
 .hero-amount{font-size:64px}
 .hero-divider{margin:16px auto 12px}
 .hero-label{margin-bottom:10px}
-.stats-row{gap:12px;margin-bottom:12px}
-.dash-main{gap:12px;margin-bottom:12px}
-#pg-dashboard .dash-grid{gap:12px;margin-bottom:12px}
-#pg-dashboard .goal-card{margin-bottom:12px}
-#pg-dashboard .section-h{margin:20px 0 10px}
-#pg-dashboard .recent-grid{gap:12px}
+#pg-dashboard .dash-recent{flex:1;min-height:0;display:flex;flex-direction:column}
+#pg-dashboard .section-h{margin:8px 0 10px;flex-shrink:0}
+#pg-dashboard .recent-grid{
+  gap:12px;flex:1;min-height:0;overflow-y:auto;
+  align-content:start;padding-bottom:32px;
+}
+#pg-dashboard .dash-col-r > .n-card:first-child{flex-shrink:0}
+#pg-dashboard .dash-cal-card{flex:1;min-height:0;overflow-y:auto}
+/* half-width column would blow the square cells up to ~120px — cap them */
+#pg-dashboard .dash-cal-card .n-cal-cell{aspect-ratio:auto;height:52px}
+@media (max-width:1100px){
+  #pg-dashboard .dash-head{padding:24px 24px 14px}
+  #pg-dashboard .dash-col-l{padding:0 24px}
+  #pg-dashboard .dash-col-r{padding:0 24px 24px}
+}
+@media (max-width:768px){
+  #pg-dashboard.page.on{
+    height:auto!important;max-height:none!important;
+    overflow:visible!important;padding:0!important;
+  }
+  #dash-cols{flex-direction:column}
+  #pg-dashboard .dash-col-l{border-right:none;overflow:visible;padding:0 14px}
+  #pg-dashboard .dash-col-r{overflow:visible;padding:0 14px 70px}
+  #pg-dashboard .dash-recent{flex:none}
+  #pg-dashboard .recent-grid{overflow:visible;grid-template-columns:1fr!important;padding-bottom:12px}
+  #pg-dashboard .dash-cal-card{overflow:visible}
+}
 
 /* ── Analytics: hierarchy in the breakdown grid — a featured lead
       card spanning two columns, a full-width monthly card at the
@@ -5799,143 +5837,67 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     </div>
   </div>
 
-  <!-- HERO P&L -->
-  <div class="hero-pnl">
-    <div id="hero-label" class="hero-label">Total P&amp;L &middot; Today</div>
-    <div id="hero-amount" class="hero-amount">&mdash;</div>
-    <div class="hero-divider"></div>
-    <div class="hero-meta">
-      <div class="m-item"><span id="hero-trades" class="m-num">&mdash;</span><span class="m-lbl">Trades</span></div>
-      <div class="m-item"><span id="hero-winrate" class="m-num">&mdash;</span><span class="m-lbl">Win Rate</span></div>
-      <div class="m-item"><span id="hero-streak" class="m-num">&mdash;</span><span class="m-lbl">Streak</span></div>
-      <div class="m-item"><span id="hero-avg" class="m-num">&mdash;</span><span class="m-lbl">Avg Trade</span></div>
-    </div>
-  </div>
+  <!-- TWO COLUMNS — same 50/50 split + divider as Community -->
+  <div id="dash-cols">
 
-  <!-- STATS GRID -->
-  <div class="stats-row" id="dash-stats"></div>
-
-  <!-- DASH-GRID: Streak + Today's Highlight -->
-  <div class="dash-grid">
-    <div class="dash-card streak">
-      <div class="dc-h"><span class="star">&#9733;</span> Journaling Streak</div>
-      <div class="streak-num" id="streak-num">0<span class="unit">days</span></div>
-      <div class="streak-sub" id="streak-sub">Personal Best &middot; 0 days</div>
-      <div class="streak-bar" id="streak-bar"></div>
-    </div>
-    <div class="dash-card highlight" id="highlight-card">
-      <div class="dc-h">Today's Highlight</div>
-      <div id="highlight-content">
-        <div class="hl-empty">No trades today yet</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- GOAL PROGRESS -->
-  <div class="goal-card">
-    <div class="goal-row">
-      <span class="goal-l">Weekly Goal Progress</span>
-      <span class="goal-v" id="goal-v">+$0 <span class="target">/ $25K</span></span>
-    </div>
-    <div class="goal-bar">
-      <div class="goal-fill" id="goal-fill" style="width:0%"></div>
-    </div>
-  </div>
-
-  <!-- MAIN: equity chart (full width) -->
-  <div class="dash-main" style="grid-template-columns:1fr">
-    <div class="n-card">
-      <div class="n-card-head">
-        <div class="n-card-title">Equity Curve</div>
-        <div class="n-card-meta">
-          <span id="eq-total"></span>
-          <button class="n-card-link" onclick="goTo('equity')">Full View</button>
+    <!-- LEFT: hero P&L + recent trades -->
+    <div class="dash-col-l">
+      <div class="hero-pnl">
+        <div id="hero-label" class="hero-label">Total P&amp;L &middot; Today</div>
+        <div id="hero-amount" class="hero-amount">&mdash;</div>
+        <div class="hero-divider"></div>
+        <div class="hero-meta">
+          <div class="m-item"><span id="hero-trades" class="m-num">&mdash;</span><span class="m-lbl">Trades</span></div>
+          <div class="m-item"><span id="hero-winrate" class="m-num">&mdash;</span><span class="m-lbl">Win Rate</span></div>
+          <div class="m-item"><span id="hero-streak" class="m-num">&mdash;</span><span class="m-lbl">Streak</span></div>
+          <div class="m-item"><span id="hero-avg" class="m-num">&mdash;</span><span class="m-lbl">Avg Trade</span></div>
         </div>
       </div>
-      <div class="n-chart-wrap" style="position:relative">
-        <canvas id="mini-eq-canvas"></canvas>
-        <div id="mini-eq-tooltip" style="display:none;position:absolute;pointer-events:none;background:var(--n-surface-3);border:1px solid var(--n-border-2);border-radius:4px;padding:5px 9px;font-family:var(--n-font-mono);font-size:11px;color:var(--n-text);white-space:nowrap;transform:translateX(-50%)"></div>
-        <div id="mini-eq-crosshair" style="display:none;position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.15);pointer-events:none"></div>
-      </div>
-      <div class="chart-labels" id="eq-labels" style="display:none"></div>
-    </div>
-  </div>
 
-  <!-- RECENT TRADES (designed cards) -->
-  <div class="section-h">
-    <div class="section-h-l">Recent Trades</div>
-    <span class="section-h-a" onclick="goTo('history')">View All &rarr;</span>
-  </div>
-  <div class="recent-grid" id="recent-grid"></div>
-
-  <!-- P&L BY HOUR · TODAY -->
-  <div class="tod-card">
-    <div class="dc-h">P&amp;L by Hour &middot; Today</div>
-    <div class="tod-bars" id="tod-bars"></div>
-    <div class="tod-labels"><span>6AM</span><span>8</span><span>10</span><span>12PM</span><span>2</span><span>4PM</span><span>6PM</span></div>
-    <div class="tod-summary" id="tod-summary"></div>
-  </div>
-
-  <!-- BOTTOM: win rate + best/worst + calendar -->
-  <div class="bottom-row">
-    <div class="n-card">
-      <div class="n-card-head">
-        <div class="n-card-title">Win Rate Breakdown</div>
-      </div>
-      <div class="n-winrate-display">
-        <div class="n-wr-circle-wrap">
-          <svg viewBox="0 0 88 88">
-            <circle cx="44" cy="44" r="38" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
-            <circle cx="44" cy="44" r="38" fill="none" stroke="#5fb389" stroke-width="3" stroke-linecap="round"
-                    id="wr-circle" stroke-dasharray="0 239" transform="rotate(-90 44 44)"/>
-          </svg>
-          <div class="n-wr-pct" id="wr-pct">&mdash;</div>
+      <div class="dash-recent">
+        <div class="section-h">
+          <div class="section-h-l">Recent Trades</div>
+          <span class="section-h-a" onclick="goTo('history')">View All &rarr;</span>
         </div>
-        <div class="n-wr-stats">
-          <div class="item"><div class="lbl">Wins</div><div class="val pos" id="wr-wins">&mdash;</div></div>
-          <div class="item"><div class="lbl">Losses</div><div class="val neg" id="wr-loss">&mdash;</div></div>
-          <div class="item"><div class="lbl">B/E</div><div class="val" id="wr-be">&mdash;</div></div>
-          <div class="item"><div class="lbl">Streak</div><div class="val" id="wr-streak">&mdash;</div></div>
-        </div>
+        <div class="recent-grid" id="recent-grid"></div>
       </div>
     </div>
 
-    <div class="n-card">
-      <div class="n-card-head">
-        <div class="n-card-title">Best &amp; Worst</div>
-      </div>
-      <div class="n-bw-row">
-        <div>
-          <div class="bw-lbl">Best Trade</div>
-          <div class="bw-info" id="best-sub">&mdash;</div>
+    <!-- RIGHT: equity curve + mini calendar -->
+    <div class="dash-col-r">
+      <div class="n-card">
+        <div class="n-card-head">
+          <div class="n-card-title">Equity Curve</div>
+          <div class="n-card-meta">
+            <span id="eq-total"></span>
+            <button class="n-card-link" onclick="goTo('equity')">Full View</button>
+          </div>
         </div>
-        <div class="bw-amt pos" id="best-val">&mdash;</div>
-      </div>
-      <div class="n-bw-row">
-        <div>
-          <div class="bw-lbl">Worst Trade</div>
-          <div class="bw-info" id="worst-sub">&mdash;</div>
+        <div class="n-chart-wrap" style="position:relative">
+          <canvas id="mini-eq-canvas"></canvas>
+          <div id="mini-eq-tooltip" style="display:none;position:absolute;pointer-events:none;background:var(--n-surface-3);border:1px solid var(--n-border-2);border-radius:4px;padding:5px 9px;font-family:var(--n-font-mono);font-size:11px;color:var(--n-text);white-space:nowrap;transform:translateX(-50%)"></div>
+          <div id="mini-eq-crosshair" style="display:none;position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.15);pointer-events:none"></div>
         </div>
-        <div class="bw-amt neg" id="worst-val">&mdash;</div>
+        <div class="chart-labels" id="eq-labels" style="display:none"></div>
+      </div>
+
+      <div class="n-card dash-cal-card">
+        <div class="n-cal-head">
+          <span id="dash-cal-lbl"></span>
+          <span>
+            <button class="n-cal-nav" onclick="dashCalPrev()">&lsaquo;</button>
+            <button class="n-cal-nav" onclick="goTo('calendar')" style="font-size:9px;letter-spacing:0.15em;text-transform:uppercase;font-family:var(--n-font-mono)">Full</button>
+            <button class="n-cal-nav" onclick="dashCalNext()">&rsaquo;</button>
+          </span>
+        </div>
+        <div class="n-cal-grid">
+          <div class="n-cal-dow">S</div><div class="n-cal-dow">M</div><div class="n-cal-dow">T</div><div class="n-cal-dow">W</div><div class="n-cal-dow">T</div><div class="n-cal-dow">F</div><div class="n-cal-dow">S</div>
+        </div>
+        <div class="n-cal-grid" id="dash-cal" style="margin-top:2px"></div>
       </div>
     </div>
 
-    <div class="n-card">
-      <div class="n-cal-head">
-        <span id="dash-cal-lbl"></span>
-        <span>
-          <button class="n-cal-nav" onclick="dashCalPrev()">&lsaquo;</button>
-          <button class="n-cal-nav" onclick="goTo('calendar')" style="font-size:9px;letter-spacing:0.15em;text-transform:uppercase;font-family:var(--n-font-mono)">Full</button>
-          <button class="n-cal-nav" onclick="dashCalNext()">&rsaquo;</button>
-        </span>
-      </div>
-      <div class="n-cal-grid">
-        <div class="n-cal-dow">S</div><div class="n-cal-dow">M</div><div class="n-cal-dow">T</div><div class="n-cal-dow">W</div><div class="n-cal-dow">T</div><div class="n-cal-dow">F</div><div class="n-cal-dow">S</div>
-      </div>
-      <div class="n-cal-grid" id="dash-cal" style="margin-top:2px"></div>
-    </div>
   </div>
-
 </div>
 
 <!-- LOG TRADE -->
@@ -9844,54 +9806,6 @@ function renderDashboard(){
   setHero('hero-streak', curStreak>0?curStreak+streakType:'\u2014');
   setHero('hero-avg', n?(avg>=0?'+':'-')+'$'+Math.abs(avg).toFixed(0):'\u2014');
 
-  // STATS ROW
-  const todayStr=_localDate(new Date());
-  const tdy=trades.filter(t=>t.date===todayStr);
-  const tdyTot=tdy.reduce((a,t)=>a+t.pnl,0);
-  const tdyW=tdy.filter(t=>t.pnl>0).length;
-  const tdyL=tdy.filter(t=>t.pnl<0).length;
-
-  const winsAr=ft.filter(t=>t.pnl>0);
-  const lossAr=ft.filter(t=>t.pnl<0);
-  const avgWin=winsAr.length?winsAr.reduce((a,t)=>a+t.pnl,0)/winsAr.length:0;
-  const avgLoss=lossAr.length?Math.abs(lossAr.reduce((a,t)=>a+t.pnl,0)/lossAr.length):0;
-  const sumWin=winsAr.reduce((a,t)=>a+t.pnl,0);
-  const sumLoss=Math.abs(lossAr.reduce((a,t)=>a+t.pnl,0));
-  const profitFactor=sumLoss>0?sumWin/sumLoss:(sumWin>0?Infinity:0);
-
-  const rrTrades=ft.filter(t=>t.rr&&t.rr>0);
-  const avgRR=rrTrades.length?rrTrades.reduce((a,t)=>a+t.rr,0)/rrTrades.length:0;
-
-  const fmtBig=(v)=>{
-    const sign=v>=0?'+':'-';
-    const abs=Math.abs(v);
-    const whole=Math.floor(abs);
-    const cents=Math.round((abs-whole)*100).toString().padStart(2,'0');
-    return sign+'$'+whole.toLocaleString()+'<span class="cents">.'+cents+'</span>';
-  };
-
-  document.getElementById('dash-stats').innerHTML=
-    '<div class="n-stat-card">'+
-      '<div class="stat-label">Today</div>'+
-      '<div class="stat-value '+(tdy.length===0?'':tdyTot>=0?'pos':'neg')+'">'+(tdy.length===0?'$0':fmtBig(tdyTot))+'</div>'+
-      '<div class="stat-sub">'+(tdy.length?tdy.length+' trades \u00b7 '+tdyW+'W '+tdyL+'L':'No trades yet')+'</div>'+
-    '</div>'+
-    '<div class="n-stat-card">'+
-      '<div class="stat-label">Avg R:R</div>'+
-      '<div class="stat-value">'+(avgRR>0?avgRR.toFixed(2)+'<span class="unit">R</span>':'\u2014')+'</div>'+
-      '<div class="stat-sub">'+(rrTrades.length?rrTrades.length+' of '+n+' trades':'no risk data')+'</div>'+
-    '</div>'+
-    '<div class="n-stat-card">'+
-      '<div class="stat-label">Avg Win</div>'+
-      '<div class="stat-value '+(avgWin?'pos':'')+'">'+(avgWin?'+$'+Math.round(avgWin):'\u2014')+'</div>'+
-      '<div class="stat-sub">'+(avgLoss?'vs $'+Math.round(avgLoss)+' avg loss':'no losses')+'</div>'+
-    '</div>'+
-    '<div class="n-stat-card">'+
-      '<div class="stat-label">Profit Factor</div>'+
-      '<div class="stat-value '+(profitFactor>=1?'pos':profitFactor>0?'neg':'')+'">'+(profitFactor===Infinity?'\u221e':profitFactor>0?profitFactor.toFixed(2):'\u2014')+'</div>'+
-      '<div class="stat-sub">'+(ft.length?'gross win / gross loss':'no data yet')+'</div>'+
-    '</div>';
-
   // EQUITY card header total
   const tot2=trades.reduce((a,t)=>a+t.pnl,0);
   const eqEl=document.getElementById('eq-total');
@@ -9901,39 +9815,8 @@ function renderDashboard(){
     eqEl.style.color=tot2>=0?'var(--n-profit)':'var(--n-loss)';
   }
 
-  // WIN RATE breakdown
-  document.getElementById('wr-wins').textContent=wins||'\u2014';
-  document.getElementById('wr-loss').textContent=losses||'\u2014';
-  const beEl=document.getElementById('wr-be');
-  if(beEl) beEl.textContent=bes||'\u2014';
-  const streakEl=document.getElementById('wr-streak');
-  if(streakEl){
-    streakEl.textContent=curStreak>0?curStreak+streakType:'\u2014';
-    streakEl.className='val '+(streakType==='W'?'pos':streakType==='L'?'neg':'');
-  }
-  document.getElementById('wr-pct').textContent=wrStr;
-  const circle=document.getElementById('wr-circle');
-  if(circle&&n){
-    const p=wins/n;
-    const circ=2*Math.PI*38;
-    circle.setAttribute('stroke-dasharray',(p*circ).toFixed(1)+' '+circ.toFixed(1));
-  }
-
-  // BEST / WORST
-  if(ft.length){
-    const best=ft.reduce((a,b)=>b.pnl>a.pnl?b:a),worst=ft.reduce((a,b)=>b.pnl<a.pnl?b:a);
-    document.getElementById('best-val').textContent='+$'+Math.round(best.pnl);
-    document.getElementById('best-sub').textContent=best.sym+' \u00b7 '+(best.date||'\u2014');
-    document.getElementById('worst-val').textContent='-$'+Math.abs(Math.round(worst.pnl));
-    document.getElementById('worst-sub').textContent=worst.sym+' \u00b7 '+(worst.date||'\u2014');
-  }
   renderDashCal();renderRecentList();setTimeout(drawMiniChart,80);
-  // v2 cards
-  try{ renderStreakCard(); }catch(e){console.warn('streak',e);}
-  try{ renderHighlightCard(); }catch(e){console.warn('highlight',e);}
-  try{ renderGoalProgress(); }catch(e){console.warn('goal',e);}
   try{ renderRecentTrades(); }catch(e){console.warn('recent-grid',e);}
-  try{ renderTodayHours(); }catch(e){console.warn('tod',e);}
 }
 
 function renderRecentList(){
