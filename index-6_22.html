@@ -3622,14 +3622,14 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   max-width:640px;margin-left:auto;margin-right:auto;
 }
 #pg-community .rail{
-  width:320px;padding:32px 24px;
-  display:flex;flex-direction:column;gap:24px;flex-shrink:0;
+  width:390px;padding:32px 24px;
+  display:flex;flex-direction:column;gap:18px;flex-shrink:0;
   background:transparent;overflow-y:auto;height:100%;
 }
 /* Tablet — keep the two-column layout but tighten it so the feed
-   doesn't get crushed between the app sidebar and the rail. */
+   doesn't get crushed between the rail and the window edge. */
 @media (max-width:1100px){
-  #pg-community .rail{width:250px;padding:28px 16px}
+  #pg-community .rail{width:330px;padding:28px 16px}
   #pg-community .feed{padding:28px 22px}
 }
 /* ≤1024px the desktop-rec banner becomes visible; stack it above the
@@ -3711,11 +3711,12 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   transform:translateY(-1px);
 }
 
-/* ── FEED HEADER + STAT BAR ── */
+/* ── FEED HEADER — centered community identity ── */
 #pg-community .fhead{
-  display:flex;align-items:flex-start;justify-content:space-between;
-  gap:16px;margin-bottom:6px;border:none;padding:0;
+  display:flex;flex-direction:column;align-items:center;
+  gap:12px;margin-bottom:20px;border:none;padding:0;text-align:center;
 }
+#pg-community .fhead-id{display:flex;align-items:center;gap:14px;text-align:left}
 #pg-community .ftitle{
   font-family:var(--n-font-display);font-style:italic;
   font-size:38px;color:var(--n-text);line-height:1.1;letter-spacing:-0.01em;
@@ -4786,6 +4787,145 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   background:var(--n-text)!important;border:none!important;cursor:pointer!important;
 }
 
+/* ── COMMUNITY RIGHT COLUMN — group dashboard + calendar ── */
+
+/* Group dashboard card */
+#pg-community .comm-stats-card .period-tabs{display:flex;width:100%;margin:2px 0 16px}
+#pg-community .comm-stats-card .period-tab{flex:1;text-align:center;padding:6px 4px}
+#pg-community .comm-stats-card .hero-pnl-label{margin-bottom:10px}
+#pg-community .comm-stats-card .hero-pnl-value{
+  font-size:38px;text-align:center;display:block;
+}
+#pg-community .gd-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px 8px;
+  margin-top:18px;padding-top:16px;border-top:1px solid var(--n-border);
+}
+#pg-community .gd-grid .gd-span{grid-column:1/-1}
+
+/* Community calendar — same cell design as the personal calendar
+   (#pg-calendar #big-cal), compacted for the 390px column. */
+#pg-community .comm-cal-card .cal-nav{
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:7px;padding:4px;height:32px;margin-bottom:10px;
+}
+#pg-community .comm-cal-card .cal-nav-btn{
+  width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+  background:transparent;border:none;color:var(--n-text-3);cursor:pointer;
+  border-radius:4px;font-size:14px;transition:.12s;
+}
+#pg-community .comm-cal-card .cal-nav-btn:hover{color:var(--n-text);background:var(--n-surface-3)}
+#pg-community .comm-cal-card .cal-nav-lbl{
+  flex:1;text-align:center;font-family:var(--n-font-mono);
+  font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--n-text-2);
+}
+#pg-community .comm-cal-card .cal-dow-row{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:5px;
+}
+#pg-community .comm-cal-card .cal-dow{
+  text-align:center;font-family:var(--n-font-mono);font-size:9px;
+  letter-spacing:0.14em;text-transform:uppercase;color:var(--n-text-4);padding:3px 0;
+}
+#pg-community #comm-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+#pg-community #comm-cal .cc{
+  min-height:56px;background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:5px;padding:5px;display:flex;flex-direction:column;cursor:pointer;
+  transition:border-color .12s,background .12s;position:relative;height:auto;box-shadow:none;
+}
+#pg-community #comm-cal .cc:hover{border-color:var(--n-border-2);background:var(--n-surface-3)}
+#pg-community #comm-cal .cc.empty{background:transparent;border-color:transparent;cursor:default;pointer-events:none}
+#pg-community #comm-cal .cc.today{border-color:var(--n-text-2);box-shadow:none}
+#pg-community #comm-cal .cc.today .cc-n{color:var(--n-text);text-shadow:none}
+#pg-community #comm-cal .cc.profit{
+  background:linear-gradient(180deg,rgba(95,179,137,0.06) 0%,var(--n-surface-2) 100%);
+  border-color:rgba(95,179,137,0.22);
+}
+#pg-community #comm-cal .cc.profit:hover{border-color:rgba(95,179,137,0.45)}
+#pg-community #comm-cal .cc.loss{
+  background:linear-gradient(180deg,rgba(201,95,95,0.06) 0%,var(--n-surface-2) 100%);
+  border-color:rgba(201,95,95,0.22);
+}
+#pg-community #comm-cal .cc.loss:hover{border-color:rgba(201,95,95,0.45)}
+#pg-community #comm-cal .cc.be{background:var(--n-surface-2);border-color:var(--n-border-2)}
+#pg-community #comm-cal .cc.selected{border-color:var(--n-text);background:var(--n-surface-3)}
+#pg-community #comm-cal .cc-n{
+  font-family:var(--n-font-mono);font-size:9px;font-weight:500;
+  color:var(--n-text-3);line-height:1;text-shadow:none;
+}
+#pg-community #comm-cal .cc.profit .cc-n{color:var(--n-profit);opacity:0.85}
+#pg-community #comm-cal .cc.loss .cc-n{color:var(--n-loss);opacity:0.85}
+#pg-community #comm-cal .cc-body{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;gap:1px;
+}
+#pg-community #comm-cal .cc-pnl{
+  font-family:var(--n-font-display);font-style:italic;font-weight:400;
+  font-size:12.5px;line-height:1;letter-spacing:-0.01em;margin:0;
+  white-space:nowrap;
+}
+@media (max-width:1100px){
+  #pg-community #comm-cal .cc-pnl{font-size:11px}
+}
+#pg-community #comm-cal .cc-pnl.pos{color:var(--n-profit)}
+#pg-community #comm-cal .cc-pnl.neg{color:var(--n-loss)}
+#pg-community #comm-cal .cc-pnl.zero{color:var(--n-text-3)}
+#pg-community #comm-cal .cc-tcount{
+  font-family:var(--n-font-mono);font-size:7.5px;letter-spacing:0.05em;
+  color:var(--n-text-4);text-transform:uppercase;margin-top:1px;
+}
+
+/* Day detail panel */
+#pg-community .comm-day-head{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px;
+}
+#pg-community .comm-day-title{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:20px;line-height:1.1;color:var(--n-text);letter-spacing:-0.01em;
+}
+#pg-community .comm-day-close{
+  background:transparent;border:1px solid var(--n-border);border-radius:5px;
+  width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+  color:var(--n-text-3);cursor:pointer;font-size:12px;line-height:1;transition:.12s;flex-shrink:0;
+}
+#pg-community .comm-day-close:hover{color:var(--n-text);border-color:var(--n-border-2)}
+#pg-community .comm-day-summary{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;
+}
+#pg-community .comm-day-summary .day-summary-cell{
+  background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:5px;padding:9px 6px;text-align:center;
+}
+#pg-community .comm-day-summary .lbl{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--n-text-4);margin-bottom:5px;
+}
+#pg-community .comm-day-summary .val{
+  font-family:var(--n-font-display);font-style:italic;
+  font-size:18px;line-height:1;letter-spacing:-0.01em;color:var(--n-text);
+}
+#pg-community .comm-day-summary .val.pos{color:var(--n-profit)}
+#pg-community .comm-day-summary .val.neg{color:var(--n-loss)}
+#pg-community .comm-day-trade{
+  display:flex;align-items:center;gap:8px;padding:8px 0;
+  border-bottom:1px solid var(--n-border);
+}
+#pg-community .comm-day-trade:last-child{border-bottom:none}
+#pg-community .comm-day-trade .who{
+  font-family:var(--n-font-sans);font-size:12.5px;font-weight:500;color:var(--n-text);
+  flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#pg-community .comm-day-trade .who .anon{color:var(--n-text-3);font-style:italic;font-weight:400}
+#pg-community .comm-day-trade .sym{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.1em;
+  color:var(--n-text-3);text-transform:uppercase;flex-shrink:0;
+}
+#pg-community .comm-day-trade .pnl{
+  font-family:var(--n-font-display);font-style:italic;font-size:15px;
+  letter-spacing:-0.01em;flex-shrink:0;
+}
+#pg-community .comm-day-trade .pnl.pos{color:var(--n-profit)}
+#pg-community .comm-day-trade .pnl.neg{color:var(--n-loss)}
+
 /* ── LEGAL PAGE — Terms + Privacy ─────────────────────── */
 /* Own background + z-index like the other redesigned pages so the
    legacy neon grid backdrop can't bleed through. Inner wrapper
@@ -5055,10 +5195,17 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   #big-cal{grid-template-columns:repeat(7,1fr);gap:2px}
   #big-cal .cc{min-height:48px;font-size:11px}
 
-  /* COMMUNITY — degrade gracefully */
+  /* COMMUNITY — stack to one column: feed first, then the group
+     dashboard + calendar rail below it. */
   #pg-community.on{flex-direction:column!important;height:auto!important;max-height:none!important}
-  #pg-community .rail{display:none!important}
-  #pg-community #comm-main{padding:14px 12px}
+  #pg-community #comm-main{padding:14px 12px;height:auto!important;overflow:visible!important}
+  #pg-community #comm-feed-view{flex-direction:column!important;height:auto!important;overflow:visible!important}
+  #pg-community .feed{height:auto!important;overflow:visible!important;border-right:none!important;max-width:none}
+  #pg-community .rail{
+    display:flex!important;width:100%!important;height:auto!important;
+    overflow:visible!important;padding:0 0 24px!important;
+  }
+  #pg-community #comm-cal .cc{min-height:52px}
   #pg-community .feed-title{font-size:24px}
   #pg-community .hero-pnl{padding:20px 16px;margin:14px 0 18px}
   #pg-community .hero-pnl-value{font-size:42px}
@@ -6476,39 +6623,17 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       <p class="empty-desc">Everyone joins the Trading Ark community automatically when they sign in with Discord. If the feed doesn't appear in a moment, refresh the page.</p>
     </div>
 
-    <!-- FEED VIEW -->
+    <!-- FEED VIEW — two columns: feed left, group dashboard + calendar right -->
     <div id="comm-feed-view" style="display:none">
       <div class="feed">
+        <!-- Centered community identity header -->
         <div class="fhead">
-          <div style="display:flex;align-items:center;gap:14px">
+          <div class="fhead-id">
             <div id="feed-grp-icon" class="gicon lg chrome">??</div>
             <div>
               <h1 class="ftitle" id="feed-grp-name">Group</h1>
               <div class="fsub" id="feed-grp-meta">&mdash; members</div>
             </div>
-          </div>
-          <div class="fhead-right">
-            <div class="period-tabs" id="comm-period-tabs">
-              <button class="period-tab" data-period="today" onclick="setCommPeriod('today',this)">Today</button>
-              <button class="period-tab on" data-period="week" onclick="setCommPeriod('week',this)">Week</button>
-              <button class="period-tab" data-period="month" onclick="setCommPeriod('month',this)">Month</button>
-              <button class="period-tab" data-period="all" onclick="setCommPeriod('all',this)">All-Time</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Hero P&L block — replaces the old .fbar stats row.
-             IDs prefixed with `comm-` so they don't collide with the
-             dashboard's hero-trades/hero-winrate/hero-avg elements. -->
-        <div class="hero-pnl">
-          <div class="hero-pnl-label">Group P&amp;L &middot; <span id="comm-hero-period">This Week</span></div>
-          <div class="hero-pnl-value" id="comm-hero-pnl">+$0<span class="cents">.00</span></div>
-          <div class="hero-pnl-stats">
-            <div class="hero-stat"><span class="hero-stat-label">Trades</span><span class="hero-stat-value" id="comm-hero-trades">0</span></div>
-            <div class="hero-stat"><span class="hero-stat-label">Win Rate</span><span class="hero-stat-value" id="comm-hero-winrate">0%</span></div>
-            <div class="hero-stat"><span class="hero-stat-label">Avg Trade</span><span class="hero-stat-value" id="comm-hero-avg">+$0</span></div>
-            <div class="hero-stat"><span class="hero-stat-label">Best Trade</span><span class="hero-stat-value" id="comm-hero-best">+$0</span></div>
-            <div class="hero-stat"><span class="hero-stat-label">Top Trader</span><span class="hero-stat-value" id="comm-hero-top">&mdash;</span></div>
           </div>
         </div>
 
@@ -6525,22 +6650,42 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       </div>
 
       <aside class="rail">
-        <!-- Trade of the Day — populated by renderTOTD when today has trades -->
-        <div id="feed-totd" style="display:none"></div>
-
-        <div class="card">
-          <div class="card-title">Top This Week</div>
-          <div id="feed-leaderboard"></div>
-        </div>
-
-        <div class="card">
-          <div class="rail-title-row">
-            <span>Members</span>
-            <span class="rail-title-count" id="feed-members-count"></span>
+        <!-- GROUP DASHBOARD — same IDs the hero renderer already targets -->
+        <div class="card comm-stats-card">
+          <div class="rail-title-row"><span>Group Dashboard</span></div>
+          <div class="period-tabs" id="comm-period-tabs">
+            <button class="period-tab" data-period="today" onclick="setCommPeriod('today',this)">Today</button>
+            <button class="period-tab on" data-period="week" onclick="setCommPeriod('week',this)">Week</button>
+            <button class="period-tab" data-period="month" onclick="setCommPeriod('month',this)">Month</button>
+            <button class="period-tab" data-period="all" onclick="setCommPeriod('all',this)">All</button>
           </div>
-          <div id="feed-members"></div>
-          <button class="view-all" id="feed-members-view-all" onclick="openAllMembersModal()" style="display:none">View All <span id="feed-members-view-all-n"></span> Members</button>
+          <div class="hero-pnl-label">Group P&amp;L &middot; <span id="comm-hero-period">This Week</span></div>
+          <div class="hero-pnl-value" id="comm-hero-pnl">+$0<span class="cents">.00</span></div>
+          <div class="gd-grid">
+            <div class="hero-stat"><span class="hero-stat-label">Trades</span><span class="hero-stat-value" id="comm-hero-trades">0</span></div>
+            <div class="hero-stat"><span class="hero-stat-label">Win Rate</span><span class="hero-stat-value" id="comm-hero-winrate">0%</span></div>
+            <div class="hero-stat"><span class="hero-stat-label">Avg Trade</span><span class="hero-stat-value" id="comm-hero-avg">+$0</span></div>
+            <div class="hero-stat"><span class="hero-stat-label">Best Trade</span><span class="hero-stat-value" id="comm-hero-best">+$0</span></div>
+            <div class="hero-stat gd-span"><span class="hero-stat-label">Top Trader</span><span class="hero-stat-value" id="comm-hero-top">&mdash;</span></div>
+          </div>
         </div>
+
+        <!-- COMMUNITY CALENDAR — group P&L + win rate per day -->
+        <div class="card comm-cal-card">
+          <div class="rail-title-row"><span>Community Calendar</span></div>
+          <div class="cal-nav">
+            <button class="cal-nav-btn" onclick="commCalPrevM()">&#8249;</button>
+            <div class="cal-nav-lbl" id="comm-cal-lbl">&mdash;</div>
+            <button class="cal-nav-btn" onclick="commCalNextM()">&#8250;</button>
+          </div>
+          <div class="cal-dow-row">
+            <div class="cal-dow">S</div><div class="cal-dow">M</div><div class="cal-dow">T</div><div class="cal-dow">W</div><div class="cal-dow">T</div><div class="cal-dow">F</div><div class="cal-dow">S</div>
+          </div>
+          <div id="comm-cal"></div>
+        </div>
+
+        <!-- DAY DETAIL — opens on day click -->
+        <div class="card" id="comm-day-panel" style="display:none"></div>
       </aside>
     </div>
   </div>
@@ -7678,6 +7823,7 @@ async function syncAndLoadCommFeed(g){
   renderFeedPosts(g);
   renderTOTD(g);
   renderHeroPnl(g, _commPeriod);
+  loadCommCalendar(g);
   if(_comm){
     renderGroupStats(_comm);
     renderFeedLeaderboard(_comm);
@@ -8948,6 +9094,130 @@ async function renderHeroPnl(g, period){
   bestEl.className = 'hero-stat-value' + (stats.best > 0 ? ' profit' : '');
   var topName = stats.topTrader && stats.topTrader.username;
   document.getElementById('comm-hero-top').textContent = topName ? '@'+String(topName).replace(/^@/,'') : '—';
+}
+
+/* ── COMMUNITY CALENDAR ─────────────────────────────────────────
+   Aggregates every member's shared trades (community_posts, same
+   source of truth as computeGroupStats) per trade DATE — not post
+   created_at, so CSV-imported historical trades land on the right
+   day. Each cell shows group P&L + win rate; clicking a day opens
+   the detail panel. Members who shared without a username display
+   as "Anonymous" (same convention as the feed). */
+var commCalY=(new Date()).getFullYear(), commCalM=(new Date()).getMonth();
+var _commCalPosts=[], _commCalSel=null;
+
+async function loadCommCalendar(g){
+  if(!_sb || !g){ renderCommCal(); return; }
+  var r = await _sb.from('community_posts')
+    .select('id,user_id,username,pnl_today,content,created_at')
+    .eq('community_id', g.id)
+    .like('id','trade_%')
+    .order('created_at',{ascending:false})
+    .limit(1000);
+  if(r && r.error){ console.warn('[comm cal] fetch failed:', r.error); return; }
+  _commCalPosts = ((r && r.data) || []).map(function(row){
+    var t={}; try{ t=row.content?JSON.parse(row.content):{}; }catch(e){}
+    if(t && t.checkin) return null;
+    var ds = (t.date && /^\d{4}-\d{2}-\d{2}/.test(String(t.date)))
+      ? String(t.date).slice(0,10)
+      : String(row.created_at||'').slice(0,10);
+    if(!ds) return null;
+    return {
+      date: ds,
+      pnl: Number(row.pnl_today!=null ? row.pnl_today : t.pnl) || 0,
+      username: row.username || '',
+      user_id: row.user_id || null,
+      sym: t.sym || '',
+      type: t.type || ''
+    };
+  }).filter(Boolean);
+  renderCommCal();
+  // Keep an open day panel in sync with fresh data.
+  if(_commCalSel) showCommDay(_commCalSel);
+}
+
+function _commCalByDay(){
+  var by={};
+  _commCalPosts.forEach(function(p){
+    if(!by[p.date]) by[p.date]={pnl:0,count:0,wins:0,rows:[]};
+    var b=by[p.date];
+    b.pnl+=p.pnl; b.count++; if(p.pnl>0)b.wins++;
+    b.rows.push(p);
+  });
+  return by;
+}
+
+function renderCommCal(){
+  var el=document.getElementById('comm-cal'); if(!el) return;
+  var lbl=document.getElementById('comm-cal-lbl');
+  if(lbl) lbl.textContent=MONTHS[commCalM]+' '+commCalY;
+  var by=_commCalByDay();
+  var first=new Date(commCalY,commCalM,1).getDay();
+  var days=new Date(commCalY,commCalM+1,0).getDate();
+  var n=new Date(), h='';
+  for(var i=0;i<first;i++) h+='<div class="cc empty"></div>';
+  for(var d=1;d<=days;d++){
+    var ds=commCalY+'-'+String(commCalM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var b=by[ds];
+    var isT=n.getDate()===d&&n.getMonth()===commCalM&&n.getFullYear()===commCalY;
+    var cls='cc';
+    if(b){ cls += Math.abs(b.pnl)<0.01 ? ' be' : (b.pnl>0?' profit':' loss'); }
+    if(isT) cls+=' today';
+    if(_commCalSel===ds) cls+=' selected';
+    var body='';
+    if(b){
+      var isZero=Math.abs(b.pnl)<0.01;
+      var pnlCls=isZero?'zero':(b.pnl>0?'pos':'neg');
+      var pnlTxt=isZero?'$0':(b.pnl>0?'+':'−')+'$'+Math.round(Math.abs(b.pnl)).toLocaleString('en-US');
+      var wr=Math.round(b.wins/b.count*100);
+      body='<div class="cc-body"><div class="cc-pnl '+pnlCls+'">'+pnlTxt+'</div>'
+          +'<div class="cc-tcount">'+wr+'% win</div></div>';
+    }
+    h+='<div class="'+cls+'" onclick="showCommDay(\''+ds+'\')"><div class="cc-n">'+d+'</div>'+body+'</div>';
+  }
+  el.innerHTML=h;
+}
+function commCalPrevM(){ commCalM--; if(commCalM<0){commCalM=11;commCalY--;} renderCommCal(); }
+function commCalNextM(){ commCalM++; if(commCalM>11){commCalM=0;commCalY++;} renderCommCal(); }
+
+function showCommDay(ds){
+  _commCalSel=ds;
+  renderCommCal();
+  var panel=document.getElementById('comm-day-panel'); if(!panel) return;
+  var b=_commCalByDay()[ds];
+  var d=new Date(ds+'T00:00:00');
+  var title=MONTHS[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();
+  var head='<div class="comm-day-head"><div class="comm-day-title">'+title+'</div>'
+    +'<button class="comm-day-close" onclick="closeCommDay()" aria-label="Close">&#10005;</button></div>';
+  if(!b || !b.count){
+    panel.innerHTML=head+'<div class="post-empty">No trades shared this day</div>';
+    panel.style.display='block';
+    return;
+  }
+  var wr=Math.round(b.wins/b.count*100);
+  var pnlCls=Math.abs(b.pnl)<0.01?'':(b.pnl>0?'pos':'neg');
+  var summary='<div class="comm-day-summary">'
+    +'<div class="day-summary-cell"><div class="lbl">Group P&amp;L</div><div class="val '+pnlCls+'">'+_fmtShortMoney(b.pnl)+'</div></div>'
+    +'<div class="day-summary-cell"><div class="lbl">Trades</div><div class="val">'+b.count+'</div></div>'
+    +'<div class="day-summary-cell"><div class="lbl">Win Rate</div><div class="val '+(wr>=50?'pos':'neg')+'">'+wr+'%</div></div>'
+    +'</div>';
+  var rows=b.rows.slice().sort(function(a,x){return Math.abs(x.pnl)-Math.abs(a.pnl);}).map(function(r){
+    var who=r.username
+      ? '<span class="who">'+safeText(r.username)+'</span>'
+      : '<span class="who"><span class="anon">Anonymous</span></span>';
+    var symTxt=[r.sym, r.type].filter(Boolean).join(' · ');
+    var rPnlCls=r.pnl>0?'pos':r.pnl<0?'neg':'';
+    return '<div class="comm-day-trade">'+who
+      +(symTxt?'<span class="sym">'+safeText(symTxt)+'</span>':'')
+      +'<span class="pnl '+rPnlCls+'">'+_fmtShortMoney(r.pnl)+'</span></div>';
+  }).join('');
+  panel.innerHTML=head+summary+rows;
+  panel.style.display='block';
+}
+function closeCommDay(){
+  _commCalSel=null;
+  var p=document.getElementById('comm-day-panel'); if(p)p.style.display='none';
+  renderCommCal();
 }
 
 function setCommPeriod(period, btn){
