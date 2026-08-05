@@ -1,26 +1,27 @@
 /* ============================================================================
-   POST /api/wins/post
-   Drop at: api/wins/post.js
+   POST /api/losses/post
+   Drop at: api/losses/post.js
 
-   Posts one win to Trading Ark #wins AND the Rewind community feed.
+   Posts one loss to Trading Ark #losses. Mirror of api/wins/post.js with
+   the verification inverted.
 
    THE CLIENT IS NOT TRUSTED. It sends a trade id and nothing else — this route
-   re-loads the trade, re-checks that it is a real win on a real account, and
-   refuses otherwise. A tampered request cannot push a paper trade or a loss
-   into a paid community.
+   re-loads the trade, re-checks that it is a real LOSS on a real account, and
+   refuses otherwise. A tampered request cannot push a paper trade or a win
+   into #losses.
 
    Body:  { trade_id }
-   Reply: { ok, discord: bool, feed: bool }
+   Reply: { ok, discord: bool }
 
    ENV — set whichever you have:
-     DISCORD_WINS_WEBHOOK   a channel webhook URL   (simplest)
-     DISCORD_BOT_TOKEN      a bot token             (more control later)
-   With neither, it still writes the feed post and reports discord:false.
+     DISCORD_LOSSES_WEBHOOK     a channel webhook URL   (simplest)
+     DISCORD_BOT_TOKEN          a bot token             (more control later)
+     DISCORD_LOSSES_CHANNEL_ID  channel override (defaults to #losses)
    ========================================================================== */
 
 import { createClient } from '@supabase/supabase-js';
 
-const WINS_CHANNEL_ID = process.env.DISCORD_WINS_CHANNEL_ID || '1463633701421318249';
+const LOSSES_CHANNEL_ID = process.env.DISCORD_LOSSES_CHANNEL_ID || '1513725409257197650';
 const POSTABLE_ACCOUNTS = ['eval', 'funded', 'live'];   /* paper never posts */
 
 export default async function handler(req, res) {
@@ -69,19 +70,8 @@ export default async function handler(req, res) {
     res.status(403).json({ error: 'not a postable account', account_type: acct || null });
     return;
   }
-  if (!Number.isFinite(pnl) || pnl <= 0) {
-    res.status(403).json({ error: 'not a win' });
-    return;
-  }
-
-  /* ---- don't double-post ------------------------------------------------ */
-  const { data: existing } = await admin
-    .from('community_posts')
-    .select('id').eq('user_id', userId)
-    .contains('metadata', { trade_id: trade.id })
-    .limit(1);
-  if (existing && existing.length) {
-    res.status(200).json({ ok: true, discord: false, feed: false, already: true });
+  if (!Number.isFinite(pnl) || pnl >= 0) {
+    res.status(403).json({ error: 'not a loss' });
     return;
   }
 
@@ -91,35 +81,44 @@ export default async function handler(req, res) {
     .select('username, display_name, initials, color, avatar_image_url')
     .eq('id', userId).single();
 
-  const handle = profile?.username || profile?.display_name || 'a member';
+  const handle = profile?.display_name || profile?.username || 'a member';
   const money  = n => (n < 0 ? '−$' : '+$') + Math.abs(Math.round(n)).toLocaleString();
   const rr     = Number.isFinite(Number(d.rr)) ? Number(d.rr) : null;
 
-  /* the public line. notes are deliberately left out — the modal promises
-     the member their notes stay private. */
+  /* the public line. notes are deliberately left out — same privacy
+     promise the wins modal makes. */
   const bits = [d.sym, d.type === 'short' ? 'Short' : 'Long'];
   if (d.model)      bits.push(d.model);
   if (rr !== null)  bits.push((rr >= 0 ? '+' : '−') + Math.abs(rr).toFixed(2) + 'R');
   const line = bits.filter(Boolean).join(' · ');
 
-  /* ---- 1 · Discord ----------------------------------------------------- */
+  /* ---- Discord ---------------------------------------------------------- */
   let postedToDiscord = false;
-  const webhook = process.env.DISCORD_WINS_WEBHOOK;
+  const webhook = process.env.DISCORD_LOSSES_WEBHOOK;
   const bot     = process.env.DISCORD_BOT_TOKEN;
 
-  /* feed post id decided up front so the Discord embed can deep-link to
-     it: /community?post={id} routes through the app (and its gate). */
-  const feedPostId = `${Date.now()}.${Math.random().toString().slice(2, 6)}`;
+  /* Deep-link the embed to the trade's auto-shared feed post when one
+     exists — /community?post={id} routes through the app's gate. */
   const appUrl = process.env.PUBLIC_APP_URL || 'https://traderewindjournal.com';
+  let feedPostId = null;
+  try {
+    const { data: fp } = await admin
+      .from('community_posts')
+      .select('id')
+      .eq('user_id', userId)
+      .like('id', `trade_${trade.id}_%`)
+      .limit(1);
+    if (fp && fp.length) feedPostId = fp[0].id;
+  } catch { /* link is optional */ }
 
   const embed = {
     title: `${money(pnl)} — ${handle}`,
-    url: `${appUrl}/community?post=${encodeURIComponent(feedPostId)}`,
     description: line,
-    color: 0x57BE8B,
+    color: 0xC95F5F,
     footer: { text: 'Logged in Rewind · traderewindjournal.com' },
     timestamp: new Date(trade.trading_day + 'T12:00:00Z').toISOString(),
   };
+  if (feedPostId) embed.url = `${appUrl}/community?post=${encodeURIComponent(feedPostId)}`;
   if (d.images?.[0]) embed.image = { url: d.images[0] };
 
   try {
@@ -130,55 +129,25 @@ export default async function handler(req, res) {
         body: JSON.stringify({ embeds: [embed], allowed_mentions: { parse: [] } }),
       });
       postedToDiscord = r.ok;
-      if (!r.ok) console.warn('[wins] webhook said', r.status, await r.text());
+      if (!r.ok) console.warn('[losses] webhook said', r.status, await r.text());
     } else if (bot) {
-      const r = await fetch(`https://discord.com/api/v10/channels/${WINS_CHANNEL_ID}/messages`, {
+      const r = await fetch(`https://discord.com/api/v10/channels/${LOSSES_CHANNEL_ID}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bot ${bot}` },
         body: JSON.stringify({ embeds: [embed], allowed_mentions: { parse: [] } }),
       });
       postedToDiscord = r.ok;
-      if (!r.ok) console.warn('[wins] bot said', r.status, await r.text());
+      if (!r.ok) console.warn('[losses] bot said', r.status, await r.text());
     } else {
-      console.warn('[wins] no DISCORD_WINS_WEBHOOK or DISCORD_BOT_TOKEN set');
+      console.warn('[losses] no DISCORD_LOSSES_WEBHOOK or DISCORD_BOT_TOKEN set');
     }
   } catch (e) {
-    console.error('[wins] discord post failed:', e && e.message);
+    console.error('[losses] discord post failed:', e && e.message);
   }
 
-  /* ---- 2 · the Rewind feed -------------------------------------------- */
-  let postedToFeed = false;
-  try {
-    const { error: ce } = await admin.from('community_posts').insert({
-      id: feedPostId,
-      user_id: userId,
-      username: handle,
-      initials: profile?.initials || handle.slice(0, 1).toUpperCase(),
-      avatar_color: profile?.color || null,
-      content: line,
-      pnl_today: Math.round(pnl),
-      image_url: d.images?.[0] || null,
-      likes_count: 0,
-      liked_by: [],
-      metadata: {
-        trade_id: trade.id,
-        source: 'win_auto',
-        sym: d.sym, side: d.type, model: d.model || null,
-        rr, grade: d.grade || null,
-        account_type: acct,
-        trading_day: trade.trading_day,
-      },
-    });
-    postedToFeed = !ce;
-    if (ce) console.warn('[wins] feed insert failed:', ce.message);
-  } catch (e) {
-    console.error('[wins] feed insert threw:', e && e.message);
-  }
-
-  /* a failure on either side is reported, not hidden */
-  if (!postedToDiscord && !postedToFeed) {
-    res.status(502).json({ error: 'could not post to either destination' });
+  if (!postedToDiscord) {
+    res.status(502).json({ error: 'could not post to discord' });
     return;
   }
-  res.status(200).json({ ok: true, discord: postedToDiscord, feed: postedToFeed });
+  res.status(200).json({ ok: true, discord: true });
 }

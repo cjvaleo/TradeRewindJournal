@@ -2364,13 +2364,19 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-log .lt-hint.hint-auto{color:var(--n-accent-cool);opacity:.85}
 #pg-log .lt-hint.hint-manual{color:var(--n-text-3)}
 
+/* One input grid: every control is exactly 42px tall on the same
+   baseline; date/select/number/text all normalize to it. */
 #pg-log .lt-input{
   appearance:none;-webkit-appearance:none;
   background:var(--n-surface-2);border:1px solid var(--n-border);
-  border-radius:7px;padding:10px 12px;
+  border-radius:2px;padding:0 12px;height:42px;box-sizing:border-box;
   font-family:var(--n-font-sans);font-size:13.5px;color:var(--n-text);
-  outline:none;transition:.15s;width:100%;
+  outline:none;transition:.15s;width:100%;line-height:40px;
 }
+#pg-log textarea.lt-input,#pg-log .lt-textarea{
+  height:auto;min-height:96px;padding:10px 12px;line-height:1.55;
+}
+#pg-log input[type="date"].lt-input{line-height:normal}
 #pg-log .lt-input:focus{
   border-color:var(--n-text-3);background:var(--n-surface-3);
 }
@@ -2382,8 +2388,14 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 #pg-log .lt-textarea{min-height:90px;resize:vertical;font-family:var(--n-font-sans);line-height:1.55}
 
-#pg-log .lt-dual{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
-#pg-log .lt-triple{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px}
+/* deliberate columns: halves and thirds, equal gaps, no drift */
+#pg-log .lt-dual{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+#pg-log .lt-triple{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+#pg-log .lt-field{align-content:start}
+#pg-log .lt-field-l{
+  min-height:13px;display:flex;align-items:baseline;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
 #pg-log .lt-section .lt-field:first-of-type,
 #pg-log .lt-section > .lt-dual:first-of-type,
 #pg-log .lt-section > .lt-triple:first-of-type{margin-top:0}
@@ -2392,6 +2404,12 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-log .lt-section .lt-field + .lt-triple,
 #pg-log .lt-section .lt-dual + .lt-field,
 #pg-log .lt-section .lt-triple + .lt-field{margin-top:14px}
+/* …but never inside a row grid — the sibling margin was knocking every
+   non-first column 14px off the shared baseline */
+#pg-log .lt-section .lt-dual > .lt-field,
+#pg-log .lt-section .lt-triple > .lt-field,
+#pg-log .lt-dual > .lt-field,
+#pg-log .lt-triple > .lt-field{margin-top:0}
 
 /* SIDE CARDS */
 #pg-log .lt-side-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -2440,67 +2458,81 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   color:var(--n-accent-cool);
 }
 
-/* GRADE PILLS */
+/* GRADE PILLS — A→F color scale, always hinted, heavy when selected */
 #pg-log .lt-grade-pills{display:flex;gap:8px}
 #pg-log .lt-grade-pill{
-  flex:1;padding:11px 0;text-align:center;
-  font-family:var(--n-font-display);
-  font-size:22px;color:var(--n-text-3);
+  flex:1;padding:10px 0 12px;text-align:center;position:relative;
+  font-family:var(--n-font-display);font-weight:800;letter-spacing:-0.02em;
+  font-size:17px;color:var(--n-text-4);
   background:var(--n-surface-2);border:1px solid var(--n-border);
-  border-radius:8px;cursor:pointer;transition:.15s;user-select:none;
+  border-radius:2px;cursor:pointer;transition:.15s;user-select:none;
 }
+/* the grade scale reads even at rest: a color-coded baseline per pill */
+#pg-log .lt-grade-pill::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:2px;
+  background:var(--grade-c,transparent);opacity:.35;transition:opacity .15s;
+}
+#pg-log .lt-grade-pill.grade-A{--grade-c:#5fb389}
+#pg-log .lt-grade-pill.grade-B{--grade-c:#8fb573}
+#pg-log .lt-grade-pill.grade-C{--grade-c:#c9a95f}
+#pg-log .lt-grade-pill.grade-D{--grade-c:#c9825f}
+#pg-log .lt-grade-pill.grade-F{--grade-c:#c95f5f}
 #pg-log .lt-grade-pill:hover{background:var(--n-surface-3);color:var(--n-text-2)}
 #pg-log .lt-grade-pill.on{
-  background:var(--n-surface-3);color:var(--n-text);
-  border-color:var(--n-border-2);
-  box-shadow:0 0 0 1px var(--n-border-2) inset;
+  color:var(--grade-c);font-size:22px;
+  border-color:var(--grade-c);background:var(--n-surface-3);
+  box-shadow:0 0 16px -6px var(--grade-c);
 }
-#pg-log .lt-grade-pill.on.grade-A{
-  color:#5fb389;border-color:rgba(95,179,137,0.45);
-  background:rgba(95,179,137,0.07);
-  box-shadow:0 0 14px rgba(95,179,137,0.18);
-}
-#pg-log .lt-grade-pill.on.grade-F{
-  color:#c95f5f;border-color:rgba(201,95,95,0.45);
-  background:rgba(201,95,95,0.06);
-}
+#pg-log .lt-grade-pill.on::after{opacity:1}
 
-/* EMOTION PILLS */
+/* EMOTION PILLS — five-step gradient, one icon language */
 #pg-log .lt-emo-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 #pg-log .lt-emo-pill{
-  display:flex;flex-direction:column;align-items:center;gap:5px;
-  padding:11px 6px;border:1px solid var(--n-border);border-radius:9px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:11px 6px;border:1px solid var(--n-border);border-radius:2px;
   background:var(--n-surface-2);cursor:pointer;transition:.15s;
   user-select:none;
 }
-#pg-log .lt-emo-pill .emj{font-size:22px;line-height:1}
+#pg-log .lt-emo-pill.emo-1{--emo-c:#c95f5f}
+#pg-log .lt-emo-pill.emo-2{--emo-c:#c9885f}
+#pg-log .lt-emo-pill.emo-3{--emo-c:#AEB4BA}
+#pg-log .lt-emo-pill.emo-4{--emo-c:#93b98a}
+#pg-log .lt-emo-pill.emo-5{--emo-c:#5fb389}
+#pg-log .lt-emo-pill svg.emo{
+  width:22px;height:22px;fill:none;stroke:var(--emo-c);
+  stroke-width:1.5;stroke-linecap:round;opacity:.5;transition:opacity .15s;
+}
+#pg-log .lt-emo-pill svg.emo .eye{fill:var(--emo-c);stroke:none}
 #pg-log .lt-emo-pill .lbl{
   font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.14em;
   text-transform:uppercase;color:var(--n-text-3);
 }
 #pg-log .lt-emo-pill:hover{background:var(--n-surface-3);border-color:var(--n-border-2)}
+#pg-log .lt-emo-pill:hover svg.emo{opacity:.8}
 #pg-log .lt-emo-pill.on{
-  background:var(--n-surface-3);border-color:var(--n-text-3);
-  box-shadow:0 0 0 1px var(--n-text-3) inset;
+  background:var(--n-surface-3);border-color:var(--emo-c);
+  box-shadow:0 0 16px -6px var(--emo-c);
 }
+#pg-log .lt-emo-pill.on svg.emo{opacity:1}
 #pg-log .lt-emo-pill.on .lbl{color:var(--n-text)}
 
-/* CONFIDENCE DOTS */
+/* CONFIDENCE DOTS — gold conviction dots, matching the community
+   post-card conviction chips (filled ● / hairline ○) */
 #pg-log .lt-confidence-row{
-  display:flex;align-items:center;gap:8px;
+  display:flex;align-items:center;gap:9px;
   padding:12px 14px;
   background:var(--n-surface-2);border:1px solid var(--n-border);
-  border-radius:8px;
+  border-radius:2px;
 }
 #pg-log .lt-conf-dot{
-  width:14px;height:14px;border-radius:50%;
-  border:1.5px solid var(--n-border-2);background:transparent;
+  width:12px;height:12px;border-radius:50%;
+  border:1px solid var(--n-border-3);background:transparent;
   cursor:pointer;transition:.15s;flex-shrink:0;
 }
-#pg-log .lt-conf-dot:hover{border-color:var(--n-text-3)}
+#pg-log .lt-conf-dot:hover{border-color:#d9b36a}
 #pg-log .lt-conf-dot.on{
-  background:var(--n-accent-cool);border-color:var(--n-accent-cool);
-  box-shadow:0 0 6px rgba(110,168,255,0.40);
+  background:#d9b36a;border-color:#d9b36a;
+  box-shadow:0 0 8px rgba(217,179,106,0.35);
 }
 #pg-log .lt-conf-label{
   margin-left:12px;
@@ -3054,7 +3086,19 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-equity .tab:hover:not(.on){color:var(--n-text-2);background:transparent}
 
 #pg-equity .eq-stats{
-  display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px;
+  display:grid;grid-template-columns:1.4fr 1fr 1.4fr 1fr 1fr;gap:10px;margin-bottom:14px;
+}
+#pg-equity .n-stat-card.feature{
+  background:var(--n-surface-3);border-color:var(--n-border-3);padding:18px;
+}
+#pg-equity .n-stat-card.feature .stat-value{font-size:34px}
+/* charts sit side by side — equity leads — stacking when narrow */
+#pg-equity .eq-charts{
+  display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);
+  gap:12px;align-items:start;
+}
+@media (max-width:1100px){
+  #pg-equity .eq-charts{grid-template-columns:1fr}
 }
 #pg-equity .n-stat-card{padding:14px}
 #pg-equity .n-stat-card .stat-label{
@@ -3087,8 +3131,9 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;
 }
 #pg-equity .chart-title{
-  font-family:var(--n-font-display);
-  font-size:22px;line-height:1;letter-spacing:-0.01em;
+  font-family:var(--n-font-display);font-weight:800;
+  font-size:15px;line-height:1;letter-spacing:-0.02em;
+  text-transform:uppercase;
   color:var(--n-text);text-shadow:none;
 }
 #pg-equity .chart-title.loss{color:var(--n-loss)}
@@ -3256,6 +3301,9 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-analytics .qual-grid{
   display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:24px;
 }
+#pg-analytics .qual-grid.qual-strip{margin-bottom:16px}
+#pg-analytics .qual-strip .qual-card{padding:12px}
+#pg-analytics .perf-grid > .an-card.an-card-wide{grid-column:1/-1}
 #pg-analytics .qual-card{
   background:var(--n-surface);border:1px solid var(--n-border);
   border-radius:8px;padding:16px;text-align:center;transition:.12s;
@@ -3734,6 +3782,12 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-community .cm-role.teach{background:linear-gradient(160deg,#C8D8F0,#5AA9E6);color:#0a1628}
 /* Uploaded-image provenance marker on feed cards */
 #pg-community .chip.chip-shot-upload{color:var(--n-text-4);border-style:dashed}
+/* Deep-linked post flash */
+#pg-community .post.post-linked{
+  border-color:var(--n-accent-cool)!important;
+  box-shadow:0 0 0 1px var(--n-accent-cool),0 0 28px -6px rgba(110,168,255,0.55);
+  transition:border-color .3s, box-shadow .3s;
+}
 /* Day-panel row avatars */
 #pg-community .comm-day-trade .comm-day-av{
   width:22px;height:22px;border-radius:50%;flex-shrink:0;object-fit:cover;
@@ -5540,12 +5594,40 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   border-radius:2px;display:flex;flex-direction:column;gap:14px;
 }
 
+/* CSV review — Echo treatment + break-even + required-description states */
+#pg-log .csv-edit-row{
+  background:rgba(12,15,18,.9);border:1px solid var(--n-border-2);border-radius:3px;
+}
+#pg-log .csv-edit-row.be{border-left:3px solid rgba(174,180,186,0.45)}
+#pg-log .csv-edit-row .csv-row-pnl.be{color:var(--n-text-3)}
+#pg-log .csv-edit-row.desc-missing{border-color:rgba(201,95,95,0.35)}
+#pg-log .csv-edit-row.desc-missing .csv-notes{
+  border-color:rgba(201,95,95,0.5);background:rgba(201,95,95,0.04);
+}
+#pg-log .csv-edit-row .field-input.field-sm,
+#pg-log .csv-edit-row .csv-sym{
+  border-radius:2px;height:34px;box-sizing:border-box;
+  background:var(--n-surface-2);border:1px solid var(--n-border);
+  color:var(--n-text);font-family:var(--n-font-sans);
+}
+#pg-log .csv-edit-row .grade-pill-mini{
+  border-radius:2px;font-family:var(--n-font-display);font-weight:800;
+  letter-spacing:-0.02em;
+}
+#pg-log .csv-edit-row .csv-ss-empty,
+#pg-log .csv-edit-row .side-card-mini{border-radius:2px}
+#pg-log .csv-import:disabled,
+#pg-log .csv-import.gated{
+  opacity:.45;cursor:not-allowed;
+}
+
 /* Chart requirement — TradingView link is the prominent primary path,
    upload is the subdued mobile fallback */
 #pg-log .lt-tv-input{
-  padding:13px 14px;font-size:14px;
+  height:46px;line-height:44px;padding:0 14px;font-size:14px;
   border-color:var(--n-border-3);background:var(--n-surface-3);
 }
+#pg-log .lt-side-card,#pg-log .lt-dropzone{border-radius:2px}
 #pg-log .lt-shot-fallback-l{
   margin-top:12px;font-family:var(--n-font-mono);font-size:9px;
   letter-spacing:0.12em;text-transform:uppercase;color:var(--n-text-4);
@@ -5616,6 +5698,28 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 #pg-log .lt-sum-cell .val.pos{color:var(--n-profit)}
 #pg-log .lt-sum-cell .val.neg{color:var(--n-loss)}
+
+/* Discord share toggle — feed-chip treatment, state-aware colors */
+#pg-log .lt-share-chip{
+  display:inline-flex;align-items:center;gap:8px;align-self:flex-start;
+  padding:8px 16px;border-radius:2px;cursor:pointer;transition:.15s;
+  border:1px solid var(--n-border-2);background:transparent;
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--n-text-3);
+}
+#pg-log .lt-share-chip::before{
+  content:'';width:6px;height:6px;border-radius:50%;
+  border:1px solid currentColor;background:transparent;transition:.15s;
+}
+#pg-log .lt-share-chip.on::before{background:currentColor}
+#pg-log .lt-share-chip.share-win{color:var(--n-profit);border-color:rgba(95,179,137,0.4)}
+#pg-log .lt-share-chip.share-win.on{background:rgba(95,179,137,0.10);box-shadow:0 0 14px -5px rgba(95,179,137,0.6)}
+#pg-log .lt-share-chip.share-loss{color:var(--n-loss);border-color:rgba(201,95,95,0.4)}
+#pg-log .lt-share-chip.share-loss.on{background:rgba(201,95,95,0.10);box-shadow:0 0 14px -5px rgba(201,95,95,0.5)}
+#pg-log .lt-share-hint{
+  margin-top:7px;font-family:var(--n-font-mono);font-size:9px;
+  letter-spacing:0.12em;text-transform:uppercase;color:var(--n-text-4);
+}
 
 /* ── Top bar: nav centered between wordmark and user cluster ── */
 .wrap > .sb .sb-nav{justify-content:center}
@@ -6254,11 +6358,11 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
           <div class="lt-field">
             <div class="lt-field-l">Emotion</div>
             <div class="lt-emo-row">
-              <div class="lt-emo-pill" data-emo="1" onclick="setEmotionPill(1)"><span class="emj">&#128552;</span><span class="lbl">Anxious</span></div>
-              <div class="lt-emo-pill" data-emo="2" onclick="setEmotionPill(2)"><span class="emj">&#128543;</span><span class="lbl">Off</span></div>
-              <div class="lt-emo-pill on" data-emo="3" onclick="setEmotionPill(3)"><span class="emj">&#128528;</span><span class="lbl">Neutral</span></div>
-              <div class="lt-emo-pill" data-emo="4" onclick="setEmotionPill(4)"><span class="emj">&#128578;</span><span class="lbl">Confident</span></div>
-              <div class="lt-emo-pill" data-emo="5" onclick="setEmotionPill(5)"><span class="emj">&#128526;</span><span class="lbl">In Zone</span></div>
+              <div class="lt-emo-pill emo-1" data-emo="1" onclick="setEmotionPill(1)"><svg class="emo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle class="eye" cx="9" cy="10" r="0.9"/><circle class="eye" cx="15" cy="10" r="0.9"/><path d="M8.6 16.6c1.3-1.8 5.5-1.8 6.8 0"/></svg><span class="lbl">Anxious</span></div>
+              <div class="lt-emo-pill emo-2" data-emo="2" onclick="setEmotionPill(2)"><svg class="emo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle class="eye" cx="9" cy="10" r="0.9"/><circle class="eye" cx="15" cy="10" r="0.9"/><path d="M9 15.8c1.2-.9 4.8-.9 6 0"/></svg><span class="lbl">Off</span></div>
+              <div class="lt-emo-pill emo-3 on" data-emo="3" onclick="setEmotionPill(3)"><svg class="emo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle class="eye" cx="9" cy="10" r="0.9"/><circle class="eye" cx="15" cy="10" r="0.9"/><path d="M9 15.5h6"/></svg><span class="lbl">Neutral</span></div>
+              <div class="lt-emo-pill emo-4" data-emo="4" onclick="setEmotionPill(4)"><svg class="emo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle class="eye" cx="9" cy="10" r="0.9"/><circle class="eye" cx="15" cy="10" r="0.9"/><path d="M9 14.8c1.2 1 4.8 1 6 0"/></svg><span class="lbl">Confident</span></div>
+              <div class="lt-emo-pill emo-5" data-emo="5" onclick="setEmotionPill(5)"><svg class="emo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7.8 10.2c.6-.8 1.8-.8 2.4 0M13.8 10.2c.6-.8 1.8-.8 2.4 0"/><path d="M8.4 14c1.5 2.2 5.7 2.2 7.2 0"/></svg><span class="lbl">In Zone</span></div>
             </div>
             <input type="hidden" id="lg-emotion" value="3"/>
           </div>
@@ -6273,6 +6377,14 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
               <div class="lt-conf-dot" data-conf="5" title="Max conviction" onclick="setConfidenceDots(5)"></div>
               <span class="lt-conf-label" id="lt-conf-label">Medium</span>
             </div>
+          </div>
+
+          <!-- DISCORD SHARE — state follows the running P&L: win → #wins
+               (default on), loss → #losses (default off), B/E → hidden -->
+          <div class="lt-field" id="lt-discord-share" style="display:none">
+            <div class="lt-field-l">Discord</div>
+            <button type="button" class="lt-share-chip" id="lt-share-chip" onclick="toggleDiscordShare()">Share to #wins</button>
+            <div class="lt-share-hint" id="lt-share-hint"></div>
           </div>
         </div>
 
@@ -6687,9 +6799,9 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     </div>
   </div>
 
-  <!-- STATS ROW -->
+  <!-- STATS ROW — Net P&L and Max Drawdown carry the weight -->
   <div class="eq-stats">
-    <div class="n-stat-card">
+    <div class="n-stat-card feature">
       <div class="stat-label">Net P&amp;L</div>
       <div class="stat-value" id="es-pnl">&mdash;</div>
     </div>
@@ -6697,7 +6809,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       <div class="stat-label">Peak Equity</div>
       <div class="stat-value" id="es-peak">&mdash;</div>
     </div>
-    <div class="n-stat-card">
+    <div class="n-stat-card feature">
       <div class="stat-label">Max Drawdown</div>
       <div class="stat-value" id="es-dd">&mdash;</div>
     </div>
@@ -6712,31 +6824,32 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     </div>
   </div>
 
-  <!-- MAIN EQUITY CHART -->
-  <div class="chart-card">
-    <div class="chart-head">
-      <div class="chart-title">Equity</div>
-      <div class="chart-meta" id="es-chart-meta"></div>
+  <!-- CHARTS — read together: equity primary, drawdown secondary -->
+  <div class="eq-charts">
+    <div class="chart-card">
+      <div class="chart-head">
+        <div class="chart-title">Equity</div>
+        <div class="chart-meta" id="es-chart-meta"></div>
+      </div>
+      <div style="position:relative;width:100%;height:260px">
+        <canvas id="equity-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+        <div id="equity-tooltip" style="display:none;position:absolute;pointer-events:none;white-space:nowrap;transform:translateX(-50%)"></div>
+        <div id="equity-crosshair" style="display:none;position:absolute;top:0;bottom:0;width:1px;pointer-events:none"></div>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><span class="swatch line"></span>Equity</div>
+        <div class="legend-item"><span class="swatch fill"></span>Profit zone</div>
+      </div>
     </div>
-    <div style="position:relative;width:100%;height:380px">
-      <canvas id="equity-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
-      <div id="equity-tooltip" style="display:none;position:absolute;pointer-events:none;white-space:nowrap;transform:translateX(-50%)"></div>
-      <div id="equity-crosshair" style="display:none;position:absolute;top:0;bottom:0;width:1px;pointer-events:none"></div>
-    </div>
-    <div class="chart-legend">
-      <div class="legend-item"><span class="swatch line"></span>Equity</div>
-      <div class="legend-item"><span class="swatch fill"></span>Profit zone</div>
-    </div>
-  </div>
 
-  <!-- DRAWDOWN CHART -->
-  <div class="chart-card">
-    <div class="chart-head">
-      <div class="chart-title loss">Drawdown</div>
-      <div class="chart-meta">Depth below equity peak over time</div>
-    </div>
-    <div style="position:relative;width:100%;height:160px">
-      <canvas id="dd-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+    <div class="chart-card">
+      <div class="chart-head">
+        <div class="chart-title loss">Drawdown</div>
+        <div class="chart-meta">Depth below peak</div>
+      </div>
+      <div style="position:relative;width:100%;height:130px">
+        <canvas id="dd-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+      </div>
     </div>
   </div>
 
@@ -6761,13 +6874,12 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   <!-- ALERTS BANNER -->
   <div id="an-alerts"></div>
 
-  <!-- SECTION TABS -->
+  <!-- SECTION TABS — consolidated May restructure: Quality's stat strip
+       and Time's session chart live inside Performance now -->
   <div class="sec-tabs">
     <div class="sec-tab on" onclick="showAnalyticsPanel('performance',this)"><span class="num">01</span>Performance</div>
-    <div class="sec-tab"     onclick="showAnalyticsPanel('quality',this)"><span class="num">02</span>Quality</div>
+    <div class="sec-tab"     onclick="showAnalyticsPanel('psychology',this)"><span class="num">02</span>Psychology</div>
     <div class="sec-tab"     onclick="showAnalyticsPanel('behavior',this)"><span class="num">03</span>Behavior</div>
-    <div class="sec-tab"     onclick="showAnalyticsPanel('time',this)"><span class="num">04</span>Time</div>
-    <div class="sec-tab"     onclick="showAnalyticsPanel('psychology',this)"><span class="num">05</span>Psychology</div>
   </div>
 
   <!-- ========== PERFORMANCE PANEL ========== -->
@@ -6778,6 +6890,16 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
         <p>Where the P&amp;L is coming from</p>
       </div>
       <div class="panel-meta" id="an-perf-meta"></div>
+    </div>
+
+    <!-- Quality summary strip (formerly its own tab) -->
+    <div class="qual-grid qual-strip">
+      <div class="qual-card"><div class="lbl">Avg Winner</div><div class="val" id="an-aw">&mdash;</div></div>
+      <div class="qual-card"><div class="lbl">Avg Loser</div><div class="val" id="an-al">&mdash;</div></div>
+      <div class="qual-card"><div class="lbl">Breakevens</div><div class="val" id="an-be">&mdash;</div></div>
+      <div class="qual-card"><div class="lbl">Avg R:R</div><div class="val" id="an-rr">&mdash;</div></div>
+      <div class="qual-card"><div class="lbl">Expectancy</div><div class="val" id="an-exp">&mdash;</div></div>
+      <div class="qual-card"><div class="lbl">Profit Factor</div><div class="val" id="an-pf">&mdash;</div></div>
     </div>
 
     <div class="perf-grid">
@@ -6801,30 +6923,16 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
         <div class="an-card-head"><span class="an-card-title">Long vs Short</span></div>
         <div id="an-dir"></div>
       </div>
-      <div class="an-card">
+      <div class="an-card an-card-wide">
         <div class="an-card-head"><span class="an-card-title">By Month</span></div>
         <div id="an-month"></div>
       </div>
-    </div>
-  </div>
-
-  <!-- ========== QUALITY PANEL ========== -->
-  <div class="panel" id="panel-quality">
-    <div class="panel-intro">
-      <div>
-        <h2>Trade Quality</h2>
-        <p>Core profitability metrics</p>
+      <!-- Session P&L timing chart (formerly the Time tab) — same
+           question as the rest of this panel: when P&L comes from -->
+      <div class="an-card an-card-wide">
+        <div class="an-card-head"><span class="an-card-title">Time of Day</span><span class="an-card-meta">avg P&amp;L by session</span></div>
+        <div id="an-tod-heatmap"></div>
       </div>
-      <div class="panel-meta" id="an-qual-meta"></div>
-    </div>
-
-    <div class="qual-grid">
-      <div class="qual-card"><div class="lbl">Avg Winner</div><div class="val" id="an-aw">&mdash;</div></div>
-      <div class="qual-card"><div class="lbl">Avg Loser</div><div class="val" id="an-al">&mdash;</div></div>
-      <div class="qual-card"><div class="lbl">Breakevens</div><div class="val" id="an-be">&mdash;</div></div>
-      <div class="qual-card"><div class="lbl">Avg R:R</div><div class="val" id="an-rr">&mdash;</div></div>
-      <div class="qual-card"><div class="lbl">Expectancy</div><div class="val" id="an-exp">&mdash;</div></div>
-      <div class="qual-card"><div class="lbl">Profit Factor</div><div class="val" id="an-pf">&mdash;</div></div>
     </div>
   </div>
 
@@ -6850,21 +6958,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
         <div class="an-card-head"><span class="an-card-title">Trades Per Day</span><span class="an-card-meta">last 14d</span></div>
         <div id="an-tpd"></div>
       </div>
-    </div>
-  </div>
-
-  <!-- ========== TIME PANEL ========== -->
-  <div class="panel" id="panel-time">
-    <div class="panel-intro">
-      <div>
-        <h2>Time of Day Performance</h2>
-        <p>When you actually print</p>
-      </div>
-      <div class="panel-meta">avg P&amp;L by session</div>
-    </div>
-
-    <div class="an-card">
-      <div id="an-tod-heatmap"></div>
     </div>
   </div>
 
@@ -8043,6 +8136,53 @@ function subscribeToCommFeed(g){
     .subscribe();
 }
 
+/* ── POST PERMALINKS — /community?post={id} ─────────────────────
+   Copy on the card's Share action; on load, the pending id (captured
+   at boot) routes to Community, scrolls to the post, and flashes it.
+   Members-only by construction: the URL lands in the app, so the
+   Discord gate runs before any feed data exists. */
+var _pendingPostLink = null;
+try {
+  var _plm = /[?&]post=([^&]+)/.exec(location.search);
+  if (_plm) _pendingPostLink = decodeURIComponent(_plm[1]);
+} catch(e){}
+
+function copyPostLink(btn){
+  var id = btn && btn.dataset ? btn.dataset.id : null;
+  if(!id) return;
+  var url = location.origin + '/community?post=' + encodeURIComponent(id);
+  var fallbackCopy = function(){
+    try{
+      var ta=document.createElement('textarea');
+      ta.value=url; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      toast('Link copied');
+    }catch(e){ toast('Copy failed — '+url); }
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(function(){toast('Link copied');}, fallbackCopy);
+  } else fallbackCopy();
+}
+
+/* Called after each feed render; resolves the pending deep link once
+   the remote feed has actually synced (so "gone" is a real verdict,
+   not a race). */
+function _resolvePendingPostLink(container){
+  if(!_pendingPostLink || !container) return;
+  var esc = (window.CSS && CSS.escape) ? CSS.escape(_pendingPostLink) : _pendingPostLink.replace(/"/g,'\\"');
+  var target = container.querySelector('.post[data-pid="'+esc+'"]');
+  if(target){
+    _pendingPostLink = null;
+    target.classList.add('post-linked');
+    setTimeout(function(){ target.scrollIntoView({behavior:'smooth', block:'center'}); }, 150);
+    setTimeout(function(){ target.classList.remove('post-linked'); }, 3500);
+  } else if(window._feedSynced){
+    _pendingPostLink = null;
+    toast('That post is no longer available');
+  }
+}
+
 /* Discord CDN avatar URL from cached profile fields — null when the
    user has no Discord avatar (callers fall back to initials). */
 function discordAvatarUrl(p){
@@ -8152,6 +8292,7 @@ async function syncAndLoadCommFeed(g){
   }
 
   await loadFeedEngagement(g);
+  window._feedSynced = true;
   renderFeedPosts(g);
   renderTOTD(g);
   renderHeroPnl(g, _commPeriod);
@@ -8408,6 +8549,8 @@ function renderFeedPosts(g){
       // fallback) are flagged so TV-linked charts are distinguishable.
       if(meta.shot_source === 'upload'){
         chips.push('<span class="chip chip-shot-upload" title="Screenshot uploaded directly, not a TradingView link">&#9650; uploaded image</span>');
+      } else if(meta.shot_source === 'none'){
+        chips.push('<span class="chip chip-shot-upload" title="Imported without a chart">no chart</span>');
       }
       if(chips.length) chipsHtml = '<div class="post-chips">'+chips.join('')+'</div>';
     }
@@ -8463,6 +8606,10 @@ function renderFeedPosts(g){
       +     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
       +     'Reply'
       +   '</button>'
+      +   '<button class="action-btn" onclick="copyPostLink(this)" data-id="'+safePid+'" title="Copy link to this trade">'
+      +     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>'
+      +     'Share'
+      +   '</button>'
       + '</div>'
       + '<div id="reply-box-'+safePid+'" class="reply-box" style="display:none">'
       +   '<div id="replies-'+safePid+'"></div>'
@@ -8482,6 +8629,8 @@ function renderFeedPosts(g){
       + 'Load ' + nextBatch + ' more · ' + remaining + ' remaining'
       + '</button>';
   }
+
+  _resolvePendingPostLink(el);
 }
 
 /* ── FEED INTERACTIONS ──────────────────────────────── */
@@ -10851,7 +11000,9 @@ async function shareTradeToCommunity(trade){
       // link, 'upload' when the proof is an uploaded screenshot. Drives
       // the small "uploaded image" marker on feed cards.
       chart_url:   trade.chart_url || null,
-      shot_source: trade.chart_url ? 'tradingview' : (screenshotUrl ? 'upload' : null)
+      // 'none' happens only via CSV bulk import (manual entry requires
+      // proof) — those cards get a "no chart" marker on the feed.
+      shot_source: trade.chart_url ? 'tradingview' : (screenshotUrl ? 'upload' : 'none')
     };
 
     // 4. One row per community, single batch insert. The id is
@@ -10948,6 +11099,7 @@ function fullLog(){
   trades.unshift(newTrade);
   save();renderAll();
   shareTradeToCommunity(newTrade);
+  try{ maybeShareToDiscord(newTrade); }catch(e){ console.warn('discord share',e); }
 
   // Reset form for the next trade
   ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-pnl','lg-rr','lg-chart-link'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
@@ -11192,16 +11344,23 @@ function recalcCsvRowPnl(row){
     if(pnlInput) pnlInput.value = pnl;
   }
 
-  // Repaint pill + row accent
+  // Repaint pill + row accent — three states: profit / loss / break-even
   var pnlNum = Number(t.pnl||0);
-  var isWin = pnlNum >= 0;
+  var isBe = Math.abs(pnlNum) < 0.01;
   var pill = row.querySelector('.csv-row-pnl');
   if(pill){
-    pill.textContent = (isWin?'+':'−')+'$'+Math.abs(pnlNum).toLocaleString(undefined,{maximumFractionDigits:2});
-    pill.classList.toggle('loss', !isWin);
+    pill.textContent = isBe ? '$0' : (pnlNum>0?'+':'−')+'$'+Math.abs(pnlNum).toLocaleString(undefined,{maximumFractionDigits:2});
+    pill.classList.toggle('loss', !isBe && pnlNum < 0);
+    pill.classList.toggle('be', isBe);
   }
-  row.classList.toggle('profit', isWin);
-  row.classList.toggle('loss', !isWin);
+  row.classList.toggle('profit', !isBe && pnlNum > 0);
+  row.classList.toggle('loss', !isBe && pnlNum < 0);
+  row.classList.toggle('be', isBe);
+
+  // Description-required marker + import gate
+  var notesVal = String(row.querySelector('.csv-notes')?.value ?? (e.notes||'')).trim();
+  row.classList.toggle('desc-missing', !notesVal);
+  _updateCsvImportGate();
 }
 
 // Delegated handlers — bound once, against the rows-list container.
@@ -11361,9 +11520,10 @@ function csvRenderAllRows(){
   list.innerHTML = csvParsedTrades.map(function(t, i){
     var e = csvEnrichment[i] || {grade:'B', accounts:1, notes:''};
     var pnl = Number(t.pnl||0);
-    var isWin = pnl >= 0;
+    var isBe = Math.abs(pnl) < 0.01;
+    var tone = isBe ? 'be' : (pnl > 0 ? 'profit' : 'loss');
     var pnlAbs = Math.abs(pnl);
-    var pnlStr = (isWin?'+':'−')+'$'+pnlAbs.toLocaleString(undefined,{maximumFractionDigits:2});
+    var pnlStr = isBe ? '$0' : (pnl>0?'+':'−')+'$'+pnlAbs.toLocaleString(undefined,{maximumFractionDigits:2});
     var side = (t.direction==='short' || t.type==='short') ? 'short' : 'long';
     var grade = e.grade || 'B';
     var accts = (e.accounts!=null) ? e.accounts : 1;
@@ -11379,14 +11539,14 @@ function csvRenderAllRows(){
     var ssEmptyDisp = imgUrl ? 'none' : '';
     var ssThumbDisp = imgUrl ? '' : 'none';
     var safeImg = imgUrl ? _safeText(imgUrl) : '';
-    return '<div class="csv-edit-row '+(isWin?'profit':'loss')+'" data-idx="'+i+'"'+(e.pnlManual?' data-pnl-manual="1"':'')+'>'+
+    return '<div class="csv-edit-row '+tone+(String(notes).trim()?'':' desc-missing')+'" data-idx="'+i+'"'+(e.pnlManual?' data-pnl-manual="1"':'')+'>'+
       '<div class="csv-row-head">'+
         '<input class="csv-sym" data-field="sym" value="'+_safeText(sym)+'" placeholder="Sym"/>'+
         '<div class="side-cards-mini">'+
           '<div class="side-card-mini long'+(side==='long'?' on':'')+'" data-side="long">↗</div>'+
           '<div class="side-card-mini short'+(side==='short'?' on':'')+'" data-side="short">↘</div>'+
         '</div>'+
-        '<span class="csv-row-pnl'+(isWin?'':' loss')+'">'+pnlStr+'</span>'+
+        '<span class="csv-row-pnl'+(isBe?' be':(pnl>0?'':' loss'))+'">'+pnlStr+'</span>'+
         '<button class="csv-remove" data-action="remove" title="Remove">×</button>'+
       '</div>'+
       '<div class="csv-row-body">'+
@@ -11409,10 +11569,29 @@ function csvRenderAllRows(){
             '<button class="csv-ss-remove" type="button" title="Remove">×</button>'+
           '</div>'+
         '</div>'+
-        '<input class="field-input field-sm csv-notes" data-field="notes" placeholder="Notes (optional)" value="'+_safeText(notes)+'"/>'+
+        '<input class="field-input field-sm csv-notes" data-field="notes" placeholder="Description (required)" value="'+_safeText(notes)+'"/>'+
       '</div>'+
     '</div>';
   }).join('');
+  _updateCsvImportGate();
+}
+
+/* "Import all" stays locked until every row has a description.
+   (Screenshots stay optional in bulk import — those trades get a
+   "no chart" marker on their feed cards instead.) */
+function _updateCsvImportGate(){
+  var btn = document.querySelector('#pg-log .csv-import');
+  if(!btn) return;
+  var missing = 0;
+  csvParsedTrades.forEach(function(t,i){
+    var e = csvEnrichment[i] || {};
+    if(!String(e.notes || t.notes || '').trim()) missing++;
+  });
+  btn.disabled = missing > 0;
+  btn.classList.toggle('gated', missing > 0);
+  btn.textContent = missing > 0
+    ? ('Import all · '+missing+' missing description'+(missing>1?'s':''))
+    : 'Import all';
 }
 
 function csvCalcRR(){
@@ -11766,6 +11945,16 @@ function parseTradovateCsv(text){
 
 function importCsvTrades(){
   if(!csvParsedTrades.length)return;
+  // Hard gate: every row needs a description before import.
+  var missingDesc = csvParsedTrades.some(function(t,i){
+    var e = csvEnrichment[i] || {};
+    return !String(e.notes || t.notes || '').trim();
+  });
+  if(missingDesc){
+    toast('Every trade needs a description before importing');
+    _updateCsvImportGate();
+    return;
+  }
   csvSaveCurrent(); // legacy carousel save — no-op when carousel is gone
   // Capture count BEFORE discardAiScan empties the array.
   const n = csvParsedTrades.length;
@@ -13395,9 +13584,63 @@ function calcLivePnl(){
       }
     }
     if(acEl)acEl.textContent=accts>1?(accts+'×'):'1';
+
+    // Discord share toggle — win → #wins (default ON), loss → #losses
+    // (default OFF), break-even / no P&L → hidden entirely.
+    var shareWrap=document.getElementById('lt-discord-share');
+    var shareChip=document.getElementById('lt-share-chip');
+    var shareHint=document.getElementById('lt-share-hint');
+    if(shareWrap && shareChip){
+      var kind=(effPnl==null||isNaN(effPnl)||Math.abs(effPnl)<0.01)?null:(effPnl>0?'win':'loss');
+      if(kind!==_discordShare.kind){
+        _discordShare.kind=kind;
+        _discordShare.on=(kind==='win');   // wins default on, losses default off
+      }
+      if(!kind){
+        shareWrap.style.display='none';
+      }else{
+        shareWrap.style.display='';
+        shareChip.textContent='Share to #'+(kind==='win'?'wins':'losses');
+        shareChip.className='lt-share-chip share-'+kind+(_discordShare.on?' on':'');
+        if(shareHint) shareHint.textContent=_discordShare.on
+          ? ('Posts to the Trading Ark #'+(kind==='win'?'wins':'losses')+' channel on submit')
+          : ('Off — this trade stays out of #'+(kind==='win'?'wins':'losses'));
+      }
+    }
   }
 
   if(typeof updateLogPreview === 'function') updateLogPreview();
+}
+
+/* Discord share toggle state (see calcLivePnl for the state machine) */
+var _discordShare={kind:null,on:false};
+function toggleDiscordShare(){
+  if(!_discordShare.kind) return;
+  _discordShare.on=!_discordShare.on;
+  if(typeof calcLivePnl==='function') calcLivePnl();
+}
+/* Fire-and-forget post to /api/wins/post or /api/losses/post. Delayed
+   so the just-logged trade's row has flushed to Supabase (the route
+   re-loads and re-verifies it server-side). */
+function maybeShareToDiscord(trade){
+  if(!_discordShare.kind || !_discordShare.on || !trade) return;
+  if(!_sb || !currentUser) return;
+  var kind=_discordShare.kind;
+  var endpoint=kind==='win' ? '/api/wins/post' : '/api/losses/post';
+  setTimeout(function(){
+    _sb.auth.getSession().then(function(s){
+      var tok=s && s.data && s.data.session && s.data.session.access_token;
+      if(!tok) return;
+      fetch(endpoint,{
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},
+        body:JSON.stringify({trade_id:String(trade.id)})
+      }).then(function(r){
+        if(r.ok) toast('Shared to #'+(kind==='win'?'wins':'losses'));
+        else r.json().then(function(j){console.warn('[discord share]',j);}).catch(function(){});
+      }).catch(function(e){console.warn('[discord share]',e);});
+    });
+  },2000);
 }
 
 function handleImgDrop(e){
@@ -14054,7 +14297,9 @@ async function onSignedIn(user) {
   try { await loadCommunityFromDB(user); } catch(e) { console.warn('Community load skipped:', e.message); }
   try { await loadUserSettings(); refreshCustomRulesFromSettings(); } catch(e) { console.warn('Settings load skipped:', e.message); }
   init();
-  goTo('dashboard');
+  /* Post permalink (/community?post=…) routes straight to the feed;
+     everything else lands on the dashboard as before. */
+  goTo(_pendingPostLink ? 'community' : 'dashboard');
 }
 
 /* ── Tab switching ── */
