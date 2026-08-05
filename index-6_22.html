@@ -3985,6 +3985,18 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 
 /* Trade-screenshot block — full-width inside the post card. The chart
    IS the point in a trading feed, so it earns the real estate. */
+/* Two-column card body: text/meta ~55%, screenshot ~45% */
+#pg-community .post-cols{display:flex;gap:14px;align-items:flex-start}
+#pg-community .post-main{flex:1 1 55%;min-width:0}
+#pg-community .post-media{flex:0 1 45%;min-width:0;max-width:45%}
+#pg-community .post-media .post-image{margin:0}
+#pg-community .post-media .post-image img{height:auto;max-height:260px;object-fit:contain;background:var(--n-bg)}
+@media (max-width:768px){
+  #pg-community .post-cols{flex-direction:column;gap:10px}
+  #pg-community .post-media{flex:none;max-width:100%;width:100%}
+  #pg-community .post-media .post-image img{max-height:none}
+}
+
 #pg-community .post-image{
   margin:12px 0;
   border-radius:8px;overflow:hidden;
@@ -4807,6 +4819,9 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   max-height:60%;overflow-y:auto;
   box-shadow:0 24px 64px -12px rgba(0,0,0,0.8);
   border-color:var(--n-border-2);
+  /* fully opaque — the unified card recipe's rgba(12,15,18,.9) let the
+     month grid ghost through behind the trade list */
+  background:#0C0F12;
 }
 @media (max-width:1100px){
   #pg-community #comm-day-panel{left:24px;right:24px;bottom:28px}
@@ -5440,6 +5455,129 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   #pg-analytics .perf-grid > .an-card:first-child{grid-column:1/-1}
 }
 
+/* ── Log Trade: two columns mirroring Dashboard/Community — header +
+      mode tabs full width, form scrolls left, sticky preview +
+      running summary right ── */
+#pg-log.page.on{
+  display:flex!important;flex-direction:column;
+  padding:0;
+  height:calc(100vh - var(--topbar-h));max-height:calc(100vh - var(--topbar-h));
+  overflow:hidden;
+}
+/* legacy `#pg-log > div:not(.ph)` gives every child flex:1 — pin the
+   header + tabs to content height so only the panel grows (selector
+   needs .page.on to out-rank the :not() specificity) */
+#pg-log.page.on > .lg-head{padding:28px 40px 0;margin-bottom:16px;flex:0 0 auto;display:flex}
+#pg-log.page.on > .mode-tabs{padding:0;margin:0 40px 16px;flex:0 0 auto}
+#pg-log.on .mode-panel.on{flex:1;min-height:0;height:auto;overflow:visible}
+#pg-log #mode-manual.on{display:flex!important;flex-direction:column}
+#pg-log #mode-manual .lt-grid{
+  flex:1;min-height:0;display:flex;grid-template-columns:none;gap:0;align-items:stretch;
+}
+#pg-log .lt-form{
+  flex:1 1 50%;min-width:0;overflow-y:auto;
+  padding:4px 40px 32px;gap:16px;
+  border-right:1px solid var(--n-border);
+}
+#pg-log .lt-preview{
+  flex:1 1 50%;min-width:0;position:static;top:auto;
+  padding:4px 40px 32px;overflow-y:auto;
+}
+/* CSV panel keeps single column but scrolls internally */
+#pg-log #mode-ai.on{display:block!important;overflow-y:auto;padding:0 40px 32px}
+@media (max-width:1100px){
+  #pg-log .lg-head{padding:24px 24px 0}
+  #pg-log .mode-tabs{margin:0 24px 14px}
+  #pg-log .lt-form,#pg-log .lt-preview{padding:4px 24px 24px}
+  #pg-log #mode-ai.on{padding:0 24px 24px}
+}
+@media (max-width:768px){
+  #pg-log.page.on{height:auto!important;max-height:none!important;overflow:visible!important;padding:0!important}
+  #pg-log #mode-manual .lt-grid{flex-direction:column}
+  #pg-log .lt-form{overflow:visible;border-right:none;padding:0 14px 8px}
+  #pg-log .lt-preview{overflow:visible;padding:0 14px 60px}
+  #pg-log #mode-ai.on{overflow:visible;padding:0 14px 60px}
+}
+
+/* More-details fold */
+#pg-log .lt-more-toggle{
+  display:flex;align-items:center;gap:8px;width:100%;
+  background:var(--n-surface-2);border:1px solid var(--n-border);
+  border-radius:2px;padding:9px 12px;margin-top:4px;cursor:pointer;
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--n-text-3);transition:.12s;
+}
+#pg-log .lt-more-toggle:hover{color:var(--n-text);border-color:var(--n-border-3)}
+#pg-log .lt-more-toggle .chev{margin-left:auto;transition:transform .15s}
+#pg-log .lt-more-toggle.open .chev{transform:rotate(180deg)}
+#pg-log .lt-more{
+  margin-top:12px;padding:14px;border:1px dashed var(--n-border-2);
+  border-radius:2px;display:flex;flex-direction:column;gap:14px;
+}
+
+/* Copy-trading accounts field */
+#pg-log .lt-acct-explain{
+  font-family:var(--n-font-sans);font-size:11.5px;line-height:1.5;
+  color:var(--n-text-3);
+}
+#pg-log .lt-acct-explain strong{color:var(--n-text)}
+
+/* Reflection — visually the main event */
+#pg-log .lt-section.lt-reflect{
+  background:var(--n-surface-3);
+  border-color:var(--n-border-3);
+  padding:24px;
+}
+#pg-log .lt-reflect .reflect-h{color:var(--n-text)}
+#pg-log .lt-reflect .reflect-tag{
+  margin-left:auto;font-family:var(--n-font-mono);font-size:8.5px;
+  letter-spacing:0.16em;color:var(--n-text-4);text-transform:uppercase;
+}
+#pg-log .lt-desc{min-height:96px}
+#pg-log .lt-req{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-accent-cool);margin-left:6px;
+}
+#pg-log .lt-err{
+  font-family:var(--n-font-mono);font-size:10px;letter-spacing:0.08em;
+  color:var(--n-loss);margin-top:6px;line-height:1.5;
+}
+
+/* Running summary card */
+#pg-log .lt-summary{
+  margin-top:14px;background:rgba(12,15,18,.9);
+  border:1px solid var(--n-border-2);border-radius:3px;padding:18px;
+}
+#pg-log .lt-summary-h{
+  font-family:var(--n-font-mono);font-size:9.5px;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--n-text-3);margin-bottom:12px;
+}
+#pg-log .lt-sum-pnl{
+  font-family:var(--n-font-display);font-weight:800;letter-spacing:-0.02em;
+  font-size:42px;line-height:1;color:var(--n-text);text-align:center;
+}
+#pg-log .lt-sum-pnl.pos{color:var(--n-profit)}
+#pg-log .lt-sum-pnl.neg{color:var(--n-loss)}
+#pg-log .lt-sum-sub{
+  margin-top:8px;text-align:center;font-family:var(--n-font-mono);
+  font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--n-text-4);
+}
+#pg-log .lt-sum-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+  margin-top:14px;padding-top:14px;border-top:1px solid var(--n-border);
+}
+#pg-log .lt-sum-cell{text-align:center}
+#pg-log .lt-sum-cell .lbl{
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--n-text-4);margin-bottom:5px;
+}
+#pg-log .lt-sum-cell .val{
+  font-family:var(--n-font-display);font-weight:800;letter-spacing:-0.02em;
+  font-size:18px;color:var(--n-text);
+}
+#pg-log .lt-sum-cell .val.pos{color:var(--n-profit)}
+#pg-log .lt-sum-cell .val.neg{color:var(--n-loss)}
+
 /* ── Top bar: nav centered between wordmark and user cluster ── */
 .wrap > .sb .sb-nav{justify-content:center}
 </style>
@@ -5927,9 +6065,9 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     <div class="lt-grid">
       <div class="lt-form">
 
-        <!-- 01 SETUP -->
+        <!-- 01 TRADE — the six at-rest fields; the rest folds away -->
         <div class="lt-section">
-          <div class="lt-section-h"><span class="lt-section-num">01</span><span>Setup</span></div>
+          <div class="lt-section-h"><span class="lt-section-num">01</span><span>Trade</span></div>
 
           <div class="lt-field">
             <div class="lt-field-l">Side</div>
@@ -5953,37 +6091,10 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
               <div id="sym-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;z-index:200;margin-top:-1px"></div>
             </div>
             <div class="lt-field">
-              <div class="lt-field-l">Market</div>
-              <select id="lg-mkt" class="lt-input" onchange="onMarketChange()">
-                <option>Futures</option><option>Stocks</option><option>Crypto</option><option>Options</option><option>Forex</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="lt-dual">
-            <div class="lt-field">
               <div class="lt-field-l">Date</div>
               <input type="date" id="lg-date" class="lt-input" oninput="updateLogPreview()"/>
             </div>
-            <div class="lt-field">
-              <div class="lt-field-l">Session</div>
-              <select id="lg-session-sel" class="lt-input" onchange="onLtSessionChange(this.value)">
-                <option value="">&mdash;</option>
-                <option>Asia</option>
-                <option>London</option>
-                <option>NY AM</option>
-                <option>NY Lunch</option>
-                <option>NY PM</option>
-                <option>Other</option>
-              </select>
-              <input type="hidden" id="lg-session" value=""/>
-            </div>
           </div>
-        </div>
-
-        <!-- 02 EXECUTION -->
-        <div class="lt-section">
-          <div class="lt-section-h"><span class="lt-section-num">02</span><span>Execution</span></div>
 
           <div class="lt-triple">
             <div class="lt-field">
@@ -5995,44 +6106,97 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
               <input class="lt-input" id="lg-exit" type="number" step="any" placeholder="0.00" oninput="calcLivePnl()"/>
             </div>
             <div class="lt-field">
-              <div class="lt-field-l">Stop <span class="lt-hint">optional</span></div>
-              <input class="lt-input" id="lg-stop" type="number" step="any" placeholder="points" oninput="calcLivePnl()"/>
-            </div>
-          </div>
-
-          <div class="lt-triple">
-            <div class="lt-field">
               <div class="lt-field-l">Qty <span class="lt-hint">per account</span></div>
               <input class="lt-input" id="lg-qty" type="number" step="any" min="1" value="1" oninput="calcLivePnl()"/>
             </div>
-            <div class="lt-field">
-              <div class="lt-field-l">Accounts <span class="lt-hint">copies</span></div>
-              <input class="lt-input" id="lg-accounts" type="number" min="1" value="1" oninput="calcLivePnl()"/>
-            </div>
-            <div class="lt-field">
-              <div class="lt-field-l">P&amp;L $ <span class="lt-hint hint-auto" id="lt-pnl-hint">auto</span></div>
-              <input class="lt-input" id="lg-pnl" type="number" step="any" placeholder="auto-calc" oninput="onPnlInput()"/>
-            </div>
           </div>
 
-          <div class="lt-dual">
-            <div class="lt-field">
-              <div class="lt-field-l">R Multiple <span class="lt-hint hint-auto" id="lt-rr-hint">from stop</span></div>
-              <input class="lt-input" id="lg-rr" type="number" step="0.1" placeholder="auto" oninput="onRrInput()"/>
+          <!-- COPY-TRADERS: one trade, N funded accounts -->
+          <div class="lt-field lt-acct-field">
+            <div class="lt-field-l">Accounts <span class="lt-hint">copy-trading multiplier</span></div>
+            <input class="lt-input" id="lg-accounts" type="number" min="1" value="1" oninput="calcLivePnl()"/>
+            <div class="lt-acct-explain">Running the same order on multiple funded accounts? Enter how many &mdash; <strong>3</strong> logs this as one trade copied across three accounts and multiplies the P&amp;L to match.</div>
+            <div id="lt-acct-note" class="lt-acct-note" style="display:none"></div>
+          </div>
+
+          <!-- MORE DETAILS — stop, R, session, market, P&L override -->
+          <button type="button" class="lt-more-toggle" id="lt-more-toggle" onclick="toggleLtMore()">
+            More details <span class="lt-hint">stop &middot; R &middot; session &middot; market</span><span class="chev">&#9662;</span>
+          </button>
+          <div id="lt-more" class="lt-more" style="display:none">
+            <div class="lt-dual">
+              <div class="lt-field">
+                <div class="lt-field-l">Stop <span class="lt-hint">points, optional</span></div>
+                <input class="lt-input" id="lg-stop" type="number" step="any" placeholder="points" oninput="calcLivePnl()"/>
+              </div>
+              <div class="lt-field">
+                <div class="lt-field-l">R Multiple <span class="lt-hint hint-auto" id="lt-rr-hint">from stop</span></div>
+                <input class="lt-input" id="lg-rr" type="number" step="0.1" placeholder="auto" oninput="onRrInput()"/>
+              </div>
             </div>
-            <div class="lt-field lt-rr-help-wrap">
-              <div class="lt-rr-help">
-                <strong>R</strong> = profit &divide; risk. Risked $100, made $300 = +3R.
+            <div class="lt-dual">
+              <div class="lt-field">
+                <div class="lt-field-l">Session</div>
+                <select id="lg-session-sel" class="lt-input" onchange="onLtSessionChange(this.value)">
+                  <option value="">&mdash;</option>
+                  <option>Asia</option>
+                  <option>London</option>
+                  <option>NY AM</option>
+                  <option>NY Lunch</option>
+                  <option>NY PM</option>
+                  <option>Other</option>
+                </select>
+                <input type="hidden" id="lg-session" value=""/>
+              </div>
+              <div class="lt-field">
+                <div class="lt-field-l">Market</div>
+                <select id="lg-mkt" class="lt-input" onchange="onMarketChange()">
+                  <option>Futures</option><option>Stocks</option><option>Crypto</option><option>Options</option><option>Forex</option>
+                </select>
+              </div>
+            </div>
+            <div class="lt-dual">
+              <div class="lt-field">
+                <div class="lt-field-l">P&amp;L $ <span class="lt-hint hint-auto" id="lt-pnl-hint">auto</span></div>
+                <input class="lt-input" id="lg-pnl" type="number" step="any" placeholder="auto-calc" oninput="onPnlInput()"/>
+              </div>
+              <div class="lt-field lt-rr-help-wrap">
+                <div class="lt-rr-help">
+                  <strong>R</strong> = profit &divide; risk. Risked $100, made $300 = +3R.
+                </div>
               </div>
             </div>
           </div>
-
-          <div id="lt-acct-note" class="lt-acct-note" style="display:none"></div>
         </div>
 
-        <!-- 03 REFLECTION -->
-        <div class="lt-section">
-          <div class="lt-section-h"><span class="lt-section-num">03</span><span>Reflection</span></div>
+        <!-- 02 REFLECTION — the point of the journal -->
+        <div class="lt-section lt-reflect">
+          <div class="lt-section-h reflect-h"><span class="lt-section-num">02</span><span>Reflection</span><span class="reflect-tag">The point of the journal</span></div>
+
+          <div class="lt-field">
+            <div class="lt-field-l">Description <span class="lt-req">required</span></div>
+            <textarea id="lg-notes" class="lt-input lt-textarea lt-desc" placeholder="What was the setup? What worked, what didn't, what's the lesson?"
+              oninput="updateLogPreview();_clearLtErr('lg-desc-err')"></textarea>
+            <div class="lt-err" id="lg-desc-err" style="display:none"></div>
+          </div>
+
+          <div class="lt-field">
+            <div class="lt-field-l">Screenshot <span class="lt-req">required</span> <span class="lt-hint">upload or TradingView link</span></div>
+            <div id="img-drop-zone" class="lt-dropzone"
+              onclick="document.getElementById('img-file-input').click()"
+              ondragover="event.preventDefault();this.classList.add('drag-over')"
+              ondragleave="this.classList.remove('drag-over')"
+              ondrop="handleImgDrop(event);this.classList.remove('drag-over')">
+              <input type="file" id="img-file-input" accept="image/*" multiple style="display:none" onchange="handleImgFiles(this.files)"/>
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
+              <div class="dz-h">Drop screenshot here</div>
+              <div class="dz-sub">or click to browse</div>
+            </div>
+            <div id="note-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+            <input class="lt-input" id="lg-chart-link" type="url" placeholder="&hellip;or paste a tradingview.com chart link"
+              oninput="_clearLtErr('lg-shot-err')" style="margin-top:8px"/>
+            <div class="lt-err" id="lg-shot-err" style="display:none"></div>
+          </div>
 
           <div class="lt-field">
             <div class="lt-field-l">Setup Grade</div>
@@ -6069,26 +6233,6 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
               <span class="lt-conf-label" id="lt-conf-label">Medium</span>
             </div>
           </div>
-
-          <div class="lt-field">
-            <div class="lt-field-l">Notes</div>
-            <textarea id="lg-notes" class="lt-input lt-textarea" placeholder="Setup, what worked, what didn't, lessons&hellip;" oninput="updateLogPreview()"></textarea>
-          </div>
-
-          <div class="lt-field">
-            <div class="lt-field-l">Screenshot</div>
-            <div id="img-drop-zone" class="lt-dropzone"
-              onclick="document.getElementById('img-file-input').click()"
-              ondragover="event.preventDefault();this.classList.add('drag-over')"
-              ondragleave="this.classList.remove('drag-over')"
-              ondrop="handleImgDrop(event);this.classList.remove('drag-over')">
-              <input type="file" id="img-file-input" accept="image/*" multiple style="display:none" onchange="handleImgFiles(this.files)"/>
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
-              <div class="dz-h">Drop screenshot here</div>
-              <div class="dz-sub">or click to browse</div>
-            </div>
-            <div id="note-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
-          </div>
         </div>
 
         <!-- ACTIONS -->
@@ -6101,13 +6245,24 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
         <input type="hidden" id="lg-conf" value="3"/>
       </div>
 
-      <!-- LIVE COMMUNITY PREVIEW -->
+      <!-- RIGHT: sticky community preview + running summary -->
       <div class="lt-preview">
         <div class="lt-preview-h"><span class="dot"></span><span>Community Preview &middot; Live</span></div>
         <div id="lt-preview-card" class="lt-preview-card empty">
           <div class="lt-preview-empty">Fill in symbol &amp; entry to see preview</div>
         </div>
         <div class="lt-preview-note">Auto-shares to all your communities on submit.</div>
+
+        <div class="lt-summary">
+          <div class="lt-summary-h">Running Summary</div>
+          <div class="lt-sum-pnl" id="lt-sum-pnl">&mdash;</div>
+          <div class="lt-sum-sub" id="lt-sum-sub">Fill in entry &amp; exit</div>
+          <div class="lt-sum-grid">
+            <div class="lt-sum-cell"><div class="lbl">R Multiple</div><div class="val" id="lt-sum-rr">&mdash;</div></div>
+            <div class="lt-sum-cell"><div class="lbl">Result</div><div class="val" id="lt-sum-wl">&mdash;</div></div>
+            <div class="lt-sum-cell"><div class="lbl">Accounts</div><div class="val" id="lt-sum-accts">1</div></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -7654,7 +7809,7 @@ function setCheckin(status) {
   saveCheckins();
   renderCheckinStrip();
   renderCheckinPanel();
-  if(_sb&&currentUser&&_comm){_sb.from('community_posts').upsert({id:'checkin_'+currentUser.id+'_'+today,user_id:currentUser.id,community_id:_comm.id,content:JSON.stringify({checkin:status}),username:(acct&&acct.username)||'You'}).then(function(){});}
+  if(_sb&&currentUser&&_comm){_sb.from('community_posts').upsert({id:'checkin_'+currentUser.id+'_'+today,user_id:currentUser.id,community_id:_comm.id,content:JSON.stringify({checkin:status}),username:(acct&&(acct.name||acct.username))||'You'}).then(function(){});}
   toast(status === 'trading' ? '✅ You\'re trading today!' : '💤 Sitting out today');
 }
 
@@ -7877,7 +8032,7 @@ async function syncAndLoadCommFeed(g){
   if(idsToFetch.length){
     try{
       var pf = await _sb.from('profiles')
-        .select('id,username,initials,color,avatar_finish,avatar_image_url,avatar_initials,last_seen_at')
+        .select('id,display_name,username,initials,color,avatar_finish,avatar_image_url,avatar_initials,last_seen_at')
         .in('id', idsToFetch);
       if(pf.data) pf.data.forEach(function(p){ profMap[p.id] = p; });
     }catch(e){ console.warn('Profile fetch skipped:', e.message); }
@@ -7901,7 +8056,7 @@ async function syncAndLoadCommFeed(g){
       return {
         id: String(row.id),
         user_id: row.user_id,
-        username: row.username || p.username || m.username || 'Trader',
+        username: p.display_name || row.username || p.username || m.username || 'Trader',
         initials: p.avatar_initials || p.initials || row.initials || m.initials
                   || (p.username || row.username || m.username || '??').slice(0,2).toUpperCase(),
         avatar_finish: p.avatar_finish || p.color || row.avatar_color || m.color || m.avatar_color || 'chrome',
@@ -7917,10 +8072,15 @@ async function syncAndLoadCommFeed(g){
     })
     .filter(Boolean);
 
+  // Expose the profile join for renderers outside this function
+  // (top-trader stat, community calendar day panel, reply names).
+  window._profCache = profMap;
+
   // Also patch g.members with live profile data so renderFeedMembers and
   // renderFeedLeaderboard reflect current finishes.
   (g.members||[]).forEach(function(m){
     var p=profMap[m.id]; if(!p) return;
+    m.display_name = p.display_name || m.display_name || null;
     m.avatar_finish = p.avatar_finish || p.color || m.color || 'chrome';
     m.avatar_image_url = p.avatar_image_url || null;
     m.initials = p.avatar_initials || p.initials || m.initials;
@@ -7958,7 +8118,7 @@ function renderFeedPosts(g){
   // ── Build combined list: own trades + remote members' posts ───────
   var combined=[];
   var myId=currentUser?currentUser.id:null;
-  var myName=(acct&&acct.username)?acct.username:'You';
+  var myName=(acct&&(acct.name||acct.username))||'You';
   var myInit=(acct&&acct.avatar_initials||acct&&acct.initials)?(acct.avatar_initials||acct.initials):'ME';
   var myFinish=(acct&&(acct.avatar_finish||acct.color))||'chrome';
   var myImgUrl=(acct&&acct.avatar_image_url)||null;
@@ -8205,27 +8365,31 @@ function renderFeedPosts(g){
         console.warn('[feed] post', p.id, 'has invalid image_url:', p.image_url);
       }
     }
-    return '<div class="post '+cardClass+' '+tintClass+'" data-pid="'+safePid+'">'
-      + '<div class="post-head">'
-      +   renderUserAvatar({
-            avatar_finish: p.avatar_finish || p.color || p.avatar_color,
-            avatar_initials: p.avatar_initials || p.initials,
-            avatar_image_url: p.avatar_image_url,
-            username: p.username,
-            name: p.username
-          }, 'sm')
-      +   '<div class="post-author">'
-      +     '<div class="author-line">'
-      +       '<span class="author-name">'+safeText(p.username || 'Anonymous')+'</span>'
-      +       (p.isMe ? '<span class="author-you">You</span>' : '')
+    // Two-column card: text/meta left (~55%), screenshot right (~45%).
+    return '<div class="post '+cardClass+' '+tintClass+(postImgHtml?' has-media':'')+'" data-pid="'+safePid+'">'
+      + '<div class="post-cols">'
+      +   '<div class="post-main">'
+      +     '<div class="post-head">'
+      +       renderUserAvatar({
+                avatar_finish: p.avatar_finish || p.color || p.avatar_color,
+                avatar_initials: p.avatar_initials || p.initials,
+                avatar_image_url: p.avatar_image_url,
+                username: p.username,
+                name: p.username
+              }, 'sm')
+      +       '<div class="post-author">'
+      +         '<div class="author-line">'
+      +           '<span class="author-name">'+safeText(p.username || 'Anonymous')+'</span>'
+      +           (p.isMe ? '<span class="author-you">You</span>' : '')
+      +         '</div>'
+      +       '</div>'
+      +       '<span class="post-time">'+_relTime(p.date)+'</span>'
       +     '</div>'
-      +     '<div class="author-handle">@'+safeText((p.username||'anon').replace(/^@/,''))+'</div>'
+      +     bodyHtml
+      +     chipsHtml
       +   '</div>'
-      +   '<span class="post-time">'+_relTime(p.date)+'</span>'
+      +   (postImgHtml ? '<div class="post-media">'+postImgHtml+'</div>' : '')
       + '</div>'
-      + bodyHtml
-      + postImgHtml
-      + chipsHtml
       + '<div class="post-actions">'
       +   '<button class="action-btn'+(youLiked?' liked':'')+'" onclick="feedLike(this)" data-id="'+safePid+'"'+(youLiked?' data-liked="1"':'')+'>'
       +     '<svg viewBox="0 0 24 24" fill="'+(youLiked?'currentColor':'none')+'" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
@@ -8421,7 +8585,7 @@ function feedRenderReplies(id) {
   if (!list.length) { el.innerHTML = ''; return; }
   el.innerHTML = list.map(function(r) {
     var isMe = currentUser && r.user_id === currentUser.id;
-    var displayName = isMe ? 'You' : (r.username || 'Trader');
+    var displayName = isMe ? 'You' : ((window._profCache&&window._profCache[r.user_id]&&window._profCache[r.user_id].display_name)||r.username||'Trader');
     var nameColor = isMe ? 'var(--pink)' : 'var(--cyan)';
     var t = r.created_at ? new Date(r.created_at) : new Date();
     var time = t.getHours() + ':' + String(t.getMinutes()).padStart(2,'0');
@@ -8438,7 +8602,7 @@ async function feedSubmitReply(id) {
   var inp = document.getElementById('reply-input-' + id); if (!inp) return;
   var txt = inp.value.trim(); if (!txt) return;
   if (!_sb || !currentUser || !_comm) { toast('Not connected'); return; }
-  var myUsername = (acct && acct.username) ? acct.username : 'You';
+  var myUsername = (acct && (acct.name||acct.username)) || 'You';
   var tempReply = {
     id: 'temp-' + Date.now(),
     post_id: id,
@@ -8651,12 +8815,12 @@ function renderFeedLeaderboard(g){
   var mT=getMemberTradesLookup();
   var myPnl=trades.reduce(function(a,t){return a+(t.pnl||0);},0);
   var myWr=trades.length?Math.round(trades.filter(function(t){return t.pnl>0;}).length/trades.length*100):0;
-  var rows=[{username:(acct&&acct.username)||'You',pnl:myPnl,wr:myWr,aplus:trades.filter(function(t){return t.grade==='A+';}).length,isMe:true,color:(acct&&acct.color)||'chrome'}];
+  var rows=[{username:(acct&&(acct.name||acct.username))||'You',pnl:myPnl,wr:myWr,aplus:trades.filter(function(t){return t.grade==='A+';}).length,isMe:true,color:(acct&&acct.color)||'chrome'}];
   (g.members||[]).filter(function(m){return!m.isMe;}).forEach(function(m){
     var mt=mT[m.id]||[];
     var pnl=mt.reduce(function(a,t){return a+(t.pnl||0);},0);
     var wins=mt.filter(function(t){return t.pnl>0;}).length;
-    rows.push({username:m.username,pnl:pnl,wr:mt.length?Math.round(wins/mt.length*100):0,aplus:mt.filter(function(t){return t.grade==='A+';}).length,isMe:false,color:m.color||'blue'});
+    rows.push({username:m.display_name||m.username||'Trader',pnl:pnl,wr:mt.length?Math.round(wins/mt.length*100):0,aplus:mt.filter(function(t){return t.grade==='A+';}).length,isMe:false,color:m.color||'blue'});
   });
   if(_lbFilter==='wr') rows.sort(function(a,b){return b.wr-a.wr;});
   else if(_lbFilter==='aplus') rows.sort(function(a,b){return b.aplus-a.aplus;});
@@ -8695,7 +8859,6 @@ function renderFeedLeaderboard(g){
       + '<span class="' + rankCls + '">' + (i+1) + '</span>'
       + '<div class="lb-av av ' + avTone + avExtra + '">' + avInner + '</div>'
       + '<div class="lb-name">' + safeUname + (r.isMe ? ' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase">you</span>' : '')
-      +   '<div class="lb-handle">@' + safeText((r.username||'trader').replace(/^@/,'')) + '</div>'
       + '</div>'
       + '<span class="lb-pl ' + valCls + '">' + valStr + '</span>'
       + '</div>';
@@ -8872,7 +9035,7 @@ function renderFeedMembers(g){
   el.className='members-list';
   el.innerHTML=visible.map(function(m){
     var safeMid = safeText(m.id || '');
-    var displayName = safeText(m.username || 'Anonymous');
+    var displayName = safeText(m.display_name || m.username || 'Anonymous');
     var handle = safeText((m.username || 'anon').replace(/^@/,''));
     var meTag = m.isMe ? ' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase">you</span>' : '';
     var avHtml = renderUserAvatar({
@@ -8929,7 +9092,7 @@ function openAllMembersModal(){
   });
   list.innerHTML = members.map(function(m){
     var safeMid = safeText(m.id || '');
-    var displayName = safeText(m.username || 'Anonymous');
+    var displayName = safeText(m.display_name || m.username || 'Anonymous');
     var handle = safeText((m.username || 'anon').replace(/^@/,''));
     var meTag = m.isMe ? ' <span style="opacity:.55;font-family:var(--n-font-mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase">you</span>' : '';
     var avHtml = renderUserAvatar({
@@ -9210,8 +9373,9 @@ async function renderHeroPnl(g, period){
   var bestEl = document.getElementById('comm-hero-best');
   bestEl.textContent = _fmtShortMoney(stats.best);
   bestEl.className = 'hero-stat-value' + (stats.best > 0 ? ' profit' : '');
-  var topName = stats.topTrader && stats.topTrader.username;
-  document.getElementById('comm-hero-top').textContent = topName ? '@'+String(topName).replace(/^@/,'') : '—';
+  var tt = stats.topTrader;
+  var topName = tt && ((window._profCache && window._profCache[tt.user_id] && window._profCache[tt.user_id].display_name) || tt.username);
+  document.getElementById('comm-hero-top').textContent = topName ? String(topName) : '—';
 }
 
 /* ── COMMUNITY CALENDAR ─────────────────────────────────────────
@@ -9249,6 +9413,21 @@ async function loadCommCalendar(g){
       type: t.type || ''
     };
   }).filter(Boolean);
+  // Resolve poster display names (Discord-synced) for any user the feed's
+  // profile join didn't already cache — old posts store stale usernames.
+  try{
+    window._profCache = window._profCache || {};
+    var missing = Array.from(new Set(_commCalPosts.map(function(p){return p.user_id;})))
+      .filter(function(id){ return id && !window._profCache[id]; });
+    if(missing.length){
+      var pr = await _sb.from('profiles').select('id,display_name,username').in('id', missing);
+      if(pr && pr.data) pr.data.forEach(function(p){ window._profCache[p.id]=p; });
+    }
+  }catch(e){ console.warn('[comm cal] profile fetch skipped:', e); }
+  _commCalPosts.forEach(function(p){
+    var prof = p.user_id && window._profCache[p.user_id];
+    if(prof && prof.display_name) p.username = prof.display_name;
+  });
   renderCommCal();
   // Keep an open day panel in sync with fresh data.
   if(_commCalSel) showCommDay(_commCalSel);
@@ -10552,10 +10731,13 @@ async function shareTradeToCommunity(trade){
 
     // 2. Profile fields for denormalized columns.
     var prof = await _sb.from('profiles')
-      .select('username,avatar_finish,avatar_initials,initials,color')
+      .select('display_name,username,avatar_finish,avatar_initials,initials,color')
       .eq('id', currentUser.id).maybeSingle();
     var p = (prof && prof.data) || {};
-    var username = p.username || (acct && acct.username) || 'trader';
+    // display_name is the Discord-synced field — profiles.username is
+    // legacy and unset for Discord-gated users (it produced the literal
+    // "trader" fallback on every post).
+    var username = p.display_name || p.username || (acct && (acct.name || acct.username)) || 'trader';
     var initials = p.avatar_initials || p.initials
                 || (acct && (acct.avatar_initials||acct.initials))
                 || username.slice(0,2).toUpperCase();
@@ -10684,13 +10866,15 @@ function fullLog(){
   // override so the saved rr matches the saved pnl.
   if(_pnlManual && !_rrManual && risk && risk>0) rr = pnl/risk;
 
-  var newTrade = {id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,pnl,rr,grade,emotion,confidence,images:[...noteImages],created_at:new Date().toISOString()};
+  const chartLink=(document.getElementById('lg-chart-link')?.value||'').trim();
+  var newTrade = {id:Date.now(),sym,type:lgType,entry,exit,stop,qty,accounts:accounts>1?accounts:undefined,date,market:mkt,session,notes,pnl,rr,grade,emotion,confidence,images:[...noteImages],chart_url:(_isTvLink(chartLink)?chartLink:undefined),created_at:new Date().toISOString()};
   trades.unshift(newTrade);
   save();renderAll();
   shareTradeToCommunity(newTrade);
 
   // Reset form for the next trade
-  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-pnl','lg-rr'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-pnl','lg-rr','lg-chart-link'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  _clearLtErr('lg-desc-err');_clearLtErr('lg-shot-err');
   document.getElementById('lg-qty').value='1';
   if(document.getElementById('lg-accounts'))document.getElementById('lg-accounts').value='1';
   document.getElementById('lg-date').value=_localDate(new Date());
@@ -10712,6 +10896,42 @@ function fullLog(){
 }
 
 
+/* ── LOG FORM HELPERS — more-details fold + inline required errors ── */
+function toggleLtMore(){
+  var d=document.getElementById('lt-more'), t=document.getElementById('lt-more-toggle');
+  if(!d) return;
+  var open=d.style.display!=='none';
+  d.style.display=open?'none':'block';
+  if(t) t.classList.toggle('open',!open);
+}
+function _clearLtErr(id){var e=document.getElementById(id);if(e)e.style.display='none';}
+function _isTvLink(s){return /^https?:\/\/([a-z0-9-]+\.)*tradingview\.com\/\S+/i.test(s||'');}
+/* Required-field gate: description text + a screenshot (uploaded image
+   OR a TradingView chart link). Returns true if OK; shows inline
+   messages and scrolls to the first problem otherwise. */
+function _validateLtRequired(){
+  var desc=(document.getElementById('lg-notes')?.value||'').trim();
+  var link=(document.getElementById('lg-chart-link')?.value||'').trim();
+  var hasImg=(typeof noteImages!=='undefined')&&noteImages.length>0;
+  var hasShot=hasImg||_isTvLink(link);
+  var descErr=document.getElementById('lg-desc-err');
+  var shotErr=document.getElementById('lg-shot-err');
+  if(descErr){
+    descErr.textContent='Description is required — write down what happened.';
+    descErr.style.display=desc?'none':'block';
+  }
+  if(shotErr){
+    shotErr.textContent=(link&&!_isTvLink(link))
+      ? "That link isn't a TradingView chart — paste a tradingview.com link or upload an image."
+      : 'Screenshot is required — upload an image or paste a TradingView chart link.';
+    shotErr.style.display=hasShot?'none':'block';
+  }
+  if(desc&&hasShot) return true;
+  var target=document.getElementById(!desc?'lg-notes':'img-drop-zone');
+  if(target&&target.scrollIntoView) target.scrollIntoView({behavior:'smooth',block:'center'});
+  return false;
+}
+
 /* ── LOG CONFIRM / RESET ── */
 function confirmLog(){
   const sym=document.getElementById('lg-sym').value.trim().toUpperCase();
@@ -10724,6 +10944,7 @@ function confirmLog(){
   const emotion=document.getElementById('lg-emotion')?.value||'3';
   const session=document.getElementById('lg-session')?.value||'—';
   if(!sym||isNaN(entry)||isNaN(exit)){toast('Fill Symbol, Entry & Exit');return;}
+  if(!_validateLtRequired()) return;
   const ptVal=PTS[sym]||1;
   const totalQty=qty*accts;
   const pnl=(lgType==='long'?(exit-entry):(entry-exit))*totalQty*ptVal;
@@ -10762,7 +10983,8 @@ function confirmLogFinal(){
 }
 
 function resetLogForm(){
-  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-pnl','lg-rr'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['lg-sym','lg-entry','lg-exit','lg-stop','lg-notes','lg-pnl','lg-rr','lg-chart-link'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  _clearLtErr('lg-desc-err');_clearLtErr('lg-shot-err');
   document.getElementById('lg-qty').value='1';
   if(document.getElementById('lg-accounts'))document.getElementById('lg-accounts').value='1';
   document.getElementById('lg-date').value=_localDate(new Date());
@@ -13056,6 +13278,46 @@ function calcLivePnl(){
     }
   }
 
+  // Right-column running summary — multiplied total P&L, R, win/loss,
+  // and the copy-trading accounts math.
+  const sumPnl=document.getElementById('lt-sum-pnl');
+  if(sumPnl){
+    // Effective values: prefer the user's manual overrides.
+    let effPnl=pnl;
+    const userPnl=parseFloat(pnlInput&&pnlInput.value);
+    if(_pnlManual&&!isNaN(userPnl)) effPnl=userPnl;
+    let effRR=rr;
+    const userRR=parseFloat(rrInput&&rrInput.value);
+    if(!isNaN(userRR)) effRR=userRR;
+
+    const sub=document.getElementById('lt-sum-sub');
+    const rrEl=document.getElementById('lt-sum-rr');
+    const wlEl=document.getElementById('lt-sum-wl');
+    const acEl=document.getElementById('lt-sum-accts');
+    if(effPnl==null||isNaN(effPnl)){
+      sumPnl.textContent='—';sumPnl.className='lt-sum-pnl';
+      if(sub)sub.textContent='Fill in entry & exit';
+      if(rrEl)rrEl.textContent='—';
+      if(wlEl){wlEl.textContent='—';wlEl.className='val';}
+    }else{
+      const sign=effPnl>0?'+':effPnl<0?'−':'';
+      sumPnl.textContent=sign+'$'+Math.abs(Math.round(effPnl)).toLocaleString('en-US');
+      sumPnl.className='lt-sum-pnl '+(effPnl>0?'pos':effPnl<0?'neg':'');
+      if(sub){
+        sub.textContent=accts>1
+          ? (qty+' ct × '+accts+' accounts · '+sign+'$'+Math.abs(Math.round(effPnl/accts)).toLocaleString('en-US')+' per account')
+          : 'Total P&L · '+totalQty+' ct';
+      }
+      if(rrEl)rrEl.textContent=(effRR!=null&&!isNaN(effRR))?(Math.round(effRR*10)/10)+'R':'—';
+      if(wlEl){
+        const isBe=Math.abs(effPnl)<0.01;
+        wlEl.textContent=isBe?'B/E':(effPnl>0?'WIN':'LOSS');
+        wlEl.className='val '+(isBe?'':(effPnl>0?'pos':'neg'));
+      }
+    }
+    if(acEl)acEl.textContent=accts>1?(accts+'×'):'1';
+  }
+
   if(typeof updateLogPreview === 'function') updateLogPreview();
 }
 
@@ -13284,7 +13546,14 @@ function refreshAcctUI(){
   });
   /* static label in the sidebar — name syncs from Discord, no account page */
   var n=document.getElementById('sb-name');if(n)n.textContent=acct.name||'My Account';
-  var su=document.getElementById('sb-username');if(su)su.textContent=acct.username?'@'+acct.username.replace('@',''):'@username';
+  // Show the Discord username when we have one; hide the line entirely
+  // instead of rendering the "@username" placeholder.
+  var su=document.getElementById('sb-username');
+  if(su){
+    var uname=acct.username||acct.discord_username||'';
+    if(uname){su.textContent='@'+String(uname).replace(/^@/,'');su.style.display='';}
+    else su.style.display='none';
+  }
 }
 // Shared helper — returns {bg, border, text} for any avatar color key
 function getAvatarStyle(colorKey){
@@ -15499,6 +15768,9 @@ async function loadProfileFromDB(user) {
     acct.email    = user.email || '';
     var pendingUser2=''; try{pendingUser2=localStorage.getItem('tr1_pending_username')||'';}catch(e){}
     acct.username = r.data.username || user.user_metadata?.username || pendingUser2 || '';
+    // Discord OAuth exposes the account's username in user_metadata —
+    // keep it as a display fallback without writing it to profiles.
+    acct.discord_username = user.user_metadata?.custom_claims?.global_name || user.user_metadata?.name || '';
     if(acct.username && !r.data.username){ try{localStorage.removeItem('tr1_pending_username');}catch(e){} }
     acct.initials         = r.data.avatar_initials || r.data.initials || '?';
     acct.avatar_initials  = acct.initials;
