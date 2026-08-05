@@ -3718,9 +3718,32 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 /* ── FEED HEADER — centered community identity ── */
 #pg-community .fhead{
   display:flex;flex-direction:column;align-items:center;
-  gap:12px;margin-bottom:20px;border:none;padding:0;text-align:center;
+  gap:12px;margin-bottom:32px;border:none;padding:0;text-align:center;
 }
 #pg-community .fhead-id{display:flex;align-items:center;gap:14px;text-align:left}
+#pg-community .feed-grp-logo{
+  width:44px;height:44px;border-radius:10px;object-fit:cover;
+  border:1px solid var(--n-border-2);flex-shrink:0;background:var(--n-surface-2);
+}
+/* Role badges (ported from the earlier app.html design) */
+#pg-community .cm-role{
+  font-family:var(--n-font-mono);font-size:7.5px;letter-spacing:0.12em;
+  text-transform:uppercase;border-radius:3px;padding:2px 5px;
+  font-weight:600;margin-left:6px;vertical-align:1px;display:inline-block;
+}
+#pg-community .cm-role.teach{background:linear-gradient(160deg,#C8D8F0,#5AA9E6);color:#0a1628}
+/* Uploaded-image provenance marker on feed cards */
+#pg-community .chip.chip-shot-upload{color:var(--n-text-4);border-style:dashed}
+/* Day-panel row avatars */
+#pg-community .comm-day-trade .comm-day-av{
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;object-fit:cover;
+  border:1px solid var(--n-border-2);
+}
+#pg-community .comm-day-trade span.comm-day-av{
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--n-font-mono);font-size:8px;color:var(--n-text-2);
+  background:var(--n-surface-3);
+}
 #pg-community .ftitle{
   font-family:var(--n-font-display);
   font-size:38px;color:var(--n-text);line-height:1.1;letter-spacing:-0.01em;
@@ -5359,6 +5382,8 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-analytics .an-head .h-title,
 #pg-calendar .cal-head-left .h-title,
 #pg-history .h-head .h-title,
+#pg-log .lg-head .h-title,
+#pg-equity .h-title,
 #pg-community .ftitle,
 #pg-legal .ftitle{
   font-weight:800;letter-spacing:-0.02em;text-transform:uppercase;
@@ -5514,6 +5539,20 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   margin-top:12px;padding:14px;border:1px dashed var(--n-border-2);
   border-radius:2px;display:flex;flex-direction:column;gap:14px;
 }
+
+/* Chart requirement — TradingView link is the prominent primary path,
+   upload is the subdued mobile fallback */
+#pg-log .lt-tv-input{
+  padding:13px 14px;font-size:14px;
+  border-color:var(--n-border-3);background:var(--n-surface-3);
+}
+#pg-log .lt-shot-fallback-l{
+  margin-top:12px;font-family:var(--n-font-mono);font-size:9px;
+  letter-spacing:0.12em;text-transform:uppercase;color:var(--n-text-4);
+}
+#pg-log .lt-dropzone-compact{padding:12px;margin-top:6px;opacity:.85}
+#pg-log .lt-dropzone-compact svg{width:16px;height:16px}
+#pg-log .lt-dropzone-compact .dz-h{font-size:11px}
 
 /* Copy-trading accounts field */
 #pg-log .lt-acct-explain{
@@ -6181,20 +6220,22 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
           </div>
 
           <div class="lt-field">
-            <div class="lt-field-l">Screenshot <span class="lt-req">required</span> <span class="lt-hint">upload or TradingView link</span></div>
-            <div id="img-drop-zone" class="lt-dropzone"
+            <div class="lt-field-l">Chart <span class="lt-req">required</span> <span class="lt-hint">TradingView link preferred</span></div>
+            <input class="lt-input lt-tv-input" id="lg-chart-link" type="url"
+              placeholder="Paste your TradingView chart link (tradingview.com/x/&hellip; or /chart/&hellip;)"
+              oninput="_clearLtErr('lg-shot-err')"/>
+            <div class="lt-shot-fallback-l">On mobile without a share link? Upload a screenshot instead:</div>
+            <div id="img-drop-zone" class="lt-dropzone lt-dropzone-compact"
               onclick="document.getElementById('img-file-input').click()"
               ondragover="event.preventDefault();this.classList.add('drag-over')"
               ondragleave="this.classList.remove('drag-over')"
               ondrop="handleImgDrop(event);this.classList.remove('drag-over')">
               <input type="file" id="img-file-input" accept="image/*" multiple style="display:none" onchange="handleImgFiles(this.files)"/>
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
-              <div class="dz-h">Drop screenshot here</div>
-              <div class="dz-sub">or click to browse</div>
+              <div class="dz-h">Upload chart image</div>
+              <div class="dz-sub">landscape only &middot; drag or click</div>
             </div>
             <div id="note-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
-            <input class="lt-input" id="lg-chart-link" type="url" placeholder="&hellip;or paste a tradingview.com chart link"
-              oninput="_clearLtErr('lg-shot-err')" style="margin-top:8px"/>
             <div class="lt-err" id="lg-shot-err" style="display:none"></div>
           </div>
 
@@ -6902,7 +6943,8 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
         <!-- Centered community identity header -->
         <div class="fhead">
           <div class="fhead-id">
-            <div id="feed-grp-icon" class="gicon lg chrome">??</div>
+            <img id="feed-grp-icon" class="feed-grp-logo" src="assets/trading-ark-logo.png" alt="Trading Ark"
+              onerror="this.outerHTML='&lt;div id=&quot;feed-grp-icon&quot; class=&quot;gicon lg chrome&quot;&gt;TA&lt;/div&gt;'"/>
             <div>
               <h1 class="ftitle" id="feed-grp-name">Group</h1>
               <div class="fsub" id="feed-grp-meta">&mdash; members</div>
@@ -6917,6 +6959,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
           <button class="fchip" data-filter="wins" onclick="applyFeedFilter('wins',this)">Wins</button>
           <button class="fchip" data-filter="losses" onclick="applyFeedFilter('losses',this)">Losses</button>
           <button class="fchip" data-filter="mine" onclick="applyFeedFilter('mine',this)">Mine</button>
+          <button class="fchip" data-filter="teachers" onclick="applyFeedFilter('teachers',this)">Teachers</button>
         </div>
 
         <div id="comm-feed-posts"></div>
@@ -7780,9 +7823,11 @@ function openCommFeed(gid){
     var n = g.members ? g.members.length : 0;
     metaEl.textContent = n + (n===1 ? ' member' : ' members');
   }
-  // Group icon — finish + optional custom image
+  // Group icon — the Trading Ark logo image is static markup now; only
+  // regenerate the finish-tile avatar if the logo failed and the old
+  // .gicon fallback element is in its place.
   var iconEl=document.getElementById('feed-grp-icon');
-  if(iconEl){ iconEl.outerHTML = renderGroupAvatar(g, 'lg').replace('class="gicon ', 'id="feed-grp-icon" class="gicon '); }
+  if(iconEl && iconEl.tagName!=='IMG'){ iconEl.outerHTML = renderGroupAvatar(g, 'lg').replace('class="gicon ', 'id="feed-grp-icon" class="gicon '); }
   renderFeedPosts(g);renderFeedLeaderboard(g);renderFeedMembers(g);renderTOTD(g);renderHeroPnl(g,_commPeriod);
   // Legacy renderers (renderMemberCalendars/renderCommunityWidgets/
   // renderDailyChallenge/renderGroupActivity) target IDs not present in the v3
@@ -7998,6 +8043,13 @@ function subscribeToCommFeed(g){
     .subscribe();
 }
 
+/* Discord CDN avatar URL from cached profile fields — null when the
+   user has no Discord avatar (callers fall back to initials). */
+function discordAvatarUrl(p){
+  if(!p || !p.discord_user_id || !p.discord_avatar) return null;
+  return 'https://cdn.discordapp.com/avatars/'+encodeURIComponent(p.discord_user_id)+'/'+encodeURIComponent(p.discord_avatar)+'.png?size=128';
+}
+
 async function syncAndLoadCommFeed(g){
   if(!_sb||!currentUser||!g) return;
   var myId=currentUser.id;
@@ -8032,7 +8084,7 @@ async function syncAndLoadCommFeed(g){
   if(idsToFetch.length){
     try{
       var pf = await _sb.from('profiles')
-        .select('id,display_name,username,initials,color,avatar_finish,avatar_image_url,avatar_initials,last_seen_at')
+        .select('id,display_name,username,initials,color,avatar_finish,avatar_image_url,avatar_initials,last_seen_at,is_teacher,discord_user_id,discord_avatar')
         .in('id', idsToFetch);
       if(pf.data) pf.data.forEach(function(p){ profMap[p.id] = p; });
     }catch(e){ console.warn('Profile fetch skipped:', e.message); }
@@ -8060,7 +8112,8 @@ async function syncAndLoadCommFeed(g){
         initials: p.avatar_initials || p.initials || row.initials || m.initials
                   || (p.username || row.username || m.username || '??').slice(0,2).toUpperCase(),
         avatar_finish: p.avatar_finish || p.color || row.avatar_color || m.color || m.avatar_color || 'chrome',
-        avatar_image_url: p.avatar_image_url || null,
+        avatar_image_url: p.avatar_image_url || discordAvatarUrl(p) || null,
+        is_teacher: !!p.is_teacher,
         avatar_color: p.avatar_finish || p.color || row.avatar_color || m.color || m.avatar_color || 'chrome',
         pnl_today: Number(row.pnl_today || t.pnl || 0),
         content: row.content,                     // raw JSON for renderFeedPosts to re-parse
@@ -8082,7 +8135,8 @@ async function syncAndLoadCommFeed(g){
     var p=profMap[m.id]; if(!p) return;
     m.display_name = p.display_name || m.display_name || null;
     m.avatar_finish = p.avatar_finish || p.color || m.color || 'chrome';
-    m.avatar_image_url = p.avatar_image_url || null;
+    m.avatar_image_url = p.avatar_image_url || discordAvatarUrl(p) || null;
+    m.is_teacher = !!p.is_teacher;
     m.initials = p.avatar_initials || p.initials || m.initials;
     m.last_seen_at = p.last_seen_at || null;
   });
@@ -8138,6 +8192,7 @@ function renderFeedPosts(g){
       date: rt.date || row.created_at || '',
       username: rowIsMe ? myName : (row.username||'Trader'),
       initials: rowIsMe ? myInit : (row.initials||'??'),
+      isTeacher: !!row.is_teacher,
       user_id: row.user_id || null,
       color: rowIsMe ? myFinish : (row.avatar_finish || row.avatar_color || 'chrome'),
       avatar_finish: rowIsMe ? myFinish : (row.avatar_finish || row.avatar_color || 'chrome'),
@@ -8171,6 +8226,9 @@ function renderFeedPosts(g){
       if(p.isMe) return true;
       return myId && p.user_id === myId;
     }).sort(function(a,b){return _ts(b) - _ts(a);});
+  } else if(f === 'teachers'){
+    combined = combined.filter(function(p){return p.isTeacher;})
+                        .sort(function(a,b){return _ts(b) - _ts(a);});
   } else { // 'latest' (default)
     combined.sort(function(a,b){return _ts(b) - _ts(a);});
   }
@@ -8346,6 +8404,11 @@ function renderFeedPosts(g){
         var dots = '●'.repeat(convN) + '○'.repeat(5-convN);
         chips.push('<span class="chip">Conviction '+dots+'</span>');
       }
+      // Chart provenance marker — uploaded screenshots (the mobile
+      // fallback) are flagged so TV-linked charts are distinguishable.
+      if(meta.shot_source === 'upload'){
+        chips.push('<span class="chip chip-shot-upload" title="Screenshot uploaded directly, not a TradingView link">&#9650; uploaded image</span>');
+      }
       if(chips.length) chipsHtml = '<div class="post-chips">'+chips.join('')+'</div>';
     }
     // Screenshot block — sourced from community_posts.image_url so it
@@ -8380,6 +8443,7 @@ function renderFeedPosts(g){
       +       '<div class="post-author">'
       +         '<div class="author-line">'
       +           '<span class="author-name">'+safeText(p.username || 'Anonymous')+'</span>'
+      +           (p.isTeacher ? '<span class="cm-role teach">Teacher</span>' : '')
       +           (p.isMe ? '<span class="author-you">You</span>' : '')
       +         '</div>'
       +       '</div>'
@@ -8815,7 +8879,7 @@ function renderFeedLeaderboard(g){
   var mT=getMemberTradesLookup();
   var myPnl=trades.reduce(function(a,t){return a+(t.pnl||0);},0);
   var myWr=trades.length?Math.round(trades.filter(function(t){return t.pnl>0;}).length/trades.length*100):0;
-  var rows=[{username:(acct&&(acct.name||acct.username))||'You',pnl:myPnl,wr:myWr,aplus:trades.filter(function(t){return t.grade==='A+';}).length,isMe:true,color:(acct&&acct.color)||'chrome'}];
+  var rows=[{username:(acct&&(acct.name||acct.username))||'You',pnl:myPnl,wr:myWr,aplus:trades.filter(function(t){return t.grade==='A+';}).length,isMe:true,color:(acct&&acct.color)||'chrome',avatar_image_url:(acct&&acct.avatar_image_url)||null,initials:(acct&&(acct.avatar_initials||acct.initials))||null}];
   (g.members||[]).filter(function(m){return!m.isMe;}).forEach(function(m){
     var mt=mT[m.id]||[];
     var pnl=mt.reduce(function(a,t){return a+(t.pnl||0);},0);
@@ -9420,7 +9484,9 @@ async function loadCommCalendar(g){
     var missing = Array.from(new Set(_commCalPosts.map(function(p){return p.user_id;})))
       .filter(function(id){ return id && !window._profCache[id]; });
     if(missing.length){
-      var pr = await _sb.from('profiles').select('id,display_name,username').in('id', missing);
+      var pr = await _sb.from('profiles')
+        .select('id,display_name,username,avatar_image_url,avatar_initials,initials,discord_user_id,discord_avatar')
+        .in('id', missing);
       if(pr && pr.data) pr.data.forEach(function(p){ window._profCache[p.id]=p; });
     }
   }catch(e){ console.warn('[comm cal] profile fetch skipped:', e); }
@@ -9499,12 +9565,18 @@ function showCommDay(ds){
     +'<div class="day-summary-cell"><div class="lbl">Win Rate</div><div class="val '+(wr>=50?'pos':'neg')+'">'+wr+'%</div></div>'
     +'</div>';
   var rows=b.rows.slice().sort(function(a,x){return Math.abs(x.pnl)-Math.abs(a.pnl);}).map(function(r){
+    var prof=(r.user_id && window._profCache && window._profCache[r.user_id]) || {};
+    var avUrl=prof.avatar_image_url || discordAvatarUrl(prof);
+    var avInit=String(prof.avatar_initials||prof.initials||r.username||'?').slice(0,2).toUpperCase();
+    var avHtml=avUrl
+      ? '<img class="comm-day-av" src="'+safeURL(avUrl)+'" alt="">'
+      : '<span class="comm-day-av">'+safeText(avInit)+'</span>';
     var who=r.username
       ? '<span class="who">'+safeText(r.username)+'</span>'
       : '<span class="who"><span class="anon">Anonymous</span></span>';
     var symTxt=[r.sym, r.type].filter(Boolean).join(' · ');
     var rPnlCls=r.pnl>0?'pos':r.pnl<0?'neg':'';
-    return '<div class="comm-day-trade">'+who
+    return '<div class="comm-day-trade">'+avHtml+who
       +(symTxt?'<span class="sym">'+safeText(symTxt)+'</span>':'')
       +'<span class="pnl '+rPnlCls+'">'+_fmtShortMoney(r.pnl)+'</span></div>';
   }).join('');
@@ -10774,7 +10846,12 @@ async function shareTradeToCommunity(trade){
       entry:      trade.entry != null ? trade.entry : null,
       exit:       trade.exit != null ? trade.exit : null,
       qty:        trade.qty != null ? trade.qty : null,
-      accounts:   (trade.accounts != null && trade.accounts > 1) ? trade.accounts : null
+      accounts:   (trade.accounts != null && trade.accounts > 1) ? trade.accounts : null,
+      // Chart provenance — 'tradingview' when the trade carries a TV
+      // link, 'upload' when the proof is an uploaded screenshot. Drives
+      // the small "uploaded image" marker on feed cards.
+      chart_url:   trade.chart_url || null,
+      shot_source: trade.chart_url ? 'tradingview' : (screenshotUrl ? 'upload' : null)
     };
 
     // 4. One row per community, single batch insert. The id is
@@ -10905,7 +10982,9 @@ function toggleLtMore(){
   if(t) t.classList.toggle('open',!open);
 }
 function _clearLtErr(id){var e=document.getElementById(id);if(e)e.style.display='none';}
-function _isTvLink(s){return /^https?:\/\/([a-z0-9-]+\.)*tradingview\.com\/\S+/i.test(s||'');}
+/* Real TradingView chart URLs only: snapshot links (/x/…) or chart
+   links (/chart/…) on any tradingview.com subdomain. */
+function _isTvLink(s){return /^https?:\/\/([a-z0-9-]+\.)*tradingview\.com\/(x|chart)\/\S+/i.test(s||'');}
 /* Required-field gate: description text + a screenshot (uploaded image
    OR a TradingView chart link). Returns true if OK; shows inline
    messages and scrolls to the first problem otherwise. */
@@ -10922,8 +11001,8 @@ function _validateLtRequired(){
   }
   if(shotErr){
     shotErr.textContent=(link&&!_isTvLink(link))
-      ? "That link isn't a TradingView chart — paste a tradingview.com link or upload an image."
-      : 'Screenshot is required — upload an image or paste a TradingView chart link.';
+      ? "That link isn't a TradingView chart — use tradingview.com/x/… or tradingview.com/chart/…, or upload an image."
+      : 'A chart is required — paste a TradingView link (preferred) or upload a landscape screenshot.';
     shotErr.style.display=hasShot?'none':'block';
   }
   if(desc&&hasShot) return true;
@@ -13359,16 +13438,36 @@ async function uploadTradeImage(file){
   }
 }
 
+/* Landscape gate for chart uploads — portrait images (taller than wide)
+   are almost never charts. Resolves true when we can't read dimensions
+   so a decode quirk doesn't block a legitimate upload. */
+function _imgIsLandscape(file){
+  return new Promise(function(resolve){
+    var url=URL.createObjectURL(file);
+    var im=new Image();
+    im.onload=function(){ URL.revokeObjectURL(url); resolve(im.naturalWidth>=im.naturalHeight); };
+    im.onerror=function(){ URL.revokeObjectURL(url); resolve(true); };
+    im.src=url;
+  });
+}
+
 async function handleImgFiles(files){
   for(var i=0;i<files.length;i++){
     var file=files[i];
     if(!file.type.startsWith('image/')) continue;
+    if(!(await _imgIsLandscape(file))){
+      var msg='Chart screenshots only. Please upload a landscape chart image.';
+      toast(msg);
+      var se=document.getElementById('lg-shot-err');
+      if(se){ se.textContent=msg; se.style.display='block'; }
+      continue;
+    }
     // Show placeholder immediately while uploading
     var idx = noteImages.length;
     noteImages.push('UPLOADING:'+file.name);
     renderNoteImages();
     var url = await uploadTradeImage(file);
-    if(url){ noteImages[idx] = url; }
+    if(url){ noteImages[idx] = url; _clearLtErr('lg-shot-err'); }
     else   { noteImages.splice(idx,1); }
     renderNoteImages();
   }
@@ -15605,6 +15704,9 @@ function drawRDist(id, trades2) {
      created_at timestamptz default now(),
      updated_at timestamptz default now()
    );
+   -- Discord role/avatar sync (gate.js + nightly cron write these):
+   alter table profiles add column if not exists is_teacher boolean default false;
+   alter table profiles add column if not exists discord_avatar text;
    alter table profiles enable row level security;
    create policy "Users manage own profile" on profiles
      using (auth.uid() = id) with check (auth.uid() = id);
@@ -15725,7 +15827,7 @@ async function doSignOut() {
 /* ── SUPABASE DB: PROFILE ── */
 async function loadProfileFromDB(user) {
   var r = await _sb.from('profiles')
-    .select('id,display_name,username,initials,color,avatar_finish,avatar_initials,avatar_image_url,plan')
+    .select('id,display_name,username,initials,color,avatar_finish,avatar_initials,avatar_image_url,plan,discord_user_id,discord_avatar')
     .eq('id', user.id).maybeSingle();
   console.log('[avatar load] profile:', r.data, 'error:', r.error);
   if (!r.data && !r.error) {
@@ -15776,7 +15878,9 @@ async function loadProfileFromDB(user) {
     acct.avatar_initials  = acct.initials;
     acct.color            = normalizeFinish(r.data.avatar_finish || r.data.color);
     acct.avatar_finish    = acct.color;
-    acct.avatar_image_url = r.data.avatar_image_url || null;
+    acct.avatar_image_url = r.data.avatar_image_url
+      || (typeof discordAvatarUrl==='function' ? discordAvatarUrl(r.data) : null)
+      || null;
     acct.plan             = r.data.plan || 'free';
     saveAcct();
   }

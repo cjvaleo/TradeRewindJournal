@@ -28,6 +28,7 @@ const GUILD_ID = process.env.DISCORD_GUILD_ID || '1423501404126970020';
 const ROLES = {
   premium: process.env.DISCORD_ROLE_PREMIUM || '1462926824903540950',
   og:      process.env.DISCORD_ROLE_OG_PREM || '1517322302424092693',
+  teacher: process.env.DISCORD_ROLE_TEACHER || '1501460702974578708',
 };
 
 const DISCORD_API = 'https://discord.com/api/v10';
@@ -79,7 +80,7 @@ export default async function handler(req, res) {
   const admin = createClient(url, service, { auth: { persistSession: false } });
 
   /* ---- 3 · ask Discord about this user's membership --------------------- */
-  let member, discordUserId = null, discordUsername = null;
+  let member, discordUserId = null, discordUsername = null, discordAvatar = null;
   try {
     const me = await fetch(`${DISCORD_API}/users/@me`, {
       headers: { Authorization: `Bearer ${providerToken}` },
@@ -88,6 +89,7 @@ export default async function handler(req, res) {
       const meJson = await me.json();
       discordUserId   = meJson.id;
       discordUsername = meJson.username || null;
+      discordAvatar   = meJson.avatar || null;   // CDN avatar hash (null = default avatar)
     }
 
     const r = await fetch(`${DISCORD_API}/users/@me/guilds/${GUILD_ID}/member`, {
@@ -99,7 +101,7 @@ export default async function handler(req, res) {
     if (r.status === 404) {
       /* not in the server → no nickname exists; the Discord username is
          still the profile's display name */
-      await cacheDenial(admin, userId, discordUserId, providerToken, providerRefresh, discordUsername);
+      await cacheDenial(admin, userId, discordUserId, providerToken, providerRefresh, discordUsername, discordAvatar);
       res.status(200).json({ allowed: false, tier: null, reason: 'not_in_server' });
       return;
     }
@@ -122,6 +124,9 @@ export default async function handler(req, res) {
              : held.includes(ROLES.premium) ? 'premium'
              : null;
   const allowed = tier !== null;
+  /* Teacher is orthogonal to the access tiers — it drives the feed badge
+     and the Teachers filter, not entry. Cached on profiles like is_pro. */
+  const isTeacher = held.includes(ROLES.teacher);
 
   /* The profile display name is read-only in the app and owned by Discord:
      server nickname first, plain Discord username when none is set.
@@ -142,10 +147,14 @@ export default async function handler(req, res) {
     await admin.from('profiles').upsert({
       id:                    userId,
       discord_user_id:       discordUserId,
+      /* avatar hash refreshed on every gate call; member.user is the
+         guild-scoped view and wins when present */
+      discord_avatar:        (member.user && member.user.avatar) || discordAvatar || null,
       discord_access_token:  providerToken,
       discord_refresh_token: providerRefresh,
       discord_token_expires: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString(),
       last_role_check:       new Date().toISOString(),
+      is_teacher:            isTeacher,
       is_pro:                allowed,
       plan:                  allowed ? (tier === 'og' ? 'elite' : 'premium') : 'free',
       pro_source:            allowed ? (tier === 'og' ? 'discord_elite' : 'discord_premium') : null,
@@ -179,14 +188,16 @@ export default async function handler(req, res) {
 
 /* record the attempt even on denial, so the nightly cron can re-check
    someone who buys a membership later */
-async function cacheDenial(admin, userId, discordUserId, tok, refresh, displayName) {
+async function cacheDenial(admin, userId, discordUserId, tok, refresh, displayName, discordAvatar) {
   try {
     await admin.from('profiles').upsert({
       id: userId,
       discord_user_id: discordUserId,
+      discord_avatar: discordAvatar || null,
       discord_access_token: tok,
       discord_refresh_token: refresh,
       last_role_check: new Date().toISOString(),
+      is_teacher: false,
       is_pro: false,
       plan: 'free',
       pro_source: null,

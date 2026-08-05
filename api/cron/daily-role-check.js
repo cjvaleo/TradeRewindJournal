@@ -115,6 +115,7 @@ async function revokePro(sb, profile, reason) {
   const userId = profile.id;
   const { error: upErr } = await sb.from('profiles').update({
     is_pro:           false,
+    is_teacher:       false,
     pro_source:       null,
     pro_active_until: nowIso(),
     last_role_check:  nowIso(),
@@ -206,6 +207,7 @@ async function processProfile(sb, profile, env) {
   // 3. Premium role present → extend. Absent → revoke.
   const roles      = Array.isArray(member.roles) ? member.roles : [];
   const hasPremium = roles.includes(env.premiumRoleId);
+  const isTeacher  = roles.includes(env.teacherRoleId);
 
   if (!hasPremium) {
     return await revokePro(sb, profile, 'role_lost');
@@ -221,7 +223,11 @@ async function processProfile(sb, profile, env) {
   const { error: upErr } = await sb.from('profiles').update({
     pro_active_until: finalIso,
     last_role_check:  nowIso(),
+    is_teacher:       isTeacher,
     ...(displayName ? { display_name: displayName } : {}),
+    // Discord avatar hash — refreshed nightly; null clears it so the app
+    // falls back to the initials avatar when the user removes theirs.
+    ...(member.user ? { discord_avatar: member.user.avatar || null } : {}),
   }).eq('id', userId);
   if (upErr) throw new Error(`extend update failed: ${upErr.message}`);
   console.log('[cron] extended', { user_id: userId, pro_active_until: finalIso });
@@ -257,6 +263,9 @@ export default async function handler(req, res) {
     encKey:        process.env.ENCRYPTION_KEY,
     guildId:       process.env.TRADING_ARK_GUILD_ID,
     premiumRoleId: process.env.TRADING_ARK_PREMIUM_ROLE_ID,
+    // Same constant pattern as gate.js — env override with the known
+    // Trading Ark role id as fallback, so the cron works without config.
+    teacherRoleId: process.env.DISCORD_ROLE_TEACHER || '1501460702974578708',
   };
   if (!env.encKey || !env.guildId || !env.premiumRoleId) {
     console.error('[cron] missing env', {
