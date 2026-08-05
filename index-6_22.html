@@ -8223,11 +8223,31 @@ async function syncAndLoadCommFeed(g){
   var profMap = {};
   if(idsToFetch.length){
     try{
+      /* supabase-js does NOT throw on a failed select — it returns
+         {error}. An unchecked error here silently empties the join and
+         every name in the feed falls back to the stored "trader"
+         placeholder with no avatars. Check it, and degrade to the
+         legacy column set if the full select fails (e.g. PostgREST
+         schema cache not yet aware of newly added columns). */
       var pf = await _sb.from('profiles')
         .select('id,display_name,username,initials,color,avatar_finish,avatar_image_url,avatar_initials,last_seen_at,is_teacher,discord_user_id,discord_avatar')
         .in('id', idsToFetch);
-      if(pf.data) pf.data.forEach(function(p){ profMap[p.id] = p; });
-    }catch(e){ console.warn('Profile fetch skipped:', e.message); }
+      if(pf.error){
+        console.error('[feed] profile join failed ('+pf.error.message+') — retrying with legacy columns');
+        pf = await _sb.from('profiles')
+          .select('id,display_name,username,initials,color,avatar_finish,avatar_image_url,avatar_initials,last_seen_at')
+          .in('id', idsToFetch);
+      }
+      if(pf.error){
+        console.error('[feed] profile join failed on legacy columns too:', pf.error.message);
+      }else if(pf.data){
+        pf.data.forEach(function(p){ profMap[p.id] = p; });
+        if(!pf.data.length && idsToFetch.length > 1){
+          console.error('[feed] profile join returned 0 rows for '+idsToFetch.length+' ids — '
+            +'profiles SELECT is likely blocked by RLS (needs an authenticated-read policy).');
+        }
+      }
+    }catch(e){ console.error('[feed] profile fetch threw:', e && e.message); }
   }
 
   var memberLookup={};
@@ -9636,6 +9656,12 @@ async function loadCommCalendar(g){
       var pr = await _sb.from('profiles')
         .select('id,display_name,username,avatar_image_url,avatar_initials,initials,discord_user_id,discord_avatar')
         .in('id', missing);
+      if(pr && pr.error){
+        console.warn('[comm cal] profile fetch failed ('+pr.error.message+') — retrying with legacy columns');
+        pr = await _sb.from('profiles')
+          .select('id,display_name,username,avatar_image_url,avatar_initials,initials')
+          .in('id', missing);
+      }
       if(pr && pr.data) pr.data.forEach(function(p){ window._profCache[p.id]=p; });
     }
   }catch(e){ console.warn('[comm cal] profile fetch skipped:', e); }
@@ -15955,6 +15981,12 @@ function drawRDist(id, trades2) {
    alter table profiles enable row level security;
    create policy "Users manage own profile" on profiles
      using (auth.uid() = id) with check (auth.uid() = id);
+   -- REQUIRED for community features: the feed joins other members'
+   -- profiles (display_name, avatar, is_teacher). Without a read
+   -- policy that join returns 0 rows SILENTLY and every name falls
+   -- back to the stored "trader" placeholder with no avatars.
+   create policy "Authenticated users read profiles" on profiles
+     for select to authenticated using (true);
 
    -- TRADES
    create table if not exists trades (
@@ -16074,6 +16106,15 @@ async function loadProfileFromDB(user) {
   var r = await _sb.from('profiles')
     .select('id,display_name,username,initials,color,avatar_finish,avatar_initials,avatar_image_url,plan,discord_user_id,discord_avatar')
     .eq('id', user.id).maybeSingle();
+  /* Newly added discord columns can lag in the PostgREST schema cache —
+     don't let that take down the whole profile load (name, avatar,
+     plan). Retry with the pre-avatar column set. */
+  if (r.error && r.error.code !== 'PGRST116') {
+    console.warn('[avatar load] full select failed ('+r.error.message+') — retrying with legacy columns');
+    r = await _sb.from('profiles')
+      .select('id,display_name,username,initials,color,avatar_finish,avatar_initials,avatar_image_url,plan')
+      .eq('id', user.id).maybeSingle();
+  }
   console.log('[avatar load] profile:', r.data, 'error:', r.error);
   if (!r.data && !r.error) {
     // Treat null-from-maybeSingle the same as PGRST116 (row not found).
