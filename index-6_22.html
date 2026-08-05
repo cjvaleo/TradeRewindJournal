@@ -5718,6 +5718,33 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-log .lt-sum-cell .val.pos{color:var(--n-profit)}
 #pg-log .lt-sum-cell .val.neg{color:var(--n-loss)}
 
+/* Preview card media — mirrors the feed post card's two-column body:
+   text left (~55%), shrink-wrapped chart right (~45%) */
+#pg-log .pc-cols{display:flex;gap:12px;align-items:flex-start}
+#pg-log .pc-main{flex:1 1 55%;min-width:0}
+#pg-log .pc-media{flex:0 1 45%;max-width:45%;min-width:0}
+#pg-log .pc-media .pc-img{
+  margin:0 auto;width:fit-content;max-width:100%;
+  border:1px solid var(--n-border);border-radius:3px;
+  overflow:hidden;background:var(--n-bg);
+}
+#pg-log .pc-media .pc-img img{
+  display:block;width:auto;max-width:100%;height:auto;max-height:200px;
+  object-fit:contain;
+}
+#pg-log .pc-media .pc-chart-ph{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;min-height:110px;padding:16px 12px;
+  border:1px dashed var(--n-border-2);border-radius:3px;
+  font-family:var(--n-font-mono);font-size:8.5px;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--n-text-3);text-align:center;line-height:1.6;
+}
+#pg-log .pc-media .pc-chart-ph svg{width:20px;height:20px;opacity:.6}
+@media (max-width:768px){
+  #pg-log .pc-cols{flex-direction:column}
+  #pg-log .pc-media{flex:none;max-width:100%;width:100%}
+}
+
 /* Discord share toggle — feed-chip treatment, state-aware colors */
 #pg-log .lt-share-chip{
   display:inline-flex;align-items:center;gap:8px;align-self:flex-start;
@@ -6346,7 +6373,7 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
             <div class="lt-field-l">Chart <span class="lt-req">required</span> <span class="lt-hint">TradingView link preferred</span></div>
             <input class="lt-input lt-tv-input" id="lg-chart-link" type="url"
               placeholder="Paste your TradingView chart link (tradingview.com/x/&hellip; or /chart/&hellip;)"
-              oninput="_clearLtErr('lg-shot-err')"/>
+              oninput="_clearLtErr('lg-shot-err');updateLogPreview()"/>
             <div class="lt-shot-fallback-l">On mobile without a share link? Upload a screenshot instead:</div>
             <div id="img-drop-zone" class="lt-dropzone lt-dropzone-compact"
               onclick="document.getElementById('img-file-input').click()"
@@ -10916,6 +10943,34 @@ function updateLogPreview(){
     chips.push('<span class="pc-chip">Conviction '+dots+'</span>');
   }
 
+  // ── Chart media — live, before submit ─────────────────────────
+  // Priority: TradingView link (snapshot links render the derived
+  // image, /chart/ links get a labeled placeholder since they have no
+  // static image), then the uploaded screenshot.
+  var chartLink=((document.getElementById('lg-chart-link')||{}).value||'').trim();
+  var mediaHtml='';
+  function _phBlock(label){
+    return '<div class="pc-chart-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg>'+label+'</div>';
+  }
+  if(typeof _isTvLink==='function' && _isTvLink(chartLink)){
+    var snapImg=_tvSnapshotImg(chartLink);
+    if(snapImg){
+      // if the derived snapshot 404s, fall back to the labeled placeholder
+      mediaHtml='<div class="pc-img"><img src="'+safeURL(snapImg)+'" alt="TradingView snapshot" loading="lazy" '
+        +'onerror="this.parentElement.style.display=\'none\';var ph=this.parentElement.nextElementSibling;if(ph)ph.style.display=\'flex\'"></div>'
+        +'<div class="pc-chart-ph" style="display:none">TradingView chart attached</div>';
+    }else{
+      mediaHtml=_phBlock('TradingView chart link attached');
+    }
+  }else if(typeof noteImages!=='undefined' && noteImages.length){
+    var first=noteImages[0];
+    if(typeof first==='string' && first.indexOf('UPLOADING:')===0){
+      mediaHtml=_phBlock('Uploading screenshot…');
+    }else{
+      mediaHtml='<div class="pc-img"><img src="'+safeURL(first)+'" alt="Trade screenshot" loading="lazy"></div>';
+    }
+  }
+
   card.className = 'lt-preview-card' + (hasPnl ? (isWin ? ' profit' : ' loss') : '');
   card.innerHTML =
     '<div class="pc-head">'+
@@ -10926,13 +10981,27 @@ function updateLogPreview(){
       '</div>'+
       '<span class="pc-time">Just now</span>'+
     '</div>'+
-    '<div class="pc-trade-body">'+
-      '<span class="pc-sym">'+_safeText(sym)+'</span>'+
-      '<span class="pc-side '+sideClass+'">'+sideText+'</span>'+
-      '<span class="pc-pnl '+pnlClass+'">'+pnlStr+'</span>'+
-    '</div>'+
-    (notes?'<div class="pc-notes">'+_safeText(notes)+'</div>':'')+
-    (chips.length?'<div class="pc-chips">'+chips.join('')+'</div>':'');
+    '<div class="pc-cols">'+
+      '<div class="pc-main">'+
+        '<div class="pc-trade-body">'+
+          '<span class="pc-sym">'+_safeText(sym)+'</span>'+
+          '<span class="pc-side '+sideClass+'">'+sideText+'</span>'+
+          '<span class="pc-pnl '+pnlClass+'">'+pnlStr+'</span>'+
+        '</div>'+
+        (notes?'<div class="pc-notes">'+_safeText(notes)+'</div>':'')+
+        (chips.length?'<div class="pc-chips">'+chips.join('')+'</div>':'')+
+      '</div>'+
+      (mediaHtml?'<div class="pc-media">'+mediaHtml+'</div>':'')+
+    '</div>';
+}
+
+/* TradingView snapshot links (/x/{id}/) publish a static image at
+   s3.tradingview.com/snapshots/{first char}/{id}.png — /chart/ links
+   have no static image and get a placeholder instead. */
+function _tvSnapshotImg(link){
+  var m=/tradingview\.com\/x\/([A-Za-z0-9]+)/i.exec(link||'');
+  if(!m) return null;
+  return 'https://s3.tradingview.com/snapshots/'+m[1].charAt(0).toLowerCase()+'/'+m[1]+'.png';
 }
 
 document.addEventListener('DOMContentLoaded', function(){
@@ -13760,6 +13829,8 @@ async function handleImgFiles(files){
 }
 
 function renderNoteImages(){
+  // Image list changed → the community preview's media slot follows.
+  try{ if(typeof updateLogPreview==='function') updateLogPreview(); }catch(e){}
   const el=document.getElementById('note-img-preview');
   if(!el)return;
   el.innerHTML=noteImages.map((src,i)=>{
