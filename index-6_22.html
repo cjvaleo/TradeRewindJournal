@@ -3764,14 +3764,25 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 
 /* ── FEED HEADER — centered community identity ── */
+/* Logo + wordmark share one centered row; the members line centers on
+   the same axis beneath them. */
 #pg-community .fhead{
   display:flex;flex-direction:column;align-items:center;
-  gap:12px;margin-bottom:32px;border:none;padding:0;text-align:center;
+  gap:6px;margin-bottom:32px;border:none;padding:0;text-align:center;
 }
-#pg-community .fhead-id{display:flex;align-items:center;gap:14px;text-align:left}
+#pg-community .fhead-id{display:flex;align-items:center;gap:18px}
+#pg-community .fhead .fsub{margin-top:0}
+/* The mark is a gold chevron on a black canvas with heavy baked-in
+   padding (chevron ≈ middle third of the file). No box, no border:
+   mix-blend-mode:lighten drops the black canvas onto the page
+   background, and the oversize + negative margins cancel the padding
+   so the visible chevron itself is ~56px and optically aligned to the
+   wordmark. */
 #pg-community .feed-grp-logo{
-  width:44px;height:44px;border-radius:10px;object-fit:cover;
-  border:1px solid var(--n-border-2);flex-shrink:0;background:var(--n-surface-2);
+  height:150px;width:auto;object-fit:contain;
+  border:none;border-radius:0;background:transparent;
+  mix-blend-mode:lighten;pointer-events:none;
+  margin:-48px -18px -44px;flex-shrink:0;
 }
 /* Role badges (ported from the earlier app.html design) */
 #pg-community .cm-role{
@@ -4066,12 +4077,20 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 #pg-community .post-cols{display:flex;gap:14px;align-items:flex-start}
 #pg-community .post-main{flex:1 1 55%;min-width:0}
 #pg-community .post-media{flex:0 1 45%;min-width:0;max-width:45%}
-#pg-community .post-media .post-image{margin:0}
-#pg-community .post-media .post-image img{height:auto;max-height:260px;object-fit:contain;background:var(--n-bg)}
+/* The frame shrink-wraps the image instead of spanning the column —
+   legacy portrait screenshots (posted before the landscape rule) would
+   otherwise pillarbox inside a letterbox-shaped border. */
+#pg-community .post-media .post-image{
+  margin:0 auto;width:fit-content;max-width:100%;
+}
+#pg-community .post-media .post-image img{
+  width:auto;max-width:100%;height:auto;max-height:260px;
+  object-fit:contain;background:var(--n-bg);
+}
 @media (max-width:768px){
   #pg-community .post-cols{flex-direction:column;gap:10px}
   #pg-community .post-media{flex:none;max-width:100%;width:100%}
-  #pg-community .post-media .post-image img{max-height:none}
+  #pg-community .post-media .post-image img{max-height:340px}
 }
 
 #pg-community .post-image{
@@ -7038,11 +7057,9 @@ div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
           <div class="fhead-id">
             <img id="feed-grp-icon" class="feed-grp-logo" src="assets/trading-ark-logo.png" alt="Trading Ark"
               onerror="this.outerHTML='&lt;div id=&quot;feed-grp-icon&quot; class=&quot;gicon lg chrome&quot;&gt;TA&lt;/div&gt;'"/>
-            <div>
-              <h1 class="ftitle" id="feed-grp-name">Group</h1>
-              <div class="fsub" id="feed-grp-meta">&mdash; members</div>
-            </div>
+            <h1 class="ftitle" id="feed-grp-name">Group</h1>
           </div>
+          <div class="fsub" id="feed-grp-meta">&mdash; members</div>
         </div>
 
         <!-- FILTER CHIPS -->
